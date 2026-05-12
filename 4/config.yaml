@@ -1,0 +1,120 @@
+# Docker 日志管理系统配置
+
+# 远程主机列表（用于 SSH 远程采集）
+# 如果 hosts 为空或未配置，则使用本地 Docker
+hosts:
+  # 本地主机（特殊标识，不使用 SSH）
+  - name: "local"
+    type: "local"
+
+  # 远程主机示例 1（使用密码认证）
+  # - name: "server-prod-01"
+  #   type: "remote"
+  #   host: "192.168.1.100"
+  #   port: 22
+  #   user: "docker"
+  #   password: "your_password_here"
+  #   timeout: 10
+  #   connect_timeout: 15
+
+  # 远程主机示例 2（使用密钥认证）
+  # - name: "server-prod-02"
+  #   type: "remote"
+  #   host: "192.168.1.101"
+  #   port: 22
+  #   user: "root"
+  #   key_file: "~/.ssh/id_rsa"
+  #   key_passphrase: ""
+  #   timeout: 10
+
+# 连接池配置
+connection_pool:
+  max_idle_time: 300                    # 连接最大空闲时间（秒）
+  cleanup_interval: 60                   # 空闲连接清理间隔（秒）
+
+# Docker 连接配置（本地 Docker）
+docker:
+  base_url: "unix:///var/run/docker.sock"  # Docker API 地址
+  tls_verify: false                        # 是否启用 TLS 验证
+  timeout: 10                              # 连接超时时间（秒）
+
+# 日志采集配置
+log_collector:
+  log_level: "INFO"                        # 日志级别
+  target_containers: []                    # 目标容器名称列表（空表示所有容器）
+  exclude_containers: []                   # 排除的容器名称列表
+  output_dir: "./logs"                     # 日志输出目录
+  output_format: "json"                    # 输出格式：json 或 text
+  follow: true                             # 是否实时跟踪日志
+  since: "24h"                             # 起始时间点（如 24h 表示最近24小时）
+  tail: "all"                              # 起始行数（all 表示全部，或数字）
+  encoding: "utf-8"                        # 日志编码
+  monitor_interval: 10                     # 容器状态监控间隔（秒）
+  max_retries: 10                          # 采集失败最大重试次数（0=无限重试）
+  retry_delay: 2                           # 指数退避基础延迟（秒）
+
+# 日志轮转压缩配置
+log_rotator:
+  log_level: "INFO"                        # 日志级别
+  log_dir: "./logs"                        # 日志目录
+  max_file_size: 10                        # 单个日志文件最大大小（MB）
+  max_file_count: 5                        # 保留的文件数量
+  compress: true                           # 是否压缩
+  compress_format: "gzip"                  # 压缩格式：gzip 或 zip
+  rotation_interval: "daily"               # 轮转频率：daily, hourly, weekly
+  retention_days: 30                       # 保留天数
+  cleanup_interval: 3600                   # 清理检查间隔（秒）
+  rotate_retries: 3                        # 轮转失败重试次数（文件占用时）
+  rotate_retry_delay: 1                    # 轮转重试间隔（秒）
+  compress_retries: 3                      # 压缩失败重试次数
+  compress_retry_delay: 2                  # 压缩重试间隔（秒）
+
+# 报警配置
+alarm:
+  log_level: "INFO"                        # 日志级别
+  log_dir: "./logs"                        # 监控的日志目录
+  scan_interval: 60                        # 扫描间隔（秒）
+  error_keywords:                          # 错误关键字列表
+    - "ERROR"
+    - "Exception"
+    - "Traceback"
+    - "FATAL"
+    - "CRITICAL"
+  error_threshold: 5                       # 错误阈值（连续出现次数触发报警）
+  cooldown_period: 300                     # 报警冷却时间（秒）
+  
+  # 报警渠道
+  channels:
+    console:
+      enabled: true                        # 控制台输出
+    email:
+      enabled: false
+      smtp_server: "smtp.example.com"
+      smtp_port: 587
+      smtp_username: "alert@example.com"
+      smtp_password: "password"
+      from_email: "alert@example.com"
+      to_email: ["admin@example.com"]
+      subject_prefix: "[DOCKER-LOG-ALARM]"
+    webhook:
+      enabled: false
+      url: "https://hooks.example.com/alert"
+      method: "POST"
+      headers:
+        Content-Type: "application/json"
+      timeout: 10
+      max_retries: 3                         # 最大重试次数
+      retry_delay: 2                         # 指数退避基础延迟（秒）
+      retryable_status_codes:                # 需要重试的 HTTP 状态码
+        - 429
+        - 500
+        - 502
+        - 503
+        - 504
+
+# 通用日志配置（脚本自身运行日志）
+system_log:
+  directory: "./system_logs"               # 系统日志目录
+  max_size: 10                             # 单个文件最大大小（MB）
+  backup_count: 5                          # 备份文件数量
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
