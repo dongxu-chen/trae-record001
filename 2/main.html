@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分子可视化工具 - Three.js</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px 25px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        #header h1 {
+            font-size: 24px;
+            color: #00d4ff;
+            margin-bottom: 5px;
+        }
+
+        #header p {
+            font-size: 14px;
+            color: #a0a0a0;
+        }
+
+        #controls-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            width: 300px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        .panel-section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .panel-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+
+        .control-group {
+            margin-bottom: 12px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 12px;
+            color: #a0a0a0;
+            margin-bottom: 5px;
+        }
+
+        .control-group button,
+        .control-group input[type="file"],
+        .control-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-group button {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: #1a1a2e;
+            font-weight: 600;
+        }
+
+        .control-group button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
+        }
+
+        .control-group button.secondary {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
+
+        .control-group button.secondary:hover {
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .control-group input[type="file"] {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+        }
+
+        .control-group select {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .control-group input[type="color"] {
+            width: 50px;
+            height: 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        .color-picker-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-picker-group label {
+            margin: 0;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            color: #e0e0e0;
+        }
+
+        #info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            font-size: 12px;
+        }
+
+        #info-panel .info-item {
+            margin-bottom: 5px;
+        }
+
+        #info-panel .info-label {
+            color: #00d4ff;
+            margin-right: 5px;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 200;
+            text-align: center;
+            display: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #sample-molecules {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        #sample-molecules button {
+            width: auto;
+            flex: 1;
+            min-width: 45%;
+            padding: 6px 8px;
+            font-size: 11px;
+        }
+
+        .slider-value {
+            font-size: 11px;
+            color: #00d4ff;
+            text-align: right;
+            margin-top: 2px;
+        }
+
+        .voxel-disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-container"></div>
+
+        <div id="header">
+            <h1>分子可视化工具</h1>
+            <p>基于 Three.js 的 PDB/Cube 分子结构查看器</p>
+        </div>
+
+        <div id="controls-panel">
+            <div class="panel-section">
+                <div class="section-title">文件加载</div>
+                <div class="control-group">
+                    <label>加载文件 (PDB / Cube)</label>
+                    <input type="file" id="molecule-file" accept=".pdb,.cube" />
+                </div>
+
+                <div class="control-group">
+                    <label>示例分子</label>
+                    <div id="sample-molecules">
+                        <button id="sample-water">水分子</button>
+                        <button id="sample-methane">甲烷</button>
+                        <button id="sample-benzene">苯</button>
+                        <button id="sample-ammonia">氨</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <button id="sample-volume" class="secondary">加载示例体素数据</button>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="section-title">球棍模型</div>
+                <div class="control-group">
+                    <label>原子大小</label>
+                    <input type="range" id="atom-scale" min="0.5" max="3" step="0.1" value="1" />
+                    <div class="slider-value" id="atom-scale-value">1.0x</div>
+                </div>
+
+                <div class="control-group">
+                    <label>键粗细</label>
+                    <input type="range" id="bond-scale" min="0.5" max="3" step="0.1" value="1" />
+                    <div class="slider-value" id="bond-scale-value">1.0x</div>
+                </div>
+
+                <div class="control-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="show-atoms" checked />
+                        <label for="show-atoms">显示原子</label>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="show-bonds" checked />
+                        <label for="show-bonds">显示化学键</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section" id="voxel-section">
+                <div class="section-title">体素渲染 (电子云密度)</div>
+                <div id="voxel-controls" class="voxel-disabled">
+                    <div class="control-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="show-voxel" checked />
+                            <label for="show-voxel">显示体素</label>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>密度等值面</label>
+                        <input type="range" id="iso-value" min="0" max="1" step="0.01" value="0.5" />
+                        <div class="slider-value" id="iso-value-value">0.50</div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>透明度</label>
+                        <input type="range" id="voxel-opacity" min="0.1" max="1" step="0.05" value="0.8" />
+                        <div class="slider-value" id="voxel-opacity-value">0.80</div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="color-picker-group">
+                            <label>体素颜色:</label>
+                            <input type="color" id="voxel-color" value="#00ff88" />
+                        </div>
+                    </div>
+                </div>
+                <div id="voxel-no-data" style="font-size: 12px; color: #666;">
+                    加载 Cube 文件或示例体素数据后可用
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="section-title">视图控制</div>
+                <div class="control-group">
+                    <button id="reset-view">重置视图</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="info-panel">
+            <div class="info-item">
+                <span class="info-label">操作说明:</span>
+            </div>
+            <div class="info-item">• 鼠标拖动: 旋转分子</div>
+            <div class="info-item">• 滚轮: 缩放视图</div>
+            <div class="info-item">• 右键拖动: 平移视图</div>
+            <div class="info-item" id="molecule-info">
+                <span class="info-label">当前分子:</span> 无
+            </div>
+            <div class="info-item" id="atom-count">
+                <span class="info-label">原子数量:</span> 0
+            </div>
+            <div class="info-item" id="bond-count">
+                <span class="info-label">化学键数量:</span> 0
+            </div>
+            <div class="info-item" id="voxel-info" style="display: none;">
+                <span class="info-label">体素数据:</span> 无
+            </div>
+        </div>
+
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>加载中...</p>
+        </div>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { PDBLoader, CubeLoader } from './loader.js';
+        import { MoleculeRenderer } from './renderer.js';
+        import { MoleculeControls } from './controls.js';
+
+        let scene, camera, renderer, orbitControls;
+        let moleculeRenderer, moleculeControls, molecule;
+        let pdbLoader = new PDBLoader();
+        let cubeLoader = new CubeLoader();
+        let directionalLight1;
+
+        function init() {
+            const container = document.getElementById('canvas-container');
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a2e);
+
+            camera = new THREE.PerspectiveCamera(
+                60,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            camera.position.set(0, 0, 20);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            orbitControls = new OrbitControls(camera, renderer.domElement);
+            orbitControls.enableDamping = true;
+            orbitControls.dampingFactor = 0.05;
+
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+            scene.add(ambientLight);
+
+            directionalLight1 = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight1.position.set(10, 10, 10);
+            scene.add(directionalLight1);
+
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight2.position.set(-10, -10, -10);
+            scene.add(directionalLight2);
+
+            moleculeRenderer = new MoleculeRenderer(scene);
+            moleculeControls = new MoleculeControls(camera, orbitControls);
+
+            setupEventListeners();
+
+            window.addEventListener('resize', onWindowResize);
+
+            animate();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('molecule-file').addEventListener('change', handleFileSelect);
+            document.getElementById('sample-water').addEventListener('click', () => loadSampleMolecule('water'));
+            document.getElementById('sample-methane').addEventListener('click', () => loadSampleMolecule('methane'));
+            document.getElementById('sample-benzene').addEventListener('click', () => loadSampleMolecule('benzene'));
+            document.getElementById('sample-ammonia').addEventListener('click', () => loadSampleMolecule('ammonia'));
+            document.getElementById('sample-volume').addEventListener('click', loadSampleVolumeData);
+
+            document.getElementById('atom-scale').addEventListener('input', updateAtomScale);
+            document.getElementById('bond-scale').addEventListener('input', updateBondScale);
+            document.getElementById('show-atoms').addEventListener('change', toggleAtoms);
+            document.getElementById('show-bonds').addEventListener('change', toggleBonds);
+            document.getElementById('reset-view').addEventListener('click', resetView);
+
+            document.getElementById('show-voxel').addEventListener('change', toggleVoxel);
+            document.getElementById('iso-value').addEventListener('input', updateIsoValue);
+            document.getElementById('voxel-opacity').addEventListener('input', updateVoxelOpacity);
+            document.getElementById('voxel-color').addEventListener('change', updateVoxelColor);
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const extension = file.name.split('.').pop().toLowerCase();
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+
+                if (extension === 'cube') {
+                    loadMoleculeFromCube(content, file.name);
+                } else {
+                    loadMoleculeFromPDB(content, file.name);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function loadSampleMolecule(type) {
+            const samples = {
+                water: createWaterPDB(),
+                methane: createMethanePDB(),
+                benzene: createBenzenePDB(),
+                ammonia: createAmmoniaPDB()
+            };
+
+            const names = {
+                water: '水分子 (H2O)',
+                methane: '甲烷 (CH4)',
+                benzene: '苯 (C6H6)',
+                ammonia: '氨 (NH3)'
+            };
+
+            hideVoxelControls();
+            loadMoleculeFromPDB(samples[type], names[type]);
+        }
+
+        function loadSampleVolumeData() {
+            showLoading();
+
+            setTimeout(() => {
+                try {
+                    const volumeData = generateSampleVolumeData();
+                    molecule = volumeData;
+                    moleculeRenderer.render(molecule);
+                    moleculeControls.centerOnMolecule(molecule);
+
+                    updateInfoPanel('示例体素数据 (高斯分布)', molecule.atoms.length, molecule.bonds.length);
+                    updateVoxelInfo(molecule.volume);
+                    showVoxelControls();
+                } catch (error) {
+                    console.error('生成示例体素数据失败:', error);
+                    alert('生成示例体素数据失败: ' + error.message);
+                } finally {
+                    hideLoading();
+                }
+            }, 100);
+        }
+
+        function generateSampleVolumeData() {
+            const size = { x: 32, y: 32, z: 32 };
+            const spacing = { x: 0.5, y: 0.5, z: 0.5 };
+            const origin = { x: -8, y: -8, z: -8 };
+
+            const data = new Float32Array(size.x * size.y * size.z);
+            let minValue = Infinity;
+            let maxValue = -Infinity;
+
+            const centers = [
+                { x: 0, y: 0, z: 0, sigma: 2.0, amplitude: 1.0 },
+                { x: 2, y: 0, z: 0, sigma: 1.5, amplitude: 0.8 },
+                { x: -1, y: 1.5, z: 0, sigma: 1.5, amplitude: 0.8 },
+                { x: -1, y: -1, z: 1.5, sigma: 1.5, amplitude: 0.8 },
+                { x: -1, y: -1, z: -1.5, sigma: 1.5, amplitude: 0.8 }
+            ];
+
+            for (let z = 0; z < size.z; z++) {
+                for (let y = 0; y < size.y; y++) {
+                    for (let x = 0; x < size.x; x++) {
+                        const wx = origin.x + x * spacing.x;
+                        const wy = origin.y + y * spacing.y;
+                        const wz = origin.z + z * spacing.z;
+
+                        let value = 0;
+                        for (const center of centers) {
+                            const dx = wx - center.x;
+                            const dy = wy - center.y;
+                            const dz = wz - center.z;
+                            const distSq = dx * dx + dy * dy + dz * dz;
+                            value += center.amplitude * Math.exp(-distSq / (2 * center.sigma * center.sigma));
+                        }
+
+                        const index = z * size.x * size.y + y * size.x + x;
+                        data[index] = value;
+                        minValue = Math.min(minValue, value);
+                        maxValue = Math.max(maxValue, value);
+                    }
+                }
+            }
+
+            const atoms = [
+                {
+                    serial: 1,
+                    name: 'C',
+                    element: 'C',
+                    position: { x: 0, y: 0, z: 0 },
+                    color: 0x404040,
+                    radius: 0.77
+                },
+                {
+                    serial: 2,
+                    name: 'H',
+                    element: 'H',
+                    position: { x: 2, y: 0, z: 0 },
+                    color: 0xffffff,
+                    radius: 0.31
+                },
+                {
+                    serial: 3,
+                    name: 'H',
+                    element: 'H',
+                    position: { x: -1, y: 1.5, z: 0 },
+                    color: 0xffffff,
+                    radius: 0.31
+                },
+                {
+                    serial: 4,
+                    name: 'H',
+                    element: 'H',
+                    position: { x: -1, y: -1, z: 1.5 },
+                    color: 0xffffff,
+                    radius: 0.31
+                },
+                {
+                    serial: 5,
+                    name: 'H',
+                    element: 'H',
+                    position: { x: -1, y: -1, z: -1.5 },
+                    color: 0xffffff,
+                    radius: 0.31
+                }
+            ];
+
+            const bonds = [
+                { atom1Index: 0, atom2Index: 1, type: 1 },
+                { atom1Index: 0, atom2Index: 2, type: 1 },
+                { atom1Index: 0, atom2Index: 3, type: 1 },
+                { atom1Index: 0, atom2Index: 4, type: 1 }
+            ];
+
+            return {
+                atoms,
+                bonds,
+                volume: {
+                    data,
+                    size,
+                    spacing,
+                    origin,
+                    minValue,
+                    maxValue
+                }
+            };
+        }
+
+        function createWaterPDB() {
+            return `HEADER    WATER
+ATOM      1  O   HOH A   1       0.000   0.000   0.000  1.00  0.00           O
+ATOM      2  H   HOH A   1       0.958   0.000   0.000  1.00  0.00           H
+ATOM      3  H   HOH A   1      -0.239   0.927   0.000  1.00  0.00           H
+CONECT    1    2    3
+CONECT    2    1
+CONECT    3    1
+END
+`;
+        }
+
+        function createMethanePDB() {
+            return `HEADER    METHANE
+ATOM      1  C   CH4 A   1       0.000   0.000   0.000  1.00  0.00           C
+ATOM      2  H   CH4 A   1       1.089   0.000   0.000  1.00  0.00           H
+ATOM      3  H   CH4 A   1      -0.363   1.027   0.000  1.00  0.00           H
+ATOM      4  H   CH4 A   1      -0.363  -0.513   0.889  1.00  0.00           H
+ATOM      5  H   CH4 A   1      -0.363  -0.513  -0.889  1.00  0.00           H
+CONECT    1    2    3    4    5
+CONECT    2    1
+CONECT    3    1
+CONECT    4    1
+CONECT    5    1
+END
+`;
+        }
+
+        function createBenzenePDB() {
+            const pdb = ['HEADER    BENZENE'];
+            const radius = 1.4;
+            const hRadius = 2.47;
+
+            for (let i = 0; i < 6; i++) {
+                const angle = (i * Math.PI) / 3;
+                const cx = radius * Math.cos(angle);
+                const cy = radius * Math.sin(angle);
+                const hx = hRadius * Math.cos(angle);
+                const hy = hRadius * Math.sin(angle);
+
+                pdb.push(`ATOM  ${String(i + 1).padStart(4)}  C   BEN A   1  ${cx.toFixed(3).padStart(8)}${cy.toFixed(3).padStart(8)}   0.000  1.00  0.00           C`);
+                pdb.push(`ATOM  ${String(i + 7).padStart(4)}  H   BEN A   1  ${hx.toFixed(3).padStart(8)}${hy.toFixed(3).padStart(8)}   0.000  1.00  0.00           H`);
+            }
+
+            for (let i = 1; i <= 6; i++) {
+                const next = (i % 6) + 1;
+                const hAtom = i + 6;
+                pdb.push(`CONECT ${String(i).padStart(4)} ${String(next).padStart(4)} ${String(hAtom).padStart(4)}`);
+            }
+
+            pdb.push('END');
+            return pdb.join('\n');
+        }
+
+        function createAmmoniaPDB() {
+            return `HEADER    AMMONIA
+ATOM      1  N   NH3 A   1       0.000   0.000   0.000  1.00  0.00           N
+ATOM      2  H   NH3 A   1       1.012   0.000   0.000  1.00  0.00           H
+ATOM      3  H   NH3 A   1      -0.337   0.954   0.000  1.00  0.00           H
+ATOM      4  H   NH3 A   1      -0.337  -0.477   0.826  1.00  0.00           H
+CONECT    1    2    3    4
+CONECT    2    1
+CONECT    3    1
+CONECT    4    1
+END
+`;
+        }
+
+        function loadMoleculeFromPDB(content, name) {
+            showLoading();
+
+            setTimeout(() => {
+                try {
+                    molecule = pdbLoader.parse(content);
+                    moleculeRenderer.render(molecule);
+                    moleculeControls.centerOnMolecule(molecule);
+
+                    updateInfoPanel(name, molecule.atoms.length, molecule.bonds.length);
+                } catch (error) {
+                    console.error('解析 PDB 文件失败:', error);
+                    alert('解析 PDB 文件失败: ' + error.message);
+                } finally {
+                    hideLoading();
+                }
+            }, 100);
+        }
+
+        function loadMoleculeFromCube(content, name) {
+            showLoading();
+
+            setTimeout(() => {
+                try {
+                    molecule = cubeLoader.parse(content);
+                    moleculeRenderer.render(molecule);
+                    moleculeControls.centerOnMolecule(molecule);
+
+                    updateInfoPanel(name, molecule.atoms.length, molecule.bonds.length);
+                    if (molecule.volume) {
+                        updateVoxelInfo(molecule.volume);
+                        showVoxelControls();
+                    }
+                } catch (error) {
+                    console.error('解析 Cube 文件失败:', error);
+                    alert('解析 Cube 文件失败: ' + error.message);
+                } finally {
+                    hideLoading();
+                }
+            }, 100);
+        }
+
+        function updateAtomScale(event) {
+            const scale = parseFloat(event.target.value);
+            moleculeRenderer.setAtomScale(scale);
+            document.getElementById('atom-scale-value').textContent = scale.toFixed(1) + 'x';
+        }
+
+        function updateBondScale(event) {
+            const scale = parseFloat(event.target.value);
+            moleculeRenderer.setBondScale(scale);
+            document.getElementById('bond-scale-value').textContent = scale.toFixed(1) + 'x';
+        }
+
+        function toggleAtoms(event) {
+            moleculeRenderer.showAtoms(event.target.checked);
+        }
+
+        function toggleBonds(event) {
+            moleculeRenderer.showBonds(event.target.checked);
+        }
+
+        function toggleVoxel(event) {
+            moleculeRenderer.showVoxel(event.target.checked);
+        }
+
+        function updateIsoValue(event) {
+            const value = parseFloat(event.target.value);
+            moleculeRenderer.setIsoValue(value);
+            document.getElementById('iso-value-value').textContent = value.toFixed(2);
+        }
+
+        function updateVoxelOpacity(event) {
+            const value = parseFloat(event.target.value);
+            moleculeRenderer.setVoxelOpacity(value);
+            document.getElementById('voxel-opacity-value').textContent = value.toFixed(2);
+        }
+
+        function updateVoxelColor(event) {
+            const hexColor = parseInt(event.target.value.replace('#', ''), 16);
+            moleculeRenderer.setVoxelColor(hexColor);
+        }
+
+        function resetView() {
+            if (molecule) {
+                moleculeControls.centerOnMolecule(molecule);
+            } else {
+                moleculeControls.reset();
+            }
+        }
+
+        function updateInfoPanel(moleculeName, atomCount, bondCount) {
+            document.querySelector('#molecule-info').innerHTML = `<span class="info-label">当前分子:</span> ${moleculeName}`;
+            document.querySelector('#atom-count').innerHTML = `<span class="info-label">原子数量:</span> ${atomCount}`;
+            document.querySelector('#bond-count').innerHTML = `<span class="info-label">化学键数量:</span> ${bondCount}`;
+        }
+
+        function updateVoxelInfo(volume) {
+            const voxelInfo = document.getElementById('voxel-info');
+            voxelInfo.style.display = 'block';
+            voxelInfo.innerHTML = `<span class="info-label">体素数据:</span> ${volume.size.x}x${volume.size.y}x${volume.size.z} | 范围: ${volume.minValue.toFixed(3)} ~ ${volume.maxValue.toFixed(3)}`;
+        }
+
+        function showVoxelControls() {
+            document.getElementById('voxel-controls').classList.remove('voxel-disabled');
+            document.getElementById('voxel-no-data').style.display = 'none';
+        }
+
+        function hideVoxelControls() {
+            document.getElementById('voxel-controls').classList.add('voxel-disabled');
+            document.getElementById('voxel-no-data').style.display = 'block';
+            document.getElementById('voxel-info').style.display = 'none';
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            orbitControls.update();
+
+            if (moleculeRenderer.isVoxelEnabled()) {
+                moleculeRenderer.updateVoxelCamera(camera.position);
+                moleculeRenderer.updateVoxelLight(directionalLight1.position);
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        init();
+        loadSampleMolecule('water');
+    </script>
+</body>
+</html>
