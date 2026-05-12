@@ -1,0 +1,70 @@
+scalar DateTime
+
+type Book {
+  id: ID!
+  title: String!
+  author: String!
+  isbn: String!
+  publishedYear: Int!
+  totalCopies: Int!
+  availableCopies: Int!
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  borrowRecords: [BorrowRecord]
+}
+
+type BorrowRecord {
+  id: ID!
+  userId: ID!
+  bookId: ID!
+  book: Book
+  borrowDate: DateTime!
+  returnDate: DateTime
+  isReturned: Boolean!
+}
+
+input PaginationInput {
+  limit: Int
+  offset: Int
+}
+
+type Query {
+  books(limit: Int, offset: Int): [Book]
+  book(id: ID!): Book
+  users(limit: Int, offset: Int): [User]
+  user(id: ID!): User
+  borrowRecords(limit: Int, offset: Int): [BorrowRecord]
+  borrowRecord(id: ID!): BorrowRecord
+}
+
+type Mutation {
+  createBook(
+    title: String!
+    author: String!
+    isbn: String!
+    publishedYear: Int!
+    totalCopies: Int!
+  ): Book
+
+  createUser(
+    name: String!
+    email: String!
+  ): User
+
+  borrowBook(
+    userId: ID!
+    bookId: ID!
+  ): BorrowRecord
+
+  returnBook(
+    borrowRecordId: ID!
+  ): BorrowRecord
+}
+
+type Subscription {
+  newBookAdded: Book!
+}
