@@ -1,0 +1,27 @@
+{
+  "name": "离线日记本",
+  "short_name": "日记本",
+  "description": "安全的个人PWA日记应用，支持离线使用",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%234f46e5'/%3E%3Ctext x='96' y='120' font-size='96' text-anchor='middle' font-family='Arial'%3E%F0%9F%93%95%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%234f46e5'/%3E%3Ctext x='256' y='320' font-size='256' text-anchor='middle' font-family='Arial'%3E%F0%9F%93%95%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "lifestyle"],
+  "lang": "zh-CN",
+  "prefer_related_applications": false
+}
