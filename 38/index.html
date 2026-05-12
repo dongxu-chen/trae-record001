@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>WebVR 拳击训练 - AI 陪练版</title>
+    <meta name="description" content="WebVR 拳击训练应用 - 包含 AI 陪练、连击特效和语音控制">
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-environment-component/dist/aframe-environment-component.min.js"></script>
+    
+    <script src="components/boxing-glove.js"></script>
+    <script src="components/dummy.js"></script>
+    <script src="components/hit-detector.js"></script>
+    <script src="components/particle.js"></script>
+    <script src="components/ai_controller.js"></script>
+    <script src="components/voice_commander.js"></script>
+    <script src="system/score.js"></script>
+  </head>
+  <body>
+    <a-scene score-system ai-controller voice-commander>
+      <a-entity environment="preset: forest; groundColor: #445; grid: cross"></a-entity>
+      
+      <a-entity camera look-controls position="0 1.6 0"></a-entity>
+      
+      <a-entity id="leftHand" vive-controls="hand: left" boxing-glove="color: red; hand: left"></a-entity>
+      <a-entity id="rightHand" vive-controls="hand: right" boxing-glove="color: blue; hand: right"></a-entity>
+      
+      <a-entity id="punchingBag" dummy="enableRandomMovement: true; movementRange: 0.8; movementSpeed: 0.3; changeDirectionInterval: 3000" position="0 1.2 -2">
+        <a-entity geometry="primitive: cylinder; height: 1.2; radius: 0.4" 
+                  material="color: #8B4513; roughness: 0.8"></a-entity>
+        <a-entity geometry="primitive: cylinder; height: 0.1; radius: 0.45" 
+                  material="color: #CD853F" position="0 0.6 0"></a-entity>
+        <a-entity geometry="primitive: cylinder; height: 0.1; radius: 0.45" 
+                  material="color: #CD853F" position="0 -0.6 0"></a-entity>
+        <a-entity geometry="primitive: sphere; radius: 0.05" 
+                  material="color: #333" position="0 0.65 0.3"></a-entity>
+        <a-entity geometry="primitive: sphere; radius: 0.05" 
+                  material="color: #333" position="0 0.65 -0.3"></a-entity>
+        <a-entity hit-detector="radius: 0.45; minHitVelocity: 3"></a-entity>
+        <a-entity id="particleSystem" particle-effect="type: hit; color: #FFD700; particleCount: 20; size: 0.05; duration: 800; speed: 2; gravity: 5"></a-entity>
+      </a-entity>
+      
+      <a-entity position="0 2.8 -3" text="value: 得分: 0; color: white; 
+                align: center; width: 5; height: 1.5; wrapCount: 25; side: double" 
+                score-display></a-entity>
+      
+      <a-entity id="comboDisplay" position="0 2.2 -3" text="value: 连击: 0; color: #FFD700; 
+                align: center; width: 4; height: 0.5; wrapCount: 20; side: double"></a-entity>
+      
+      <a-entity id="helpText" position="-1.5 1.5 -3" text="value: 语音命令: 开始、停止、重置、难度简单/普通/困难/专家、查看分数、查看统计; color: #888; 
+                align: center; width: 3; height: 1; wrapCount: 15; side: double; opacity: 0.8"></a-entity>
+      
+      <a-sky color="#222"></a-sky>
+      
+      <a-entity light="type: ambient; intensity: 0.6"></a-entity>
+      <a-entity light="type: directional; intensity: 0.8" position="2 4 3"></a-entity>
+    </a-scene>
+  </body>
+</html>
