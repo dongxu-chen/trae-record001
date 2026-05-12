@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交互式太空场景 - Babylon.js</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0f1e;
+        }
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            touch-action: none;
+        }
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(10, 15, 30, 0.9);
+            color: white;
+            padding: 18px 22px;
+            border-radius: 12px;
+            font-size: 13px;
+            max-width: 260px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(79, 195, 247, 0.2);
+            z-index: 20;
+        }
+        #controls h2 {
+            margin: 0 0 14px 0;
+            font-size: 18px;
+            color: #4fc3f7;
+            border-bottom: 1px solid rgba(79, 195, 247, 0.3);
+            padding-bottom: 10px;
+            font-weight: 600;
+        }
+        #controls .control-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            opacity: 0.9;
+        }
+        #controls .control-item .key {
+            background: rgba(79, 195, 247, 0.2);
+            color: #90caf9;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-right: 10px;
+            font-family: 'Consolas', monospace;
+        }
+        #controls .status {
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #controls .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 6px 0;
+            font-size: 12px;
+        }
+        #controls .status-badge {
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 22px;
+            pointer-events: none;
+            text-shadow: 0 0 20px rgba(79, 195, 247, 0.8);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #loading .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(79, 195, 247, 0.2);
+            border-radius: 50%;
+            border-top-color: #4fc3f7;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 15px;
+        }
+        #loading .loading-text {
+            color: #90caf9;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        #tooltip {
+            position: absolute;
+            background: rgba(10, 15, 30, 0.95);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            pointer-events: none;
+            transform: translate(-50%, -120%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 100;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+            white-space: nowrap;
+        }
+        #tooltip.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <div id="controls">
+        <h2>🚀 星际导航</h2>
+        <div class="control-item">
+            <span class="key">鼠标</span>
+            <span>左键旋转 / 右键平移</span>
+        </div>
+        <div class="control-item">
+            <span class="key">滚轮</span>
+            <span>缩放视角</span>
+        </div>
+        <div class="control-item">
+            <span class="key">点击</span>
+            <span>点击行星查看详情</span>
+        </div>
+        <div class="control-item">
+            <span class="key">Esc</span>
+            <span>取消选择 / 关闭面板</span>
+        </div>
+        <div class="control-item">
+            <span class="key">C</span>
+            <span>自动巡航模式</span>
+        </div>
+        <div class="control-item">
+            <span class="key">R</span>
+            <span>重置视角</span>
+        </div>
+        <div class="control-item">
+            <span class="key">空格</span>
+            <span>暂停 / 播放</span>
+        </div>
+        <div class="status">
+            <div class="status-item">
+                <span>轨道动画</span>
+                <span id="animStatus" class="status-badge" style="background: rgba(76, 175, 80, 0.2); color: #81c784;">▶ 播放中</span>
+            </div>
+            <div class="status-item">
+                <span>巡航模式</span>
+                <span id="cruiseStatus" class="status-badge" style="background: rgba(158, 158, 158, 0.2); color: #9e9e9e;">○ 关闭</span>
+            </div>
+        </div>
+    </div>
+    <div id="tooltip"></div>
+    <div id="loading">
+        <span class="spinner"></span>
+        <span>正在初始化太空场景</span>
+        <span class="loading-text" id="loadingProgress">准备中...</span>
+    </div>
+
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+
+    <script src="scene_setup.js"></script>
+    <script src="planet_factory.js"></script>
+    <script src="orbit_control.js"></script>
+    <script src="particle_system.js"></script>
+    <script src="label_manager.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('renderCanvas');
+            const loading = document.getElementById('loading');
+            const loadingProgress = document.getElementById('loadingProgress');
+            const tooltip = document.getElementById('tooltip');
+            const animStatus = document.getElementById('animStatus');
+            const cruiseStatus = document.getElementById('cruiseStatus');
+
+            loadingProgress.textContent = '初始化引擎...';
+
+            const { engine, scene, camera, sunlight, ambientLight } = SceneSetup.init(canvas);
+
+            OrbitControl.setEngine(engine);
+            OrbitControl.setScene(scene);
+            OrbitControl.setCamera(camera);
+
+            loadingProgress.textContent = '创建行星系统...';
+
+            const {
+                registerOrbit,
+                createOrbitLine,
+                updateOrbits,
+                togglePause,
+                isPaused,
+                focusOnMesh,
+                focusOnSolarSystem,
+                startCruise,
+                stopCruise,
+                isCruising
+            } = OrbitControl;
+
+            const ParticleSystems = ParticleSystem.init(scene);
+
+            const planetConfigs = [
+                { name: '太阳', size: 15, color: '#FFA500', emissive: '#FF4500', distance: 0, speed: 0, texture: null, isStar: true },
+                { name: '水星', size: 1.2, color: '#8C7853', distance: 30, speed: 0.04, texture: 'https://www.babylonjs-playground.com/textures/mercury.jpg' },
+                { name: '金星', size: 2, color: '#DEB887', distance: 45, speed: 0.035, texture: 'https://www.babylonjs-playground.com/textures/venus.jpg' },
+                { name: '地球', size: 2.5, color: '#4169E1', distance: 65, speed: 0.03, texture: 'https://www.babylonjs-playground.com/textures/earth.jpg' },
+                { name: '火星', size: 1.8, color: '#CD5C5C', distance: 85, speed: 0.025, texture: 'https://www.babylonjs-playground.com/textures/mars.jpg' },
+                { name: '木星', size: 6, color: '#DAA520', distance: 120, speed: 0.015, texture: 'https://www.babylonjs-playground.com/textures/jupiter.jpg' },
+                { name: '土星', size: 5, color: '#F4A460', distance: 160, speed: 0.01, texture: 'https://www.babylonjs-playground.com/textures/saturn.jpg', hasRing: true },
+                { name: '天王星', size: 3, color: '#40E0D0', distance: 190, speed: 0.008, texture: 'https://www.babylonjs-playground.com/textures/uranus.jpg' },
+                { name: '海王星', size: 2.8, color: '#4682B4', distance: 220, speed: 0.006, texture: 'https://www.babylonjs-playground.com/textures/neptune.jpg' }
+            ];
+
+            loadingProgress.textContent = '生成行星...';
+
+            const planets = [];
+
+            planetConfigs.forEach((config, index) => {
+                const planet = PlanetFactory.create(scene, {
+                    name: config.name,
+                    size: config.size,
+                    color: config.color,
+                    emissiveColor: config.emissive,
+                    isStar: config.isStar,
+                    textureUrl: config.texture
+                });
+
+                if (config.distance > 0) {
+                    registerOrbit(planet, config.distance, config.speed);
+
+                    createOrbitLine(
+                        `orbit-${config.name}`,
+                        config.distance,
+                        new BABYLON.Color3(0.2, 0.2, 0.3),
+                        256
+                    );
+                }
+
+                if (config.hasRing) {
+                    ParticleSystems.createRing(planet, 6, 10, 0.6, new BABYLON.Color3(0.9, 0.7, 0.4));
+                }
+
+                planets.push(planet);
+            });
+
+            loadingProgress.textContent = '创建背景...';
+
+            ParticleSystems.createStarField(800, 300, 800);
+            ParticleSystems.createNebula(
+                new BABYLON.Vector3(-100, 50, -100),
+                150,
+                200,
+                new BABYLON.Color4(0.3, 0.1, 0.5, 0.2),
+                new BABYLON.Color4(0.1, 0.3, 0.6, 0.1)
+            );
+            ParticleSystems.createNebula(
+                new BABYLON.Vector3(150, -30, 120),
+                100,
+                150,
+                new BABYLON.Color4(0.6, 0.2, 0.1, 0.15),
+                new BABYLON.Color4(0.8, 0.4, 0.1, 0.1)
+            );
+
+            loadingProgress.textContent = '初始化标签系统...';
+
+            const LabelManagerInstance = LabelManager.init(scene, camera, engine);
+
+            planets.forEach((planet, index) => {
+                const label = LabelManagerInstance.addLabel(planet, {
+                    text: planet.name,
+                    showDistance: false
+                });
+
+                LabelManagerInstance.setStarMapClickHandler(planet, (mesh) => {
+                    if (isCruising()) {
+                        stopCruise();
+                        updateCruiseStatus();
+                    }
+                    focusOnMesh(mesh);
+                });
+            });
+
+            loadingProgress.textContent = '设置交互...';
+
+            SceneSetup.onPick((mesh, pickResult) => {
+                if (mesh && mesh._isPlanet && mesh._info) {
+                    if (isCruising()) {
+                        stopCruise();
+                        updateCruiseStatus();
+                    }
+
+                    LabelManagerInstance.showInfo(mesh, (targetMesh) => {
+                        focusOnMesh(targetMesh);
+                    });
+
+                    focusOnMesh(mesh);
+                } else {
+                    LabelManagerInstance.hideInfo();
+                }
+            });
+
+            SceneSetup.onHover((mesh, isHovering) => {
+                if (isHovering && mesh && mesh._isPlanet) {
+                    tooltip.textContent = `🔭 ${mesh.name} - 点击查看详情`;
+                    tooltip.classList.add('visible');
+
+                    const screenPos = BABYLON.Vector3.Project(
+                        mesh.position,
+                        BABYLON.Matrix.Identity(),
+                        scene.getTransformMatrix(),
+                        camera.viewport.toGlobal(
+                            engine.getRenderWidth(),
+                            engine.getRenderHeight()
+                        )
+                    );
+                    tooltip.style.left = screenPos.x + 'px';
+                    tooltip.style.top = (screenPos.y - 50) + 'px';
+                } else {
+                    tooltip.classList.remove('visible');
+                }
+            });
+
+            function updateCruiseStatus() {
+                if (isCruising()) {
+                    cruiseStatus.textContent = '▶ 巡航中';
+                    cruiseStatus.style.background = 'rgba(255, 152, 0, 0.2)';
+                    cruiseStatus.style.color = '#ffb74d';
+                } else {
+                    cruiseStatus.textContent = '○ 关闭';
+                    cruiseStatus.style.background = 'rgba(158, 158, 158, 0.2)';
+                    cruiseStatus.style.color = '#9e9e9e';
+                }
+            }
+
+            function updateAnimStatus() {
+                if (isPaused()) {
+                    animStatus.textContent = '⏸ 已暂停';
+                    animStatus.style.background = 'rgba(244, 67, 54, 0.2)';
+                    animStatus.style.color = '#ef9a9a';
+                } else {
+                    animStatus.textContent = '▶ 播放中';
+                    animStatus.style.background = 'rgba(76, 175, 80, 0.2)';
+                    animStatus.style.color = '#81c784';
+                }
+            }
+
+            loadingProgress.textContent = '等待资源加载...';
+
+            Promise.all([
+                new Promise(resolve => scene.executeWhenReady(resolve)),
+                PlanetFactory.waitForAllTextures()
+            ]).then(() => {
+                loading.style.display = 'none';
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    togglePause();
+                    updateAnimStatus();
+                }
+
+                if (e.code === 'KeyC') {
+                    e.preventDefault();
+                    if (isCruising()) {
+                        stopCruise();
+                    } else {
+                        const cruiseOrder = [
+                            planets[0],
+                            planets[1],
+                            planets[2],
+                            planets[3],
+                            planets[4],
+                            planets[5],
+                            planets[6],
+                            planets[7],
+                            planets[8]
+                        ];
+                        startCruise(cruiseOrder, {
+                            stayTime: 2500,
+                            transitionSpeed: 0.02
+                        });
+                    }
+                    updateCruiseStatus();
+                }
+
+                if (e.code === 'KeyR') {
+                    e.preventDefault();
+                    if (isCruising()) {
+                        stopCruise();
+                        updateCruiseStatus();
+                    }
+                    LabelManagerInstance.hideInfo();
+                    focusOnSolarSystem();
+                }
+
+                if (e.code === 'Escape') {
+                    LabelManagerInstance.hideInfo();
+                }
+            });
+
+            engine.runRenderLoop(function() {
+                if (!isPaused()) {
+                    updateOrbits();
+
+                    planets.forEach(planet => {
+                        if (planet.rotation) {
+                            planet.rotation.y += 0.002;
+                        }
+                    });
+
+                    ParticleSystems.update();
+                }
+
+                LabelManagerInstance.updateLabels();
+                LabelManagerInstance.updateStarMap();
+
+                if (isCruising()) {
+                    const current = OrbitControl.getCurrentCruiseTarget();
+                    if (current) {
+                        LabelManagerInstance.showInfo(current, (targetMesh) => {
+                            focusOnMesh(targetMesh);
+                        });
+                    }
+                }
+
+                scene.render();
+            });
+
+            window.addEventListener('resize', function() {
+                engine.resize();
+            });
+        });
+    </script>
+</body>
+</html>
