@@ -1,0 +1,217 @@
+name: Terraform + Ansible CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '部署环境'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      action:
+        description: '执行操作'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+env:
+  AWS_REGION: us-east-1
+  TERRAFORM_VERSION: '1.7.0'
+  ANSIBLE_VERSION: '2.16.0'
+
+jobs:
+  lint-and-validate:
+    name: 代码检查与验证
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: 配置 AWS 凭证
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 初始化 Terraform
+        run: terraform init -backend=false
+
+      - name: Terraform fmt 检查
+        run: terraform fmt -check -recursive
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: 检查 Ansible playbook 语法
+        uses: ansible-community/ansible-lint-action@v6
+        with:
+          args: ansible/playbook.yml
+
+  terraform-plan:
+    name: Terraform Plan (${{ inputs.environment || 'dev' }})
+    runs-on: ubuntu-latest
+    needs: lint-and-validate
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/develop'
+    permissions:
+      contents: read
+      pull-requests: write
+    environment: ${{ inputs.environment || 'dev' }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: 配置 AWS 凭证
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 初始化 Terraform
+        run: terraform init
+
+      - name: 选择工作区
+        run: |
+          WORKSPACE="${{ inputs.environment || 'dev' }}"
+          terraform workspace new "$WORKSPACE" 2>/dev/null || true
+          terraform workspace select "$WORKSPACE"
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -out=tfplan -input=false -no-color
+
+      - name: 保存 Plan 结果
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ inputs.environment || 'dev' }}
+          path: tfplan
+          retention-days: 7
+
+  terraform-apply:
+    name: Terraform Apply (${{ inputs.environment || 'dev' }})
+    runs-on: ubuntu-latest
+    needs: terraform-plan
+    if: github.event.inputs.action == 'apply'
+    environment: ${{ inputs.environment || 'dev' }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: 配置 AWS 凭证
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 初始化 Terraform
+        run: terraform init
+
+      - name: 选择工作区
+        run: |
+          WORKSPACE="${{ inputs.environment || 'dev' }}"
+          terraform workspace select "$WORKSPACE"
+
+      - name: 下载 Plan 结果
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-${{ inputs.environment || 'dev' }}
+
+      - name: Terraform Apply
+        run: terraform apply -input=false tfplan
+
+      - name: 获取输出
+        id: output
+        run: |
+          terraform output -json > outputs.json
+          echo "ALB_DNS=$(terraform output -raw alb_dns_name)" >> $GITHUB_OUTPUT
+
+      - name: 配置 Ansible
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: ansible/playbook.yml
+          directory: ./
+          requirements: ansible/requirements.yml
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          options: |
+            -i ansible/aws_ec2.yml
+            --user ubuntu
+            -e env=${{ inputs.environment || 'dev' }}
+            --ssh-common-args='-o StrictHostKeyChecking=no'
+
+      - name: 部署总结
+        run: |
+          echo "### 部署完成 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**环境**: ${{ inputs.environment || 'dev' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**ALB 地址**: http://${{ steps.output.outputs.ALB_DNS }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Terraform 输出已保存到 outputs.json" >> $GITHUB_STEP_SUMMARY
+
+  terraform-destroy:
+    name: Terraform Destroy (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    if: github.event.inputs.action == 'destroy'
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: 配置 AWS 凭证
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 初始化 Terraform
+        run: terraform init
+
+      - name: 选择工作区
+        run: |
+          terraform workspace select ${{ inputs.environment }}
+
+      - name: 警告确认
+        run: |
+          echo "⚠️  即将销毁 ${{ inputs.environment }} 环境所有资源"
+          echo "操作不可逆，请确认"
+
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve

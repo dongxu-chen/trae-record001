@@ -1,0 +1,174 @@
+---
+- name: 配置 Web 服务器环境
+  hosts: env_dev:env_staging:env_prod
+  become: yes
+  gather_facts: yes
+  serial: 2
+
+  pre_tasks:
+    - name: 获取 EC2 实例标签
+      amazon.aws.ec2_metadata_facts:
+
+    - name: 设置环境变量
+      set_fact:
+        environment: "{{ ansible_ec2_instance_identity_document_tags.Environment | default('unknown') }}"
+        instance_id: "{{ ansible_ec2_instance_identity_document | combine(ansible_ec2_instance_identity_document_tags) }}"
+
+  tasks:
+    - name: 更新系统软件包
+      apt:
+        update_cache: yes
+        upgrade: dist
+      become: yes
+
+    - name: 安装必要的软件包
+      apt:
+        name:
+          - nginx
+          - python3-pip
+          - python3-boto3
+          - python3-botocore
+          - git
+          - curl
+          - wget
+          - htop
+          - awscli
+        state: present
+
+    - name: 启动 Nginx 服务
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: 创建网站根目录
+      file:
+        path: /var/www/html
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+    - name: 部署测试页面
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Web Server - {{ environment | upper }}</title>
+              <style>
+                  body {
+                      font-family: Arial, sans-serif;
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
+                      min-height: 100vh;
+                      margin: 0;
+                      background: linear-gradient(135deg, {{ bg_gradient[environment] | default('#667eea 0%, #764ba2 100%') }});
+                  }
+                  .container {
+                      text-align: center;
+                      background: white;
+                      padding: 40px 60px;
+                      border-radius: 15px;
+                      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+                  }
+                  h1 { color: #333; }
+                  p { color: #666; }
+                  .badge {
+                      display: inline-block;
+                      padding: 5px 15px;
+                      border-radius: 20px;
+                      font-size: 14px;
+                      margin-bottom: 15px;
+                      background: {{ badge_color[environment] | default('#667eea') }};
+                      color: white;
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="badge">{{ environment | upper }}</div>
+                  <h1>🚀 部署成功!</h1>
+                  <p>服务器已通过 Terraform + Ansible 自动部署完成</p>
+                  <p>主机名: {{ ansible_hostname }}</p>
+                  <p>实例 ID: {{ instance_id.InstanceId | default('N/A') }}</p>
+                  <p>IP 地址: {{ ansible_default_ipv4.address }}</p>
+                  <p>可用性区域: {{ ansible_ec2_placement_availability_zone | default('N/A') }}</p>
+              </div>
+          </body>
+          </html>
+      vars:
+        bg_gradient:
+          dev: '#4facfe 0%, #00f2fe 100%'
+          staging: '#f093fb 0%, #f5576c 100%'
+          prod: '#11998e 0%, #38ef7d 100%'
+        badge_color:
+          dev: '#4facfe'
+          staging: '#f5576c'
+          prod: '#11998e'
+
+    - name: 配置 Nginx 默认站点
+      copy:
+        dest: /etc/nginx/sites-available/default
+        content: |
+          server {
+              listen 80 default_server;
+              listen [::]:80 default_server;
+
+              root /var/www/html;
+              index index.html index.htm;
+
+              server_name _;
+
+              location / {
+                  try_files $uri $uri/ =404;
+              }
+
+              location /health {
+                  access_log off;
+                  return 200 'OK';
+                  add_header Content-Type text/plain;
+              }
+          }
+
+    - name: 测试 Nginx 配置
+      command: nginx -t
+      register: nginx_test
+      changed_when: false
+
+    - name: 重新加载 Nginx
+      service:
+        name: nginx
+        state: reloaded
+      when: nginx_test.rc == 0
+
+    - name: 配置防火墙
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - '22'
+        - '80'
+        - '443'
+
+    - name: 启用防火墙
+      ufw:
+        state: enabled
+        policy: allow
+
+    - name: 部署服务器信息页面
+      copy:
+        dest: /var/www/html/server-info.json
+        content: |
+          {
+            "environment": "{{ environment }}",
+            "hostname": "{{ ansible_hostname }}",
+            "instance_id": "{{ instance_id.InstanceId | default('N/A') }}",
+            "private_ip": "{{ ansible_default_ipv4.address }}",
+            "public_ip": "{{ ansible_ec2_public_ipv4 | default('N/A') }}",
+            "availability_zone": "{{ ansible_ec2_placement_availability_zone | default('N/A') }}",
+            "deployment_time": "{{ ansible_date_time.iso8601 }}"
+          }
