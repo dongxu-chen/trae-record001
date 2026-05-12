@@ -1,0 +1,15 @@
+D:\Trae\project\record001\21\bin\Debug\net6.0-windows\ImageBatchTool.exe
+D:\Trae\project\record001\21\bin\Debug\net6.0-windows\ImageBatchTool.deps.json
+D:\Trae\project\record001\21\bin\Debug\net6.0-windows\ImageBatchTool.runtimeconfig.json
+D:\Trae\project\record001\21\bin\Debug\net6.0-windows\ImageBatchTool.dll
+D:\Trae\project\record001\21\bin\Debug\net6.0-windows\ImageBatchTool.pdb
+D:\Trae\project\record001\21\obj\Debug\net6.0-windows\ImageBatchTool.GeneratedMSBuildEditorConfig.editorconfig
+D:\Trae\project\record001\21\obj\Debug\net6.0-windows\ImageBatchTool.AssemblyInfoInputs.cache
+D:\Trae\project\record001\21\obj\Debug\net6.0-windows\ImageBatchTool.AssemblyInfo.cs
+D:\Trae\project\record001\21\obj\Debug\net6.0-windows\ImageBatchTool.csproj.CoreCompileInputs.cache
+D:\Trae\project\record001\21\obj\Debug\net6.0-windows\ImageBatchTool.sourcelink.json
+D:\Trae\project\record001\21\obj\Debug\net6.0-windows\ImageBatchTool.dll
+D:\Trae\project\record001\21\obj\Debug\net6.0-windows\refint\ImageBatchTool.dll
+D:\Trae\project\record001\21\obj\Debug\net6.0-windows\ImageBatchTool.pdb
+D:\Trae\project\record001\21\obj\Debug\net6.0-windows\ImageBatchTool.genruntimeconfig.cache
+D:\Trae\project\record001\21\obj\Debug\net6.0-windows\ref\ImageBatchTool.dll
