@@ -1,0 +1,9 @@
+node_modules
+src
+dist
+index.html
+vite.config.js
+.git
+.gitignore
+README.md
+*.log
