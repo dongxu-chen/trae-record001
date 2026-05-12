@@ -1,0 +1,7 @@
+vault_common_packages:
+  - git
+  - curl
+  - wget
+  - vim
+  - htop
+  - build-essential

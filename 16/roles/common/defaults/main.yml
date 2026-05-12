@@ -1,0 +1,1 @@
+common_packages: "{{ vault_common_packages }}"

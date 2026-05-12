@@ -1,0 +1,58 @@
+---
+- name: Set JDK package name (Ubuntu/Debian)
+  set_fact:
+    java_pkg_name: "openjdk-{{ java_version }}-jdk"
+  when: ansible_os_family == "Debian"
+
+- name: Set JDK package name (CentOS/RHEL)
+  set_fact:
+    java_pkg_name: "java-{{ java_version }}-openjdk-devel"
+  when: ansible_os_family == "RedHat"
+
+- name: Install Java Development Kit (Ubuntu/Debian)
+  apt:
+    name: "{{ java_pkg_name }}"
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install Java Development Kit (CentOS/RHEL)
+  yum:
+    name: "{{ java_pkg_name }}"
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Find Java home path (Ubuntu/Debian)
+  shell: update-alternatives --list java | head -1 | sed 's|/bin/java||'
+  register: java_home_debian
+  changed_when: false
+  when: ansible_os_family == "Debian" and java_set_java_home
+
+- name: Find Java home path (CentOS/RHEL)
+  shell: alternatives --display java | grep 'link currently points' | sed 's|.*points to ||' | sed 's|/bin/java||'
+  register: java_home_redhat
+  changed_when: false
+  when: ansible_os_family == "RedHat" and java_set_java_home
+
+- name: Set JAVA_HOME environment variable globally (Ubuntu/Debian)
+  lineinfile:
+    path: /etc/environment
+    regexp: '^JAVA_HOME='
+    line: 'JAVA_HOME={{ java_home_debian.stdout }}'
+    state: present
+    create: yes
+  when: ansible_os_family == "Debian" and java_set_java_home and java_home_debian.stdout != ""
+
+- name: Set JAVA_HOME environment variable globally (CentOS/RHEL)
+  lineinfile:
+    path: /etc/environment
+    regexp: '^JAVA_HOME='
+    line: 'JAVA_HOME={{ java_home_redhat.stdout }}'
+    state: present
+    create: yes
+  when: ansible_os_family == "RedHat" and java_set_java_home and java_home_redhat.stdout != ""
+
+- name: Verify Java installation
+  command: java -version
+  register: java_version_result
+  changed_when: false
+  failed_when: "java_version | string not in java_version_result.stderr"

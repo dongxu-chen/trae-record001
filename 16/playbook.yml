@@ -1,0 +1,18 @@
+---
+- name: Configure Development Environment
+  hosts: all
+  become: true
+  gather_facts: true
+
+  roles:
+    - role: common
+      tags: [common, always]
+    
+    - role: java
+      tags: [java]
+    
+    - role: python
+      tags: [python]
+    
+    - role: nodejs
+      tags: [nodejs]

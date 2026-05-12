@@ -1,0 +1,94 @@
+---
+- name: Install pyenv build dependencies (Ubuntu/Debian)
+  apt:
+    name:
+      - git
+      - curl
+      - build-essential
+      - libssl-dev
+      - zlib1g-dev
+      - libbz2-dev
+      - libreadline-dev
+      - libsqlite3-dev
+      - wget
+      - llvm
+      - libncurses5-dev
+      - libncursesw5-dev
+      - xz-utils
+      - tk-dev
+      - libffi-dev
+      - liblzma-dev
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install pyenv build dependencies (CentOS/RHEL)
+  yum:
+    name:
+      - git
+      - curl
+      - "@Development Tools"
+      - zlib-devel
+      - bzip2
+      - bzip2-devel
+      - readline-devel
+      - sqlite
+      - sqlite-devel
+      - openssl-devel
+      - tk-devel
+      - libffi-devel
+      - xz-devel
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Check if pyenv is already installed
+  stat:
+    path: "{{ python_pyenv_root }}"
+  register: pyenv_dir
+  changed_when: false
+
+- name: Install pyenv
+  shell: |
+    curl -fsSL https://pyenv.run | bash
+  when: not pyenv_dir.stat.exists
+
+- name: Add pyenv to shell profile
+  blockinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    block: |
+      export PYENV_ROOT="$HOME/.pyenv"
+      command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+      eval "$(pyenv init -)"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - pyenv"
+    create: yes
+
+- name: Install Python versions via pyenv
+  shell: |
+    export PYENV_ROOT="{{ python_pyenv_root }}"
+    export PATH="$PYENV_ROOT/bin:$PATH"
+    pyenv install -s {{ item }}
+  loop: "{{ python_versions }}"
+  register: pyenv_install
+  changed_when: "'Installed' in pyenv_install.stdout"
+
+- name: Set global Python version
+  shell: |
+    export PYENV_ROOT="{{ python_pyenv_root }}"
+    export PATH="$PYENV_ROOT/bin:$PATH"
+    pyenv global {{ python_global_version }}
+  when: python_global_version is defined
+
+- name: Install pip packages for global Python
+  shell: |
+    export PYENV_ROOT="{{ python_pyenv_root }}"
+    export PATH="$PYENV_ROOT/bin:$PATH"
+    eval "$(pyenv init -)"
+    pip install --upgrade {{ python_pip_packages | join(' ') }}
+  when: python_pip_packages is defined and python_pip_packages | length > 0
+
+- name: Verify Python installation via pyenv
+  shell: |
+    export PYENV_ROOT="{{ python_pyenv_root }}"
+    export PATH="$PYENV_ROOT/bin:$PATH"
+    python --version
+  register: pyenv_python_version
+  changed_when: false
