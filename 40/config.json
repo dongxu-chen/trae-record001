@@ -1,0 +1,111 @@
+{
+  "general": {
+    "dry_run": false,
+    "verbose": true,
+    "repo_path": "."
+  },
+  "repositories": [
+    {
+      "name": "my-project-1",
+      "path": "path/to/project1",
+      "enabled": true,
+      "tasks": {
+        "clean_old_branches": true,
+        "remove_large_files": true,
+        "rewrite_history": false
+      }
+    },
+    {
+      "name": "my-project-2",
+      "path": "path/to/project2",
+      "enabled": true,
+      "tasks": {
+        "clean_old_branches": true,
+        "remove_large_files": true,
+        "rewrite_history": false
+      }
+    }
+  ],
+  "clean_old_branches": {
+    "days_old": 90,
+    "merge_only": true,
+    "protected_branches": [
+      "main",
+      "master",
+      "develop",
+      "dev",
+      "release/*",
+      "hotfix/*"
+    ],
+    "exclude_branches": [
+      "*-backup",
+      "archive/*"
+    ]
+  },
+  "remove_large_files": {
+    "size_threshold_mb": 10,
+    "whitelist_paths": [
+      "*.env",
+      "*.pem",
+      "*.key",
+      "secrets/",
+      "configs/*.secret.*"
+    ],
+    "allowed_extensions": [
+      ".exe",
+      ".dll",
+      ".so",
+      ".dylib",
+      ".zip",
+      ".tar.gz",
+      ".7z",
+      ".rar"
+    ],
+    "scan_directories": [
+      "."
+    ]
+  },
+  "rewrite_history": {
+    "bfg_jar_path": "bfg.jar",
+    "delete_files": [
+      "*.pyc",
+      "*.class",
+      "*.log",
+      "*.tmp",
+      "*.swp"
+    ],
+    "delete_folders": [
+      "__pycache__",
+      "node_modules",
+      "build",
+      "dist"
+    ],
+    "strip_blobs_over": "100M",
+    "replace_text": {},
+    "replace_secrets": {
+      "password": "***REDACTED***",
+      "secret": "***REDACTED***"
+    }
+  },
+  "reporting": {
+    "enabled": true,
+    "report_dir": "reports",
+    "save_format": "both",
+    "send_email": false
+  },
+  "email": {
+    "smtp_host": "smtp.example.com",
+    "smtp_port": 587,
+    "smtp_username": "your_email@example.com",
+    "smtp_password": "your_app_password",
+    "use_tls": true,
+    "use_ssl": false,
+    "sender": "git-cleanup@example.com",
+    "sender_name": "Git 仓库清理工具",
+    "recipients": [
+      "admin@example.com",
+      "dev-team@example.com"
+    ],
+    "subject_prefix": "[Git Cleanup]"
+  }
+}
