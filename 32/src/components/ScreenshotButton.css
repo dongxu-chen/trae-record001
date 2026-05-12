@@ -1,0 +1,119 @@
+.screenshot-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #6366f1, #3b82f6);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.screenshot-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+}
+
+.screenshot-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.screenshot-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.screenshot-btn.capturing {
+  animation: pulse 0.5s ease;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+}
+
+.screenshot-icon {
+  font-size: 18px;
+}
+
+.screenshot-text {
+  letter-spacing: 0.5px;
+}
+
+.screenshot-preview {
+  position: absolute;
+  top: 80px;
+  right: 20px;
+  z-index: 200;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.preview-content {
+  background: rgba(30, 30, 50, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.preview-content img {
+  max-width: 250px;
+  max-height: 180px;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.preview-message {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #4ade80;
+  font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+  .screenshot-btn {
+    top: 12px;
+    right: 12px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  
+  .screenshot-icon {
+    font-size: 16px;
+  }
+  
+  .screenshot-preview {
+    top: 65px;
+    right: 12px;
+  }
+  
+  .preview-content img {
+    max-width: 200px;
+    max-height: 140px;
+  }
+}

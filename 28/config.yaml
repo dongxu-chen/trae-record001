@@ -1,0 +1,26 @@
+alert:
+  enabled: true
+  window_seconds: 60
+  min_requests: 10
+  
+  thresholds:
+    error_rate: 5.0
+    five_hundred_rate: 1.0
+    four_hundred_rate: 20.0
+    qps_spike: 2.0
+  
+  cooldown_seconds: 300
+
+dingtalk:
+  webhook: "https://oapi.dingtalk.com/robot/send?access_token=YOUR_ACCESS_TOKEN"
+  secret: ""
+  at_mobiles: []
+  at_all: false
+
+stats:
+  top_n: 10
+  history_keep_seconds: 3600
+
+logging:
+  level: "INFO"
+  file: ""

@@ -1,0 +1,54 @@
+{
+  "total_requests": 15,
+  "total_bytes": 23680,
+  "status_codes": {
+    "200": 10,
+    "404": 2,
+    "403": 1,
+    "500": 1,
+    "301": 1
+  },
+  "ips": {
+    "192.168.1.100": 7,
+    "10.0.0.5": 3,
+    "172.16.0.20": 3,
+    "10.0.0.15": 2
+  },
+  "methods": {
+    "GET": 13,
+    "POST": 2
+  },
+  "paths": {
+    "/index.html": 1,
+    "/api/login": 1,
+    "/css/style.css": 1,
+    "/not-found": 1,
+    "/js/app.js": 1,
+    "/admin": 1,
+    "/images/logo.png": 1,
+    "/api/data": 1,
+    "/server-error": 1,
+    "/contact.html": 1,
+    "/redirect": 1,
+    "/new-location": 1,
+    "/api/submit": 1,
+    "/another-404": 1,
+    "/about.html": 1
+  },
+  "user_agents": {
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36": 7,
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)": 3,
+    "curl/7.68.0": 3,
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)": 2
+  },
+  "requests_per_hour": {
+    "14": 15
+  },
+  "requests_per_day": {
+    "2026-05-10": 15
+  },
+  "top_referers": {
+    "http://example.com/": 6,
+    "http://example.com/redirect": 1
+  }
+}

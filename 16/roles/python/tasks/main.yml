@@ -1,0 +1,8 @@
+---
+- name: Include system Python tasks
+  include_tasks: system.yml
+  when: python_install_method == "system"
+
+- name: Include pyenv tasks
+  include_tasks: pyenv.yml
+  when: python_install_method == "pyenv"

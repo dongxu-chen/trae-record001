@@ -1,0 +1,26 @@
+galaxy_info:
+  author: Development Environment Team
+  description: Common development environment setup
+  company: 
+  license: MIT
+  min_ansible_version: 2.10
+  platforms:
+    - name: Ubuntu
+      versions:
+        - 20.04
+        - 22.04
+        - 24.04
+    - name: Debian
+      versions:
+        - 11
+        - 12
+    - name: EL
+      versions:
+        - 7
+        - 8
+        - 9
+  galaxy_tags:
+    - development
+    - common
+    - tools
+dependencies: []

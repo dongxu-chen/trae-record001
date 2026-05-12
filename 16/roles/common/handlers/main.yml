@@ -1,0 +1,22 @@
+---
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+  become: true
+  when: ansible_service_mgr == "systemd"
+
+- name: Restart sshd service (Ubuntu/Debian)
+  service:
+    name: ssh
+    state: restarted
+    enabled: yes
+  become: true
+  when: ansible_os_family == "Debian"
+
+- name: Restart sshd service (CentOS/RHEL)
+  service:
+    name: sshd
+    state: restarted
+    enabled: yes
+  become: true
+  when: ansible_os_family == "RedHat"

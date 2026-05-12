@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "dgSpecHash": "26eXhRkEKDp+x391XT3BBivKVKY/44D2yGDwF0ngd57WMVErv6iFQMwCH2qOA+vE8SdD+MWiCmVTkOvXKy1VSQ==",
+  "success": true,
+  "projectFilePath": "D:\\Trae\\project\\record001\\29\\FileStorageService.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\chendongxu\\.nuget\\packages\\microsoft.aspnetcore.openapi\\8.0.2\\microsoft.aspnetcore.openapi.8.0.2.nupkg.sha512",
+    "C:\\Users\\chendongxu\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
+    "C:\\Users\\chendongxu\\.nuget\\packages\\microsoft.openapi\\1.4.3\\microsoft.openapi.1.4.3.nupkg.sha512",
+    "C:\\Users\\chendongxu\\.nuget\\packages\\swashbuckle.aspnetcore\\6.5.0\\swashbuckle.aspnetcore.6.5.0.nupkg.sha512",
+    "C:\\Users\\chendongxu\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.5.0\\swashbuckle.aspnetcore.swagger.6.5.0.nupkg.sha512",
+    "C:\\Users\\chendongxu\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.5.0\\swashbuckle.aspnetcore.swaggergen.6.5.0.nupkg.sha512",
+    "C:\\Users\\chendongxu\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\6.5.0\\swashbuckle.aspnetcore.swaggerui.6.5.0.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1603",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "FileStorageService 依赖于 Microsoft.AspNetCore.OpenApi (>= 8.0.0)，但找不到 Microsoft.AspNetCore.OpenApi 8.0.0。 已解决 Microsoft.AspNetCore.OpenApi 8.0.2 的近似最佳匹配。 ",
+      "libraryId": "Microsoft.AspNetCore.OpenApi",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
+}

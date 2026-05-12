@@ -1,0 +1,4 @@
+nodejs_version: 20
+nodejs_global_packages:
+  - yarn
+  - npm-check-updates

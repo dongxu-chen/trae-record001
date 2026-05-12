@@ -1,0 +1,10 @@
+python_install_method: pyenv
+python_pyenv_root: "{{ ansible_env.HOME }}/.pyenv"
+python_versions:
+  - "3.11.9"
+python_global_version: "3.11.9"
+python_pip_packages:
+  - pip
+  - virtualenv
+  - pytest
+  - requests

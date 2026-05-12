@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.stock.controller.MainController"
+            prefHeight="800.0" prefWidth="1400.0">
+
+    <top>
+        <HBox spacing="10" styleClass="toolbar">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <MenuBar>
+                <Menu text="文件">
+                    <MenuItem text="导出 CSV" onAction="#exportCsv" />
+                    <MenuItem text="导出 Excel" onAction="#exportExcel" />
+                    <SeparatorMenuItem />
+                    <MenuItem text="设置" onAction="#openSettings" />
+                    <SeparatorMenuItem />
+                    <MenuItem text="退出" onAction="#exitApp" />
+                </Menu>
+                <Menu text="分组">
+                    <MenuItem text="新建分组" onAction="#createNewGroup" />
+                    <MenuItem text="重命名分组" onAction="#renameGroup" />
+                    <MenuItem text="删除分组" onAction="#deleteGroup" />
+                </Menu>
+                <Menu text="工具">
+                    <MenuItem text="刷新所有" onAction="#refreshAll" />
+                    <MenuItem text="清理缓存" onAction="#clearCache" />
+                </Menu>
+            </MenuBar>
+            <Separator orientation="VERTICAL" />
+            <Label text="添加股票:" />
+            <TextField fx:id="codeInput" promptText="输入股票代码 (如 600519)" prefWidth="150" />
+            <Button fx:id="addButton" text="添加" onAction="#addStock" />
+            <Separator orientation="VERTICAL" />
+            <Label text="刷新间隔(秒):" />
+            <ComboBox fx:id="intervalCombo" prefWidth="80">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="5" />
+                        <String fx:value="10" />
+                        <String fx:value="30" />
+                        <String fx:value="60" />
+                    </FXCollections>
+                </items>
+                <value>
+                    <String fx:value="10" />
+                </value>
+            </ComboBox>
+            <Button fx:id="startButton" text="开始刷新" onAction="#toggleRefresh" />
+            <Button fx:id="refreshButton" text="立即刷新" onAction="#refreshAll" />
+            <Separator orientation="VERTICAL" />
+            <Button fx:id="wsButton" text="连接 WS" onAction="#toggleWebSocket" />
+            <Button fx:id="alertButton" text="价格提醒" onAction="#showAlertDialog" />
+            <Button fx:id="exportButton" text="导出数据" onAction="#showExportDialog" />
+        </HBox>
+    </top>
+
+    <left>
+        <VBox spacing="5" prefWidth="250">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <HBox spacing="5" alignment="CENTER_LEFT">
+                <Label text="自选股分组" style="-fx-font-weight: bold; -fx-font-size: 14;" />
+                <Pane HBox.hgrow="ALWAYS" />
+                <Button text="+" prefWidth="30" onAction="#createNewGroup" />
+            </HBox>
+            <TreeView fx:id="watchlistTree" VBox.vgrow="ALWAYS" showRoot="false" />
+            <HBox spacing="5">
+                <Button text="删除" prefWidth="60" onAction="#deleteSelectedFromTree" />
+                <Button text="重命名" prefWidth="60" onAction="#renameSelected" />
+                <Pane HBox.hgrow="ALWAYS" />
+                <Label fx:id="wsStatusLabel" text="WS: 未连接" style="-fx-font-size: 11; -fx-text-fill: gray;" />
+            </HBox>
+        </VBox>
+    </left>
+
+    <center>
+        <SplitPane dividerPositions="0.5">
+            <VBox spacing="5">
+                <padding>
+                    <Insets top="5" right="5" bottom="5" left="5"/>
+                </padding>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="股票列表" style="-fx-font-weight: bold; -fx-font-size: 14;" />
+                    <Label fx:id="groupLabel" text="(全部分组)" />
+                    <Pane HBox.hgrow="ALWAYS" />
+                    <Button fx:id="deleteButton" text="删除选中" onAction="#deleteSelected" />
+                </HBox>
+                <TableView fx:id="stockTable" VBox.vgrow="ALWAYS" style="-fx-table-cell-border-color: lightgray;">
+                    <columns>
+                        <TableColumn text="股票代码" fx:id="codeCol" prefWidth="100">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="code" />
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn text="股票名称" fx:id="nameCol" prefWidth="120">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="name" />
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn text="当前价格" fx:id="priceCol" prefWidth="100">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="price" />
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn text="涨跌额" fx:id="changeCol" prefWidth="80">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="change" />
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn text="涨跌幅(%)" fx:id="changePercentCol" prefWidth="100">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="changePercent" />
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn text="开盘价" fx:id="openCol" prefWidth="80">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="open" />
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn text="最高价" fx:id="highCol" prefWidth="80">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="high" />
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn text="最低价" fx:id="lowCol" prefWidth="80">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="low" />
+                            </cellValueFactory>
+                        </TableColumn>
+                    </columns>
+                </TableView>
+            </VBox>
+
+            <VBox spacing="10">
+                <padding>
+                    <Insets top="5" right="10" bottom="5" left="5"/>
+                </padding>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="选中股票K线图" style="-fx-font-weight: bold; -fx-font-size: 14;" />
+                    <Label fx:id="selectedStockLabel" text="未选择股票" />
+                    <Label text="K线天数:" />
+                    <ComboBox fx:id="klineDaysCombo" prefWidth="80">
+                        <items>
+                            <FXCollections fx:factory="observableArrayList">
+                                <String fx:value="20" />
+                                <String fx:value="30" />
+                                <String fx:value="60" />
+                                <String fx:value="120" />
+                            </FXCollections>
+                        </items>
+                        <value>
+                            <String fx:value="60" />
+                        </value>
+                    </ComboBox>
+                    <Button fx:id="exportKlineButton" text="导出K线" onAction="#exportKlineData" />
+                </HBox>
+                <Pane fx:id="chartPane" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-border-color: lightgray; -fx-border-width: 1;" />
+            </VBox>
+        </SplitPane>
+    </center>
+
+    <bottom>
+        <HBox>
+            <Label fx:id="statusLabel" text="就绪" styleClass="status">
+                <padding>
+                    <Insets top="5" right="10" bottom="5" left="10"/>
+                </padding>
+            </Label>
+            <Pane HBox.hgrow="ALWAYS" />
+            <Label fx:id="clockLabel" style="-fx-text-fill: gray; -fx-padding: 5 10 5 10;" />
+        </HBox>
+    </bottom>
+</BorderPane>

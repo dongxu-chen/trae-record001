@@ -1,0 +1,32 @@
+{
+  "name": "code-sandbox",
+  "version": "1.0.0",
+  "description": "在线代码沙箱 - 类似 CodePen",
+  "main": "server.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "server": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dockerode": "^3.3.5",
+    "uuid": "^9.0.0",
+    "socket.io": "^4.7.2",
+    "socket.io-client": "^4.7.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@monaco-editor/react": "^4.5.2",
+    "yjs": "^13.6.8",
+    "y-websocket": "^1.5.1",
+    "y-monaco": "^0.1.5"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^4.4.0"
+  }
+}
