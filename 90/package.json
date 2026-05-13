@@ -1,0 +1,14 @@
+{
+  "name": "lottery-wheel",
+  "version": "1.0.0",
+  "description": "A lottery wheel with Canvas frontend and Node.js backend",
+  "main": "server/lottery.js",
+  "scripts": {
+    "start": "node server/lottery.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.0"
+  }
+}

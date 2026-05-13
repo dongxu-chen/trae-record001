@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抽奖管理后台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 30px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 28px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section h2 {
+            font-size: 18px;
+            color: #444;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+            display: inline-block;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        .stat {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat .value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        .stat .label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .color-box {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            vertical-align: middle;
+            margin-right: 8px;
+            border: 1px solid #ddd;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-danger {
+            background: #E74C3C;
+            color: white;
+        }
+        .btn-success {
+            background: #27AE60;
+            color: white;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        input[type="text"], input[type="password"], input[type="number"] {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .toast.show { opacity: 1; }
+        .toast.success { background: #27AE60; }
+        .toast.error { background: #E74C3C; }
+        .toast.info { background: #3498DB; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← 返回抽奖页面</a>
+        <h1>抽奖管理后台</h1>
+
+        <div class="section">
+            <h2>概览统计</h2>
+            <div class="stats">
+                <div class="stat">
+                    <div class="value" id="totalDraws">-</div>
+                    <div class="label">总抽奖次数</div>
+                </div>
+                <div class="stat">
+                    <div class="value" id="todayDraws">-</div>
+                    <div class="label">今日抽奖</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>奖品库存</h2>
+            <table id="prizesTable">
+                <thead>
+                    <tr>
+                    <th>ID</th>
+                    <th>奖品</th>
+                    <th>概率</th>
+                    <th>总库存</th>
+                    <th>剩余</th>
+                    <th>用户限量</th>
+                    <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <div class="input-group">
+                    <input type="password" id="adminPassword" placeholder="管理员密码" style="width: 200px;">
+                    <button class="btn btn-primary" onclick="resetAll()">全部重置</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>最近中奖记录</h2>
+            <table>
+                <thead>
+                    <tr>
+                    <th>ID</th>
+                    <th>用户</th>
+                    <th>奖品</th>
+                    <th>时间</th>
+                    </tr>
+                </thead>
+                <tbody id="recordsBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="admin.js"></script>
+    <script>
+        let prizes = [];
+
+        function showToast(message, type = 'info') {
+            const el = document.getElementById('toast');
+            el.textContent = message;
+            el.className = `toast ${type} show`;
+            setTimeout(() => {
+                el.classList.remove('show');
+            }, 3000);
+        }
+
+        async function loadStats() {
+            try {
+                const data = await AdminAPI.getStats();
+                document.getElementById('totalDraws').textContent = data.totalDraws;
+                document.getElementById('todayDraws').textContent = data.todayDraws;
+                prizes = data.prizes;
+                renderPrizes();
+            } catch (e) {
+                showToast('加载统计失败: ' + e.message, 'error');
+            }
+        }
+
+        function renderPrizes() {
+            const tbody = document.querySelector('#prizesTable tbody');
+            tbody.innerHTML = prizes.map(p => `
+                <tr>
+                    <td>${p.id}</td>
+                    <td>
+                        <span class="color-box" style="background: ${p.color}"></span>
+                        ${p.name}
+                    </td>
+                    <td>${(p.probability * 100).toFixed(1)}%</td>
+                    <td>${p.total_count === -1 ? '无限' : p.total_count}</td>
+                    <td>${p.remaining_count === -1 ? '无限' : p.remaining_count}</td>
+                    <td>${p.user_max === -1 ? '不限' : p.user_max + '次/用户'}</td>
+                    <td>
+                        <button class="btn btn-success" onclick="resetSingle(${p.id})">重置</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadRecords() {
+            try {
+                const records = await AdminAPI.getRecords(30);
+                const tbody = document.getElementById('recordsBody');
+                tbody.innerHTML = records.map(r => `
+                    <tr>
+                        <td>${r.id}</td>
+                        <td>${r.user_id}</td>
+                        <td>
+                            <span class="color-box" style="background: ${r.prize_color || '#999'}"></span>
+                            ${r.prize_name}
+                        </td>
+                        <td>${r.created_at}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                showToast('加载记录失败', 'error');
+            }
+        }
+
+        function getPassword() {
+            return document.getElementById('adminPassword').value;
+        }
+
+        async function resetAll() {
+            const pwd = getPassword();
+            if (!pwd) {
+                showToast('请先输入管理员密码', 'error');
+                return;
+            }
+            try {
+                const result = await AdminAPI.resetInventory(pwd);
+                showToast(result.message, 'success');
+                loadStats();
+            } catch (e) {
+                showToast(e.message, 'error');
+            }
+        }
+
+        async function resetSingle(id) {
+            const pwd = getPassword();
+            if (!pwd) {
+                showToast('请先输入管理员密码', 'error');
+                return;
+            }
+            try {
+                const result = await AdminAPI.resetInventory(pwd, id);
+                showToast(result.message, 'success');
+                loadStats();
+            } catch (e) {
+                showToast(e.message, 'error');
+            }
+        }
+
+        loadStats();
+        loadRecords();
+        setInterval(loadRecords, 10000);
+    </script>
+</body>
+</html>

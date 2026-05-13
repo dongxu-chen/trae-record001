@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幸运大转盘</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+
+        .wheel-container {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .info {
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        .info span {
+            font-weight: bold;
+            color: #E74C3C;
+        }
+
+        .user-id {
+            margin-bottom: 20px;
+        }
+
+        .user-id label {
+            color: #666;
+            margin-right: 10px;
+        }
+
+        .user-id input {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            width: 200px;
+        }
+
+        .user-id input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .result.win {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .result.lose {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .result.info {
+            background: #cce5ff;
+            color: #004085;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>幸运大转盘</h1>
+        <div class="wheel-container">
+            <canvas id="wheelCanvas" width="500" height="500"></canvas>
+        </div>
+        <div class="info">今日剩余抽奖次数：<span id="remainingDraws">3</span></div>
+        <div class="user-id">
+            <label for="userId">用户ID：</label>
+            <input type="text" id="userId" placeholder="请输入用户ID" value="user001">
+        </div>
+        <button id="spinBtn" onclick="handleSpin()">开始抽奖</button>
+        <div id="result" class="result"></div>
+    </div>
+
+    <script src="wheel.js"></script>
+    <script src="api.js"></script>
+    <script src="history.js"></script>
+    <script>
+        let wheel = null;
+        let barrage = null;
+        let remainingDraws = 3;
+
+        async function init() {
+            try {
+                const prizes = await LotteryAPI.getPrizes();
+                wheel = new LotteryWheel('wheelCanvas', {
+                    prizes: prizes,
+                    textColor: '#333'
+                });
+                wheel.draw();
+                barrage = new WinBarrage({ apiURL: '', pollInterval: 3000 });
+            } catch (error) {
+                showResult('初始化失败: ' + error.message, 'lose');
+            }
+        }
+
+        async function handleSpin() {
+            const userId = document.getElementById('userId').value.trim() || 'anonymous';
+            const spinBtn = document.getElementById('spinBtn');
+            const resultDiv = document.getElementById('result');
+
+            if (wheel.isSpinning) return;
+
+            spinBtn.disabled = true;
+            resultDiv.style.display = 'none';
+
+            try {
+                const result = await LotteryAPI.draw(userId);
+                remainingDraws = result.remainingDraws;
+                document.getElementById('remainingDraws').textContent = remainingDraws;
+
+                wheel.spin(result.prize.index, () => {
+                    const prizeName = result.prize.name;
+                    if (prizeName === '谢谢参与') {
+                        showResult('很遗憾，' + prizeName, 'lose');
+                    } else {
+                        showResult('恭喜您获得：' + prizeName + '！', 'win');
+                    }
+                    spinBtn.disabled = false;
+                });
+            } catch (error) {
+                showResult(error.message, 'info');
+                spinBtn.disabled = false;
+            }
+        }
+
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = 'result ' + type;
+        }
+
+        init();
+    </script>
+</body>
+</html>
