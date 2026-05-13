@@ -1,0 +1,25 @@
+[package]
+name = "markdown-notes"
+version = "0.1.0"
+description = "A Markdown notes app built with Tauri"
+authors = ["You"]
+license = ""
+repository = ""
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "1.5", features = ["fs-read-dir", "fs-read-file", "fs-write-file", "fs-remove-file", "fs-create-dir", "dialog-open", "dialog-save", "path-all"] }
+dirs = "5.0"
+chrono = "0.4"
+regex = "1.10"
+fzyr = "0.1"
+
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

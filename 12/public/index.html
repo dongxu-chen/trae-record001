@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>实时协作白板</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      min-width: 400px;
+    }
+
+    .modal h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 28px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+      font-weight: 500;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .join-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .join-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .join-btn:active {
+      transform: translateY(0);
+    }
+
+    #whiteboard-app {
+      display: none;
+      width: 100%;
+      height: 100vh;
+      flex-direction: row;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: #ffffff;
+      padding: 20px;
+      overflow-y: auto;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar-section {
+      margin-bottom: 24px;
+    }
+
+    .sidebar-section h3 {
+      color: #333;
+      margin-bottom: 12px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 8px;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .tool-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 8px;
+      background: #f8f9fa;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tool-btn:hover {
+      background: #e9ecef;
+    }
+
+    .tool-btn.active {
+      background: #667eea;
+      border-color: #667eea;
+    }
+
+    .tool-btn.active .tool-icon,
+    .tool-btn.active .tool-name {
+      color: white;
+    }
+
+    .tool-icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    .tool-name {
+      font-size: 11px;
+      color: #555;
+    }
+
+    .control-group {
+      margin-bottom: 16px;
+    }
+
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      color: #555;
+      font-size: 14px;
+    }
+
+    .control-value {
+      font-weight: 600;
+      color: #667eea;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #e0e0e0;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #667eea;
+      cursor: pointer;
+    }
+
+    .color-picker-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #color-picker {
+      width: 50px;
+      height: 40px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      -webkit-appearance: none;
+    }
+
+    #color-picker::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    #color-picker::-webkit-color-swatch {
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+    }
+
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .checkbox-wrapper input {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .user-list {
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .user-item {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      margin-bottom: 6px;
+    }
+
+    .user-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .user-name {
+      font-size: 13px;
+      color: #555;
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .action-btn {
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .clear-btn {
+      background: #f8f9fa;
+      color: #dc3545;
+      border: 2px solid #dc3545;
+    }
+
+    .clear-btn:hover {
+      background: #dc3545;
+      color: white;
+    }
+
+    .leave-btn {
+      background: #f8f9fa;
+      color: #6c757d;
+      border: 2px solid #6c757d;
+    }
+
+    .leave-btn:hover {
+      background: #6c757d;
+      color: white;
+    }
+
+    .history-controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .history-btn {
+      flex: 1;
+      padding: 10px;
+      background: #f8f9fa;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .history-btn:hover:not(:disabled) {
+      background: #e9ecef;
+      border-color: #667eea;
+    }
+
+    .history-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .history-panel {
+      background: #f8f9fa;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .history-list {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-bottom: 1px solid #e0e0e0;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .history-item:hover {
+      background: #e9ecef;
+    }
+
+    .history-item.latest {
+      background: #e8f0fe;
+      border-left: 3px solid #667eea;
+    }
+
+    .history-desc {
+      color: #555;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .history-version {
+      color: #999;
+      font-size: 11px;
+      margin-left: 8px;
+    }
+
+    .history-empty {
+      padding: 20px;
+      text-align: center;
+      color: #999;
+      font-size: 12px;
+    }
+
+    .history-page-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #f0f0f0;
+      font-size: 11px;
+      color: #666;
+    }
+
+    .history-page-btn {
+      padding: 4px 8px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .history-page-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .canvas-container {
+      flex: 1;
+      position: relative;
+      background: #fafafa;
+      overflow: hidden;
+    }
+
+    #whiteboard,
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      cursor: crosshair;
+    }
+
+    .remote-cursor {
+      position: fixed;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .remote-cursor svg {
+      filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.3));
+    }
+
+    .cursor-label {
+      position: absolute;
+      top: 20px;
+      left: 18px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: white;
+      font-size: 12px;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    .text-input {
+      position: fixed;
+      border: 2px solid #667eea;
+      background: white;
+      padding: 8px 12px;
+      font-family: Arial;
+      outline: none;
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      z-index: 200;
+    }
+
+    .notifications {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 500;
+    }
+
+    .notification {
+      background: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      font-size: 14px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .notification.join {
+      border-left: 4px solid #28a745;
+    }
+
+    .notification.leave {
+      border-left: 4px solid #ffc107;
+    }
+
+    .notification.fade-out {
+      animation: slideOut 0.3s ease-in forwards;
+    }
+
+    @keyframes slideIn {
+      from {
+      opacity: 0;
+      transform: translateX(100px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    }
+
+    @keyframes slideOut {
+      from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(100px);
+    }
+    }
+  </style>
+</head>
+<body>
+  <div id="join-modal" class="modal-overlay">
+    <div class="modal">
+      <h2>🎨 实时协作白板</h2>
+      <div class="form-group">
+        <label for="room-id">房间 ID</label>
+        <input type="text" id="room-id" placeholder="输入房间 ID，例如：room123" value="default">
+      </div>
+      <div class="form-group">
+        <label for="username">用户名</label>
+        <input type="text" id="username" placeholder="输入你的名字">
+      </div>
+      <button id="join-btn" class="join-btn">加入房间</button>
+    </div>
+  </div>
+
+  <div id="whiteboard-app">
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <h3>绘图工具</h3>
+        <div class="tools-grid">
+          <button class="tool-btn active" data-tool="brush">
+            <span class="tool-icon">🖌️</span>
+            <span class="tool-name">画笔</span>
+          </button>
+          <button class="tool-btn" data-tool="eraser">
+            <span class="tool-icon">🧹</span>
+            <span class="tool-name">橡皮擦</span>
+          </button>
+          <button class="tool-btn" data-tool="rectangle">
+            <span class="tool-icon">⬜</span>
+            <span class="tool-name">矩形</span>
+          </button>
+          <button class="tool-btn" data-tool="line">
+            <span class="tool-icon">📏</span>
+            <span class="tool-name">直线</span>
+          </button>
+          <button class="tool-btn" data-tool="circle">
+            <span class="tool-icon">⭕</span>
+            <span class="tool-name">圆形</span>
+          </button>
+          <button class="tool-btn" data-tool="text">
+            <span class="tool-icon">📝</span>
+            <span class="tool-name">文本</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>颜色设置</h3>
+        <div class="color-picker-wrapper control-group">
+          <label class="control-label">颜色</label>
+          <input type="color" id="color-picker" value="#000000">
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>画笔大小</h3>
+        <div class="control-group">
+          <div class="control-label">
+            <span>画笔粗细</span>
+            <span id="brush-size-value">3</span>
+          </div>
+          <input type="range" id="brush-size" min="1" max="50" value="3">
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>橡皮擦大小</h3>
+        <div class="control-group">
+          <div class="control-label">
+            <span>橡皮擦大小</span>
+            <span id="eraser-size-value">20</span>
+          </div>
+          <input type="range" id="eraser-size" min="5" max="100" value="20">
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>文本设置</h3>
+        <div class="control-group">
+          <div class="control-label">
+            <span>字体大小</span>
+            <span id="font-size-value">16</span>
+          </div>
+          <input type="range" id="font-size" min="12" max="72" value="16">
+        </div>
+        <div class="checkbox-wrapper control-group">
+          <input type="checkbox" id="fill-shapes">
+          <label for="fill-shapes">填充图形</label>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>历史记录</h3>
+        <div class="history-controls">
+          <button id="undo-btn" class="history-btn" disabled>↩️ 撤销</button>
+          <button id="redo-btn" class="history-btn" disabled>↪️ 重做</button>
+        </div>
+        <div class="history-panel">
+          <div id="history-list" class="history-list">
+            <div class="history-empty">暂无历史记录</div>
+          </div>
+          <div class="history-page-controls">
+            <button id="history-prev-page" class="history-page-btn">◀ 上一页</button>
+            <span id="history-page-info">第 1/1 页</span>
+            <button id="history-next-page" class="history-page-btn">下一页 ▶</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>在线用户</h3>
+        <div id="user-list" class="user-list">
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="clear-btn" class="action-btn clear-btn">🗑️ 清空画布</button>
+        <button id="leave-btn" class="action-btn leave-btn">🚪 离开房间</button>
+      </div>
+    </div>
+
+    <div class="canvas-container">
+      <canvas id="whiteboard"></canvas>
+      <canvas id="overlay"></canvas>
+    </div>
+  </div>
+
+  <div id="notifications" class="notifications"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="message.js"></script>
+  <script src="history.js"></script>
+  <script src="tools.js"></script>
+  <script src="client.js"></script>
+</body>
+</html>
