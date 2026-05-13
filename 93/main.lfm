@@ -1,0 +1,361 @@
+object MainForm: TMainForm
+  Left = 0
+  Height = 750
+  Top = 0
+  Width = 1200
+  Caption = 'SQLite Database Frontend'
+  ClientHeight = 750
+  ClientWidth = 1200
+  Color = clBtnFace
+  Font.Color = clWindowText
+  Font.Height = -12
+  Font.Name = 'Microsoft YaHei UI'
+  Font.Style = []
+  OnClose = FormClose
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  LCLVersion = '2.2.6.0'
+  object pnlTop: TPanel
+    Left = 0
+    Height = 80
+    Top = 0
+    Width = 1200
+    Align = alTop
+    BevelOuter = bvNone
+    Caption = 'pnlTop'
+    ClientHeight = 80
+    ClientWidth = 1200
+    Color = clBtnFace
+    ParentBackground = False
+    TabOrder = 0
+    object gbConnection: TGroupBox
+      Left = 8
+      Height = 66
+      Top = 8
+      Width = 380
+      Caption = '数据库连接'
+      ClientHeight = 48
+      ClientWidth = 376
+      TabOrder = 0
+      object btnConnect: TBitBtn
+        Left = 8
+        Height = 32
+        Top = 8
+        Width = 90
+        Caption = '连接数据库'
+        OnClick = btnConnectClick
+        TabOrder = 0
+      end
+      object btnDisconnect: TBitBtn
+        Left = 104
+        Height = 32
+        Top = 8
+        Width = 90
+        Caption = '断开连接'
+        OnClick = btnDisconnectClick
+        TabOrder = 1
+      end
+      object btnSaveBookmark: TBitBtn
+        Left = 208
+        Height = 32
+        Top = 8
+        Width = 90
+        Caption = '保存书签'
+        OnClick = btnSaveBookmarkClick
+        TabOrder = 2
+      end
+      object lblStatus: TLabel
+        Left = 300
+        Height = 16
+        Top = 16
+        Width = 66
+        Caption = '未连接'
+        Font.Color = clRed
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+    end
+    object lblDBPath: TLabel
+      Left = 396
+      Height = 16
+      Top = 24
+      Width = 100
+      Caption = '数据库: 未连接'
+    end
+  end
+  object pnlMain: TPanel
+    Left = 0
+    Height = 618
+    Top = 80
+    Width = 1200
+    Align = alClient
+    BevelOuter = bvNone
+    Caption = 'pnlMain'
+    ClientHeight = 618
+    ClientWidth = 1200
+    Color = clBtnFace
+    ParentBackground = False
+    TabOrder = 1
+    object pnlRight: TPanel
+      Left = 0
+      Height = 618
+      Top = 0
+      Width = 200
+      Align = alLeft
+      BevelOuter = bvNone
+      Caption = 'pnlRight'
+      ClientHeight = 618
+      ClientWidth = 200
+      Color = clBtnFace
+      ParentBackground = False
+      TabOrder = 0
+      object lblTables: TLabel
+        Left = 8
+        Height = 16
+        Top = 8
+        Width = 36
+        Caption = '表列表'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object btnRefreshTables: TBitBtn
+        Left = 8
+        Height = 28
+        Top = 28
+        Width = 184
+        Caption = '刷新表列表'
+        OnClick = btnRefreshTablesClick
+        TabOrder = 0
+      end
+      object lbTables: TListBox
+        Left = 8
+        Height = 260
+        Top = 60
+        Width = 184
+        Anchors = [akTop, akLeft, akRight]
+        ItemHeight = 0
+        OnDblClick = lbTablesDblClick
+        TabOrder = 1
+      end
+      object lblBookmarks: TLabel
+        Left = 8
+        Height = 16
+        Top = 330
+        Width = 48
+        Caption = '常用查询'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object lbBookmarks: TListBox
+        Left = 8
+        Height = 200
+        Top = 350
+        Width = 184
+        Anchors = [akTop, akLeft, akRight, akBottom]
+        ItemHeight = 0
+        OnDblClick = lbBookmarksDblClick
+        TabOrder = 2
+      end
+    end
+    object pnlSplit: TSplitter
+      Left = 200
+      Height = 618
+      Top = 0
+      Width = 6
+      Beveled = True
+      MinSize = 100
+    end
+    object pnlCenter: TPanel
+      Left = 206
+      Height = 618
+      Top = 0
+      Width = 994
+      Align = alClient
+      BevelOuter = bvNone
+      Caption = 'pnlCenter'
+      ClientHeight = 618
+      ClientWidth = 994
+      Color = clBtnFace
+      ParentBackground = False
+      TabOrder = 2
+      object tabMain: TPageControl
+        Left = 0
+        Height = 618
+        Top = 0
+        Width = 994
+        ActivePage = tabSQL
+        Align = alClient
+        TabOrder = 0
+        object tabSQL: TTabSheet
+          Caption = 'SQL 查询'
+          ClientHeight = 590
+          ClientWidth = 986
+          object pnlSQLQuery: TPanel
+            Left = 0
+            Height = 160
+            Top = 0
+            Width = 986
+            Align = alTop
+            BevelOuter = bvNone
+            Caption = 'pnlSQLQuery'
+            ClientHeight = 160
+            ClientWidth = 986
+            Color = clBtnFace
+            ParentBackground = False
+            TabOrder = 0
+            object gbQuery: TGroupBox
+              Left = 8
+              Height = 152
+              Top = 4
+              Width = 970
+              Anchors = [akTop, akLeft, akRight, akBottom]
+              Caption = 'SQL 查询'
+              ClientHeight = 134
+              ClientWidth = 966
+              TabOrder = 0
+              object mmoQuery: TMemo
+                Left = 8
+                Height = 90
+                Top = 8
+                Width = 850
+                Anchors = [akTop, akLeft, akRight, akBottom]
+                Font.Name = 'Consolas'
+                Lines.Strings = (
+                  'SELECT * FROM '
+                )
+                ScrollBars = ssBoth
+                TabOrder = 0
+                WordWrap = False
+              end
+              object btnExecute: TBitBtn
+                Left = 866
+                Height = 32
+                Top = 8
+                Width = 94
+                Anchors = [akTop, akRight]
+                Caption = '执行查询'
+                OnClick = btnExecuteClick
+                TabOrder = 1
+              end
+              object btnExportCSV: TBitBtn
+                Left = 866
+                Height = 32
+                Top = 46
+                Width = 94
+                Anchors = [akTop, akRight]
+                Caption = '导出 CSV'
+                OnClick = btnExportCSVClick
+                TabOrder = 2
+              end
+              object btnSaveChanges: TBitBtn
+                Left = 866
+                Height = 32
+                Top = 84
+                Width = 94
+                Anchors = [akTop, akRight]
+                Caption = '保存更改'
+                OnClick = btnSaveChangesClick
+                TabOrder = 3
+              end
+              object lblRecordCount: TLabel
+                Left = 8
+                Height = 16
+                Top = 104
+                Width = 56
+                Caption = '记录数: 0'
+              end
+            end
+          end
+          object pnlSQLResults: TPanel
+            Left = 0
+            Height = 430
+            Top = 160
+            Width = 986
+            Align = alClient
+            BevelOuter = bvNone
+            Caption = 'pnlSQLResults'
+            ClientHeight = 430
+            ClientWidth = 986
+            Color = clBtnFace
+            ParentBackground = False
+            TabOrder = 1
+            object gbResults: TGroupBox
+              Left = 8
+              Height = 418
+              Top = 4
+              Width = 970
+              Anchors = [akTop, akLeft, akRight, akBottom]
+              Caption = '查询结果'
+              ClientHeight = 400
+              ClientWidth = 966
+              TabOrder = 0
+              object dbgResults: TDBGrid
+                Left = 8
+                Height = 384
+                Top = 8
+                Width = 950
+                Anchors = [akTop, akLeft, akRight, akBottom]
+                Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack]
+                TabOrder = 0
+                TitleFont.Color = clWindowText
+                TitleFont.Height = -12
+                TitleFont.Name = 'Microsoft YaHei UI'
+                TitleFont.Style = []
+              end
+            end
+          end
+        end
+        object tabQueryBuilder: TTabSheet
+          Caption = '查询构建器'
+          ClientHeight = 590
+          ClientWidth = 986
+        end
+        object tabERDiagram: TTabSheet
+          Caption = 'ER 图'
+          ClientHeight = 590
+          ClientWidth = 986
+          object btnRefreshER: TButton
+            Left = 8
+            Height = 28
+            Top = 8
+            Width = 100
+            Caption = '刷新 ER 图'
+            OnClick = btnRefreshERClick
+            TabOrder = 0
+          end
+        end
+      end
+    end
+  end
+  object sbStatus: TStatusBar
+    Left = 0
+    Height = 22
+    Top = 728
+    Width = 1200
+    Align = alBottom
+    SimplePanel = True
+    SimpleText = '就绪'
+    Panels = <>
+  end
+  object dlgOpenDB: TOpenDialog
+    Filter = 'SQLite 数据库 (*.db;*.sqlite;*.db3)|*.db;*.sqlite;*.db3|所有文件 (*.*)|*.*'
+    DefaultExt = 'db'
+    Title = '选择 SQLite 数据库文件'
+    Left = 1120
+    Top = 8
+  end
+  object dlgSaveCSV: TSaveDialog
+    Filter = 'CSV 文件 (*.csv)|*.csv|所有文件 (*.*)|*.*'
+    DefaultExt = 'csv'
+    Title = '导出为 CSV 文件'
+    Left = 1120
+    Top = 40
+  end
+  object dlgSaveBookmark: TSaveDialog
+    Filter = 'SQL 文件 (*.sql)|*.sql|所有文件 (*.*)|*.*'
+    DefaultExt = 'sql'
+    Title = '保存查询书签'
+    Left = 1120
+    Top = 72
+  end
+end
