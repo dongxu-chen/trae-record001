@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebRTC 屏幕共享 + 白板</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 12px 20px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    header .brand {
+      font-weight: 700;
+      font-size: 18px;
+      margin-right: 8px;
+      color: #38bdf8;
+    }
+    header input, header button, header .toggle {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 14px;
+      outline: none;
+    }
+    header button {
+      cursor: pointer;
+      background: #0ea5e9;
+      border-color: #0ea5e9;
+      color: white;
+      font-weight: 600;
+    }
+    header button.danger { background: #ef4444; border-color: #ef4444; }
+    header button.success { background: #22c55e; border-color: #22c55e; }
+    header button.ghost { background: transparent; border-color: #475569; color: #e2e8f0; font-weight: 500; }
+    header button:disabled { opacity: 0.5; cursor: not-allowed; }
+    header input::placeholder { color: #94a3b8; }
+    header .spacer { flex: 1; min-width: 8px; }
+    header .permissionBox {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    header .permissionBox.hidden { display: none; }
+    header .toggle {
+      cursor: pointer;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    header .toggle.enabled { background: #22c55e; border-color: #22c55e; }
+    header .toggle.disabled { background: #334155; border-color: #475569; }
+    main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+    #mainStage {
+      flex: 1;
+      display: flex;
+      min-width: 0;
+      min-height: 0;
+    }
+    #screenPanel, #whiteboardPanel {
+      flex: 1;
+      position: relative;
+      min-width: 0;
+      min-height: 0;
+    }
+    #whiteboardPanel { border-left: 1px solid #334155; }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+    #whiteboard {
+      position: absolute;
+      inset: 0;
+      cursor: crosshair;
+      background: #f8fafc;
+      touch-action: none;
+    }
+    #sidePanel {
+      width: 320px;
+      min-width: 280px;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid #334155;
+      background: #0f172a;
+    }
+    .panelSection {
+      display: flex;
+      flex-direction: column;
+      border-bottom: 1px solid #334155;
+    }
+    .panelSection:last-child { border-bottom: none; }
+    .panelSection .title {
+      padding: 10px 14px;
+      font-weight: 700;
+      font-size: 13px;
+      color: #94a3b8;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: #1e293b;
+    }
+    .panelSection .body {
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+    #chatMessages, #fileList {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 10px 14px;
+      word-break: break-word;
+    }
+    .chatInputRow {
+      padding: 10px 14px;
+      display: flex;
+      gap: 8px;
+      background: #1e293b;
+    }
+    .chatInputRow input {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #e2e8f0;
+      outline: none;
+    }
+    .chatInputRow button {
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #22c55e;
+      background: #22c55e;
+      color: white;
+      font-weight: 700;
+    }
+    #status {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(30,41,59,0.95);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      color: #cbd5e1;
+      border: 1px solid #475569;
+      z-index: 20;
+    }
+    @media (max-width: 960px) {
+      #sidePanel { width: 100%; border-left: none; border-top: 1px solid #334155; }
+      main { flex-direction: column; }
+      #whiteboardPanel { border-left: none; border-top: 1px solid #334155; }
+    }
+    @media (max-width: 768px) {
+      #mainStage { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">WebRTC 共享</div>
+    <input id="peerIdInput" placeholder="输入房间 ID (任意字符串)" />
+    <button id="hostBtn">发起共享</button>
+    <button id="joinBtn">加入房间</button>
+    <button id="screenBtn" disabled>开始屏幕共享</button>
+    <button id="clearBtn" class="danger">清空白板</button>
+    <button id="disconnectBtn" class="danger" disabled>断开</button>
+    <div class="spacer"></div>
+    <div id="permissionBox" class="permissionBox hidden">
+      <div class="toggle enabled" data-key="whiteboard">白板</div>
+      <div class="toggle enabled" data-key="chat">聊天</div>
+      <div class="toggle enabled" data-key="fileShare">文件</div>
+    </div>
+  </header>
+
+  <main>
+    <div id="mainStage">
+      <div id="screenPanel">
+        <video id="screenVideo" autoplay playsinline muted></video>
+      </div>
+      <div id="whiteboardPanel">
+        <canvas id="whiteboard"></canvas>
+      </div>
+    </div>
+    <aside id="sidePanel">
+      <section class="panelSection" style="flex:1;display:flex;flex-direction:column;">
+        <div class="title">聊天</div>
+        <div id="chatMessages"></div>
+        <div class="chatInputRow">
+          <input id="chatInput" placeholder="输入消息..." />
+          <button id="chatSendBtn">发送</button>
+        </div>
+      </section>
+      <section class="panelSection" style="flex:1;display:flex;flex-direction:column;">
+        <div class="title">文件共享</div>
+        <div class="body">
+          <input id="fileInput" type="file" multiple />
+        </div>
+        <div id="fileList"></div>
+      </section>
+    </aside>
+  </main>
+
+  <div id="status">等待连接...</div>
+
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="./whiteboard.js"></script>
+  <script src="./chat.js"></script>
+  <script src="./file_share.js"></script>
+  <script src="./peer.js"></script>
+  <script>
+    (function () {
+      const box = document.getElementById("permissionBox");
+      const toggles = box ? box.querySelectorAll(".toggle") : [];
+
+      function refreshPermissionUI() {
+        if (!window.rtcSession) return;
+        const isHost = window.rtcSession.isHost();
+        const perms = window.rtcSession.getPermissions();
+        if (box) {
+          box.classList.toggle("hidden", !isHost);
+        }
+        toggles.forEach((el) => {
+          const key = el.getAttribute("data-key");
+          const on = perms[key] === true;
+          el.classList.toggle("enabled", on);
+          el.classList.toggle("disabled", !on);
+        });
+      }
+
+      toggles.forEach((el) => {
+        el.addEventListener("click", () => {
+          if (!window.rtcSession || !window.rtcSession.isHost()) return;
+          const key = el.getAttribute("data-key");
+          const next = {};
+          const perms = window.rtcSession.getPermissions();
+          next[key] = !perms[key];
+          window.rtcSession.setPermissions(next);
+          refreshPermissionUI();
+        });
+      });
+
+      window.addEventListener("session:change", refreshPermissionUI);
+      window.addEventListener("permissions:change", refreshPermissionUI);
+      refreshPermissionUI();
+    })();
+  </script>
+</body>
+</html>

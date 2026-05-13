@@ -1,0 +1,13 @@
+{
+  "name": "webrtc-screen-whiteboard",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server/peer_server.js",
+    "dev": "node server/peer_server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "peer": "^1.0.2"
+  }
+}
