@@ -1,0 +1,75 @@
+cabal-version: 1.12
+
+name:           note-api
+version:        0.1.0.0
+synopsis:       A simple note API using Servant and SQLite
+description:    A RESTful API for managing notes, built with Servant and SQLite.
+category:       Web
+homepage:       https://github.com/yourusername/note-api
+license:        BSD3
+license-file:   LICENSE
+author:         Your Name
+maintainer:     your.email@example.com
+copyright:      2024 Your Name
+build-type:     Simple
+extra-source-files:
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/yourusername/note-api
+
+library
+  exposed-modules:
+      Api
+    , Handlers
+    , Models
+    , DB
+    , Share
+    , Search
+    , Auth
+  other-modules:
+      Paths_note_api
+  hs-source-dirs:
+      src
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , contravariant
+    , http-media
+    , resource-pool
+    , servant
+    , servant-server
+    , sqlite-simple
+    , text
+    , time
+    , transformers
+    , wai
+    , warp
+  default-language: Haskell2010
+
+executable note-api-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_note_api
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , contravariant
+    , http-media
+    , note-api
+    , resource-pool
+    , servant
+    , servant-server
+    , sqlite-simple
+    , text
+    , time
+    , transformers
+    , wai
+    , warp
+  default-language: Haskell2010
