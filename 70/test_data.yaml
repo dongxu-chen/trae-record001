@@ -1,0 +1,165 @@
+base_url: "https://httpbin.org"
+
+env:
+  name: "test"
+  timeout: 30
+  max_retries: 2
+
+global_variables:
+  default_user: "testuser"
+  default_password: "testpass123"
+  api_version: "v1"
+
+database:
+  enabled: false
+  type: "mysql"
+  host: "localhost"
+  port: 3306
+  user: "root"
+  password: ""
+  database: "test_db"
+
+slack:
+  enabled: false
+  webhook_url: "https://hooks.slack.com/services/XXX/XXX/XXX"
+  channel: "#test-alerts"
+  username: "API Test Bot"
+
+schedule:
+  enabled: false
+  cron: "*/5 * * * *"
+
+param_datasets:
+  - dataset_name: "user_auth"
+    params:
+      - name: "用户1"
+        username: "user1"
+        password: "pass1"
+        role: "admin"
+      - name: "用户2"
+        username: "user2"
+        password: "pass2"
+        role: "user"
+
+  - dataset_name: "search_keywords"
+    params:
+      - name: "中文关键词"
+        keyword: "测试"
+      - name: "英文关键词"
+        keyword: "hello"
+      - name: "数字关键词"
+        keyword: "123"
+
+test_cases:
+  - name: "测试 GET 请求 - 全局变量"
+    method: "GET"
+    endpoint: "/get"
+    params:
+      key1: "value1"
+      key2: "value2"
+    headers:
+      Content-Type: "application/json"
+    expected_status: 200
+    extract:
+      origin: "$.origin"
+    assertions:
+      - type: "status_code"
+        value: 200
+      - type: "json_path_contains"
+        path: "$.args"
+        value:
+          key1: "value1"
+          key2: "value2"
+      - type: "json_path_exists"
+        path: "$.origin"
+
+  - name: "测试 POST 请求 - 使用提取的变量"
+    depends_on:
+      - "测试 GET 请求 - 全局变量"
+    method: "POST"
+    endpoint: "/post"
+    data:
+      username: "${default_user}"
+      password: "${default_password}"
+      origin: "${origin}"
+    headers:
+      Content-Type: "application/json"
+    expected_status: 200
+    extract:
+      posted_username: "$.json.username"
+    assertions:
+      - type: "status_code"
+        value: 200
+      - type: "json_path_value"
+        path: "$.json.username"
+        value: "${default_user}"
+      - type: "json_path_contains"
+        path: "$.json"
+        value:
+          origin: "${origin}"
+
+  - name: "测试参数化 - 多用户登录"
+    method: "POST"
+    endpoint: "/post"
+    parametrize:
+      dataset: "user_auth"
+    data:
+      username: "${username}"
+      password: "${password}"
+      role: "${role}"
+    headers:
+      Content-Type: "application/json"
+    expected_status: 200
+    stop_on_failure: false
+    assertions:
+      - type: "status_code"
+        value: 200
+      - type: "json_path_value"
+        path: "$.json.role"
+        value: "${role}"
+
+  - name: "测试数据库校验"
+    method: "POST"
+    endpoint: "/post"
+    data:
+      action: "create_user"
+      username: "db_test_user"
+      email: "db_test@example.com"
+    headers:
+      Content-Type: "application/json"
+    expected_status: 200
+    db_checks:
+      - name: "验证用户已创建"
+        sql: "SELECT id, username, email FROM users WHERE username = 'db_test_user'"
+        assertions:
+          - type: "row_count"
+            expected: 1
+          - type: "column_value"
+            column: "email"
+            expected: "db_test@example.com"
+    assertions:
+      - type: "status_code"
+        value: 200
+
+  - name: "测试 404 响应"
+    method: "GET"
+    endpoint: "/status/404"
+    headers:
+      Content-Type: "application/json"
+    expected_status: 404
+    stop_on_failure: false
+    assertions:
+      - type: "status_code"
+        value: 404
+
+  - name: "测试响应时间"
+    method: "GET"
+    endpoint: "/delay/1"
+    headers:
+      Content-Type: "application/json"
+    expected_status: 200
+    assertions:
+      - type: "status_code"
+        value: 200
+      - type: "response_time"
+        max_ms: 5000
