@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VRM 虚拟主播换装应用 - 动作捕捉版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+        
+        #app-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #control-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            max-width: 350px;
+            max-height: 85vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        
+        #control-panel h2 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+            border-bottom: 2px solid #4a90d9;
+            padding-bottom: 8px;
+        }
+        
+        #control-panel h3 {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        
+        .control-group {
+            margin-bottom: 12px;
+        }
+        
+        .control-group input[type="file"],
+        .control-group input[type="color"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        
+        .control-group button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 5px;
+            background: #4a90d9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        .control-group button:hover {
+            background: #3a7bc8;
+        }
+        
+        .control-group button.active {
+            background: #2ecc71;
+        }
+        
+        .control-group button.active:hover {
+            background: #27ae60;
+        }
+        
+        .control-group button.danger {
+            background: #e74c3c;
+        }
+        
+        .control-group button.danger:hover {
+            background: #c0392b;
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .button-row button {
+            flex: 1;
+        }
+        
+        .material-list {
+            max-height: 120px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 5px;
+        }
+        
+        .material-item {
+            padding: 6px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+        
+        .material-item:hover {
+            background: #f0f7ff;
+        }
+        
+        .material-item.selected {
+            background: #e3f0ff;
+            border-left: 3px solid #4a90d9;
+        }
+        
+        .color-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .color-picker-container input[type="color"] {
+            width: 50px;
+            height: 35px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .recording-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #e74c3c;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .status {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            z-index: 100;
+        }
+        
+        .recording-status {
+            position: absolute;
+            bottom: 60px;
+            left: 20px;
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            z-index: 100;
+            display: none;
+        }
+        
+        .webcam-preview {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 160px;
+            height: 120px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #4a90d9;
+            z-index: 100;
+            display: none;
+        }
+        
+        .webcam-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 8px 0;
+        }
+        
+        .checkbox-container input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        
+        .checkbox-container label {
+            font-size: 13px;
+            cursor: pointer;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container"></div>
+    
+    <div id="control-panel">
+        <h2>VRM 虚拟主播控制</h2>
+        
+        <div class="control-group">
+            <h3 style="margin-top: 0; border-top: none; padding-top: 0;">模型加载</h3>
+            <input type="file" id="vrm-file-input" accept=".vrm">
+        </div>
+        
+        <div class="control-group">
+            <h3>动作捕捉</h3>
+            <button id="toggle-mocap">开启动作捕捉</button>
+            <button id="calibrate-mocap" style="display: none;">校准姿态</button>
+            
+            <div class="checkbox-container">
+                <input type="checkbox" id="apply-head-rotation" checked>
+                <label for="apply-head-rotation">启用头部跟随</label>
+            </div>
+            
+            <div class="checkbox-container">
+                <input type="checkbox" id="show-webcam">
+                <label for="show-webcam">显示摄像头</label>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <h3>表情控制</h3>
+            <button id="toggle-blink">禁用眨眼</button>
+            <button id="force-blink">强制眨眼</button>
+            <button id="toggle-talking">开始说话</button>
+            
+            <div class="button-row">
+                <button id="expr-happy">开心</button>
+                <button id="expr-angry">生气</button>
+            </div>
+            <div class="button-row">
+                <button id="expr-sad">悲伤</button>
+                <button id="expr-surprised">惊讶</button>
+            </div>
+            <button id="expr-reset">重置表情</button>
+        </div>
+        
+        <div class="control-group">
+            <h3>背景设置</h3>
+            <div class="button-row">
+                <button id="bg-default">默认</button>
+                <button id="bg-color">纯色</button>
+            </div>
+            <div class="color-picker-container" style="margin-top: 5px;">
+                <input type="color" id="bg-color-picker" value="#4a90d9">
+                <button id="apply-bg-color">应用</button>
+            </div>
+            <div style="margin-top: 8px;">
+                <input type="file" id="bg-image-input" accept="image/*" style="display: none;">
+                <button id="bg-image-btn">选择背景图片</button>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <h3>视频录制</h3>
+            <div class="button-row">
+                <button id="start-recording">开始录制</button>
+                <button id="stop-recording" class="danger" style="display: none;">停止</button>
+            </div>
+            <div class="button-row">
+                <button id="pause-recording" style="display: none;">暂停</button>
+                <button id="resume-recording" style="display: none;">继续</button>
+            </div>
+            
+            <div class="checkbox-container">
+                <input type="checkbox" id="record-audio">
+                <label for="record-audio">录制麦克风</label>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <h3>材质列表</h3>
+            <div class="material-list" id="material-list">
+                <div style="color: #999; text-align: center; padding: 20px;">
+                    请先加载 VRM 模型
+                </div>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <h3>颜色更换</h3>
+            <div class="color-picker-container">
+                <input type="color" id="color-picker" value="#ff0000">
+                <button id="apply-color">应用颜色</button>
+            </div>
+            <button id="reset-materials" style="margin-top: 5px;">重置所有材质</button>
+        </div>
+    </div>
+    
+    <div class="recording-status" id="recording-status">
+        <span class="recording-indicator"></span>
+        录制中: <span id="recording-time">00:00</span>
+    </div>
+    
+    <div class="webcam-preview" id="webcam-preview">
+        <video id="webcam-video" autoplay playsinline muted></video>
+    </div>
+    
+    <div class="status" id="status">
+        就绪 - 请加载 VRM 模型
+    </div>
+
+    <script type="module">
+        import { VTuberDressUpApp } from './src/main.js';
+
+        let app = null;
+        let selectedMaterialKey = null;
+        let isBlinkEnabled = true;
+        let isTalking = false;
+        let isMocapActive = false;
+        let recordingInterval = null;
+        let isRecordingPaused = false;
+
+        function updateStatus(text) {
+            document.getElementById('status').textContent = text;
+        }
+
+        async function init() {
+            try {
+                app = new VTuberDressUpApp('app-container');
+                updateStatus('应用已启动，请加载 VRM 模型');
+                setupEventListeners();
+            } catch (error) {
+                console.error('初始化失败:', error);
+                updateStatus('初始化失败: ' + error.message);
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('vrm-file-input').addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                try {
+                    updateStatus('正在加载 VRM 模型...');
+                    
+                    const url = URL.createObjectURL(file);
+                    await app.loadVRM(url);
+                    
+                    updateStatus('VRM 模型加载成功！');
+                    populateMaterialList();
+                    
+                } catch (error) {
+                    console.error('加载 VRM 失败:', error);
+                    updateStatus('加载失败: ' + error.message);
+                }
+            });
+
+            document.getElementById('toggle-mocap').addEventListener('click', async () => {
+                const btn = document.getElementById('toggle-mocap');
+                const calibrateBtn = document.getElementById('calibrate-mocap');
+                
+                if (!isMocapActive) {
+                    updateStatus('正在启动动作捕捉...');
+                    btn.textContent = '正在启动...';
+                    btn.disabled = true;
+                    
+                    const success = await app.startMotionCapture(true);
+                    
+                    if (success) {
+                        isMocapActive = true;
+                        btn.textContent = '关闭动作捕捉';
+                        btn.classList.add('active');
+                        btn.disabled = false;
+                        calibrateBtn.style.display = 'block';
+                        updateStatus('动作捕捉已启动');
+                    } else {
+                        btn.textContent = '开启动作捕捉';
+                        btn.disabled = false;
+                        updateStatus('动作捕捉启动失败，请检查摄像头权限');
+                    }
+                } else {
+                    app.stopMotionCapture();
+                    isMocapActive = false;
+                    btn.textContent = '开启动作捕捉';
+                    btn.classList.remove('active');
+                    calibrateBtn.style.display = 'none';
+                    document.getElementById('webcam-preview').style.display = 'none';
+                    updateStatus('动作捕捉已关闭');
+                }
+            });
+
+            document.getElementById('calibrate-mocap').addEventListener('click', () => {
+                const success = app.calibrateMotionCapture();
+                updateStatus(success ? '姿态校准完成' : '校准失败：未检测到人脸');
+            });
+
+            document.getElementById('apply-head-rotation').addEventListener('change', (e) => {
+                app.setApplyHeadRotation(e.target.checked);
+                updateStatus(e.target.checked ? '头部跟随已启用' : '头部跟随已禁用');
+            });
+
+            document.getElementById('show-webcam').addEventListener('change', (e) => {
+                const preview = document.getElementById('webcam-preview');
+                if (e.target.checked && isMocapActive) {
+                    const video = document.getElementById('webcam-video');
+                    video.srcObject = app.getMotionCapture().getVideoElement().srcObject;
+                    preview.style.display = 'block';
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+
+            document.getElementById('toggle-blink').addEventListener('click', () => {
+                isBlinkEnabled = !isBlinkEnabled;
+                app.setBlinkEnabled(isBlinkEnabled);
+                const btn = document.getElementById('toggle-blink');
+                btn.textContent = isBlinkEnabled ? '禁用眨眼' : '启用眨眼';
+                btn.classList.toggle('active', !isBlinkEnabled);
+            });
+
+            document.getElementById('force-blink').addEventListener('click', () => {
+                app.forceBlink();
+                updateStatus('已触发强制眨眼');
+            });
+
+            document.getElementById('toggle-talking').addEventListener('click', () => {
+                isTalking = !isTalking;
+                app.setTalking(isTalking);
+                const btn = document.getElementById('toggle-talking');
+                btn.textContent = isTalking ? '停止说话' : '开始说话';
+                btn.classList.toggle('active', isTalking);
+            });
+
+            document.getElementById('expr-happy').addEventListener('click', () => {
+                app.setExpression('happy', 1.0);
+                updateStatus('表情: 开心');
+            });
+
+            document.getElementById('expr-angry').addEventListener('click', () => {
+                app.setExpression('angry', 1.0);
+                updateStatus('表情: 生气');
+            });
+
+            document.getElementById('expr-sad').addEventListener('click', () => {
+                app.setExpression('sad', 1.0);
+                updateStatus('表情: 悲伤');
+            });
+
+            document.getElementById('expr-surprised').addEventListener('click', () => {
+                app.setExpression('surprised', 1.0);
+                updateStatus('表情: 惊讶');
+            });
+
+            document.getElementById('expr-reset').addEventListener('click', () => {
+                app.resetAllExpressions();
+                updateStatus('表情已重置（平滑过渡中）');
+            });
+
+            document.getElementById('bg-default').addEventListener('click', () => {
+                app.disableBackground();
+                updateStatus('背景已重置为默认');
+            });
+
+            document.getElementById('bg-color').addEventListener('click', () => {
+                const color = document.getElementById('bg-color-picker').value;
+                app.setBackgroundColor(color);
+                updateStatus('背景颜色已设置');
+            });
+
+            document.getElementById('apply-bg-color').addEventListener('click', () => {
+                const color = document.getElementById('bg-color-picker').value;
+                app.setBackgroundColor(color);
+                updateStatus('背景颜色已应用');
+            });
+
+            document.getElementById('bg-image-btn').addEventListener('click', () => {
+                document.getElementById('bg-image-input').click();
+            });
+
+            document.getElementById('bg-image-input').addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                try {
+                    const url = URL.createObjectURL(file);
+                    await app.setBackgroundImage(url);
+                    updateStatus('背景图片已设置');
+                } catch (error) {
+                    console.error('背景图片加载失败:', error);
+                    updateStatus('背景图片加载失败');
+                }
+            });
+
+            document.getElementById('start-recording').addEventListener('click', async () => {
+                const includeAudio = document.getElementById('record-audio').checked;
+                
+                updateStatus('正在初始化录制...');
+                
+                const recorder = app.getVideoRecorder();
+                
+                recorder.onStart = () => {
+                    document.getElementById('start-recording').style.display = 'none';
+                    document.getElementById('stop-recording').style.display = 'block';
+                    document.getElementById('pause-recording').style.display = 'block';
+                    document.getElementById('recording-status').style.display = 'block';
+                    
+                    let seconds = 0;
+                    recordingInterval = setInterval(() => {
+                        if (!isRecordingPaused) {
+                            seconds++;
+                            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+                            const secs = (seconds % 60).toString().padStart(2, '0');
+                            document.getElementById('recording-time').textContent = `${mins}:${secs}`;
+                        }
+                    }, 1000);
+                    
+                    updateStatus('录制已开始');
+                };
+                
+                recorder.onStop = (blob, duration) => {
+                    clearInterval(recordingInterval);
+                    document.getElementById('start-recording').style.display = 'block';
+                    document.getElementById('stop-recording').style.display = 'none';
+                    document.getElementById('pause-recording').style.display = 'none';
+                    document.getElementById('resume-recording').style.display = 'none';
+                    document.getElementById('recording-status').style.display = 'none';
+                    
+                    if (blob && blob.size > 0) {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `vtuber-${Date.now()}.webm`;
+                        link.click();
+                        URL.revokeObjectURL(url);
+                        updateStatus('录制已保存');
+                    } else {
+                        updateStatus('录制完成（无数据）');
+                    }
+                };
+                
+                const success = await app.startRecording({
+                    fps: 30,
+                    includeMicAudio: includeAudio
+                });
+                
+                if (!success) {
+                    updateStatus('录制初始化失败');
+                }
+            });
+
+            document.getElementById('stop-recording').addEventListener('click', () => {
+                app.stopRecording();
+            });
+
+            document.getElementById('pause-recording').addEventListener('click', () => {
+                app.pauseRecording();
+                isRecordingPaused = true;
+                document.getElementById('pause-recording').style.display = 'none';
+                document.getElementById('resume-recording').style.display = 'block';
+                updateStatus('录制已暂停');
+            });
+
+            document.getElementById('resume-recording').addEventListener('click', () => {
+                app.resumeRecording();
+                isRecordingPaused = false;
+                document.getElementById('pause-recording').style.display = 'block';
+                document.getElementById('resume-recording').style.display = 'none';
+                updateStatus('录制继续');
+            });
+
+            document.getElementById('apply-color').addEventListener('click', () => {
+                if (!selectedMaterialKey) {
+                    updateStatus('请先选择一个材质');
+                    return;
+                }
+                
+                const color = document.getElementById('color-picker').value;
+                app.changeMaterialColor(selectedMaterialKey, color);
+                updateStatus('颜色已应用');
+            });
+
+            document.getElementById('reset-materials').addEventListener('click', () => {
+                app.restoreAllOriginalMaterials();
+                updateStatus('所有材质已重置');
+            });
+        }
+
+        function populateMaterialList() {
+            const materials = app.getAllMaterials();
+            const list = document.getElementById('material-list');
+            list.innerHTML = '';
+
+            if (materials.length === 0) {
+                list.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">未找到材质</div>';
+                return;
+            }
+
+            materials.forEach((mat, index) => {
+                const item = document.createElement('div');
+                item.className = 'material-item';
+                item.textContent = `${index + 1}. ${mat.name || mat.meshName || '未命名'}`;
+                item.dataset.key = mat.key;
+                
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.material-item').forEach(i => i.classList.remove('selected'));
+                    item.classList.add('selected');
+                    selectedMaterialKey = mat.key;
+                    updateStatus(`已选择材质: ${mat.name || mat.meshName}`);
+                });
+                
+                list.appendChild(item);
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
