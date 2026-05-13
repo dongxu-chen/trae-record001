@@ -1,0 +1,108 @@
+{
+  "build_context": ".",
+  "dockerfile_output": "Dockerfile",
+  "templates_dir": "templates",
+  "base_image": "python:3.11-slim",
+  "workdir": "/app",
+  "env": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONUNBUFFERED": "1"
+  },
+  "expose": [8000],
+  "cmd": ["python", "app.py"],
+  "variables": {
+    "app_name": "myapp"
+  },
+  "buildx": {
+    "enabled": false,
+    "builder_name": "multiarch-builder",
+    "platforms": ["linux/amd64", "linux/arm64"]
+  },
+  "stages": [
+    {
+      "name": "builder",
+      "base_image": "python:3.11-slim",
+      "workdir": "/build",
+      "env": {
+        "PIP_NO_CACHE_DIR": "1"
+      },
+      "copy": [
+        {"src": "requirements.txt", "dest": "/build/"},
+        {"src": ".", "dest": "/build/"}
+      ],
+      "run": [
+        "pip install --user -r requirements.txt"
+      ]
+    },
+    {
+      "name": "production",
+      "base_image": "python:3.11-slim",
+      "workdir": "/app",
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "copy": [
+        {"from": "builder", "src": "/root/.local", "dest": "/root/.local"},
+        {"from": "builder", "src": "/build/", "dest": "/app/"}
+      ],
+      "expose": [8000],
+      "cmd": ["python", "app.py"]
+    }
+  ],
+  "cache": {
+    "enabled": true,
+    "dir": ".docker_cache",
+    "ttl_days": 30,
+    "max_images": 10,
+    "use_remote": false,
+    "remote_registry": ""
+  },
+  "registry": {
+    "url": "registry.example.com",
+    "username": "your-username",
+    "password": "",
+    "password_file": "",
+    "use_tls": true,
+    "insecure": false
+  },
+  "registries": [
+    {
+      "name": "production",
+      "enabled": true,
+      "url": "registry.example.com",
+      "username": "prod-user",
+      "password": "",
+      "password_file": "",
+      "use_tls": true,
+      "insecure": false
+    },
+    {
+      "name": "staging",
+      "enabled": true,
+      "url": "staging.registry.example.com",
+      "username": "staging-user",
+      "password": "",
+      "password_file": "",
+      "use_tls": true,
+      "insecure": false
+    },
+    {
+      "name": "harbor",
+      "enabled": false,
+      "url": "harbor.example.com/myproject",
+      "username": "robot$myuser",
+      "password": "",
+      "password_file": ".harbor-password",
+      "use_tls": true,
+      "insecure": false
+    }
+  ],
+  "scan": {
+    "trivy_path": "trivy",
+    "use_docker": false,
+    "offline": false,
+    "ignore_unfixed": false,
+    "ignore_file": ".trivyignore"
+  }
+}
