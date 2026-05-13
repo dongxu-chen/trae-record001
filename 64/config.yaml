@@ -1,0 +1,38 @@
+download_folder: "%USERPROFILE%/Downloads"
+history_file: "organizer_history.json"
+dry_run: false
+log_level: "INFO"
+log_file: "organizer.log"
+log_rotation:
+  enabled: true
+  max_bytes: 10485760
+  backup_count: 5
+watchdog:
+  enabled: false
+  debounce_seconds: 2
+  recursive: false
+ml_classify:
+  enabled: false
+  model: "resnet50"
+  threshold: 0.5
+  categories:
+    cat: "Animals/Cats"
+    dog: "Animals/Dogs"
+    car: "Vehicles/Cars"
+    flower: "Nature/Flowers"
+priority_rules:
+  - "name_pattern"
+  - "ml_classify"
+  - "extension"
+name_patterns:
+  "invoice*": "Documents/Invoices"
+  "report*": "Documents/Reports"
+  "screenshot*": "Images/Screenshots"
+  "backup*": "Archives/Backups"
+duplicate_strategy: "rename"
+ignore_patterns:
+  - "*.tmp"
+  - "*.temp"
+  - ".DS_Store"
+  - "Thumbs.db"
+  - "organizer_history.json"
