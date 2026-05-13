@@ -1,0 +1,74 @@
+{
+  "jokes": [
+    {
+      "id": 1,
+      "category": "编程",
+      "question": "为什么程序员总是分不清万圣节和圣诞节？",
+      "answer": "因为 Oct 31 = Dec 25（八进制31 = 十进制25）",
+      "votes": 0
+    },
+    {
+      "id": 2,
+      "category": "编程",
+      "question": "为什么程序员喜欢深色主题？",
+      "answer": "因为 light attracts bugs",
+      "votes": 0
+    },
+    {
+      "id": 3,
+      "category": "编程",
+      "question": "程序员的妻子让他去超市买东西，她说：买一瓶牛奶，如果有鸡蛋，买6个。程序员带回来什么？",
+      "answer": "6瓶牛奶",
+      "votes": 0
+    },
+    {
+      "id": 4,
+      "category": "生活",
+      "question": "什么动物最容易被贴在墙上？",
+      "answer": "海豹（海报）",
+      "votes": 0
+    },
+    {
+      "id": 5,
+      "category": "生活",
+      "question": "为什么蜜蜂嗡嗡叫？",
+      "answer": "因为它们不会唱歌",
+      "votes": 0
+    },
+    {
+      "id": 6,
+      "category": "数学",
+      "question": "为什么6怕7？",
+      "answer": "因为7吃9（7 8 9）",
+      "votes": 0
+    },
+    {
+      "id": 7,
+      "category": "数学",
+      "question": "负数为什么总是很沮丧？",
+      "answer": "因为它们总是找不到正方向",
+      "votes": 0
+    },
+    {
+      "id": 8,
+      "category": "编程",
+      "question": "SQL走进一家酒吧，看到两张表，问：我可以 JOIN 你们吗？",
+      "answer": "当然可以，只要有共同列",
+      "votes": 0
+    },
+    {
+      "id": 9,
+      "category": "生活",
+      "question": "什么东西越洗越脏？",
+      "answer": "水",
+      "votes": 0
+    },
+    {
+      "id": 10,
+      "category": "编程",
+      "question": "有多少程序员才能换一个灯泡？",
+      "answer": "一个都不需要，那是硬件问题",
+      "votes": 0
+    }
+  ]
+}
