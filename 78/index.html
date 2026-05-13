@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客评论系统示例</title>
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+    <div class="container">
+        <article class="blog-post">
+            <h1>欢迎使用 GitHub Issues 博客评论系统</h1>
+            <div class="meta">发布于 2026年5月13日 · 阅读约 2 分钟</div>
+            <div class="content">
+                <p>这是一个基于 GitHub Issues + Utterances 的无后端博客评论系统示例。</p>
+                <br>
+                <h2>功能特点</h2>
+                <ul>
+                    <li>纯前端实现，无需后端服务器</li>
+                    <li>使用 GitHub Issues 存储评论数据</li>
+                    <li>集成 Utterances 组件，支持 GitHub 登录评论</li>
+                    <li>通过 GitHub API 直接读取评论</li>
+                    <li>优雅的 GitHub 风格界面</li>
+                </ul>
+                <br>
+                <h2>如何使用</h2>
+                <ol>
+                    <li>在 <code>config.js</code> 中配置你的 GitHub 仓库信息</li>
+                    <li>确保仓库已安装 Utterances 应用</li>
+                    <li>打开 <code>index.html</code> 即可看到效果</li>
+                </ol>
+            </div>
+        </article>
+
+        <section class="comments-section">
+            <div id="utterances-container"></div>
+        </section>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="local_cache.js"></script>
+    <script src="emoji_picker.js"></script>
+    <script src="reply.js"></script>
+    <script src="comments.js"></script>
+</body>
+</html>
