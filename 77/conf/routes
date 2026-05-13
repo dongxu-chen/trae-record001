@@ -1,0 +1,21 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Subscription API
+POST    /api/subscribe               controllers.SubscribeController.subscribe
+POST    /api/unsubscribe             controllers.SubscribeController.unsubscribe
+POST    /api/unsubscribe/:token      controllers.SubscribeController.unsubscribeWithToken(token: String)
+GET     /api/subscriber/:email       controllers.SubscribeController.getSubscriber(email: String)
+GET     /api/subscribers             controllers.SubscribeController.listSubscribers(status: Option[String])
+GET     /api/subscribed/:email       controllers.SubscribeController.isSubscribed(email: String)
+GET     /api/stats                   controllers.SubscribeController.getStats
+
+# Export API
+GET     /api/export/subscribers      controllers.ExportController.exportSubscribers(status: Option[String])
+GET     /api/export/stats            controllers.ExportController.exportStats
+GET     /api/export/stats/json       controllers.ExportController.exportStatsJson
+POST    /api/stats/snapshot          controllers.ExportController.forceStatsSnapshot
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file                controllers.Assets.versioned(path="/public", file: Asset)
