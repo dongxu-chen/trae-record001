@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deck.gl 大规模点云可视化</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow: hidden;
+    }
+    
+    #container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    
+    #map {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    
+    #deckgl-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    
+    .tooltip {
+      position: absolute;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      pointer-events: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      max-width: 300px;
+    }
+    
+    .tooltip h3 {
+      margin-bottom: 8px;
+      font-size: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      padding-bottom: 6px;
+    }
+    
+    .tooltip p {
+      margin: 4px 0;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .control-panel {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      max-width: 320px;
+    }
+    
+    .control-panel h2 {
+      margin-bottom: 16px;
+      font-size: 18px;
+      color: #333;
+    }
+    
+    .control-panel .stats {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.6;
+    }
+    
+    .control-panel .stat-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+    }
+    
+    .control-panel .stat-value {
+      font-weight: 600;
+      color: #1a73e8;
+    }
+    
+    .mode-switcher {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #eee;
+    }
+    
+    .mode-switcher h3 {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    
+    .mode-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .mode-btn {
+      padding: 8px 14px;
+      border: 2px solid #e0e0e0;
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #555;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .mode-btn:hover {
+      border-color: #1a73e8;
+      color: #1a73e8;
+    }
+    
+    .mode-btn.active {
+      background: #1a73e8;
+      border-color: #1a73e8;
+      color: white;
+    }
+    
+    .mode-btn .icon {
+      font-size: 16px;
+    }
+    
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      color: white;
+    }
+    
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    
+    .loading-progress {
+      width: 200px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .loading-bar {
+      height: 100%;
+      background: #4fc3f7;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    
+    .timeline-container {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 500px;
+    }
+    
+    .timeline-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .timeline-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    
+    .timeline-btn:hover {
+      background: #f0f0f0;
+      border-color: #1a73e8;
+    }
+    
+    .timeline-btn:active {
+      background: #e0e0e0;
+    }
+    
+    .timeline-speed {
+      margin-left: 8px;
+      padding: 6px 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 13px;
+      background: white;
+      cursor: pointer;
+    }
+    
+    .timeline-slider-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .timeline-slider {
+      width: 100%;
+      height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: #e0e0e0;
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+    
+    .timeline-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      background: #1a73e8;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+    
+    .timeline-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      background: #1a73e8;
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+    
+    .timeline-time-display {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .timeline-separator {
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="map"></div>
+    <div id="deckgl-overlay"></div>
+  </div>
+  
+  <div class="control-panel">
+    <h2>🚀 大规模点云可视化</h2>
+    <div class="stats">
+      <div class="stat-item">
+        <span>数据点数:</span>
+        <span class="stat-value" id="point-count">-</span>
+      </div>
+      <div class="stat-item">
+        <span>渲染状态:</span>
+        <span class="stat-value" id="render-status">准备中</span>
+      </div>
+      <div class="stat-item">
+        <span>显示模式:</span>
+        <span class="stat-value" id="display-mode">点云</span>
+      </div>
+      <div class="stat-item">
+        <span>中心坐标:</span>
+        <span class="stat-value" id="center-coord">-</span>
+      </div>
+    </div>
+    
+    <div class="mode-switcher">
+      <h3>显示模式</h3>
+      <div class="mode-buttons">
+        <button class="mode-btn active" data-mode="points">
+          <span class="icon">⚬</span>
+          <span>点云</span>
+        </button>
+        <button class="mode-btn" data-mode="clusters">
+          <span class="icon">◉</span>
+          <span>聚类</span>
+        </button>
+        <button class="mode-btn" data-mode="heatmap">
+          <span class="icon">🔥</span>
+          <span>热力图</span>
+        </button>
+        <button class="mode-btn" data-mode="hybrid">
+          <span class="icon">🌀</span>
+          <span>混合</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="loading" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text" id="loading-text">正在加载数据...</div>
+    <div class="loading-progress">
+      <div class="loading-bar" id="loading-bar"></div>
+    </div>
+  </div>
+  
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
