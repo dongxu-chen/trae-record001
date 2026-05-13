@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "dgSpecHash": "Ej+6SURRj7yNwo61UAgwzkKFQzvHNPpPz/Wla/fl8tWHU20aIBGBng40ZyTtCQtP0XQZhgesXzDZcjbbmdYVsA==",
+  "success": false,
+  "projectFilePath": "D:\\Trae\\project\\record001\\81\\BiliLiveMonitor.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\chendongxu\\.nuget\\packages\\microsoft.data.sqlite\\9.0.0\\microsoft.data.sqlite.9.0.0.nupkg.sha512",
+    "C:\\Users\\chendongxu\\.nuget\\packages\\microsoft.data.sqlite.core\\9.0.0\\microsoft.data.sqlite.core.9.0.0.nupkg.sha512",
+    "C:\\Users\\chendongxu\\.nuget\\packages\\sqlitepclraw.bundle_e_sqlite3\\2.1.10\\sqlitepclraw.bundle_e_sqlite3.2.1.10.nupkg.sha512",
+    "C:\\Users\\chendongxu\\.nuget\\packages\\sqlitepclraw.core\\2.1.10\\sqlitepclraw.core.2.1.10.nupkg.sha512",
+    "C:\\Users\\chendongxu\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.1.10\\sqlitepclraw.lib.e_sqlite3.2.1.10.nupkg.sha512",
+    "C:\\Users\\chendongxu\\.nuget\\packages\\sqlitepclraw.provider.e_sqlite3\\2.1.10\\sqlitepclraw.provider.e_sqlite3.2.1.10.nupkg.sha512",
+    "C:\\Users\\chendongxu\\.nuget\\packages\\system.memory\\4.5.3\\system.memory.4.5.3.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1603",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "BiliLiveMonitor 依赖于 Microsoft.Data.Sqlite (>= 8.0.10)，但找不到 Microsoft.Data.Sqlite 8.0.10。 已解决 Microsoft.Data.Sqlite 9.0.0 的近似最佳匹配。 ",
+      "libraryId": "Microsoft.Data.Sqlite",
+      "targetGraphs": [
+        "net8.0-windows7.0"
+      ]
+    },
+    {
+      "code": "NU1100",
+      "level": "Error",
+      "message": "无法解析 net8.0-windows7.0 的“System.Data.SQLite (>= 1.0.118)”。 PackageSourceMapping is enabled, the following source(s) were not considered: DevExpress 23.2 Local, Microsoft Visual Studio Offline Packages.",
+      "libraryId": "System.Data.SQLite",
+      "targetGraphs": [
+        "net8.0-windows7.0"
+      ]
+    }
+  ]
+}

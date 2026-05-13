@@ -1,0 +1,15 @@
+D:\Trae\project\record001\81\obj\Debug\net8.0-windows\BiliLiveMonitor.GeneratedMSBuildEditorConfig.editorconfig
+D:\Trae\project\record001\81\obj\Debug\net8.0-windows\BiliLiveMonitor.AssemblyInfoInputs.cache
+D:\Trae\project\record001\81\obj\Debug\net8.0-windows\BiliLiveMonitor.AssemblyInfo.cs
+D:\Trae\project\record001\81\obj\Debug\net8.0-windows\BiliLiveMonitor.csproj.CoreCompileInputs.cache
+D:\Trae\project\record001\81\obj\Debug\net8.0-windows\BiliLiveMonitor.sourcelink.json
+D:\Trae\project\record001\81\bin\Debug\net8.0-windows\BiliLiveMonitor.exe
+D:\Trae\project\record001\81\bin\Debug\net8.0-windows\BiliLiveMonitor.deps.json
+D:\Trae\project\record001\81\bin\Debug\net8.0-windows\BiliLiveMonitor.runtimeconfig.json
+D:\Trae\project\record001\81\bin\Debug\net8.0-windows\BiliLiveMonitor.dll
+D:\Trae\project\record001\81\bin\Debug\net8.0-windows\BiliLiveMonitor.pdb
+D:\Trae\project\record001\81\obj\Debug\net8.0-windows\BiliLiveMonitor.dll
+D:\Trae\project\record001\81\obj\Debug\net8.0-windows\refint\BiliLiveMonitor.dll
+D:\Trae\project\record001\81\obj\Debug\net8.0-windows\BiliLiveMonitor.pdb
+D:\Trae\project\record001\81\obj\Debug\net8.0-windows\BiliLiveMonitor.genruntimeconfig.cache
+D:\Trae\project\record001\81\obj\Debug\net8.0-windows\ref\BiliLiveMonitor.dll
