@@ -1,0 +1,48 @@
+{
+  "title": "智能插座",
+  "config": {
+    "step": {
+      "user": {
+        "title": "配置智能插座",
+        "description": "请输入智能插座的名称和 IP 地址",
+        "data": {
+          "name": "设备名称",
+          "ip_address": "IP 地址"
+        }
+      },
+      "advanced": {
+        "title": "高级配置",
+        "description": "配置能耗统计和自动化选项",
+        "data": {
+          "default_power": "默认功率 (W)",
+          "voltage": "电压 (V)",
+          "max_power": "最大功率限制 (W)",
+          "poll_interval": "能耗更新间隔 (秒)"
+        }
+      }
+    },
+    "error": {
+      "already_configured": "该设备已经配置",
+      "connection_failed": "无法连接到设备",
+      "invalid_ip": "IP 地址格式无效",
+      "timeout": "连接超时",
+      "invalid_power": "功率值必须在 1-10000W 范围内",
+      "invalid_voltage": "电压值必须在 1-400V 范围内"
+    },
+    "abort": {
+      "single_instance_allowed": "只允许配置一个实例"
+    }
+  },
+  "services": {
+    "reset": {
+      "name": "重置电源",
+      "description": "通过先关闭再打开来重置智能插座",
+      "fields": {
+        "delay": {
+          "name": "延迟",
+          "description": "关闭和打开之间等待的秒数"
+        }
+      }
+    }
+  }
+}

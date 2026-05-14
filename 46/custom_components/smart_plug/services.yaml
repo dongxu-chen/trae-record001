@@ -1,0 +1,19 @@
+reset:
+  name: Reset power
+  description: Reset the smart plug by turning it off and back on.
+  target:
+    entity:
+      domain: switch
+      integration: smart_plug
+  fields:
+    delay:
+      name: Delay
+      description: Number of seconds to wait between turning off and on.
+      required: false
+      example: 2
+      selector:
+        number:
+          min: 0
+          max: 60
+          step: 1
+          unit_of_measurement: seconds
