@@ -1,0 +1,139 @@
+[gd_scene load_steps=12 format=3 uid="uid://bmain"]
+
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player_scene"]
+[ext_resource type="PackedScene" path="res://scenes/ui.tscn" id="2_ui_scene"]
+[ext_resource type="PackedScene" path="res://scenes/animal.tscn" id="3_animal_scene"]
+[ext_resource type="Script" path="res://scripts/save_game.gd" id="4_save_game"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
+size = Vector2(50, 50)
+subdivisions = Vector2(10, 10)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.4, 0.6, 0.3, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_farmland"]
+size = Vector2(1, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_farmland"]
+albedo_color = Color(0.45, 0.3, 0.2, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_farmland"]
+size = Vector3(1, 0.1, 1)
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 2
+
+[node name="Main" type="Node3D"]
+
+[node name="SaveGame" type="Node" parent="."]
+script = ExtResource("4_save_game")
+
+[node name="Environment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_main")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.25, -0.433013, 0, 0.866025, -0.5, 0.5, 0.433013, 0.75, 0, 8, 0)
+light_energy = 1.2
+shadow_enabled = true
+
+[node name="Ground" type="StaticBody3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("PlaneMesh_ground")
+material_override = SubResource("StandardMaterial3D_ground")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_farmland")
+scale = Vector3(50, 1, 50)
+
+[node name="Farmland" type="StaticBody3D" parent="."]
+groups = ["farmland"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Farmland"]
+shape = SubResource("BoxShape3D_farmland")
+position = Vector3(0, 0.05, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Farmland"]
+mesh = SubResource("PlaneMesh_farmland")
+material_override = SubResource("StandardMaterial3D_farmland")
+position = Vector3(0, 0.01, 0)
+
+[node name="Farmland2" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0)
+groups = ["farmland"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Farmland2"]
+shape = SubResource("BoxShape3D_farmland")
+position = Vector3(0, 0.05, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Farmland2"]
+mesh = SubResource("PlaneMesh_farmland")
+material_override = SubResource("StandardMaterial3D_farmland")
+position = Vector3(0, 0.01, 0)
+
+[node name="Farmland3" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+groups = ["farmland"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Farmland3"]
+shape = SubResource("BoxShape3D_farmland")
+position = Vector3(0, 0.05, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Farmland3"]
+mesh = SubResource("PlaneMesh_farmland")
+material_override = SubResource("StandardMaterial3D_farmland")
+position = Vector3(0, 0.01, 0)
+
+[node name="Farmland4" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
+groups = ["farmland"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Farmland4"]
+shape = SubResource("BoxShape3D_farmland")
+position = Vector3(0, 0.05, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Farmland4"]
+mesh = SubResource("PlaneMesh_farmland")
+material_override = SubResource("StandardMaterial3D_farmland")
+position = Vector3(0, 0.01, 0)
+
+[node name="Farmland5" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 2)
+groups = ["farmland"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Farmland5"]
+shape = SubResource("BoxShape3D_farmland")
+position = Vector3(0, 0.05, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Farmland5"]
+mesh = SubResource("PlaneMesh_farmland")
+material_override = SubResource("StandardMaterial3D_farmland")
+position = Vector3(0, 0.01, 0)
+
+[node name="Farmland6" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 2)
+groups = ["farmland"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Farmland6"]
+shape = SubResource("BoxShape3D_farmland")
+position = Vector3(0, 0.05, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Farmland6"]
+mesh = SubResource("PlaneMesh_farmland")
+material_override = SubResource("StandardMaterial3D_farmland")
+position = Vector3(0, 0.01, 0)
+
+[node name="Chicken1" parent="." instance=ExtResource("3_animal_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 3)
+
+[node name="Chicken2" parent="." instance=ExtResource("3_animal_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 4)
+
+[node name="Cow1" parent="." instance=ExtResource("3_animal_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, -3)
+
+[node name="PlayerInstance" parent="." instance=ExtResource("1_player_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1, 6)
+
+[node name="UIInstance" parent="." instance=ExtResource("2_ui_scene")]
