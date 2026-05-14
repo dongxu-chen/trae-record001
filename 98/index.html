@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR 产品展示</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        
+        #container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 100;
+        }
+        
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            text-align: center;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <div id="info">AR 产品展示系统</div>
+    <div id="instructions">请将相机对准 AR 标记</div>
+
+    <script src="https://unpkg.com/three@0.125.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.7/three.js/build/ar-threex.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.7/three.js/build/ar.js"></script>
+    <script src="https://unpkg.com/three@0.125.2/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://unpkg.com/recordrtc@5.6.2/RecordRTC.min.js"></script>
+    
+    <script src="ar_scene.js"></script>
+    <script src="product_loader.js"></script>
+    <script src="interaction.js"></script>
+    <script src="composite.js"></script>
+    <script src="recorder.js"></script>
+    <script src="light_estimation.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            arScene.init();
+            productLoader.init();
+            interaction.init();
+            composite.init();
+            recorder.init();
+            lightEstimation.init();
+        });
+    </script>
+</body>
+</html>
