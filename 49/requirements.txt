@@ -1,0 +1,5 @@
+nipype>=1.8.0
+dcm2niix>=1.0.20220720
+nibabel>=5.0.0
+numpy>=1.21.0
+scipy>=1.7.0
