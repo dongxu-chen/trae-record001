@@ -1,0 +1,23 @@
+{
+  "name": "dashboard-project",
+  "version": "1.0.0",
+  "description": "数据可视化大屏 - 前端使用 ECharts + React，后端使用 WebSocket 推送数据",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "node server/ws.js",
+    "client": "vite"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "ws": "^8.14.2",
+    "echarts": "^5.5.0",
+    "echarts-for-react": "^3.0.2",
+    "react-grid-layout": "^1.4.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "concurrently": "^8.2.2",
+    "vite": "^5.0.0"
+  }
+}
