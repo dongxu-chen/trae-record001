@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "📝 [prepare-commit-msg] 准备提交消息..."
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+
+if [ -z "$COMMIT_SOURCE" ]; then
+  echo "ℹ️  用户正在输入提交消息"
+fi
+
+echo "✅ [prepare-commit-msg] 完成"

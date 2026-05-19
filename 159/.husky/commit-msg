@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 [commit-msg] 校验提交消息格式..."
+echo "ℹ️  Husky钩子执行顺序: pre-commit → prepare-commit-msg → commit-msg"
+
+node scripts/commit-msg.js $1

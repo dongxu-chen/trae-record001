@@ -1,0 +1,27 @@
+{
+  "name": "git-commitlint",
+  "version": "1.0.0",
+  "description": "Git commit message规范检查工具",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "husky install",
+    "test": "node scripts/test.js",
+    "lint:commit": "node scripts/commit-msg.js",
+    "commit": "node scripts/interactive-commit.js",
+    "changelog": "node scripts/generate-changelog.js"
+  },
+  "keywords": [
+    "git",
+    "commit",
+    "husky",
+    "lint",
+    "changelog"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "husky": "^9.0.0",
+    "chalk": "^4.1.2",
+    "inquirer": "^8.2.6"
+  }
+}
