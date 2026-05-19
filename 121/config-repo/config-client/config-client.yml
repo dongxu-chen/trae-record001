@@ -1,0 +1,14 @@
+app:
+  name: config-client
+  version: 1.0.0
+  environment: default
+  message: Hello from Default Environment!
+  feature:
+    enable-cache: false
+    enable-log: true
+    max-connections: 50
+
+logging:
+  level:
+    com.configcenter: INFO
+    root: INFO

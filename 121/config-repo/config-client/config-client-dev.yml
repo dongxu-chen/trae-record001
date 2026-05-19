@@ -1,0 +1,27 @@
+app:
+  name: config-client
+  version: 1.0.0
+  environment: development
+  message: Hello from Development Environment!
+  feature:
+    enable-cache: true
+    enable-log: true
+    max-connections: 100
+  security:
+    api-key: ENC(3z9mG+3Z1k5jR7xL9pQ==)
+    secret-token: ENC(7xQ2z9mG+3Z1k5jR9pL==)
+
+logging:
+  level:
+    com.configcenter: DEBUG
+    root: INFO
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/dev_db
+    username: dev_user
+    password: ENC(4xR5z7mP+9Q2k3jL8pZ==)
+  redis:
+    host: localhost
+    port: 6379
+    password: ENC(2zQ5x9mG+3P1k7jR4lK==)

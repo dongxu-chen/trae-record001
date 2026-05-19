@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package com.configcenter.protocol;
+
+option java_multiple_files = true;
+option java_package = "com.configcenter.protocol";
+option java_outer_classname = "ConfigServiceProto";
+
+// 配置项消息 - 仅推送变更的KV
+message ConfigItem {
+    string key = 1;
+    string value = 2;
+    ConfigChangeType change_type = 3;
+    int64 version = 4;
+}
+
+enum ConfigChangeType {
+    ADDED = 0;
+    MODIFIED = 1;
+    DELETED = 2;
+}
+
+// 客户端信息
+message ClientInfo {
+    string client_id = 1;
+    string service_name = 2;
+    string group = 3;
+    string namespace = 4;
+    map<string, string> metadata = 5;
+    int64 timestamp = 6;
+}
+
+// 配置订阅请求
+message SubscribeRequest {
+    ClientInfo client = 1;
+    repeated string data_ids = 2;
+    repeated string groups = 3;
+    map<string, int64> known_versions = 4;
+}
+
+// 配置订阅响应 - 增量推送变更
+message SubscribeResponse {
+    string request_id = 1;
+    string data_id = 2;
+    string group = 3;
+    repeated ConfigItem changed_items = 4;
+    int64 version = 5;
+    ResponseStatus status = 6;
+    string message = 7;
+    int64 timestamp = 8;
+}
+
+enum ResponseStatus {
+    SUCCESS = 0;
+    NO_CHANGE = 1;
+    ERROR = 2;
+    UNAUTHORIZED = 3;
+}
+
+// 配置拉取请求 - 客户端主动拉取备选
+message PullConfigRequest {
+    ClientInfo client = 1;
+    string data_id = 2;
+    string group = 3;
+    int64 known_version = 4;
+    bool full_pull = 5;
+}
+
+// 配置拉取响应
+message PullConfigResponse {
+    string request_id = 1;
+    string data_id = 2;
+    string group = 3;
+    map<string, string> config_data = 4;
+    repeated ConfigItem changed_items = 5;
+    int64 version = 6;
+    ResponseStatus status = 7;
+    string message = 8;
+    int64 timestamp = 9;
+}
+
+// 心跳请求
+message HeartbeatRequest {
+    string client_id = 1;
+    int64 timestamp = 2;
+}
+
+// 心跳响应
+message HeartbeatResponse {
+    string server_id = 1;
+    int64 timestamp = 2;
+    bool accepted = 3;
+    int64 next_heartbeat_interval = 4;
+}
+
+// 配置变更事件（服务端内部使用）
+message ConfigChangeEvent {
+    string data_id = 1;
+    string group = 2;
+    string namespace = 3;
+    repeated ConfigItem changed_items = 4;
+    int64 version = 5;
+    int64 timestamp = 6;
+}
+
+// 配置服务定义
+service ConfigService {
+    // 长连接订阅 - 服务端流式推送配置变更
+    rpc Subscribe(SubscribeRequest) returns (stream SubscribeResponse) {}
+
+    // 客户端主动拉取（长连接断开时的备选方案）
+    rpc PullConfig(PullConfigRequest) returns (PullConfigResponse) {}
+
+    // 心跳保活 - 双向流式
+    rpc Heartbeat(stream HeartbeatRequest) returns (stream HeartbeatResponse) {}
+}

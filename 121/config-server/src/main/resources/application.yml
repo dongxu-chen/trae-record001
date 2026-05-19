@@ -1,0 +1,52 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: file:///${user.dir}/config-repo
+          search-paths: '{application}'
+          default-label: main
+          clone-on-start: true
+    bus:
+      id: ${spring.application.name}:${server.port}
+      enabled: true
+      trace:
+        enabled: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+
+jasypt:
+  encryptor:
+    password: ${JASYPT_ENCRYPTOR_PASSWORD:config-center-secret-key-2024}
+    algorithm: PBEWithMD5AndDES
+    iv-generator-classname: org.jasypt.iv.NoIvGenerator
+
+webhook:
+  gitlab:
+    secret: ${GITLAB_WEBHOOK_SECRET:}
+  github:
+    secret: ${GITHUB_WEBHOOK_SECRET:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: bus-refresh, refresh, health, info, env, beans
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.config: DEBUG
+    org.springframework.cloud.bus: DEBUG
+    com.configcenter: DEBUG
