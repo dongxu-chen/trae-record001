@@ -1,0 +1,44 @@
+general: {
+	json = "indented"
+	events = true
+}
+
+room-1234567890: {
+	description = "在线考试监控房间"
+	secret = "exam-room-secret-2024"
+	_pin = "1234"
+	is_private = false
+	publishers = 10000
+	bitrate = 512000
+	bitrate_cap = true
+	fir_freq = 10
+	audiocodec = "opus"
+	videocodec = "vp8,h264"
+	vp9_profile = "2"
+	h264_profile = "42e01f"
+	opus_fec = true
+	opus_dtx = false
+	video_svc = false
+	vp9_svc = false
+	allow_multiple_publishers_per_user = true
+	max_publishers_per_user = 2
+	record = true
+	rec_dir = "/usr/local/share/janus/recordings"
+	lock_record = false
+	require_pvtid = false
+	notify_joining = true
+	audiolevel_ext = true
+	audiolevel_event = true
+	audio_level_average = 25
+	videoorient_ext = true
+	playout_delay_ext = false
+}
+
+defaults: {
+	room = 1234567890
+	pin_required = false
+	defaults_publishers = 10000
+	defaults_bitrate = 512000
+	defaults_is_private = false
+	defaults_require_pvtid = false
+}
