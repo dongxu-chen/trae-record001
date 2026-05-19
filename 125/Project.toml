@@ -1,0 +1,20 @@
+name = "GridapFEM"
+uuid = "8f4e7d9c-1b2a-3c4d-5e6f-7a8b9c0d1e2f"
+authors = ["FEM Developer"]
+version = "0.1.0"
+
+[deps]
+Gridap = "56d4f2bb-5741-5ae0-8699-168479c66894"
+Gridap.FESpaces = "56d4f2bb-5741-5ae0-8699-168479c66894"
+Gridap.Geometry = "56d4f2bb-5741-5ae0-8699-168479c66894"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+
+[compat]
+julia = "1.9"
+Gridap = "0.18"
