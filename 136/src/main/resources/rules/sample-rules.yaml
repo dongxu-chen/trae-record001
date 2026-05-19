@@ -1,0 +1,112 @@
+rules:
+  - ruleCode: HIGH_AMOUNT_CHECK
+    name: 高金额交易检查
+    description: 订单金额超过阈值时增加风险分数
+    scene: PAYMENT
+    priority: 10
+    condition:
+      type: MVEL
+      expression: data.getOrDefault('orderAmount', 0) > 10000
+    action:
+      type: MVEL
+      expression: |
+        score = score + 30
+        hitRules.add('HIGH_AMOUNT_CHECK')
+    version: 1.0
+    tags: payment,amount
+
+  - ruleCode: NEW_USER_CHECK
+    name: 新用户风险检查
+    description: 新用户（注册小于7天）增加风险分数
+    scene: PAYMENT
+    priority: 20
+    condition:
+      type: MVEL
+      expression: data.getOrDefault('registerDays', 100) < 7
+    action:
+      type: MVEL
+      expression: |
+        score = score + 20
+        hitRules.add('NEW_USER_CHECK')
+    version: 1.0
+    tags: user,new
+
+  - ruleCode: DEVICE_RISK_CHECK
+    name: 设备风险检查
+    description: 可疑设备标记增加风险分数
+    scene: PAYMENT
+    priority: 15
+    condition:
+      type: MVEL
+      expression: data.getOrDefault('deviceRisk', 'LOW') == 'HIGH'
+    action:
+      type: MVEL
+      expression: |
+        score = score + 40
+        hitRules.add('DEVICE_RISK_CHECK')
+    version: 1.0
+    tags: device,risk
+
+  - ruleCode: MANY_FAILED_ATTEMPTS
+    name: 多次失败尝试检查
+    description: 24小时内失败尝试超过5次时增加风险
+    scene: PAYMENT
+    priority: 25
+    condition:
+      type: MVEL
+      expression: data.getOrDefault('failedAttempts24h', 0) > 5
+    action:
+      type: MVEL
+      expression: |
+        score = score + 35
+        hitRules.add('MANY_FAILED_ATTEMPTS')
+    version: 1.0
+    tags: attempt,failed
+
+  - ruleCode: LOGIN_DIFF_CITY
+    name: 异地登录检查
+    description: 异地登录时增加风险分数
+    scene: LOGIN
+    priority: 30
+    condition:
+      type: MVEL
+      expression: data.getOrDefault('isDifferentCity', false) == true
+    action:
+      type: MVEL
+      expression: |
+        score = score + 25
+        hitRules.add('LOGIN_DIFF_CITY')
+    version: 1.0
+    tags: login,city
+
+  - ruleCode: REJECT_DECISION
+    name: 拒绝决策
+    description: 风险分数超过80分时拒绝
+    scene: PAYMENT
+    priority: 100
+    condition:
+      type: MVEL
+      expression: score >= 80
+    action:
+      type: MVEL
+      expression: |
+        decision = 'REJECT'
+        hitRules.add('REJECT_DECISION')
+    version: 1.0
+    tags: decision,reject
+
+  - ruleCode: REVIEW_DECISION
+    name: 人工审核决策
+    description: 风险分数在50-80之间时人工审核
+    scene: PAYMENT
+    priority: 90
+    condition:
+      type: MVEL
+      expression: score >= 50 && score < 80
+    action:
+      type: MVEL
+      expression: |
+        decision = 'REVIEW'
+        hitRules.add('REVIEW_DECISION')
+    version: 1.0
+    tags: decision,review
