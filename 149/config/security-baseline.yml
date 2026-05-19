@@ -1,0 +1,178 @@
+# 安全基线配置文件
+# Security Baseline Configuration
+# 根据等保2.0三级要求制定
+
+baseline_version: "2.0.0"
+baseline_date: "2024-01-01"
+
+# ==================== 系统安全配置 ====================
+system_security:
+  # 密码策略
+  password_policy:
+    min_length: 8
+    max_days: 90
+    min_days: 1
+    warn_days: 7
+    remember_last: 5
+    complexity: true
+    
+  # 登录失败锁定策略
+  account_lockout:
+    enabled: true
+    max_attempts: 5
+    lockout_time: 300
+    
+  # SSH安全配置
+  ssh_security:
+    permit_root_login: "no"
+    password_authentication: "yes"
+    permit_empty_passwords: "no"
+    use_pam: "yes"
+    protocol: "2"
+    max_auth_tries: 3
+    client_alive_interval: 300
+    client_alive_count_max: 2
+
+# ==================== 防火墙规则 ====================
+firewall_policy:
+  required_ports:
+    - port: 22
+      protocol: tcp
+      description: SSH远程管理
+    - port: 80
+      protocol: tcp
+      description: HTTP Web服务
+    - port: 443
+      protocol: tcp
+      description: HTTPS Web服务
+      
+  deny_ports:
+    - port: 23
+      protocol: tcp
+      description: Telnet (不安全)
+    - port: 21
+      protocol: tcp
+      description: FTP (不安全)
+
+# ==================== 安全软件要求 ====================
+security_software:
+  required_packages:
+    - name: fail2ban
+      description: 暴力破解防护
+      min_version: "0.11"
+    - name: ufw
+      description: 防火墙 (Debian)
+      os_family: debian
+    - name: firewalld
+      description: 防火墙 (RHEL)
+      os_family: redhat
+    - name: auditd
+      description: 审计服务
+    - name: aide
+      description: 文件完整性检查
+
+  running_services:
+    - fail2ban
+    - auditd
+
+# ==================== 内核安全参数 ====================
+kernel_security:
+  sysctl_params:
+    - key: net.ipv4.ip_forward
+      value: 0
+      description: 禁用IP转发
+    - key: net.ipv4.conf.all.send_redirects
+      value: 0
+      description: 禁用ICMP重定向
+    - key: net.ipv4.conf.all.accept_source_route
+      value: 0
+      description: 禁用源路由
+    - key: net.ipv4.tcp_syncookies
+      value: 1
+      description: 启用SYN Cookie
+    - key: net.ipv4.conf.all.rp_filter
+      value: 1
+      description: 启用反向路径过滤
+    - key: kernel.randomize_va_space
+      value: 2
+      description: ASLR内存保护
+    - key: fs.suid_dumpable
+      value: 0
+      description: 禁用SUID核心转储
+    - key: kernel.yama.ptrace_scope
+      value: 1
+      description: Ptrace保护
+
+# ==================== 文件系统权限 ====================
+file_permissions:
+  critical_files:
+    - path: /etc/passwd
+      mode: "0644"
+      owner: root
+      group: root
+    - path: /etc/shadow
+      mode: "0000"
+      owner: root
+      group: shadow
+    - path: /etc/group
+      mode: "0644"
+      owner: root
+      group: root
+    - path: /etc/gshadow
+      mode: "0000"
+      owner: root
+      group: shadow
+    - path: /etc/ssh/sshd_config
+      mode: "0600"
+      owner: root
+      group: root
+
+# ==================== 补丁管理基线 ====================
+patch_management:
+  # 补丁安装SLA（天数）
+  patch_sla:
+    critical: 3       # 高危漏洞3天内修复
+    high: 7           # 严重漏洞7天内修复
+    medium: 15        # 中危漏洞15天内修复
+    low: 30           # 低危漏洞30天内修复
+    
+  # CVSS评分阈值
+  cvss_thresholds:
+    critical: 9.0     # >=9.0 严重
+    high: 7.0         # >=7.0 高危
+    medium: 4.0       # >=4.0 中危
+    low: 0.0          # >=0.0 低危
+    
+  # 每周自动扫描
+  auto_scan_enabled: true
+  auto_scan_day: 1     # 1=周一
+  auto_install_enabled: false
+
+# ==================== 审计日志要求 ====================
+audit_policy:
+  log_retention_days: 180
+  required_logs:
+    - /var/log/auth.log
+    - /var/log/secure
+    - /var/log/syslog
+    - /var/log/messages
+    - /var/log/audit/audit.log
+
+# ==================== 合规检查项目 ====================
+compliance_checks:
+  category:
+    authentication:
+      weight: 25
+      description: 身份认证安全
+    network:
+      weight: 20
+      description: 网络安全配置
+    filesystem:
+      weight: 15
+      description: 文件系统安全
+    services:
+      weight: 20
+      description: 服务安全配置
+    patching:
+      weight: 20
+      description: 补丁管理合规

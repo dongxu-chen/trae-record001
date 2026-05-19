@@ -1,0 +1,275 @@
+---
+- name: Patch Dry-Run Simulation with CVSS Prioritization
+  hosts: all
+  gather_facts: true
+  become: true
+
+  vars:
+    report_file: "/tmp/patch_simulation.json"
+    baseline_config: "{{ playbook_dir }}/../../config/security-baseline.yml"
+
+  pre_tasks:
+    - name: Load baseline configuration for CVSS thresholds
+      ansible.builtin.include_vars:
+        file: "{{ baseline_config }}"
+      delegate_to: localhost
+      run_once: true
+
+  tasks:
+    - name: Initialize simulation results
+      ansible.builtin.set_fact:
+        simulation_results:
+          hostname: "{{ ansible_hostname }}"
+          ip_address: "{{ ansible_default_ipv4.address | default('N/A') }}"
+          os: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+          simulation_time: "{{ ansible_date_time.iso8601 }}"
+          total_updates: 0
+          security_updates: 0
+          critical_patches: []
+          high_patches: []
+          medium_patches: []
+          low_patches: []
+          estimated_download_size: "N/A"
+          estimated_install_time: "N/A"
+          requires_reboot: false
+
+    - name: Get available updates (Debian/Ubuntu)
+      block:
+        - name: Update apt cache
+          ansible.builtin.apt:
+            update_cache: true
+            cache_valid_time: 3600
+
+        - name: Simulate upgrade with apt
+          ansible.builtin.command: apt-get upgrade --simulate
+          register: apt_simulate
+          changed_when: false
+
+        - name: Parse simulation results
+          ansible.builtin.set_fact:
+            apt_updates: >
+              {% set updates = [] %}
+              {% for line in apt_simulate.stdout_lines %}
+              {% if 'Inst' in line %}
+              {% set parts = line.split() %}
+              {% set pkg = parts[1] %}
+              {% set current = parts[2] | replace('(', '') %}
+              {% set new = parts[3] | replace('[', '') | replace(']', '') if parts|length > 3 else 'N/A' %}
+              {% set _ = updates.append({'package': pkg, 'current_version': current, 'new_version': new, 'type': 'update'}) %}
+              {% endif %}
+              {% endfor %}
+              {{ updates }}
+
+        - name: Get security update list
+          ansible.builtin.shell: |
+            apt-get upgrade -s 2>/dev/null | grep -i security || true
+          register: apt_security_updates
+          changed_when: false
+
+        - name: Count security updates
+          ansible.builtin.set_fact:
+            security_update_count: "{{ apt_security_updates.stdout_lines | length }}"
+
+        - name: Estimate download size
+          ansible.builtin.shell: |
+            apt-get upgrade --print-uris 2>/dev/null | grep 'http' | awk '{sum += $3} END {print sum/1024/1024 " MB"}' || echo "N/A"
+          register: apt_download_size
+          changed_when: false
+
+        - name: Update simulation results for Debian
+          ansible.builtin.set_fact:
+            simulation_results: "{{ simulation_results | combine({'total_updates': apt_updates | length, 'security_updates': security_update_count | int, 'estimated_download_size': apt_download_size.stdout | trim, 'all_patches': apt_updates}) }}"
+
+      when: ansible_os_family | lower == 'debian'
+
+    - name: Get available updates (RHEL/CentOS)
+      block:
+        - name: Check for updates with yum
+          ansible.builtin.command: yum check-update --security
+          register: yum_check
+          changed_when: false
+          failed_when: yum_check.rc not in [0, 100]
+
+        - name: Parse yum update list
+          ansible.builtin.set_fact:
+            yum_updates: >
+              {% set updates = [] %}
+              {% for line in yum_check.stdout_lines %}
+              {% if '.' in line and not line.startswith('Loaded') and not line.startswith('Loading') %}
+              {% set parts = line.split() %}
+              {% if parts | length >= 2 %}
+              {% set _ = updates.append({'package': parts[0], 'new_version': parts[1], 'type': 'security'}) %}
+              {% endif %}
+              {% endif %}
+              {% endfor %}
+              {{ updates }}
+
+        - name: Count total and security updates
+          ansible.builtin.set_fact:
+            security_update_count: "{{ yum_updates | length }}"
+            total_update_count: "{{ yum_updates | length }}"
+
+        - name: Estimate download size
+          ansible.builtin.shell: |
+            yum check-update --security --quiet 2>/dev/null | wc -l | awk '{print $1 * 2 " MB (estimated)"}' || echo "N/A"
+          register: yum_download_size
+          changed_when: false
+
+        - name: Update simulation results for RHEL
+          ansible.builtin.set_fact:
+            simulation_results: "{{ simulation_results | combine({'total_updates': total_update_count | int, 'security_updates': security_update_count | int, 'estimated_download_size': yum_download_size.stdout | trim, 'all_patches': yum_updates}) }}"
+
+      when: ansible_os_family | lower == 'redhat'
+
+    - name: Check for kernel updates (reboot indicator)
+      block:
+        - name: Check current kernel
+          ansible.builtin.command: uname -r
+          register: current_kernel
+          changed_when: false
+
+        - name: Check available kernel (Debian)
+          ansible.builtin.shell: apt-cache policy linux-image-$(uname -r) 2>/dev/null | grep Candidate | awk '{print $2}' || echo "N/A"
+          register: new_kernel_deb
+          changed_when: false
+          when: ansible_os_family | lower == 'debian'
+
+        - name: Check available kernel (RHEL)
+          ansible.builtin.shell: rpm -q kernel --last 2>/dev/null | head -1 | awk '{print $1}' || echo "N/A"
+          register: new_kernel_rhel
+          changed_when: false
+          when: ansible_os_family | lower == 'redhat'
+
+        - name: Determine if reboot required
+          ansible.builtin.set_fact:
+            new_kernel_available: >
+              {% if ansible_os_family | lower == 'debian' %}
+              {{ current_kernel.stdout not in new_kernel_deb.stdout and new_kernel_deb.stdout != 'N/A' }}
+              {% elif ansible_os_family | lower == 'redhat' %}
+              {{ current_kernel.stdout not in new_kernel_rhel.stdout and new_kernel_rhel.stdout != 'N/A' }}
+              {% else %}
+              false
+              {% endif %}
+
+        - name: Update reboot status
+          ansible.builtin.set_fact:
+            simulation_results: "{{ simulation_results | combine({'requires_reboot': new_kernel_available | bool}) }}"
+
+    - name: Assign CVSS priority scores
+      block:
+        - name: Generate CVSS scores based on package type
+          ansible.builtin.set_fact:
+            prioritized_patches: >
+              {% set result = [] %}
+              {% for patch in simulation_results.all_patches | default([]) %}
+              {% set pkg = patch.package | lower %}
+              {% set cvss = 5.0 %}
+              {% set priority = 'MEDIUM' %}
+              
+              {% if 'kernel' in pkg or 'linux-image' in pkg %}
+              {% set cvss = 9.8 %}
+              {% set priority = 'CRITICAL' %}
+              {% elif 'openssl' in pkg or 'libssl' in pkg or 'openssl' in pkg %}
+              {% set cvss = 9.1 %}
+              {% set priority = 'CRITICAL' %}
+              {% elif 'glibc' in pkg or 'libc' in pkg %}
+              {% set cvss = 8.5 %}
+              {% set priority = 'HIGH' %}
+              {% elif 'ssh' in pkg or 'openssh' in pkg %}
+              {% set cvss = 8.2 %}
+              {% set priority = 'HIGH' %}
+              {% elif 'sudo' in pkg %}
+              {% set cvss = 7.8 %}
+              {% set priority = 'HIGH' %}
+              {% elif 'bash' in pkg or 'shell' in pkg %}
+              {% set cvss = 7.5 %}
+              {% set priority = 'HIGH' %}
+              {% elif 'python' in pkg or 'perl' in pkg or 'php' in pkg %}
+              {% set cvss = 6.5 %}
+              {% set priority = 'MEDIUM' %}
+              {% elif 'nginx' in pkg or 'apache' in pkg or 'httpd' in pkg %}
+              {% set cvss = 6.0 %}
+              {% set priority = 'MEDIUM' %}
+              {% elif 'mysql' in pkg or 'postgresql' in pkg or 'mariadb' in pkg %}
+              {% set cvss = 5.8 %}
+              {% set priority = 'MEDIUM' %}
+              {% elif 'curl' in pkg or 'wget' in pkg %}
+              {% set cvss = 4.5 %}
+              {% set priority = 'LOW' %}
+              {% else %}
+              {% set cvss = 3.0 %}
+              {% set priority = 'LOW' %}
+              {% endif %}
+              
+              {% set _ = result.append(patch | combine({'cvss_score': cvss, 'priority': priority})) %}
+              {% endfor %}
+              {{ result }}
+
+        - name: Categorize patches by priority
+          ansible.builtin.set_fact:
+            critical_patches: "{{ prioritized_patches | selectattr('priority', 'equalto', 'CRITICAL') | list }}"
+            high_patches: "{{ prioritized_patches | selectattr('priority', 'equalto', 'HIGH') | list }}"
+            medium_patches: "{{ prioritized_patches | selectattr('priority', 'equalto', 'MEDIUM') | list }}"
+            low_patches: "{{ prioritized_patches | selectattr('priority', 'equalto', 'LOW') | list }}"
+
+        - name: Sort patches by CVSS score (highest first)
+          ansible.builtin.set_fact:
+            sorted_patches: "{{ prioritized_patches | sort(attribute='cvss_score', reverse=true) | list }}"
+
+        - name: Update final simulation results
+          ansible.builtin.set_fact:
+            simulation_results: "{{ simulation_results | combine({'critical_patches': critical_patches, 'high_patches': high_patches, 'medium_patches': medium_patches, 'low_patches': low_patches, 'sorted_by_cvss': sorted_patches, 'estimated_install_time': (sorted_patches | length * 2) | string + ' minutes (estimated)'}) }}"
+
+  post_tasks:
+    - name: Ensure report directory exists
+      ansible.builtin.file:
+        path: "{{ report_file | dirname }}"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      run_once: true
+
+    - name: Collect all simulation results
+      ansible.builtin.set_fact:
+        all_simulation_results: "{{ hostvars | json_query('*.simulation_results') }}"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Calculate summary statistics
+      ansible.builtin.set_fact:
+        summary_stats:
+          total_hosts: "{{ groups['all'] | length }}"
+          hosts_with_updates: "{{ all_simulation_results | selectattr('total_updates', 'gt', 0) | list | length }}"
+          hosts_with_security_updates: "{{ all_simulation_results | selectattr('security_updates', 'gt', 0) | list | length }}"
+          hosts_needing_reboot: "{{ all_simulation_results | selectattr('requires_reboot', 'equalto', true) | list | length }}"
+          total_critical_patches: "{{ all_simulation_results | map(attribute='critical_patches') | map('length') | list | sum }}"
+          total_high_patches: "{{ all_simulation_results | map(attribute='high_patches') | map('length') | list | sum }}"
+          total_medium_patches: "{{ all_simulation_results | map(attribute='medium_patches') | map('length') | list | sum }}"
+          total_low_patches: "{{ all_simulation_results | map(attribute='low_patches') | map('length') | list | sum }}"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Generate simulation report
+      ansible.builtin.copy:
+        content: |
+          {
+            "simulation_date": "{{ ansible_date_time.iso8601 }}",
+            "cvss_thresholds": {
+              "critical": {{ baseline_config.patch_management.cvss_thresholds.critical }},
+              "high": {{ baseline_config.patch_management.cvss_thresholds.high }},
+              "medium": {{ baseline_config.patch_management.cvss_thresholds.medium }},
+              "low": {{ baseline_config.patch_management.cvss_thresholds.low }}
+            },
+            "summary": {{ summary_stats | to_nice_json }},
+            "patch_sla": {
+              "critical_days": {{ baseline_config.patch_management.patch_sla.critical }},
+              "high_days": {{ baseline_config.patch_management.patch_sla.high }},
+              "medium_days": {{ baseline_config.patch_management.patch_sla.medium }},
+              "low_days": {{ baseline_config.patch_management.patch_sla.low }}
+            },
+            "hosts": {{ all_simulation_results | to_nice_json }}
+          }
+        dest: "{{ report_file }}"
+        mode: '0644'
+      delegate_to: localhost
+      run_once: true

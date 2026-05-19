@@ -1,0 +1,217 @@
+---
+- name: Install security patches
+  hosts: all
+  gather_facts: true
+  become: true
+  serial: "{{ batch_size | default('30%') }}"
+
+  vars:
+    report_file: "/tmp/patch_install.json"
+    patch_backup_dir: "/var/log/patch-backups"
+    only_security_updates: true
+    reboot_after_update: false
+    reboot_timeout: 600
+    patch_state_file: "{{ patch_backup_dir }}/.patch_state_{{ ansible_date_time.date }}.log"
+
+  pre_tasks:
+    - name: Create patch backup directory
+      ansible.builtin.file:
+        path: "{{ patch_backup_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Check OS family
+      ansible.builtin.set_fact:
+        os_family: "{{ ansible_os_family | lower }}
+
+    - name: Save current kernel version
+      ansible.builtin.set_fact:
+        current_kernel: "{{ ansible_kernel }}"
+
+    - name: Check if patches were already applied today
+      ansible.builtin.stat:
+        path: "{{ patch_state_file }}"
+      register: patch_state
+
+    - name: Backup current package list (Debian/Ubuntu)
+      ansible.builtin.shell: |
+        dpkg --get-selections > "{{ patch_backup_dir }}/packages_before_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}.txt"
+      when: os_family == 'debian' and not patch_state.stat.exists
+      changed_when: true
+      args:
+        creates: "{{ patch_backup_dir }}/packages_before_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}.txt"
+
+    - name: Backup current package list (RHEL/CentOS)
+      ansible.builtin.shell: |
+        rpm -qa > "{{ patch_backup_dir }}/packages_before_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}.txt"
+      when: os_family == 'redhat' and not patch_state.stat.exists
+      changed_when: true
+      args:
+        creates: "{{ patch_backup_dir }}/packages_before_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}.txt"
+
+  tasks:
+    - name: Update package cache (Debian/Ubuntu)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: os_family == 'debian' and not patch_state.stat.exists
+
+    - name: Upgrade all security packages (Debian/Ubuntu)
+      ansible.builtin.apt:
+        upgrade: "{{ 'safe' if only_security_updates | bool else 'full' }}"
+      when: os_family == 'debian' and not patch_state.stat.exists
+      register: debian_upgrade_result
+      notify: Reboot system
+
+    - name: Install security updates (RHEL/CentOS)
+      ansible.builtin.yum:
+        name: '*'
+        state: latest
+        security: "{{ only_security_updates }}"
+        update_cache: true
+      when: os_family == 'redhat' and not patch_state.stat.exists
+      register: rhel_upgrade_result
+      notify: Reboot system
+
+    - name: Check for kernel updates (Debian/Ubuntu)
+      ansible.builtin.shell: |
+        dpkg -l | grep -E '^ii' | grep -i linux-image | grep -v "$(dpkg --print-architecture)" | tail -1 | awk '{print $3}'
+      register: debian_new_kernel
+      changed_when: false
+      failed_when: false
+      when: os_family == 'debian'
+
+    - name: Check for kernel updates (RHEL/CentOS)
+      ansible.builtin.shell: |
+        rpm -q kernel --last 2>/dev/null | head -1 | awk '{print $1}'
+      register: rhel_new_kernel
+      changed_when: false
+      failed_when: false
+      when: os_family == 'redhat'
+
+    - name: Determine if reboot is required
+      ansible.builtin.set_fact:
+        reboot_required: >-
+          {% if os_family == 'debian' and debian_new_kernel.stdout is defined and debian_new_kernel.stdout != '' %}
+          {% set installed_kernel = debian_new_kernel.stdout %}
+          {% if current_kernel not in installed_kernel %}true{% else %}false{% endif %}
+          {% elif os_family == 'redhat' and rhel_new_kernel.stdout is defined and rhel_new_kernel.stdout != '' %}
+          {% if current_kernel not in rhel_new_kernel.stdout %}true{% else %}false{% endif %}
+          {% else %}false{% endif %}
+
+    - name: Check if reboot-required file exists (Debian/Ubuntu)
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_required_file
+      when: os_family == 'debian'
+
+    - name: Update reboot required status from file
+      ansible.builtin.set_fact:
+        reboot_required: true
+      when: os_family == 'debian' and reboot_required_file.stat.exists
+
+    - name: Get package changes (Debian/Ubuntu)
+      ansible.builtin.shell: |
+        apt-show-versions 2>/dev/null | grep -i upgrade || echo "No package upgrades"
+      register: debian_packages_changed
+      changed_when: false
+      failed_when: false
+      when: os_family == 'debian'
+
+    - name: Get package changes (RHEL/CentOS)
+      ansible.builtin.shell: |
+        yum history info last 2>/dev/null | grep -E 'Updated|Installed' || echo "No package changes"
+      register: rhel_packages_changed
+      changed_when: false
+      failed_when: false
+      when: os_family == 'redhat'
+
+    - name: Set patch results
+      ansible.builtin.set_fact:
+        patch_results:
+          hostname: "{{ ansible_hostname }}"
+          os: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+          kernel_before: "{{ current_kernel }}"
+          kernel_after: >-
+            {% if os_family == 'debian' %}{{ debian_new_kernel.stdout | default(current_kernel) }}{% elif os_family == 'redhat' %}{{ rhel_new_kernel.stdout | default(current_kernel) }}{% else %}{{ current_kernel }}{% endif %}
+          reboot_required: "{{ reboot_required }}"
+          status: success
+          packages_updated: >-
+            {% if patch_state.stat.exists %}false{% elif os_family == 'debian' %}{{ debian_upgrade_result.changed | default(false) }}{% elif os_family == 'redhat' %}{{ rhel_upgrade_result.changed | default(false) }}{% else %}false{% endif %}
+          changes: >-
+            {% if os_family == 'debian' and debian_packages_changed.stdout_lines is defined %}{{ debian_packages_changed.stdout_lines }}{% elif os_family == 'redhat' and rhel_packages_changed.stdout_lines is defined %}{{ rhel_packages_changed.stdout_lines }}{% else %}[]{% endif %}
+          timestamp: "{{ ansible_date_time.iso8601 }}"
+          backup_file: "{{ patch_backup_dir }}/packages_before_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}.txt"
+          already_patched_today: "{{ patch_state.stat.exists }}"
+
+    - name: Create patch state marker file
+      ansible.builtin.file:
+        path: "{{ patch_state_file }}"
+        state: touch
+        mode: '0644'
+      when: not patch_state.stat.exists
+      args:
+        creates: "{{ patch_state_file }}"
+
+  post_tasks:
+    - name: Display reboot required warning
+      ansible.builtin.debug:
+        msg: "WARNING: Kernel update detected! Reboot is required for {{ ansible_hostname }}"
+      when: reboot_required | bool
+
+    - name: Wait for system to be reachable after reboot
+      ansible.builtin.wait_for_connection:
+        delay: 60
+        timeout: "{{ reboot_timeout }}"
+      when: reboot_after_update | bool and reboot_required | bool
+
+    - name: Gather new facts after update
+      ansible.builtin.setup:
+      when: reboot_after_update | bool and reboot_required | bool
+
+    - name: Update kernel info after reboot
+      ansible.builtin.set_fact:
+        patch_results: "{{ patch_results | combine({'kernel_after': ansible_kernel, 'reboot_performed': true}) }}"
+      when: reboot_after_update | bool and reboot_required | bool
+
+    - name: Ensure report directory exists
+      ansible.builtin.file:
+        path: "{{ report_file | dirname }}"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      run_once: true
+
+    - name: Collect all patch results
+      ansible.builtin.set_fact:
+        all_patch_results: "{{ hostvars | json_query('*.patch_results') }}"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Generate installation report
+      ansible.builtin.copy:
+        content: |
+          {
+            "install_date": "{{ ansible_date_time.iso8601 }}",
+            "total_hosts": {{ groups['all'] | length }},
+            "success_count": {{ all_patch_results | selectattr('status', 'equalto', 'success') | list | length }},
+            "changed_count": {{ all_patch_results | selectattr('packages_updated', 'equalto', true) | list | length }},
+            "reboot_required_count": {{ all_patch_results | selectattr('reboot_required', 'equalto', true) | list | length }},
+            "already_patched_count": {{ all_patch_results | selectattr('already_patched_today', 'equalto', true) | list | length }},
+            "summary": "Patched: {{ all_patch_results | selectattr('packages_updated', 'equalto', true) | list | length }} hosts, Reboot required: {{ all_patch_results | selectattr('reboot_required', 'equalto', true) | list | length }} hosts",
+            "hosts": {{ all_patch_results | to_nice_json }}
+          }
+        dest: "{{ report_file }}"
+        mode: '0644'
+      delegate_to: localhost
+      run_once: true
+
+  handlers:
+    - name: Reboot system
+      ansible.builtin.reboot:
+        msg: "Rebooting system after security patch installation (kernel update detected)"
+        connect_timeout: 5
+        reboot_timeout: "{{ reboot_timeout }}"
+        pre_reboot_delay: 0
+        post_reboot_delay: 30
+      when: reboot_after_update | bool and reboot_required | bool

@@ -1,0 +1,263 @@
+---
+- name: Rollback security patches
+  hosts: all
+  gather_facts: true
+  become: true
+  serial: "{{ batch_size | default('30%') }}"
+
+  vars:
+    report_file: "/tmp/patch_rollback.json"
+    patch_backup_dir: "/var/log/patch-backups"
+    rollback_packages: []
+    rollback_safe: true
+    rollback_state_file: "{{ patch_backup_dir }}/.rollback_state_{{ ansible_date_time.date }}.log"
+
+  pre_tasks:
+    - name: Check OS family
+      ansible.builtin.set_fact:
+        os_family: "{{ ansible_os_family | lower }}"
+
+    - name: Check if backup directory exists
+      ansible.builtin.stat:
+        path: "{{ patch_backup_dir }}"
+      register: backup_dir
+
+    - name: Fail if no backups found
+      ansible.builtin.fail:
+        msg: "No patch backup directory found. Cannot perform rollback."
+      when: not backup_dir.stat.exists
+
+    - name: Check if rollback was already performed today
+      ansible.builtin.stat:
+        path: "{{ rollback_state_file }}"
+      register: rollback_state
+
+    - name: Fail if rollback already performed today
+      ansible.builtin.fail:
+        msg: "Rollback was already performed today. Check the rollback_state_file before proceeding."
+      when: rollback_state.stat.exists
+
+    - name: Find latest backup file
+      ansible.builtin.shell: |
+        ls -t "{{ patch_backup_dir }}"/packages_before_*.txt 2>/dev/null | head -1
+      register: latest_backup
+      changed_when: false
+      failed_when: latest_backup.stdout == ""
+
+    - name: Set backup file fact
+      ansible.builtin.set_fact:
+        backup_file: "{{ latest_backup.stdout }}"
+
+    - name: Display backup info
+      ansible.builtin.debug:
+        msg: "Will use backup file: {{ backup_file }}"
+
+  tasks:
+    - name: Perform rollback safety checks on Debian/Ubuntu
+      block:
+        - name: Check for package dependency conflicts
+          ansible.builtin.shell: |
+            apt-get check 2>&1 || true
+          register: apt_check_result
+          changed_when: false
+
+        - name: Check for held packages
+          ansible.builtin.shell: |
+            apt-mark showhold 2>/dev/null || echo ""
+          register: held_packages
+          changed_when: false
+
+        - name: Check for broken dependencies
+          ansible.builtin.shell: |
+            dpkg -l | grep -E '^iU|^iF' 2>/dev/null || echo ""
+          register: broken_packages
+          changed_when: false
+
+        - name: Evaluate rollback safety for Debian
+          ansible.builtin.set_fact:
+            rollback_safe: >-
+              {% if broken_packages.stdout_lines | length > 0 %}false{% elif held_packages.stdout_lines | length > 0 %}false{% else %}true{% endif %}
+            rollback_warnings:
+              - broken_packages: "{{ broken_packages.stdout_lines | default([]) }}"
+              - held_packages: "{{ held_packages.stdout_lines | default([]) }}"
+      when: os_family == 'debian'
+
+    - name: Perform rollback safety checks on RHEL/CentOS
+      block:
+        - name: Check for package dependency issues
+          ansible.builtin.shell: |
+            yum check 2>&1 || true
+          register: yum_check_result
+          changed_when: false
+
+        - name: Check for yum transaction issues
+          ansible.builtin.shell: |
+            yum history list last 3 2>/dev/null | grep -E 'Error|Failed' || echo ""
+          register: yum_transaction_errors
+          changed_when: false
+
+        - name: Verify last transaction is undoable
+          ansible.builtin.shell: |
+            LAST_ID=$(yum history list last 1 2>/dev/null | grep -oP '^\s*\d+' | head -1)
+            if [ -n "$LAST_ID" ]; then
+              yum history undo "$LAST_ID" --assumeno 2>&1 | head -30 || true
+            else
+              echo "No transaction found"
+            fi
+          register: yum_undo_test
+          changed_when: false
+          failed_when: false
+
+        - name: Evaluate rollback safety for RHEL
+          ansible.builtin.set_fact:
+            rollback_safe: >-
+              {% if 'Error' in yum_check_result.stdout or 'error' in yum_check_result.stdout %}false{% else %}true{% endif %}
+            rollback_warnings:
+              - transaction_errors: "{{ yum_transaction_errors.stdout_lines | default([]) }}"
+              - undo_test_output: "{{ yum_undo_test.stdout_lines | default([]) | map('trim') | list }}"
+      when: os_family == 'redhat'
+
+    - name: Display rollback safety status
+      ansible.builtin.debug:
+        msg: "Rollback safety status: {{ 'SAFE' if rollback_safe | bool else 'UNSAFE - check warnings before proceeding' }}"
+
+    - name: Fail if rollback is unsafe
+      ansible.builtin.fail:
+        msg: "Rollback is unsafe due to dependency issues. Please resolve issues manually before proceeding."
+      when: not rollback_safe | bool and force_rollback | default(false) | bool == false
+
+    - name: Perform rollback on Debian/Ubuntu
+      block:
+        - name: Read backup package list
+          ansible.builtin.slurp:
+            src: "{{ backup_file }}"
+          register: backup_packages_deb
+
+        - name: Get current package versions
+          ansible.builtin.shell: |
+            dpkg --get-selections
+          register: current_packages_deb
+          changed_when: false
+
+        - name: Identify packages to downgrade
+          ansible.builtin.shell: |
+            comm -13 <(sort "{{ backup_file }}") <(dpkg --get-selections | sort) | head -50
+          register: packages_to_rollback_deb
+          changed_when: false
+          failed_when: false
+
+        - name: Set packages to rollback
+          ansible.builtin.set_fact:
+            rollback_packages: "{{ packages_to_rollback_deb.stdout_lines | default([]) }}"
+
+        - name: Perform safe rollback (package state reset)
+          ansible.builtin.shell: |
+            if [ -f "{{ backup_file }}" ]; then
+              dpkg --set-selections < "{{ backup_file }}"
+              apt-get -y dselect-upgrade --allow-downgrades 2>&1 || true
+            fi
+          register: deb_rollback_result
+          changed_when: "'0 upgraded' not in deb_rollback_result.stdout"
+          when: rollback_packages | length > 0 and rollback_safe | bool
+      when: os_family == 'debian'
+
+    - name: Perform rollback on RHEL/CentOS
+      block:
+        - name: Read backup package list
+          ansible.builtin.slurp:
+            src: "{{ backup_file }}"
+          register: backup_packages_rpm
+
+        - name: Get yum transaction history
+          ansible.builtin.shell: |
+            yum history list last 5 2>/dev/null || echo "No history available"
+          register: yum_history
+          changed_when: false
+
+        - name: Undo last yum transaction
+          ansible.builtin.shell: |
+            LAST_ID=$(yum history list last 1 2>/dev/null | grep -oP '^\s*\d+' | head -1)
+            if [ -n "$LAST_ID" ] && [ "{{ rollback_safe }}" == "true" ]; then
+              echo "Undoing yum transaction #$LAST_ID"
+              yum history undo -y "$LAST_ID" 2>&1 || true
+            else
+              echo "No yum transaction found or rollback not safe"
+            fi
+          register: rhel_rollback_result
+          changed_when: "'Complete!' in rhel_rollback_result.stdout"
+          when: rollback_safe | bool
+
+        - name: Set rollback packages
+          ansible.builtin.set_fact:
+            rollback_packages: "{{ yum_history.stdout_lines | default([]) }}"
+      when: os_family == 'redhat'
+
+    - name: Check for kernel rollback
+      ansible.builtin.set_fact:
+        kernel_rolled_back: >-
+          {% for pkg in rollback_packages %}
+          {% if 'kernel' in pkg | lower or 'linux-image' in pkg | lower %}true{% endif %}
+          {% endfor %}false
+
+    - name: Set rollback results
+      ansible.builtin.set_fact:
+        rollback_results:
+          hostname: "{{ ansible_hostname }}"
+          os: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+          status: "{{ 'success' if rollback_safe | bool else 'warning' }}"
+          packages_rolled_back: "{{ rollback_packages | length }}"
+          kernel_rolled_back: "{{ kernel_rolled_back }}"
+          rollback_safe: "{{ rollback_safe }}"
+          rollback_warnings: "{{ rollback_warnings | default([]) }}"
+          backup_used: "{{ backup_file }}"
+          timestamp: "{{ ansible_date_time.iso8601 }}"
+          changes: "{{ rollback_packages }}"
+          already_rolled_back: "{{ rollback_state.stat.exists }}"
+
+    - name: Create rollback state marker file
+      ansible.builtin.file:
+        path: "{{ rollback_state_file }}"
+        state: touch
+        mode: '0644'
+      when: not rollback_state.stat.exists
+      args:
+        creates: "{{ rollback_state_file }}"
+
+  post_tasks:
+    - name: Display kernel rollback warning if applicable
+      ansible.builtin.debug:
+        msg: "WARNING: Kernel was rolled back! Consider rebooting to ensure system stability."
+      when: kernel_rolled_back | bool
+
+    - name: Ensure report directory exists
+      ansible.builtin.file:
+        path: "{{ report_file | dirname }}"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      run_once: true
+
+    - name: Collect all rollback results
+      ansible.builtin.set_fact:
+        all_rollback_results: "{{ hostvars | json_query('*.rollback_results') }}"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Generate rollback report
+      ansible.builtin.copy:
+        content: |
+          {
+            "rollback_date": "{{ ansible_date_time.iso8601 }}",
+            "total_hosts": {{ groups['all'] | length }},
+            "success_count": {{ all_rollback_results | selectattr('status', 'equalto', 'success') | list | length }},
+            "warning_count": {{ all_rollback_results | selectattr('status', 'equalto', 'warning') | list | length }},
+            "rolled_back_count": {{ all_rollback_results | selectattr('packages_rolled_back', 'gt', 0) | list | length }},
+            "kernel_rollback_count": {{ all_rollback_results | selectattr('kernel_rolled_back', 'equalto', true) | list | length }},
+            "unsafe_rollback_count": {{ all_rollback_results | selectattr('rollback_safe', 'equalto', false) | list | length }},
+            "summary": "Rolled back: {{ all_rollback_results | selectattr('packages_rolled_back', 'gt', 0) | list | length }} hosts, Kernel rollback: {{ all_rollback_results | selectattr('kernel_rolled_back', 'equalto', true) | list | length }} hosts, Warnings: {{ all_rollback_results | selectattr('status', 'equalto', 'warning') | list | length }} hosts",
+            "hosts": {{ all_rollback_results | to_nice_json }}
+          }
+        dest: "{{ report_file }}"
+        mode: '0644'
+      delegate_to: localhost
+      run_once: true

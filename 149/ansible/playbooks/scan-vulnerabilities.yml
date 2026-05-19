@@ -1,0 +1,222 @@
+---
+- name: Scan for CVE vulnerabilities
+  hosts: all
+  gather_facts: true
+  become: true
+
+  vars:
+    report_file: "/tmp/vulnerability_scan.json"
+    scan_cache_dir: "/var/cache/security-scan"
+    scan_cache_file: "{{ scan_cache_dir }}/last_scan_{{ ansible_date_time.date }}.json"
+
+  pre_tasks:
+    - name: Create scan cache directory
+      ansible.builtin.file:
+        path: "{{ scan_cache_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Check OS family
+      ansible.builtin.set_fact:
+        os_family: "{{ ansible_os_family | lower }}"
+
+    - name: Check if scan was already performed today
+      ansible.builtin.stat:
+        path: "{{ scan_cache_file }}"
+      register: scan_cache
+
+  tasks:
+    - name: Install vulnerability scanner dependencies (Debian/Ubuntu)
+      ansible.builtin.apt:
+        name:
+          - debian-goodies
+          - apt-show-versions
+          - jq
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+      when: os_family == 'debian' and not scan_cache.stat.exists
+
+    - name: Install vulnerability scanner dependencies (RHEL/CentOS)
+      ansible.builtin.yum:
+        name:
+          - yum-utils
+          - jq
+        state: present
+      when: os_family == 'redhat' and not scan_cache.stat.exists
+
+    - name: Get list of installed packages with available updates (Debian/Ubuntu)
+      ansible.builtin.shell: |
+        apt-show-versions -u 2>/dev/null || apt list --upgradable 2>/dev/null | grep -v 'Listing...'
+      register: debian_updates
+      changed_when: false
+      failed_when: false
+      when: os_family == 'debian' and not scan_cache.stat.exists
+
+    - name: Save Debian updates to cache
+      ansible.builtin.copy:
+        content: "{{ debian_updates.stdout | default('') }}"
+        dest: "{{ scan_cache_dir }}/debian_updates_{{ ansible_date_time.date }}.txt"
+        mode: '0644'
+      when: os_family == 'debian' and not scan_cache.stat.exists
+      args:
+        creates: "{{ scan_cache_dir }}/debian_updates_{{ ansible_date_time.date }}.txt"
+
+    - name: Get list of installed packages with available updates (RHEL/CentOS)
+      ansible.builtin.shell: |
+        yum check-update --security 2>/dev/null || yum list updates --security 2>/dev/null
+      register: rhel_updates
+      changed_when: false
+      failed_when: false
+      when: os_family == 'redhat' and not scan_cache.stat.exists
+
+    - name: Save RHEL updates to cache
+      ansible.builtin.copy:
+        content: "{{ rhel_updates.stdout | default('') }}"
+        dest: "{{ scan_cache_dir }}/rhel_updates_{{ ansible_date_time.date }}.txt"
+        mode: '0644'
+      when: os_family == 'redhat' and not scan_cache.stat.exists
+      args:
+        creates: "{{ scan_cache_dir }}/rhel_updates_{{ ansible_date_time.date }}.txt"
+
+    - name: Check for CVE using available tools
+      block:
+        - name: Check if CVE checker exists
+          ansible.builtin.stat:
+            path: /usr/bin/cve-checker
+          register: cve_checker
+
+        - name: Run CVE scan if available
+          ansible.builtin.shell: |
+            cve-checker --json 2>/dev/null || echo '{"cves": []}'
+          register: cve_scan
+          changed_when: false
+          failed_when: false
+          when: cve_checker.stat.exists and not scan_cache.stat.exists
+      when: not scan_cache.stat.exists
+
+    - name: Get security update count (Debian/Ubuntu)
+      ansible.builtin.shell: |
+        apt-get upgrade -s 2>/dev/null | grep -i security | wc -l
+      register: debian_security_updates
+      changed_when: false
+      failed_when: false
+      when: os_family == 'debian' and not scan_cache.stat.exists
+
+    - name: Get security update count (RHEL/CentOS)
+      ansible.builtin.shell: |
+        yum updateinfo list security all 2>/dev/null | wc -l
+      register: rhel_security_updates
+      changed_when: false
+      failed_when: false
+      when: os_family == 'redhat' and not scan_cache.stat.exists
+
+    - name: Get critical security updates (Debian/Ubuntu)
+      ansible.builtin.shell: |
+        apt-get upgrade -s 2>/dev/null | grep -i -E 'critical|important' | wc -l
+      register: debian_critical_updates
+      changed_when: false
+      failed_when: false
+      when: os_family == 'debian' and not scan_cache.stat.exists
+
+    - name: Get critical security updates (RHEL/CentOS)
+      ansible.builtin.shell: |
+        yum updateinfo list security critical 2>/dev/null | wc -l
+      register: rhel_critical_updates
+      changed_when: false
+      failed_when: false
+      when: os_family == 'redhat' and not scan_cache.stat.exists
+
+    - name: Check for kernel vulnerabilities
+      ansible.builtin.shell: |
+        if command -v uname &>/dev/null; then
+          KERNEL=$(uname -r)
+          echo "Kernel: $KERNEL"
+          if command -v apt &>/dev/null; then
+            apt-cache showpkg linux-image-$KERNEL 2>/dev/null | head -5 || true
+          elif command -v rpm &>/dev/null; then
+            rpm -q --changelog kernel 2>/dev/null | grep -i CVE | head -10 || true
+          fi
+        fi
+      register: kernel_vuln_check
+      changed_when: false
+      failed_when: false
+      when: not scan_cache.stat.exists
+
+    - name: Classify vulnerability severity
+      ansible.builtin.set_fact:
+        security_critical: >-
+          {% if os_family == 'debian' and debian_critical_updates.stdout | default('0') | int > 0 %}true{% elif os_family == 'redhat' and rhel_critical_updates.stdout | default('0') | int > 0 %}true{% else %}false{% endif %}
+        security_high: >-
+          {% set total = 0 %}{% if os_family == 'debian' %}{% set total = debian_security_updates.stdout | default('0') | int %}{% elif os_family == 'redhat' %}{% set total = rhel_security_updates.stdout | default('0') | int %}{% endif %}{% if total > 5 %}true{% else %}false{% endif %}
+
+    - name: Set vulnerability facts
+      ansible.builtin.set_fact:
+        vulnerability_data:
+          hostname: "{{ ansible_hostname }}"
+          ip_address: "{{ ansible_default_ipv4.address | default('N/A') }}"
+          os: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+          kernel: "{{ ansible_kernel }}"
+          total_packages: "{{ ansible_facts.packages | length | default(0) }}"
+          security_updates: >-
+            {% if os_family == 'debian' %}{{ debian_security_updates.stdout | default('0') | int }}{% elif os_family == 'redhat' %}{{ rhel_security_updates.stdout | default('0') | int }}{% else %}0{% endif %}
+          critical_updates: >-
+            {% if os_family == 'debian' %}{{ debian_critical_updates.stdout | default('0') | int }}{% elif os_family == 'redhat' %}{{ rhel_critical_updates.stdout | default('0') | int }}{% else %}0{% endif %}
+          updates_available: >-
+            {% if os_family == 'debian' and debian_updates.stdout_lines is defined %}{{ debian_updates.stdout_lines | length }}{% elif os_family == 'redhat' and rhel_updates.stdout_lines is defined %}{{ rhel_updates.stdout_lines | length }}{% else %}0{% endif %}
+          vulnerability_status: >-
+            {% set critical = 0 %}{% if os_family == 'debian' %}{% set critical = debian_critical_updates.stdout | default('0') | int %}{% elif os_family == 'redhat' %}{% set critical = rhel_critical_updates.stdout | default('0') | int %}{% endif %}{% if critical > 0 %}CRITICAL{% elif security_updates | int > 0 %}WARNING{% else %}OK{% endif %}
+          vulnerability_details: >-
+            {% if os_family == 'debian' and debian_updates.stdout_lines is defined %}{{ debian_updates.stdout_lines }}{% elif os_family == 'redhat' and rhel_updates.stdout_lines is defined %}{{ rhel_updates.stdout_lines }}{% else %}[]{% endif %}
+          kernel_check: "{{ kernel_vuln_check.stdout_lines | default([]) }}"
+          last_scan: "{{ ansible_date_time.iso8601 }}"
+          scan_from_cache: "{{ scan_cache.stat.exists }}"
+
+    - name: Create scan cache marker file
+      ansible.builtin.copy:
+        content: "{{ vulnerability_data | to_nice_json }}"
+        dest: "{{ scan_cache_file }}"
+        mode: '0644'
+      when: not scan_cache.stat.exists
+      args:
+        creates: "{{ scan_cache_file }}"
+
+    - name: Ensure report directory exists
+      ansible.builtin.file:
+        path: "{{ report_file | dirname }}"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      run_once: true
+
+    - name: Collect all host vulnerability data
+      ansible.builtin.set_fact:
+        all_vulnerabilities: "{{ hostvars | json_query('*.vulnerability_data') }}"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Calculate vulnerability statistics
+      ansible.builtin.set_fact:
+        vuln_stats:
+          total_hosts: "{{ groups['all'] | length }}"
+          critical_hosts: "{{ all_vulnerabilities | selectattr('vulnerability_status', 'equalto', 'CRITICAL') | list | length }}"
+          warning_hosts: "{{ all_vulnerabilities | selectattr('vulnerability_status', 'equalto', 'WARNING') | list | length }}"
+          ok_hosts: "{{ all_vulnerabilities | selectattr('vulnerability_status', 'equalto', 'OK') | list | length }}"
+          from_cache: "{{ all_vulnerabilities | selectattr('scan_from_cache', 'equalto', true) | list | length }}"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Generate scan report
+      ansible.builtin.copy:
+        content: |
+          {
+            "scan_date": "{{ ansible_date_time.iso8601 }}",
+            "total_hosts_scanned": {{ groups['all'] | length }},
+            "summary": "CRITICAL: {{ vuln_stats.critical_hosts }} hosts need critical security updates, WARNING: {{ vuln_stats.warning_hosts }} hosts, OK: {{ vuln_stats.ok_hosts }} hosts",
+            "statistics": {{ vuln_stats | to_nice_json }},
+            "hosts": {{ all_vulnerabilities | to_nice_json }}
+          }
+        dest: "{{ report_file }}"
+        mode: '0644'
+      delegate_to: localhost
+      run_once: true
