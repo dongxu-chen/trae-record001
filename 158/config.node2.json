@@ -1,0 +1,13 @@
+{
+  "node_id": "node2",
+  "node_addr": "localhost:9002",
+  "http_addr": ":8082",
+  "region": "cn-south",
+  "peer_addrs": {
+    "node1": "localhost:9001",
+    "node2": "localhost:9002",
+    "node3": "localhost:9003"
+  },
+  "data_dir": "./data/node2",
+  "redis_addr": "localhost:6379"
+}
