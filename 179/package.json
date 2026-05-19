@@ -1,0 +1,34 @@
+{
+  "name": "message-center-aggregator",
+  "version": "1.0.0",
+  "description": "消息中心聚合服务 - 聚合邮件、钉钉、企业微信、Slack等多渠道消息",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "jest"
+  },
+  "keywords": ["message", "aggregator", "notification", "email", "dingtalk", "wework", "slack"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^8.0.0",
+    "redis": "^4.6.10",
+    "node-cron": "^3.0.3",
+    "axios": "^1.6.0",
+    "imap": "^0.8.19",
+    "mailparser": "^3.6.5",
+    "dotenv": "^16.3.1",
+    "winston": "^3.11.0",
+    "joi": "^17.11.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "jest": "^29.7.0"
+  }
+}

@@ -1,0 +1,386 @@
+{
+  "templates": [
+    {
+      "name": "approval_leave",
+      "displayName": "请假审批",
+      "category": "approval",
+      "icon": "calendar",
+      "color": "#3b82f6",
+      "priority": "high",
+      "matchPatterns": [
+        "请假",
+        "休假",
+        "年假",
+        "病假",
+        "事假"
+      ],
+      "extractRules": {
+        "applicant": {
+          "pattern": "(?:申请人|请假人|姓名)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        },
+        "leaveType": {
+          "pattern": "(?:请假类型|休假类型|类型)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string",
+          "mapping": {
+            "annual": "年假",
+            "sick": "病假",
+            "personal": "事假",
+            "marriage": "婚假",
+            "maternity": "产假"
+          }
+        },
+        "startDate": {
+          "pattern": "(?:开始时间|开始日期|从)[:：]?\\s*(\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}(?:\\s*\\d{1,2}:\\d{2})?)",
+          "type": "date"
+        },
+        "endDate": {
+          "pattern": "(?:结束时间|结束日期|到)[:：]?\\s*(\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}(?:\\s*\\d{1,2}:\\d{2})?)",
+          "type": "date"
+        },
+        "days": {
+          "pattern": "(?:共|时长|天数)[:：]?\\s*(\\d+(?:\\.\\d+)?)\\s*(?:天|日|小时)",
+          "type": "number"
+        },
+        "reason": {
+          "pattern": "(?:事由|原因|请假事由)[:：]\\s*([^。；\\n]+)",
+          "type": "string"
+        }
+      },
+      "cardLayout": [
+        { "key": "applicant", "label": "申请人", "showInCard": true },
+        { "key": "leaveType", "label": "请假类型", "showInCard": true },
+        { "key": "startDate", "label": "开始时间", "showInCard": true },
+        { "key": "endDate", "label": "结束时间", "showInCard": true },
+        { "key": "days", "label": "天数", "showInCard": true },
+        { "key": "reason", "label": "事由", "showInCard": true }
+      ],
+      "actionButtons": [
+        { "action": "approve", "label": "同意", "style": "primary" },
+        { "action": "reject", "label": "拒绝", "style": "danger" },
+        { "action": "transfer", "label": "转交", "style": "default" }
+      ]
+    },
+    {
+      "name": "approval_reimburse",
+      "displayName": "报销审批",
+      "category": "approval",
+      "icon": "wallet",
+      "color": "#10b981",
+      "priority": "high",
+      "matchPatterns": [
+        "报销",
+        "费用申请",
+        "付款申请"
+      ],
+      "extractRules": {
+        "applicant": {
+          "pattern": "(?:申请人|报销人|姓名)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        },
+        "amount": {
+          "pattern": "(?:金额|合计|总计|￥|¥|RMB)[:：]?\\s*[￥¥]?\\s*(\\d+(?:,\\d{3})*(?:\\.\\d{1,2})?)",
+          "type": "currency"
+        },
+        "expenseType": {
+          "pattern": "(?:费用类型|报销类型|类别)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        },
+        "description": {
+          "pattern": "(?:费用说明|描述|备注)[:：]\\s*([^。；\\n]+)",
+          "type": "string"
+        },
+        "invoiceCount": {
+          "pattern": "(?:发票|票据)[:：]?\\s*(\\d+)\\s*张",
+          "type": "number"
+        }
+      },
+      "cardLayout": [
+        { "key": "applicant", "label": "申请人", "showInCard": true },
+        { "key": "expenseType", "label": "费用类型", "showInCard": true },
+        { "key": "amount", "label": "金额", "showInCard": true, "highlight": true },
+        { "key": "invoiceCount", "label": "发票数量", "showInCard": true },
+        { "key": "description", "label": "费用说明", "showInCard": true }
+      ],
+      "actionButtons": [
+        { "action": "approve", "label": "同意", "style": "primary" },
+        { "action": "reject", "label": "拒绝", "style": "danger" }
+      ]
+    },
+    {
+      "name": "approval_purchase",
+      "displayName": "采购审批",
+      "category": "approval",
+      "icon": "shopping-cart",
+      "color": "#f59e0b",
+      "priority": "high",
+      "matchPatterns": [
+        "采购",
+        "采购申请",
+        "物品申请"
+      ],
+      "extractRules": {
+        "applicant": {
+          "pattern": "(?:申请人|采购人|姓名)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        },
+        "department": {
+          "pattern": "(?:部门|申请部门)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        },
+        "itemName": {
+          "pattern": "(?:物品名称|采购物品|名称)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        },
+        "quantity": {
+          "pattern": "(?:数量|个数)[:：]?\\s*(\\d+)",
+          "type": "number"
+        },
+        "amount": {
+          "pattern": "(?:预算金额|预估金额|金额)[:：]?\\s*[￥¥]?\\s*(\\d+(?:,\\d{3})*(?:\\.\\d{1,2})?)",
+          "type": "currency"
+        },
+        "purpose": {
+          "pattern": "(?:用途|原因|说明)[:：]\\s*([^。；\\n]+)",
+          "type": "string"
+        }
+      },
+      "cardLayout": [
+        { "key": "applicant", "label": "申请人", "showInCard": true },
+        { "key": "department", "label": "部门", "showInCard": true },
+        { "key": "itemName", "label": "采购物品", "showInCard": true },
+        { "key": "quantity", "label": "数量", "showInCard": true },
+        { "key": "amount", "label": "预算金额", "showInCard": true, "highlight": true },
+        { "key": "purpose", "label": "用途", "showInCard": true }
+      ],
+      "actionButtons": [
+        { "action": "approve", "label": "同意", "style": "primary" },
+        { "action": "reject", "label": "拒绝", "style": "danger" }
+      ]
+    },
+    {
+      "name": "meeting_invitation",
+      "displayName": "会议邀请",
+      "category": "meeting",
+      "icon": "users",
+      "color": "#8b5cf6",
+      "priority": "medium",
+      "matchPatterns": [
+        "会议邀请",
+        "邀请您参加",
+        "日程安排"
+      ],
+      "extractRules": {
+        "title": {
+          "pattern": "(?:会议主题|会议名称|主题)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        },
+        "organizer": {
+          "pattern": "(?:组织者|发起人|主持人)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        },
+        "startTime": {
+          "pattern": "(?:开始时间|会议时间)[:：]?\\s*(\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}\\s*\\d{1,2}:\\d{2})",
+          "type": "date"
+        },
+        "endTime": {
+          "pattern": "(?:结束时间|预计时长)[:：]?\\s*(\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}\\s*\\d{1,2}:\\d{2}|\\d+\\s*分钟)",
+          "type": "string"
+        },
+        "location": {
+          "pattern": "(?:地点|会议室|位置)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        },
+        "attendees": {
+          "pattern": "(?:参会人员|参会人|邀请)[:：]\\s*([^。；\\n]+)",
+          "type": "string"
+        }
+      },
+      "cardLayout": [
+        { "key": "title", "label": "会议主题", "showInCard": true },
+        { "key": "organizer", "label": "发起人", "showInCard": true },
+        { "key": "startTime", "label": "开始时间", "showInCard": true },
+        { "key": "endTime", "label": "结束时间", "showInCard": true },
+        { "key": "location", "label": "地点", "showInCard": true }
+      ],
+      "actionButtons": [
+        { "action": "accept", "label": "接受", "style": "primary" },
+        { "action": "decline", "label": "拒绝", "style": "danger" },
+        { "action": "tentative", "label": "待定", "style": "default" }
+      ]
+    },
+    {
+      "name": "system_alert",
+      "displayName": "系统告警",
+      "category": "alert",
+      "icon": "alert-triangle",
+      "color": "#ef4444",
+      "priority": "urgent",
+      "matchPatterns": [
+        "告警",
+        "警报",
+        "ERROR",
+        "错误",
+        "异常",
+        "CRITICAL"
+      ],
+      "extractRules": {
+        "alertLevel": {
+          "pattern": "(?:级别|等级|level)[:：]?\\s*(critical|urgent|high|medium|low|紧急|严重|高危|中危|低危)",
+          "type": "string",
+          "mapping": {
+            "critical": "严重",
+            "urgent": "紧急",
+            "high": "高危",
+            "medium": "中危",
+            "low": "低危"
+          }
+        },
+        "serviceName": {
+          "pattern": "(?:服务名称|服务|模块)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        },
+        "errorCode": {
+          "pattern": "(?:错误码|code|错误代码)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        },
+        "errorMessage": {
+          "pattern": "(?:错误信息|异常信息|message)[:：]\\s*([^。；\\n]+)",
+          "type": "string"
+        },
+        "timestamp": {
+          "pattern": "(?:发生时间|时间|timestamp)[:：]?\\s*(\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}\\s*\\d{1,2}:\\d{2}:\\d{2})",
+          "type": "date"
+        },
+        "server": {
+          "pattern": "(?:服务器|主机|server)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        }
+      },
+      "cardLayout": [
+        { "key": "alertLevel", "label": "告警级别", "showInCard": true, "highlight": true },
+        { "key": "serviceName", "label": "服务名称", "showInCard": true },
+        { "key": "errorCode", "label": "错误码", "showInCard": true },
+        { "key": "errorMessage", "label": "错误信息", "showInCard": true },
+        { "key": "timestamp", "label": "发生时间", "showInCard": true },
+        { "key": "server", "label": "服务器", "showInCard": true }
+      ],
+      "actionButtons": [
+        { "action": "acknowledge", "label": "已确认", "style": "primary" },
+        { "action": "view_details", "label": "查看详情", "style": "default" }
+      ]
+    },
+    {
+      "name": "task_assignment",
+      "displayName": "任务分配",
+      "category": "task",
+      "icon": "clipboard",
+      "color": "#06b6d4",
+      "priority": "medium",
+      "matchPatterns": [
+        "任务分配",
+        "新任务",
+        "指派任务"
+      ],
+      "extractRules": {
+        "taskName": {
+          "pattern": "(?:任务名称|任务标题|标题)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        },
+        "assignee": {
+          "pattern": "(?:负责人|指派给|执行者)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        },
+        "deadline": {
+          "pattern": "(?:截止时间|deadline|完成时间)[:：]?\\s*(\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}(?:\\s*\\d{1,2}:\\d{2})?)",
+          "type": "date"
+        },
+        "priority": {
+          "pattern": "(?:优先级|优先级)[:：]?\\s*(high|medium|low|高|中|低)",
+          "type": "string",
+          "mapping": {
+            "high": "高",
+            "medium": "中",
+            "low": "低"
+          }
+        },
+        "description": {
+          "pattern": "(?:任务描述|描述|内容)[:：]\\s*([^。；\\n]+)",
+          "type": "string"
+        }
+      },
+      "cardLayout": [
+        { "key": "taskName", "label": "任务名称", "showInCard": true },
+        { "key": "assignee", "label": "负责人", "showInCard": true },
+        { "key": "deadline", "label": "截止时间", "showInCard": true },
+        { "key": "priority", "label": "优先级", "showInCard": true },
+        { "key": "description", "label": "任务描述", "showInCard": true }
+      ],
+      "actionButtons": [
+        { "action": "accept", "label": "接受", "style": "primary" },
+        { "action": "start", "label": "开始处理", "style": "success" },
+        { "action": "delegate", "label": "转交", "style": "default" }
+      ]
+    },
+    {
+      "name": "contract_sign",
+      "displayName": "合同签署",
+      "category": "approval",
+      "icon": "file-text",
+      "color": "#ec4899",
+      "priority": "high",
+      "matchPatterns": [
+        "合同",
+        "签署",
+        "签约"
+      ],
+      "extractRules": {
+        "contractName": {
+          "pattern": "(?:合同名称|合同标题)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        },
+        "partyA": {
+          "pattern": "(?:甲方|甲方名称)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        },
+        "partyB": {
+          "pattern": "(?:乙方|乙方名称)[:：]\\s*([^\\s，。、；\\n]+)",
+          "type": "string"
+        },
+        "amount": {
+          "pattern": "(?:合同金额|金额)[:：]?\\s*[￥¥]?\\s*(\\d+(?:,\\d{3})*(?:\\.\\d{1,2})?)",
+          "type": "currency"
+        },
+        "signDeadline": {
+          "pattern": "(?:签署截止|签署期限)[:：]?\\s*(\\d{4}[-/]\\d{1,2}[-/]\\d{1,2})",
+          "type": "date"
+        }
+      },
+      "cardLayout": [
+        { "key": "contractName", "label": "合同名称", "showInCard": true },
+        { "key": "partyA", "label": "甲方", "showInCard": true },
+        { "key": "partyB", "label": "乙方", "showInCard": true },
+        { "key": "amount", "label": "合同金额", "showInCard": true, "highlight": true },
+        { "key": "signDeadline", "label": "签署截止", "showInCard": true }
+      ],
+      "actionButtons": [
+        { "action": "sign", "label": "签署", "style": "primary" },
+        { "action": "review", "label": "审核", "style": "default" },
+        { "action": "reject", "label": "拒绝", "style": "danger" }
+      ]
+    }
+  ],
+  "defaultTemplate": {
+    "name": "default",
+    "displayName": "通用消息",
+    "category": "notification",
+    "icon": "message-square",
+    "color": "#6b7280",
+    "priority": "low",
+    "cardLayout": [
+      { "key": "title", "label": "标题", "showInCard": true },
+      { "key": "content", "label": "内容", "showInCard": true }
+    ],
+    "actionButtons": []
+  }
+}

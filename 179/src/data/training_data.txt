@@ -1,0 +1,73 @@
+__label__approval 您有一条新的请假审批需要处理
+__label__approval 请假申请已提交，请审批
+__label__approval 报销单审批通知
+__label__approval 合同审批流程已发起
+__label__approval 加班申请待审批
+__label__approval 采购申请审批
+__label__approval 您的请假申请已批准
+__label__approval 报销申请已驳回
+__label__approval 请审批以下合同
+__label__approval 审批通过通知
+__label__approval 待我审批的事项
+__label__approval 审批流程已完成
+__label__approval 您提交的请假申请已同意
+__label__approval 费用报销审批
+__label__approval 项目审批通知
+__label__approval 请处理待审批事项
+__label__approval 审批提醒：您有待处理的审批
+__label__approval 合同审核通知
+__label__approval 付款审批单已提交
+__label__approval 请假审批结果通知
+
+__label__alert 系统告警：CPU使用率过高
+__label__alert 错误日志：数据库连接失败
+__label__alert 紧急告警：服务器宕机
+__label__alert 错误：空指针异常
+__label__alert 服务不可用告警
+__label__alert 系统故障通知
+__label__alert 严重错误：内存溢出
+__label__alert 超时错误：请求响应超时
+__label__alert 网络异常告警
+__label__alert 接口调用失败
+__label__alert CRITICAL: System down
+__label__alert 数据库连接超时
+__label__alert 任务执行失败
+__label__alert 异常堆栈信息
+__label__alert 服务器负载过高
+__label__alert 磁盘空间不足告警
+__label__alert 内存泄漏检测到
+__label__alert 致命错误：程序崩溃
+__label__alert ERROR: Connection refused
+__label__alert 服务降级告警
+
+__label__notification 系统通知：版本更新
+__label__notification 温馨提示：密码即将过期
+__label__notification 公告：系统维护通知
+__label__notification 消息：您有新的回复
+__label__notification 提醒：会议即将开始
+__label__notification 通知：新功能已上线
+__label__notification 系统公告
+__label__notification 温馨提醒：请及时处理
+__label__notification Update: New features available
+__label__notification 通知：假期安排
+__label__notification 消息中心通知
+__label__notification 公告通知
+__label__notification 系统升级通知
+__label__notification 通知：政策更新
+__label__notification Reminder: Meeting at 3pm
+__label__notification 您有新的消息
+__label__notification 活动通知
+__label__notification 培训通知
+__label__notification 通知：考勤异常
+__label__notification 系统消息通知
+
+__label__other 天气预报：今日晴
+__label__other 生日祝福
+__label__other 新闻资讯推送
+__label__other 广告推广
+__label__other 市场动态
+__label__other 行业资讯
+__label__other 团队建设活动
+__label__other 下午茶通知
+__label__other 快递通知
+__label__other 访客预约
