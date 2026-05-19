@@ -1,0 +1,63 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2024-01-01",
+  "global_limits": {
+    "max_sum_insured": "100000000",
+    "max_single_risk": "50000000",
+    "max_cession_rate": 0.9
+  },
+  "contracts": [
+    {
+      "id": "quota_share_001",
+      "name": "成数分保合同-A",
+      "reinsurance_type": "quota_share",
+      "cession_rate": "0.3",
+      "retention_rate": "0.7",
+      "min_premium": "1000.00",
+      "max_premium": null,
+      "is_active": true,
+      "priority": 1,
+      "applicable_products": ["车险", "寿险", "健康险"]
+    },
+    {
+      "id": "surplus_001",
+      "name": "溢额分保合同-B",
+      "reinsurance_type": "surplus",
+      "retention": "1000000",
+      "limit": "5000000",
+      "max_sum_insured_cap": "20000000",
+      "is_active": true,
+      "priority": 2,
+      "applicable_products": ["车险", "财产险"]
+    },
+    {
+      "id": "excess_loss_001",
+      "name": "超额赔款分保合同-C",
+      "reinsurance_type": "excess_of_loss",
+      "priority_amount": "500000",
+      "limit": "2000000",
+      "attachment_point": "500000",
+      "exhaustion_point": "2500000",
+      "is_active": true,
+      "priority": 3,
+      "applicable_products": ["责任险", "财产险"]
+    },
+    {
+      "id": "catastrophe_001",
+      "name": "巨灾超赔合同-D",
+      "reinsurance_type": "excess_of_loss",
+      "priority_amount": "10000000",
+      "limit": "50000000",
+      "attachment_point": "10000000",
+      "exhaustion_point": "60000000",
+      "is_active": true,
+      "priority": 4,
+      "applicable_products": ["巨灾险", "财产险"]
+    }
+  ],
+  "allocation_rules": {
+    "rounding_precision": 2,
+    "apply_cap_to_sum_insured": true,
+    "min_net_retention": "100.00"
+  }
+}
