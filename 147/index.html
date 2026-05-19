@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数字人驱动系统 v3.0 - 全身动捕版</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 数字人驱动系统 v3.0</h1>
+        
+        <div class="main-content">
+            <div class="video-panel">
+                <h3>📷 摄像头输入</h3>
+                <video id="inputVideo" autoplay playsinline></video>
+                <canvas id="faceCanvas"></canvas>
+                <canvas id="poseCanvas" style="display: none;"></canvas>
+            </div>
+            
+            <div class="avatar-panel">
+                <h3>👤 虚拟形象</h3>
+                <canvas id="avatarCanvas"></canvas>
+            </div>
+        </div>
+        
+        <div class="control-panel">
+            <div class="control-group">
+                <h3>🎬 动作捕捉</h3>
+                <div class="capture-modes">
+                    <button id="faceOnlyBtn" class="mode-btn active">仅面部</button>
+                    <button id="holisticBtn" class="mode-btn">全身动捕</button>
+                </div>
+                <button id="startCameraBtn">开启摄像头</button>
+                <button id="stopCameraBtn" disabled>关闭摄像头</button>
+                <label>
+                    <input type="checkbox" id="showLandmarks" checked>
+                    显示骨骼关键点
+                </label>
+                <div class="status-display">
+                    <span>检测模式: <strong id="captureMode">仅面部</strong></span>
+                    <span>身体关键点: <strong id="poseStatus">未检测</strong></span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>🎨 虚拟形象</h3>
+                <div class="avatar-selector">
+                    <div class="avatar-option selected" data-model="cartoon">
+                        <div class="avatar-preview">😊</div>
+                        <span>卡通人物</span>
+                    </div>
+                    <div class="avatar-option" data-model="realistic">
+                        <div class="avatar-preview">🧑</div>
+                        <span>真人风格</span>
+                    </div>
+                    <div class="avatar-option" data-model="robot">
+                        <div class="avatar-preview">🤖</div>
+                        <span>机器人</span>
+                    </div>
+                    <div class="avatar-option" data-model="anime">
+                        <div class="avatar-preview">🎌</div>
+                        <span>动漫风格</span>
+                    </div>
+                </div>
+                <div class="slider-control">
+                    <label>形象大小:</label>
+                    <input type="range" id="avatarScale" min="0.5" max="2" step="0.1" value="1">
+                    <span id="scaleValue">1.0x</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>🖼️ 背景设置</h3>
+                <div class="background-modes">
+                    <button id="bgDefaultBtn" class="bg-btn active">默认渐变</button>
+                    <button id="bgGreenBtn" class="bg-btn">绿幕背景</button>
+                    <button id="bgBlueBtn" class="bg-btn">蓝幕背景</button>
+                    <button id="bgImageBtn" class="bg-btn">自定义图片</button>
+                </div>
+                <input type="file" id="bgImageInput" accept="image/*" style="display: none;">
+                <button id="selectBgImageBtn">选择背景图片</button>
+                <div class="slider-control">
+                    <label>背景模糊:</label>
+                    <input type="range" id="bgBlur" min="0" max="20" step="1" value="0">
+                    <span id="blurValue">0px</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>🎙️ TTS语音</h3>
+                <textarea id="ttsText" placeholder="输入要朗读的文字...">你好，我是数字人！很高兴见到你。我现在支持全身动作捕捉，你可以试试看。</textarea>
+                <button id="speakBtn">开始朗读</button>
+                <button id="stopSpeakBtn" disabled>停止朗读</button>
+                <div class="slider-control">
+                    <label>语速:</label>
+                    <input type="range" id="speechRate" min="0.5" max="2" step="0.1" value="1">
+                    <span id="rateValue">1.0</span>
+                </div>
+                <div class="slider-control">
+                    <label>音调:</label>
+                    <input type="range" id="speechPitch" min="0.5" max="2" step="0.1" value="1">
+                    <span id="pitchValue">1.0</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>📡 直播推流</h3>
+                <button id="startStreamBtn">开始推流</button>
+                <button id="stopStreamBtn" disabled>停止推流</button>
+                <input type="text" id="streamKey" placeholder="输入推流密钥 (可选)">
+                <div class="status-display">
+                    <span>推流状态: <strong id="streamStatus">未连接</strong></span>
+                    <span>观看链接: <strong id="viewUrl">准备中...</strong></span>
+                </div>
+                <div class="stream-preview" style="display: none;">
+                    <h4>推流预览</h4>
+                    <video id="streamOutput" autoplay playsinline style="width: 100%; border-radius: 8px;"></video>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>⚙️ 口型同步</h3>
+                <label>
+                    <input type="checkbox" id="audioSync" checked>
+                    启用音频口型同步
+                </label>
+                <div class="status-display">
+                    <span>嘴部张开度: <strong id="mouthOpenValue">0%</strong></span>
+                    <span>眨眼检测: <strong id="blinkValue">未检测</strong></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="debug-panel">
+            <h3>🔧 调试信息</h3>
+            <div id="debugInfo">等待摄像头开启...</div>
+            <div id="blendshapeDebug" style="margin-top: 10px; font-size: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; max-height: 150px; overflow-y: auto;"></div>
+            <div id="poseDebug" style="margin-top: 10px; font-size: 10px; color: #00ffff;"></div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@1.0.5/dist/face-landmarks-detection.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469240/pose.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5.1675469240/holistic.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466862/drawing_utils.min.js"></script>
+    <script src="avatar.js"></script>
+    <script src="faceTracker.js"></script>
+    <script src="poseTracker.js"></script>
+    <script src="backgroundManager.js"></script>
+    <script src="streamManager.js"></script>
+    <script src="tts.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
