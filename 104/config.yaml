@@ -1,0 +1,39 @@
+# 日志归档工具配置文件 (YAML格式)
+
+# 全局配置
+global:
+  retention_days: 7          # 默认保留天数
+  compress_level: 6         # GZIP压缩级别 (1-9)
+  content_filter: null        # 内容过滤正则表达式 (null表示不过滤)
+  case_sensitive: false     # 内容过滤是否区分大小写
+
+# 多目录监控配置
+directories:
+  # 目录1: Web服务器日志
+  - source: ./logs/web
+    target: ./archive/web
+    retention_days: 7       # 覆盖全局配置 (可选)
+    compress_level: 6       # 覆盖全局配置 (可选)
+    content_filter: "ERROR|WARN"  # 只归档包含ERROR或WARN的日志 (可选)
+
+  # 目录2: 应用服务器日志
+  - source: ./logs/app
+    target: ./archive/app
+    retention_days: 14
+    content_filter: null     # 该目录不使用内容过滤
+
+  # 目录3: 数据库日志
+  - source: ./logs/db
+    target: ./archive/db
+
+# 邮件报告配置
+email:
+  smtp_host: smtp.example.com
+  smtp_port: 465
+  smtp_user: noreply@example.com
+  smtp_password: your_password
+  from_addr: Log Archiver <noreply@example.com>
+  to_addrs:
+    - admin@example.com
+    - dev@example.com
+  use_tls: true
