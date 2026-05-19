@@ -1,0 +1,2718 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D室内漫游展示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            overflow: hidden;
+            background: #1a1a2e;
+            touch-action: none;
+        }
+
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 46, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.5s ease;
+        }
+
+        #start-screen h1 {
+            color: #fff;
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(100, 200, 255, 0.5);
+        }
+
+        #start-screen p {
+            color: #aaa;
+            font-size: 18px;
+            margin-bottom: 40px;
+        }
+
+        #start-btn {
+            padding: 15px 50px;
+            font-size: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        #start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        #controls-hint {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #888;
+            font-size: 14px;
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 14px;
+            z-index: 10;
+            display: none;
+        }
+
+        .hud-item {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 15px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            backdrop-filter: blur(5px);
+        }
+
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            z-index: 5;
+            display: none;
+        }
+
+        #crosshair::before,
+        #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        #crosshair::before {
+            width: 2px;
+            height: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #crosshair::after {
+            width: 20px;
+            height: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        #info-panel {
+            position: absolute;
+            top: 50%;
+            right: 30px;
+            transform: translateY(-50%);
+            width: 320px;
+            background: rgba(20, 20, 40, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            z-index: 20;
+            display: none;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        #info-panel.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50%) translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(-50%) translateX(0);
+            }
+        }
+
+        #info-panel h2 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: #667eea;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+            padding-bottom: 10px;
+        }
+
+        #info-panel .info-content {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #ccc;
+        }
+
+        #info-panel .info-content p {
+            margin-bottom: 10px;
+        }
+
+        #info-panel .info-label {
+            color: #888;
+            display: inline-block;
+            width: 80px;
+        }
+
+        #info-panel .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.3s;
+        }
+
+        #info-panel .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        #interact-hint {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 15;
+            display: none;
+            backdrop-filter: blur(5px);
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 20px;
+            z-index: 50;
+            display: none;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #outline-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 3;
+            display: none;
+        }
+
+        #joystick-container {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            width: 120px;
+            height: 120px;
+            z-index: 50;
+            display: none;
+            touch-action: none;
+        }
+
+        #joystick-base {
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        #joystick-stick {
+            width: 50px;
+            height: 50px;
+            background: rgba(102, 126, 234, 0.8);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: background 0.2s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+        }
+
+        #joystick-stick:active {
+            background: rgba(102, 126, 234, 1);
+        }
+
+        #mobile-interact-btn {
+            position: absolute;
+            bottom: 60px;
+            right: 60px;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            z-index: 50;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5);
+            touch-action: none;
+            user-select: none;
+        }
+
+        #mobile-interact-btn:active {
+            transform: scale(0.95);
+        }
+
+        #mobile-look-area {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            z-index: 40;
+            display: none;
+            touch-action: none;
+        }
+
+        #floor-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(20, 20, 40, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            z-index: 25;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+            min-width: 180px;
+        }
+
+        #floor-panel.active {
+            display: block;
+        }
+
+        #floor-panel h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .floor-btn {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            width: 100%;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .floor-btn:hover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        .floor-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+        }
+
+        .floor-btn .floor-icon {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        #record-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20, 20, 40, 0.9);
+            border-radius: 50px;
+            padding: 10px 20px;
+            color: white;
+            z-index: 25;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #record-panel.active {
+            display: flex;
+        }
+
+        .record-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .record-btn.start {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+
+        .record-btn.stop {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        .record-btn.play {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+        }
+
+        .record-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        #record-status {
+            font-size: 14px;
+            color: #aaa;
+            min-width: 120px;
+        }
+
+        #nav-panel {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20, 20, 40, 0.9);
+            border-radius: 15px;
+            padding: 15px 25px;
+            color: white;
+            z-index: 25;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #nav-panel.active {
+            display: flex;
+        }
+
+        #nav-target {
+            font-size: 14px;
+            color: #667eea;
+        }
+
+        #nav-cancel {
+            padding: 8px 15px;
+            background: rgba(231, 76, 60, 0.8);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        #nav-cancel:hover {
+            background: rgba(231, 76, 60, 1);
+        }
+
+        #nav-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 6;
+        }
+
+        #minimap {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            border: 2px solid rgba(102, 126, 234, 0.5);
+            z-index: 25;
+            display: none;
+            overflow: hidden;
+        }
+
+        #minimap.active {
+            display: block;
+        }
+
+        #minimap-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        #minimap-label {
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            color: white;
+            font-size: 12px;
+            text-shadow: 0 0 3px black;
+        }
+
+        .minimap-room {
+            position: absolute;
+            border: 1px solid rgba(102, 126, 234, 0.8);
+            background: rgba(102, 126, 234, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .minimap-room:hover {
+            background: rgba(102, 126, 234, 0.6);
+        }
+
+        .minimap-room.active {
+            background: rgba(46, 204, 113, 0.6);
+            border-color: #2ecc71;
+        }
+
+        .minimap-player {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #e74c3c;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            box-shadow: 0 0 10px #e74c3c;
+        }
+
+        .minimap-room-label {
+            position: absolute;
+            color: white;
+            font-size: 10px;
+            pointer-events: none;
+            text-shadow: 0 0 3px black;
+        }
+
+        #elevator-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        #elevator-overlay.active {
+            display: flex;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        #elevator-display {
+            font-size: 72px;
+            color: #e74c3c;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+            margin-bottom: 20px;
+        }
+
+        #elevator-text {
+            color: #aaa;
+            font-size: 18px;
+        }
+
+        #tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            #start-screen h1 {
+                font-size: 32px;
+            }
+
+            #start-screen p {
+                font-size: 14px;
+            }
+
+            #controls-hint {
+                font-size: 12px;
+            }
+
+            #hud {
+                display: none !important;
+            }
+
+            #floor-panel {
+                right: 10px;
+                top: 10px;
+                padding: 10px;
+                min-width: 140px;
+            }
+
+            #record-panel {
+                bottom: 180px;
+            }
+
+            #minimap {
+                width: 150px;
+                height: 150px;
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            #joystick-container,
+            #mobile-interact-btn,
+            #mobile-look-area {
+                display: block;
+            }
+
+            #mobile-interact-btn {
+                display: flex;
+            }
+
+            #crosshair {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-container"></div>
+        
+        <div id="start-screen">
+            <h1>🏠 3D室内漫游</h1>
+            <p>沉浸式体验现代化室内设计</p>
+            <button id="start-btn">开始漫游</button>
+            <div id="controls-hint">
+                桌面端: WASD移动 | 鼠标环视 | 点击交互 | ESC退出<br>
+                移动端: 左侧摇杆移动 | 右侧滑动环视 | 右下角按钮交互<br>
+                功能: R录制/停止 | P播放 | F楼层切换 | 小地图点击导航
+            </div>
+        </div>
+
+        <div id="hud">
+            <div class="hud-item">🎮 WASD 移动</div>
+            <div class="hud-item">🖱️ 鼠标环视</div>
+            <div class="hud-item">👆 点击交互</div>
+            <div class="hud-item">🎥 R录制 | P播放</div>
+            <div class="hud-item">🏢 F楼层切换</div>
+        </div>
+
+        <div id="crosshair"></div>
+        <div id="interact-hint">按 E 或 点击 查看详情</div>
+
+        <div id="info-panel">
+            <button class="close-btn" onclick="closeInfoPanel()">×</button>
+            <h2 id="info-title">物体信息</h2>
+            <div class="info-content" id="info-content"></div>
+        </div>
+
+        <div id="loading">
+            <div class="spinner"></div>
+            <div>加载中...</div>
+        </div>
+
+        <canvas id="outline-overlay"></canvas>
+
+        <div id="joystick-container">
+            <div id="joystick-base">
+                <div id="joystick-stick"></div>
+            </div>
+        </div>
+
+        <div id="mobile-interact-btn">👆</div>
+        <div id="mobile-look-area"></div>
+
+        <div id="floor-panel">
+            <h3>🏢 楼层选择</h3>
+            <div id="floor-buttons"></div>
+        </div>
+
+        <div id="record-panel">
+            <button id="record-btn" class="record-btn start" title="开始录制 (R)">⏺</button>
+            <button id="play-btn" class="record-btn play" title="播放录制 (P)" disabled>▶</button>
+            <div id="record-status">待机中</div>
+        </div>
+
+        <div id="nav-panel">
+            <span>🧭 导航至:</span>
+            <span id="nav-target">--</span>
+            <button id="nav-cancel">取消</button>
+        </div>
+
+        <div id="minimap">
+            <div id="minimap-label">📍 一层平面图</div>
+            <canvas id="minimap-canvas"></canvas>
+        </div>
+
+        <div id="elevator-overlay">
+            <div id="elevator-display">1F</div>
+            <div id="elevator-text">电梯运行中...</div>
+        </div>
+
+        <div id="tooltip"></div>
+
+        <canvas id="nav-overlay"></canvas>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
+
+        let scene, camera, renderer, controls, composer, outlinePass;
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let velocity = new THREE.Vector3();
+        let direction = new THREE.Vector3();
+        let prevTime = performance.now();
+        let collisionOBBs = [];
+        let interactiveObjects = [];
+        let raycaster, mouse;
+        let highlightedObject = null;
+        let isMobile = false;
+        let joystickActive = false;
+        let joystickVector = { x: 0, y: 0 };
+        let mobileLookActive = false;
+        let lastTouchX = 0, lastTouchY = 0;
+
+        const PLAYER_RADIUS = 0.4;
+        const PLAYER_HEIGHT = 1.7;
+        const MOVE_SPEED = 200.0;
+        const GRAVITY = 30;
+        const JUMP_HEIGHT = 10;
+        let canJump = false;
+        let isLocked = false;
+
+        let currentFloor = 1;
+        let floors = {};
+        let floorTransitionActive = false;
+
+        let isRecording = false;
+        let recordedFrames = [];
+        let isPlaying = false;
+        let playIndex = 0;
+        let lastRecordTime = 0;
+
+        let navTarget = null;
+        let navPath = [];
+        let navArrow = null;
+        let navActive = false;
+
+        const rooms = {
+            1: [
+                { id: 'living', name: '客厅', x: -3, z: -3, width: 10, depth: 8 },
+                { id: 'dining', name: '餐厅', x: 5, z: -2, width: 6, depth: 6 },
+                { id: 'kitchen', name: '厨房', x: 7, z: 4, width: 5, depth: 5 },
+                { id: 'study', name: '书房', x: -6, z: 4, width: 6, depth: 5 }
+            ],
+            2: [
+                { id: 'bedroom1', name: '主卧室', x: -3, z: -3, width: 8, depth: 8 },
+                { id: 'bedroom2', name: '次卧室', x: 5, z: -2, width: 6, depth: 6 },
+                { id: 'bathroom', name: '浴室', x: 7, z: 4, width: 4, depth: 4 },
+                { id: 'balcony', name: '阳台', x: -6, z: 4, width: 5, depth: 4 }
+            ],
+            3: [
+                { id: 'gym', name: '健身房', x: -3, z: -2, width: 10, depth: 8 },
+                { id: 'entertainment', name: '娱乐室', x: 5, z: 3, width: 8, depth: 6 },
+                { id: 'storage', name: '储藏室', x: -7, z: 5, width: 4, depth: 4 }
+            ]
+        };
+
+        const roomConfig = {
+            width: 20,
+            height: 3.5,
+            depth: 15
+        };
+
+        const furnitureData = {
+            sofa: {
+                title: '现代布艺沙发',
+                info: {
+                    '品牌': '宜家家居',
+                    '型号': 'KLIPPAN',
+                    '材质': '高密度海绵 + 亚麻面料',
+                    '尺寸': '220 × 90 × 75 cm',
+                    '颜色': '浅灰色',
+                    '价格': '¥ 2,999'
+                }
+            },
+            table: {
+                title: '实木茶几',
+                info: {
+                    '品牌': '无印良品',
+                    '型号': 'Walnut Table',
+                    '材质': '北美黑胡桃木',
+                    '尺寸': '120 × 60 × 45 cm',
+                    '工艺': '榫卯结构',
+                    '价格': '¥ 4,599'
+                }
+            },
+            lamp: {
+                title: '北欧落地灯',
+                info: {
+                    '品牌': 'HAY',
+                    '型号': 'Apollo Floor Lamp',
+                    '材质': '金属 + 布艺灯罩',
+                    '光源': 'E27 × 1 (最大60W)',
+                    '高度': '180 cm',
+                    '价格': '¥ 1,299'
+                }
+            },
+            bookshelf: {
+                title: '组合书架',
+                info: {
+                    '品牌': '宜家家居',
+                    '型号': 'BILLY',
+                    '材质': '刨花板 + 实木贴面',
+                    '尺寸': '80 × 28 × 202 cm',
+                    '层数': '6层',
+                    '价格': '¥ 799'
+                }
+            },
+            plant: {
+                title: '龟背竹盆栽',
+                info: {
+                    '品种': '龟背竹 (Monstera)',
+                    '产地': '中美洲热带雨林',
+                    '高度': '约150 cm',
+                    '习性': '喜温暖湿润、耐阴',
+                    '浇水': '每周1-2次',
+                    '价格': '¥ 399'
+                }
+            },
+            painting: {
+                title: '抽象装饰画',
+                info: {
+                    '作品': '《城市印象》',
+                    '艺术家': '陈默',
+                    '风格': '现代抽象',
+                    '材质': '油画布 + 实木画框',
+                    '尺寸': '120 × 80 cm',
+                    '价格': '¥ 8,800'
+                }
+            },
+            bed: {
+                title: '现代简约双人床',
+                info: {
+                    '品牌': '慕思',
+                    '型号': 'Dream Series',
+                    '材质': '实木框架 + 记忆棉床垫',
+                    '尺寸': '180 × 200 cm',
+                    '颜色': '米白色',
+                    '价格': '¥ 8,999'
+                }
+            },
+            desk: {
+                title: '电竞桌椅套装',
+                info: {
+                    '品牌': '傲风',
+                    '型号': 'Pro Gaming Set',
+                    '材质': '碳纤维面板 + 人体工学椅',
+                    '尺寸': '160 × 80 × 75 cm',
+                    '特性': 'RGB灯光 + 电动升降',
+                    '价格': '¥ 5,699'
+                }
+            },
+            gymEquipment: {
+                title: '综合健身器材',
+                info: {
+                    '品牌': 'Technogym',
+                    '型号': 'Home Gym Pro',
+                    '功能': '跑步机 + 力量训练 + 瑜伽区',
+                    '配件': '哑铃组 + 瑜伽垫 + 弹力带',
+                    '质保': '5年整机质保',
+                    '价格': '¥ 28,800'
+                }
+            }
+        };
+
+        class PriorityQueue {
+            constructor() {
+                this.items = [];
+            }
+
+            enqueue(item, priority) {
+                this.items.push({ item, priority });
+                this.items.sort((a, b) => a.priority - b.priority);
+            }
+
+            dequeue() {
+                return this.items.shift().item;
+            }
+
+            isEmpty() {
+                return this.items.length === 0;
+            }
+        }
+
+        function findPath(start, end, floor) {
+            const gridSize = 1;
+            const width = Math.ceil(roomConfig.width / gridSize);
+            const depth = Math.ceil(roomConfig.depth / gridSize);
+            const offsetX = -roomConfig.width / 2;
+            const offsetZ = -roomConfig.depth / 2;
+
+            const startGrid = {
+                x: Math.floor((start.x - offsetX) / gridSize),
+                z: Math.floor((start.z - offsetZ) / gridSize)
+            };
+            const endGrid = {
+                x: Math.floor((end.x - offsetX) / gridSize),
+                z: Math.floor((end.z - offsetZ) / gridSize)
+            };
+
+            const obstacles = new Set();
+            for (const { obb } of collisionOBBs) {
+                const minX = Math.floor((obb.center.x - obb.halfSize.x - offsetX) / gridSize);
+                const maxX = Math.ceil((obb.center.x + obb.halfSize.x - offsetX) / gridSize);
+                const minZ = Math.floor((obb.center.z - obb.halfSize.z - offsetZ) / gridSize);
+                const maxZ = Math.ceil((obb.center.z + obb.halfSize.z - offsetZ) / gridSize);
+                for (let x = minX; x <= maxX; x++) {
+                    for (let z = minZ; z <= maxZ; z++) {
+                        obstacles.add(`${x},${z}`);
+                    }
+                }
+            }
+
+            function heuristic(a, b) {
+                return Math.abs(a.x - b.x) + Math.abs(a.z - b.z);
+            }
+
+            function getNeighbors(node) {
+                const neighbors = [];
+                const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+                for (const [dx, dz] of dirs) {
+                    const nx = node.x + dx;
+                    const nz = node.z + dz;
+                    if (nx >= 0 && nx < width && nz >= 0 && nz < depth && !obstacles.has(`${nx},${nz}`)) {
+                        neighbors.push({ x: nx, z: nz });
+                    }
+                }
+                return neighbors;
+            }
+
+            const openSet = new PriorityQueue();
+            const cameFrom = new Map();
+            const gScore = new Map();
+            const fScore = new Map();
+
+            const startKey = `${startGrid.x},${startGrid.z}`;
+            const endKey = `${endGrid.x},${endGrid.z}`;
+
+            gScore.set(startKey, 0);
+            fScore.set(startKey, heuristic(startGrid, endGrid));
+            openSet.enqueue(startGrid, fScore.get(startKey));
+
+            while (!openSet.isEmpty()) {
+                const current = openSet.dequeue();
+                const currentKey = `${current.x},${current.z}`;
+
+                if (currentKey === endKey) {
+                    const path = [];
+                    let curr = current;
+                    while (curr) {
+                        path.unshift({
+                            x: curr.x * gridSize + offsetX + gridSize / 2,
+                            z: curr.z * gridSize + offsetZ + gridSize / 2
+                        });
+                        curr = cameFrom.get(`${curr.x},${curr.z}`);
+                    }
+                    return path;
+                }
+
+                for (const neighbor of getNeighbors(current)) {
+                    const neighborKey = `${neighbor.x},${neighbor.z}`;
+                    const tentativeG = gScore.get(currentKey) + 1;
+
+                    if (tentativeG < (gScore.get(neighborKey) || Infinity)) {
+                        cameFrom.set(neighborKey, current);
+                        gScore.set(neighborKey, tentativeG);
+                        fScore.set(neighborKey, tentativeG + heuristic(neighbor, endGrid));
+                        openSet.enqueue(neighbor, fScore.get(neighborKey));
+                    }
+                }
+            }
+
+            return [];
+        }
+
+        class OBB {
+            constructor(center, halfSize, rotation) {
+                this.center = center.clone();
+                this.halfSize = halfSize.clone();
+                this.rotation = rotation.clone();
+                this.axes = [
+                    new THREE.Vector3(1, 0, 0),
+                    new THREE.Vector3(0, 1, 0),
+                    new THREE.Vector3(0, 0, 1)
+                ];
+                this.updateAxes();
+            }
+
+            updateAxes() {
+                const euler = new THREE.Euler().setFromQuaternion(this.rotation);
+                this.axes[0].set(1, 0, 0).applyEuler(euler);
+                this.axes[1].set(0, 1, 0).applyEuler(euler);
+                this.axes[2].set(0, 0, 1).applyEuler(euler);
+            }
+
+            static fromMesh(mesh) {
+                const box = new THREE.Box3().setFromObject(mesh);
+                const center = new THREE.Vector3();
+                const halfSize = new THREE.Vector3();
+                box.getCenter(center);
+                box.getSize(halfSize);
+                halfSize.multiplyScalar(0.5);
+                const rotation = mesh.getWorldQuaternion(new THREE.Quaternion());
+                return new OBB(center, halfSize, rotation);
+            }
+
+            intersectsOBB(other) {
+                const T = new THREE.Vector3().subVectors(other.center, this.center);
+                const a = this.axes;
+                const b = other.axes;
+                const R = [];
+
+                for (let i = 0; i < 3; i++) {
+                    R[i] = [];
+                    for (let j = 0; j < 3; j++) {
+                        R[i][j] = a[i].dot(b[j]);
+                    }
+                }
+
+                const AbsR = [];
+                for (let i = 0; i < 3; i++) {
+                    AbsR[i] = [];
+                    for (let j = 0; j < 3; j++) {
+                        AbsR[i][j] = Math.abs(R[i][j]) + 1e-6;
+                    }
+                }
+
+                const t = [
+                    T.dot(a[0]),
+                    T.dot(a[1]),
+                    T.dot(a[2])
+                ];
+
+                const ra = this.halfSize;
+                const rb = other.halfSize;
+
+                let s;
+
+                s = Math.abs(t[0]);
+                if (s > ra.x + rb.x * AbsR[0][0] + rb.y * AbsR[0][1] + rb.z * AbsR[0][2]) return false;
+
+                s = Math.abs(t[1]);
+                if (s > ra.y + rb.x * AbsR[1][0] + rb.y * AbsR[1][1] + rb.z * AbsR[1][2]) return false;
+
+                s = Math.abs(t[2]);
+                if (s > ra.z + rb.x * AbsR[2][0] + rb.y * AbsR[2][1] + rb.z * AbsR[2][2]) return false;
+
+                s = Math.abs(T.dot(b[0]));
+                if (s > rb.x + ra.x * AbsR[0][0] + ra.y * AbsR[1][0] + ra.z * AbsR[2][0]) return false;
+
+                s = Math.abs(T.dot(b[1]));
+                if (s > rb.y + ra.x * AbsR[0][1] + ra.y * AbsR[1][1] + ra.z * AbsR[2][1]) return false;
+
+                s = Math.abs(T.dot(b[2]));
+                if (s > rb.z + ra.x * AbsR[0][2] + ra.y * AbsR[1][2] + ra.z * AbsR[2][2]) return false;
+
+                s = Math.abs(t[2] * b[1].y - t[1] * b[1].z);
+                if (s > ra.y * AbsR[2][1] + ra.z * AbsR[1][1] + rb.x * AbsR[0][2] + rb.z * AbsR[0][0]) return false;
+
+                s = Math.abs(t[2] * b[2].y - t[1] * b[2].z);
+                if (s > ra.y * AbsR[2][2] + ra.z * AbsR[1][2] + rb.x * AbsR[0][1] + rb.y * AbsR[0][0]) return false;
+
+                s = Math.abs(t[0] * b[2].z - t[2] * b[2].x);
+                if (s > ra.x * AbsR[0][2] + ra.z * AbsR[2][2] + rb.x * AbsR[1][1] + rb.y * AbsR[1][0]) return false;
+
+                s = Math.abs(t[0] * b[1].z - t[2] * b[1].x);
+                if (s > ra.x * AbsR[0][1] + ra.z * AbsR[2][1] + rb.x * AbsR[2][2] + rb.z * AbsR[2][0]) return false;
+
+                s = Math.abs(t[1] * b[0].x - t[0] * b[0].y);
+                if (s > ra.x * AbsR[1][0] + ra.y * AbsR[0][0] + rb.y * AbsR[2][2] + rb.z * AbsR[2][1]) return false;
+
+                s = Math.abs(t[1] * b[1].x - t[0] * b[1].y);
+                if (s > ra.x * AbsR[1][1] + ra.y * AbsR[0][1] + rb.y * AbsR[2][2] + rb.z * AbsR[2][0]) return false;
+
+                return true;
+            }
+        }
+
+        function init() {
+            isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+                      || (window.innerWidth <= 768 && 'ontouchstart' in window);
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87ceeb);
+            scene.fog = new THREE.Fog(0x87ceeb, 50, 150);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, PLAYER_HEIGHT, 5);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            composer = new EffectComposer(renderer);
+            const renderPass = new RenderPass(scene, camera);
+            composer.addPass(renderPass);
+
+            outlinePass = new OutlinePass(
+                new THREE.Vector2(window.innerWidth, window.innerHeight),
+                scene,
+                camera
+            );
+            outlinePass.edgeStrength = 3.0;
+            outlinePass.edgeGlow = 1.0;
+            outlinePass.edgeThickness = 1.0;
+            outlinePass.pulsePeriod = 0;
+            outlinePass.visibleEdgeColor.set('#667eea');
+            outlinePass.hiddenEdgeColor.set('#764ba2');
+            composer.addPass(outlinePass);
+
+            controls = new PointerLockControls(camera, renderer.domElement);
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            setupLights();
+            createFloor(1);
+            createFloor(2);
+            createFloor(3);
+            showFloor(1);
+            setupUI();
+            setupEventListeners();
+            if (isMobile) {
+                setupMobileControls();
+            }
+
+            animate();
+        }
+
+        function createFloor(floorNum) {
+            const floorGroup = new THREE.Group();
+            floorGroup.name = `floor_${floorNum}`;
+            floorGroup.visible = false;
+
+            const yOffset = (floorNum - 1) * (roomConfig.height + 0.5);
+
+            const floorGeometry = new THREE.PlaneGeometry(roomConfig.width, roomConfig.depth);
+            const floorMaterial = new THREE.MeshStandardMaterial({
+                color: floorNum === 1 ? 0x8b7355 : floorNum === 2 ? 0x6b5344 : 0x5a4535,
+                roughness: 0.8,
+                metalness: 0.1
+            });
+            const floorMesh = new THREE.Mesh(floorGeometry, floorMaterial);
+            floorMesh.rotation.x = -Math.PI / 2;
+            floorMesh.position.y = yOffset;
+            floorMesh.receiveShadow = true;
+            floorGroup.add(floorMesh);
+
+            const ceilingMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                roughness: 0.9,
+                metalness: 0.1
+            });
+            const ceiling = new THREE.Mesh(floorGeometry, ceilingMaterial);
+            ceiling.rotation.x = Math.PI / 2;
+            ceiling.position.y = yOffset + roomConfig.height;
+            floorGroup.add(ceiling);
+
+            const wallMaterial = new THREE.MeshStandardMaterial({
+                color: floorNum === 1 ? 0xf5f5dc : floorNum === 2 ? 0xe8e4d1 : 0xd4cfc0,
+                roughness: 0.9,
+                metalness: 0.1
+            });
+
+            const backWall = new THREE.Mesh(
+                new THREE.PlaneGeometry(roomConfig.width, roomConfig.height),
+                wallMaterial
+            );
+            backWall.position.set(0, yOffset + roomConfig.height / 2, -roomConfig.depth / 2);
+            backWall.receiveShadow = true;
+            floorGroup.add(backWall);
+
+            const frontWall = new THREE.Mesh(
+                new THREE.PlaneGeometry(roomConfig.width, roomConfig.height),
+                wallMaterial
+            );
+            frontWall.position.set(0, yOffset + roomConfig.height / 2, roomConfig.depth / 2);
+            frontWall.rotation.y = Math.PI;
+            frontWall.receiveShadow = true;
+            floorGroup.add(frontWall);
+
+            const leftWall = new THREE.Mesh(
+                new THREE.PlaneGeometry(roomConfig.depth, roomConfig.height),
+                wallMaterial
+            );
+            leftWall.position.set(-roomConfig.width / 2, yOffset + roomConfig.height / 2, 0);
+            leftWall.rotation.y = Math.PI / 2;
+            leftWall.receiveShadow = true;
+            floorGroup.add(leftWall);
+
+            const rightWall = new THREE.Mesh(
+                new THREE.PlaneGeometry(roomConfig.depth, roomConfig.height),
+                wallMaterial
+            );
+            rightWall.position.set(roomConfig.width / 2, yOffset + roomConfig.height / 2, 0);
+            rightWall.rotation.y = -Math.PI / 2;
+            rightWall.receiveShadow = true;
+            floorGroup.add(rightWall);
+
+            if (floorNum === 1) {
+                createLivingRoom(floorGroup, yOffset);
+                createDiningRoom(floorGroup, yOffset);
+                createKitchen(floorGroup, yOffset);
+                createStudyRoom(floorGroup, yOffset);
+            } else if (floorNum === 2) {
+                createMasterBedroom(floorGroup, yOffset);
+                createSecondBedroom(floorGroup, yOffset);
+                createBathroom(floorGroup, yOffset);
+                createBalcony(floorGroup, yOffset);
+            } else {
+                createGymRoom(floorGroup, yOffset);
+                createEntertainmentRoom(floorGroup, yOffset);
+                createStorageRoom(floorGroup, yOffset);
+            }
+
+            createElevator(floorGroup, yOffset, floorNum);
+
+            scene.add(floorGroup);
+            floors[floorNum] = {
+                group: floorGroup,
+                yOffset: yOffset,
+                collisionOBBs: []
+            };
+        }
+
+        function createLivingRoom(group, yOffset) {
+            const sofaGroup = new THREE.Group();
+            sofaGroup.position.set(-4, yOffset, -4);
+            sofaGroup.rotation.y = Math.PI / 6;
+
+            const baseMaterial = new THREE.MeshStandardMaterial({
+                color: 0x808080,
+                roughness: 0.9,
+                metalness: 0.1
+            });
+            const cushionMaterial = new THREE.MeshStandardMaterial({
+                color: 0xa9a9a9,
+                roughness: 0.85,
+                metalness: 0.1
+            });
+
+            const base = new THREE.Mesh(
+                new THREE.BoxGeometry(3, 0.5, 1.2),
+                baseMaterial
+            );
+            base.position.y = 0.25;
+            base.castShadow = true;
+            sofaGroup.add(base);
+
+            const backrest = new THREE.Mesh(
+                new THREE.BoxGeometry(3, 0.8, 0.2),
+                baseMaterial
+            );
+            backrest.position.set(0, 0.9, -0.5);
+            backrest.castShadow = true;
+            sofaGroup.add(backrest);
+
+            for (let i = 0; i < 3; i++) {
+                const cushion = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.9, 0.15, 1),
+                    cushionMaterial
+                );
+                cushion.position.set(-0.9 + i * 0.9, 0.575, 0);
+                cushion.castShadow = true;
+                sofaGroup.add(cushion);
+            }
+
+            group.add(sofaGroup);
+            registerCollidable(sofaGroup, 1);
+            registerInteractive(sofaGroup, 'sofa');
+
+            const tableGroup = new THREE.Group();
+            tableGroup.position.set(-2, yOffset, -2);
+
+            const tableTop = new THREE.Mesh(
+                new THREE.BoxGeometry(1.8, 0.08, 1),
+                new THREE.MeshStandardMaterial({ color: 0x4a3728, roughness: 0.6, metalness: 0.2 })
+            );
+            tableTop.position.y = 0.46;
+            tableTop.castShadow = true;
+            tableGroup.add(tableTop);
+
+            [[-0.75, 0.23, -0.4], [0.75, 0.23, -0.4], [-0.75, 0.23, 0.4], [0.75, 0.23, 0.4]].forEach(([x, y, z]) => {
+                const leg = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.08, 0.46, 0.08),
+                    new THREE.MeshStandardMaterial({ color: 0x2d1f15, roughness: 0.5, metalness: 0.3 })
+                );
+                leg.position.set(x, y, z);
+                leg.castShadow = true;
+                tableGroup.add(leg);
+            });
+
+            group.add(tableGroup);
+            registerCollidable(tableGroup, 1);
+            registerInteractive(tableGroup, 'table');
+
+            const lampGroup = new THREE.Group();
+            lampGroup.position.set(6, yOffset, -5);
+
+            const lampBase = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.2, 0.25, 0.05, 32),
+                new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.9, roughness: 0.2 })
+            );
+            lampBase.position.y = 0.025;
+            lampGroup.add(lampBase);
+
+            const lampPole = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.02, 0.02, 1.7, 16),
+                new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.9, roughness: 0.2 })
+            );
+            lampPole.position.y = 0.9;
+            lampGroup.add(lampPole);
+
+            const lampShade = new THREE.Mesh(
+                new THREE.ConeGeometry(0.25, 0.3, 32, 1, true),
+                new THREE.MeshStandardMaterial({ color: 0xf5f5dc, roughness: 0.9, side: THREE.DoubleSide })
+            );
+            lampShade.position.set(0.4, 1.75, 0);
+            lampShade.rotation.x = Math.PI;
+            lampGroup.add(lampShade);
+
+            const bulbLight = new THREE.PointLight(0xfff4e8, 0.6, 5);
+            bulbLight.position.set(0.4, 1.6, 0);
+            lampGroup.add(bulbLight);
+
+            group.add(lampGroup);
+            registerCollidable(lampGroup, 1);
+            registerInteractive(lampGroup, 'lamp');
+
+            const plantGroup = new THREE.Group();
+            plantGroup.position.set(-7, yOffset, 4);
+
+            const pot = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.25, 0.2, 0.4, 32),
+                new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.9 })
+            );
+            pot.position.y = 0.2;
+            plantGroup.add(pot);
+
+            const stem = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.03, 0.04, 0.8, 16),
+                new THREE.MeshStandardMaterial({ color: 0x228b22, roughness: 0.8 })
+            );
+            stem.position.y = 0.85;
+            plantGroup.add(stem);
+
+            const leafMaterial = new THREE.MeshStandardMaterial({
+                color: 0x32cd32,
+                roughness: 0.7,
+                side: THREE.DoubleSide
+            });
+            const leafPositions = [
+                { x: 0.3, y: 1.2, z: 0, rotY: 0.5 },
+                { x: -0.25, y: 1.0, z: 0.2, rotY: -0.3 },
+                { x: 0.1, y: 1.4, z: -0.3, rotY: 0.8 }
+            ];
+            leafPositions.forEach(pos => {
+                const leaf = new THREE.Mesh(
+                    new THREE.PlaneGeometry(0.6, 0.4),
+                    leafMaterial
+                );
+                leaf.position.set(pos.x, pos.y, pos.z);
+                leaf.rotation.y = pos.rotY;
+                leaf.rotation.x = -0.3;
+                plantGroup.add(leaf);
+            });
+
+            group.add(plantGroup);
+            registerCollidable(plantGroup, 1);
+            registerInteractive(plantGroup, 'plant');
+
+            const paintingGroup = new THREE.Group();
+            paintingGroup.position.set(0, yOffset + 1.8, -7.45);
+
+            const frame = new THREE.Mesh(
+                new THREE.BoxGeometry(2.1, 1.3, 0.08),
+                new THREE.MeshStandardMaterial({ color: 0x2c1810, roughness: 0.6, metalness: 0.2 })
+            );
+            paintingGroup.add(frame);
+
+            const canvasTexture = createPaintingTexture();
+            const canvas = new THREE.Mesh(
+                new THREE.PlaneGeometry(1.9, 1.1),
+                new THREE.MeshStandardMaterial({ map: canvasTexture, roughness: 0.9 })
+            );
+            canvas.position.z = 0.041;
+            paintingGroup.add(canvas);
+
+            group.add(paintingGroup);
+            registerInteractive(paintingGroup, 'painting');
+        }
+
+        function createDiningRoom(group, yOffset) {
+            const diningTable = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 0.1, 1),
+                new THREE.MeshStandardMaterial({ color: 0x654321, roughness: 0.7, metalness: 0.1 })
+            );
+            diningTable.position.set(5, yOffset + 0.75, -2);
+            diningTable.castShadow = true;
+            group.add(diningTable);
+            registerCollidable(diningTable, 1);
+
+            for (let i = 0; i < 4; i++) {
+                const chair = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.5, 0.8, 0.5),
+                    new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.8 })
+                );
+                const angle = (i / 4) * Math.PI * 2;
+                chair.position.set(
+                    5 + Math.cos(angle) * 1.2,
+                    yOffset + 0.4,
+                    -2 + Math.sin(angle) * 0.7
+                );
+                chair.rotation.y = angle + Math.PI;
+                chair.castShadow = true;
+                group.add(chair);
+                registerCollidable(chair, 1);
+            }
+        }
+
+        function createKitchen(group, yOffset) {
+            const counter = new THREE.Mesh(
+                new THREE.BoxGeometry(4, 0.9, 0.6),
+                new THREE.MeshStandardMaterial({ color: 0xd3d3d3, roughness: 0.5, metalness: 0.3 })
+            );
+            counter.position.set(7, yOffset + 0.45, 4);
+            counter.castShadow = true;
+            group.add(counter);
+            registerCollidable(counter, 1);
+
+            const fridge = new THREE.Mesh(
+                new THREE.BoxGeometry(0.8, 1.8, 0.7),
+                new THREE.MeshStandardMaterial({ color: 0xc0c0c0, roughness: 0.4, metalness: 0.6 })
+            );
+            fridge.position.set(9, yOffset + 0.9, 2);
+            fridge.castShadow = true;
+            group.add(fridge);
+            registerCollidable(fridge, 1);
+        }
+
+        function createStudyRoom(group, yOffset) {
+            const desk = new THREE.Mesh(
+                new THREE.BoxGeometry(1.6, 0.75, 0.8),
+                new THREE.MeshStandardMaterial({ color: 0x4a3728, roughness: 0.7, metalness: 0.1 })
+            );
+            desk.position.set(-6, yOffset + 0.375, 4);
+            desk.castShadow = true;
+            group.add(desk);
+            registerCollidable(desk, 1);
+            registerInteractive(desk, 'desk');
+
+            const bookshelf = new THREE.Group();
+            bookshelf.position.set(-8, yOffset, 3);
+
+            const backPanel = new THREE.Mesh(
+                new THREE.BoxGeometry(1.5, 2, 0.05),
+                new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.7, metalness: 0.1 })
+            );
+            backPanel.position.set(0, 1, 0);
+            bookshelf.add(backPanel);
+
+            for (let i = 0; i < 5; i++) {
+                const shelf = new THREE.Mesh(
+                    new THREE.BoxGeometry(1.5, 0.03, 0.35),
+                    new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.7, metalness: 0.1 })
+                );
+                shelf.position.set(0, 0.2 + i * 0.4, 0.175);
+                bookshelf.add(shelf);
+            }
+
+            group.add(bookshelf);
+            registerCollidable(bookshelf, 1);
+            registerInteractive(bookshelf, 'bookshelf');
+        }
+
+        function createMasterBedroom(group, yOffset) {
+            const bed = new THREE.Group();
+            bed.position.set(-3, yOffset, -3);
+
+            const bedBase = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 0.3, 2.2),
+                new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.7 })
+            );
+            bedBase.position.y = 0.15;
+            bed.add(bedBase);
+
+            const mattress = new THREE.Mesh(
+                new THREE.BoxGeometry(1.9, 0.2, 2.1),
+                new THREE.MeshStandardMaterial({ color: 0xf5f5f5, roughness: 0.9 })
+            );
+            mattress.position.y = 0.4;
+            bed.add(mattress);
+
+            const pillow1 = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 0.15, 0.4),
+                new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 })
+            );
+            pillow1.position.set(-0.4, 0.575, -0.8);
+            bed.add(pillow1);
+
+            const pillow2 = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 0.15, 0.4),
+                new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 })
+            );
+            pillow2.position.set(0.4, 0.575, -0.8);
+            bed.add(pillow2);
+
+            group.add(bed);
+            registerCollidable(bed, 2);
+            registerInteractive(bed, 'bed');
+
+            const wardrobe = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 2.2, 0.6),
+                new THREE.MeshStandardMaterial({ color: 0x654321, roughness: 0.7 })
+            );
+            wardrobe.position.set(-6, yOffset + 1.1, 2);
+            wardrobe.castShadow = true;
+            group.add(wardrobe);
+            registerCollidable(wardrobe, 2);
+        }
+
+        function createSecondBedroom(group, yOffset) {
+            const bed = new THREE.Group();
+            bed.position.set(5, yOffset, -2);
+
+            const bedBase = new THREE.Mesh(
+                new THREE.BoxGeometry(1.5, 0.3, 2),
+                new THREE.MeshStandardMaterial({ color: 0x654321, roughness: 0.7 })
+            );
+            bedBase.position.y = 0.15;
+            bed.add(bedBase);
+
+            const mattress = new THREE.Mesh(
+                new THREE.BoxGeometry(1.4, 0.2, 1.9),
+                new THREE.MeshStandardMaterial({ color: 0xb8b8b8, roughness: 0.9 })
+            );
+            mattress.position.y = 0.4;
+            bed.add(mattress);
+
+            group.add(bed);
+            registerCollidable(bed, 2);
+
+            const studyDesk = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 0.75, 0.6),
+                new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.7 })
+            );
+            studyDesk.position.set(7, yOffset + 0.375, 0);
+            group.add(studyDesk);
+            registerCollidable(studyDesk, 2);
+        }
+
+        function createBathroom(group, yOffset) {
+            const bathtub = new THREE.Mesh(
+                new THREE.BoxGeometry(1.8, 0.6, 0.8),
+                new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4, metalness: 0.2 })
+            );
+            bathtub.position.set(7, yOffset + 0.3, 4);
+            group.add(bathtub);
+            registerCollidable(bathtub, 2);
+
+            const sink = new THREE.Mesh(
+                new THREE.BoxGeometry(0.6, 0.3, 0.5),
+                new THREE.MeshStandardMaterial({ color: 0xe0e0e0, roughness: 0.4, metalness: 0.3 })
+            );
+            sink.position.set(5, yOffset + 0.8, 4);
+            group.add(sink);
+            registerCollidable(sink, 2);
+
+            const toilet = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 0.7, 0.6),
+                new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4, metalness: 0.2 })
+            );
+            toilet.position.set(5, yOffset + 0.35, 2);
+            group.add(toilet);
+            registerCollidable(toilet, 2);
+        }
+
+        function createBalcony(group, yOffset) {
+            const floor = new THREE.Mesh(
+                new THREE.BoxGeometry(4, 0.1, 3),
+                new THREE.MeshStandardMaterial({ color: 0x808080, roughness: 0.9 })
+            );
+            floor.position.set(-6, yOffset + 0.05, 4);
+            group.add(floor);
+
+            for (let i = 0; i < 5; i++) {
+                const rail = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.05, 1.2, 0.05),
+                    new THREE.MeshStandardMaterial({ color: 0x404040, roughness: 0.6 })
+                );
+                rail.position.set(-7.5 + i * 0.8, yOffset + 0.6, 5.4);
+                group.add(rail);
+            }
+
+            const chair = new THREE.Mesh(
+                new THREE.BoxGeometry(0.6, 0.8, 0.6),
+                new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.8 })
+            );
+            chair.position.set(-6, yOffset + 0.4, 4);
+            group.add(chair);
+            registerCollidable(chair, 2);
+
+            const smallTable = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 0.5, 0.5),
+                new THREE.MeshStandardMaterial({ color: 0x654321, roughness: 0.7 })
+            );
+            smallTable.position.set(-5, yOffset + 0.25, 4.5);
+            group.add(smallTable);
+            registerCollidable(smallTable, 2);
+        }
+
+        function createGymRoom(group, yOffset) {
+            const gymEquipment = new THREE.Group();
+            gymEquipment.position.set(-3, yOffset, -2);
+
+            const treadmill = new THREE.Mesh(
+                new THREE.BoxGeometry(1, 0.4, 2),
+                new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.6, metalness: 0.5 })
+            );
+            treadmill.position.set(0, 0.2, 0);
+            gymEquipment.add(treadmill);
+
+            const handle = new THREE.Mesh(
+                new THREE.BoxGeometry(0.8, 1.2, 0.1),
+                new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.5, metalness: 0.6 })
+            );
+            handle.position.set(0, 0.8, -0.5);
+            gymEquipment.add(handle);
+
+            const display = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 0.3, 0.05),
+                new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.3, metalness: 0.8 })
+            );
+            display.position.set(0, 1.3, -0.5);
+            gymEquipment.add(display);
+
+            group.add(gymEquipment);
+            registerCollidable(gymEquipment, 3);
+            registerInteractive(gymEquipment, 'gymEquipment');
+
+            const dumbbellRack = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 1, 0.5),
+                new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.7, metalness: 0.5 })
+            );
+            dumbbellRack.position.set(2, yOffset + 0.5, 2);
+            group.add(dumbbellRack);
+            registerCollidable(dumbbellRack, 3);
+
+            for (let i = 0; i < 4; i++) {
+                const dumbbell = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.08, 0.08, 0.4, 16),
+                    new THREE.MeshStandardMaterial({ color: 0x666666, roughness: 0.4, metalness: 0.7 })
+                );
+                dumbbell.rotation.z = Math.PI / 2;
+                dumbbell.position.set(-4 + i * 0.6, yOffset + 0.7, 2);
+                group.add(dumbbell);
+            }
+
+            const yogaMat = new THREE.Mesh(
+                new THREE.BoxGeometry(1.5, 0.02, 0.6),
+                new THREE.MeshStandardMaterial({ color: 0x9b59b6, roughness: 0.9 })
+            );
+            yogaMat.rotation.x = -Math.PI / 2;
+            yogaMat.position.set(-6, yOffset + 0.01, 4);
+            group.add(yogaMat);
+        }
+
+        function createEntertainmentRoom(group, yOffset) {
+            const tv = new THREE.Mesh(
+                new THREE.BoxGeometry(3, 1.8, 0.1),
+                new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.3, metalness: 0.5 })
+            );
+            tv.position.set(5, yOffset + 1.2, 5);
+            group.add(tv);
+            registerCollidable(tv, 3);
+
+            const tvScreen = new THREE.Mesh(
+                new THREE.PlaneGeometry(2.8, 1.6),
+                new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.1, metalness: 0.8 })
+            );
+            tvScreen.position.set(5, yOffset + 1.2, 5.06);
+            group.add(tvScreen);
+
+            const tvStand = new THREE.Mesh(
+                new THREE.BoxGeometry(2.5, 0.5, 0.6),
+                new THREE.MeshStandardMaterial({ color: 0x2c1810, roughness: 0.7 })
+            );
+            tvStand.position.set(5, yOffset + 0.25, 5);
+            group.add(tvStand);
+            registerCollidable(tvStand, 3);
+
+            for (let i = 0; i < 3; i++) {
+                const sofa = new THREE.Mesh(
+                    new THREE.BoxGeometry(1, 0.8, 1),
+                    new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.9 })
+                );
+                sofa.position.set(3 + i * 1.5, yOffset + 0.4, 0);
+                group.add(sofa);
+                registerCollidable(sofa, 3);
+            }
+
+            const poolTable = new THREE.Mesh(
+                new THREE.BoxGeometry(2.5, 0.8, 1.4),
+                new THREE.MeshStandardMaterial({ color: 0x1a472a, roughness: 0.7 })
+            );
+            poolTable.position.set(7, yOffset + 0.4, -3);
+            group.add(poolTable);
+            registerCollidable(poolTable, 3);
+
+            const poolCloth = new THREE.Mesh(
+                new THREE.PlaneGeometry(2.4, 1.3),
+                new THREE.MeshStandardMaterial({ color: 0x2ecc71, roughness: 0.9 })
+            );
+            poolCloth.rotation.x = -Math.PI / 2;
+            poolCloth.position.set(7, yOffset + 0.81, -3);
+            group.add(poolCloth);
+        }
+
+        function createStorageRoom(group, yOffset) {
+            for (let i = 0; i < 3; i++) {
+                const shelf = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.5, 2, 0.8),
+                    new THREE.MeshStandardMaterial({ color: 0x654321, roughness: 0.7 })
+                );
+                shelf.position.set(-8 + i * 0.6, yOffset + 1, 5);
+                group.add(shelf);
+                registerCollidable(shelf, 3);
+            }
+
+            const boxes = [];
+            for (let i = 0; i < 6; i++) {
+                const box = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.5, 0.5, 0.5),
+                    new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.8 })
+                );
+                box.position.set(-7 + (i % 3) * 0.5, yOffset + 0.25, 6 + Math.floor(i / 3) * 0.5, 3);
+                group.add(box);
+                registerCollidable(box, 3);
+            }
+        }
+
+        function createElevator(group, yOffset, floorNum) {
+            const elevatorGroup = new THREE.Group();
+            elevatorGroup.position.set(-9, yOffset, 0);
+
+            const doorFrame = new THREE.Mesh(
+                new THREE.BoxGeometry(1.8, 2.8, 0.1),
+                new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.6, metalness: 0.5 })
+            );
+            doorFrame.position.set(0, 1.4, -0.05);
+            elevatorGroup.add(doorFrame);
+
+            const door = new THREE.Mesh(
+                new THREE.BoxGeometry(1.6, 2.6, 0.08),
+                new THREE.MeshStandardMaterial({ color: 0xc0c0c0, roughness: 0.4, metalness: 0.7 })
+            );
+            door.position.set(0, 1.3, 0);
+            door.name = 'elevator_door';
+            elevatorGroup.add(door);
+
+            const buttonPanel = new THREE.Mesh(
+                new THREE.BoxGeometry(0.2, 0.4, 0.05),
+                new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.5 })
+            );
+            buttonPanel.position.set(1.1, 1.2, 0.1);
+            elevatorGroup.add(buttonPanel);
+
+            const button = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.04, 0.04, 0.02, 16),
+                new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.5 })
+            );
+            button.rotation.x = Math.PI / 2;
+            button.position.set(1.1, 1.2, 0.14);
+            elevatorGroup.add(button);
+
+            group.add(elevatorGroup);
+            registerInteractive(elevatorGroup, 'elevator');
+            elevatorGroup.userData.floorNum = floorNum;
+        }
+
+        function createPaintingTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+
+            const gradient = ctx.createLinearGradient(0, 0, 512, 300);
+            gradient.addColorStop(0, '#ff6b6b');
+            gradient.addColorStop(0.5, '#4ecdc4');
+            gradient.addColorStop(1, '#45b7d1');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 512, 300);
+
+            ctx.globalAlpha = 0.3;
+            for (let i = 0; i < 20; i++) {
+                ctx.beginPath();
+                ctx.arc(
+                    Math.random() * 512,
+                    Math.random() * 300,
+                    Math.random() * 50 + 20,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fillStyle = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                ctx.fill();
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.encoding = THREE.sRGBEncoding;
+            return texture;
+        }
+
+        function setupLights() {
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(10, 20, 10);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            scene.add(directionalLight);
+        }
+
+        function registerCollidable(object, floorNum) {
+            object.traverse((child) => {
+                if (child.isMesh) {
+                    const obb = OBB.fromMesh(child);
+                    floors[floorNum].collisionOBBs.push({ mesh: child, obb: obb });
+                }
+            });
+        }
+
+        function registerInteractive(object, dataKey) {
+            object.userData.interactive = true;
+            object.userData.dataKey = dataKey;
+            interactiveObjects.push(object);
+        }
+
+        function showFloor(floorNum) {
+            Object.keys(floors).forEach(key => {
+                floors[key].group.visible = parseInt(key) === floorNum;
+            });
+            currentFloor = floorNum;
+            collisionOBBs = floors[floorNum].collisionOBBs;
+            updateMinimap();
+            updateFloorPanel();
+        }
+
+        function switchFloor(targetFloor) {
+            if (floorTransitionActive || targetFloor === currentFloor) return;
+
+            floorTransitionActive = true;
+
+            const elevatorOverlay = document.getElementById('elevator-overlay');
+            const elevatorDisplay = document.getElementById('elevator-display');
+            const elevatorText = document.getElementById('elevator-text');
+
+            elevatorOverlay.classList.add('active');
+            elevatorText.textContent = '电梯运行中...';
+
+            let displayFloor = currentFloor;
+            const direction = targetFloor > currentFloor ? 1 : -1;
+
+            const animateElevator = () => {
+                displayFloor += direction * 0.05;
+                elevatorDisplay.textContent = `${Math.round(displayFloor)}F`;
+
+                if ((direction > 0 && displayFloor >= targetFloor) || (direction < 0 && displayFloor <= targetFloor)) {
+                    elevatorDisplay.textContent = `${targetFloor}F`;
+                    elevatorText.textContent = '到达目标楼层';
+                    
+                    setTimeout(() => {
+                        showFloor(targetFloor);
+                        
+                        const yOffset = floors[targetFloor].yOffset;
+                        if (isMobile) {
+                            camera.position.set(0, yOffset + PLAYER_HEIGHT, 5);
+                        } else {
+                            controls.getObject().position.set(0, yOffset + PLAYER_HEIGHT, 5);
+                        }
+                        
+                        elevatorOverlay.classList.remove('active');
+                        floorTransitionActive = false;
+                    }, 500);
+                } else {
+                    requestAnimationFrame(animateElevator);
+                }
+            };
+
+            animateElevator();
+        }
+
+        function checkCollision(newPosition) {
+            const playerOBB = new OBB(
+                new THREE.Vector3(newPosition.x, newPosition.y - PLAYER_HEIGHT / 2, newPosition.z),
+                new THREE.Vector3(PLAYER_RADIUS, PLAYER_HEIGHT / 2, PLAYER_RADIUS),
+                new THREE.Quaternion()
+            );
+
+            for (const { obb } of collisionOBBs) {
+                obb.updateAxes();
+                if (playerOBB.intersectsOBB(obb)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function setupUI() {
+            const floorButtonsContainer = document.getElementById('floor-buttons');
+            floorButtonsContainer.innerHTML = '';
+            
+            [1, 2, 3].forEach(floorNum => {
+                const btn = document.createElement('button');
+                btn.className = `floor-btn ${floorNum === currentFloor ? 'active' : ''}`;
+                btn.innerHTML = `<span class="floor-icon">🏠</span>${floorNum}层`;
+                btn.onclick = () => switchFloor(floorNum);
+                floorButtonsContainer.appendChild(btn);
+            });
+
+            document.getElementById('record-btn').addEventListener('click', toggleRecording);
+            document.getElementById('play-btn').addEventListener('click', togglePlayback);
+            document.getElementById('nav-cancel').addEventListener('click', cancelNavigation);
+
+            setupMinimap();
+        }
+
+        function updateFloorPanel() {
+            const buttons = document.querySelectorAll('.floor-btn');
+            buttons.forEach((btn, index) => {
+                btn.classList.toggle('active', index + 1 === currentFloor);
+            });
+            document.getElementById('minimap-label').textContent = `📍 ${currentFloor}层平面图`;
+        }
+
+        function setupMinimap() {
+            updateMinimap();
+        }
+
+        function updateMinimap() {
+            const minimap = document.getElementById('minimap');
+            const scale = 8;
+            const offsetX = 100;
+            const offsetZ = 75;
+
+            const existingRooms = minimap.querySelectorAll('.minimap-room, .minimap-player, .minimap-room-label');
+            existingRooms.forEach(el => el.remove());
+
+            const floorRooms = rooms[currentFloor] || [];
+            floorRooms.forEach(room => {
+                const roomEl = document.createElement('div');
+                roomEl.className = 'minimap-room';
+                roomEl.style.left = `${(room.x + roomConfig.width / 2) * scale - room.width * scale / 2}px`;
+                roomEl.style.top = `${(room.z + roomConfig.depth / 2) * scale - room.depth * scale / 2}px`;
+                roomEl.style.width = `${room.width * scale}px`;
+                roomEl.style.height = `${room.depth * scale}px`;
+                roomEl.onclick = () => startNavigation(room);
+
+                const label = document.createElement('div');
+                label.className = 'minimap-room-label';
+                label.style.left = `${(room.x + roomConfig.width / 2) * scale}px`;
+                label.style.top = `${(room.z + roomConfig.depth / 2) * scale}px`;
+                label.style.transform = 'translate(-50%, -50%)';
+                label.textContent = room.name;
+                minimap.appendChild(label);
+
+                minimap.appendChild(roomEl);
+            });
+
+            const player = document.createElement('div');
+            player.className = 'minimap-player';
+            player.id = 'minimap-player';
+            minimap.appendChild(player);
+
+            updateMinimapPlayer();
+        }
+
+        function updateMinimapPlayer() {
+            const player = document.getElementById('minimap-player');
+            if (!player) return;
+
+            const pos = isMobile ? camera.position : controls.getObject().position;
+            const scale = 8;
+            player.style.left = `${(pos.x + roomConfig.width / 2) * scale}px`;
+            player.style.top = `${(pos.z + roomConfig.depth / 2) * scale}px`;
+        }
+
+        function startNavigation(room) {
+            const pos = isMobile ? camera.position : controls.getObject().position;
+            const startPos = { x: pos.x, z: pos.z };
+            const endPos = { x: room.x, z: room.z };
+
+            navPath = findPath(startPos, endPos, currentFloor);
+            if (navPath.length > 0) {
+                navTarget = room;
+                navActive = true;
+
+                document.getElementById('nav-panel').classList.add('active');
+                document.getElementById('nav-target').textContent = room.name;
+                document.querySelectorAll('.minimap-room').forEach(el => el.classList.remove('active'));
+                event.target.classList.add('active');
+
+                createNavArrow();
+            }
+        }
+
+        function createNavArrow() {
+            if (navArrow) {
+                scene.remove(navArrow);
+            }
+
+            const arrowGroup = new THREE.Group();
+
+            const arrowShape = new THREE.Mesh(
+                new THREE.ConeGeometry(0.3, 0.5, 4),
+                new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.8 })
+            );
+            arrowShape.rotation.x = Math.PI;
+            arrowGroup.add(arrowShape);
+
+            navArrow = arrowGroup;
+            scene.add(navArrow);
+        }
+
+        function updateNavigation(delta) {
+            if (!navActive || navPath.length === 0) return;
+
+            const pos = isMobile ? camera.position : controls.getObject().position;
+            const target = navPath[0];
+            const dx = target.x - pos.x;
+            const dz = target.z - pos.z;
+            const distance = Math.sqrt(dx * dx + dz * dz);
+
+            if (distance < 0.5) {
+                navPath.shift();
+                if (navPath.length === 0) {
+                    cancelNavigation();
+                    return;
+                }
+            }
+
+            if (navArrow) {
+                const nextTarget = navPath[0];
+                navArrow.position.set(nextTarget.x, floors[currentFloor].yOffset + 2, nextTarget.z);
+                navArrow.rotation.y += delta * 2;
+            }
+
+            const speed = 3;
+            const moveX = (dx / distance) * speed * delta;
+            const moveZ = (dz / distance) * speed * delta;
+
+            const newPos = pos.clone();
+            newPos.x += moveX;
+            newPos.z += moveZ;
+
+            if (isMobile) {
+                camera.position.copy(newPos);
+            } else {
+                controls.getObject().position.copy(newPos);
+            }
+
+            const targetDir = new THREE.Vector3(target.x - pos.x, 0, target.z - pos.z).normalize();
+            const targetRotation = Math.atan2(targetDir.x, targetDir.z);
+            if (isMobile) {
+                const currentRot = camera.rotation.y;
+                camera.rotation.y += (targetRotation - currentRot) * 0.1;
+            }
+        }
+
+        function cancelNavigation() {
+            navActive = false;
+            navPath = [];
+            navTarget = null;
+            if (navArrow) {
+                scene.remove(navArrow);
+                navArrow = null;
+            }
+            document.getElementById('nav-panel').classList.remove('active');
+            document.querySelectorAll('.minimap-room').forEach(el => el.classList.remove('active'));
+        }
+
+        function toggleRecording() {
+            if (isPlaying) {
+                stopPlayback();
+            }
+            if (!isRecording) {
+                startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+
+        function startRecording() {
+            isRecording = true;
+            recordedFrames = [];
+            lastRecordTime = performance.now();
+            document.getElementById('record-btn').classList.remove('start');
+            document.getElementById('record-btn').classList.add('stop');
+            document.getElementById('record-btn').textContent = '⏹';
+            document.getElementById('record-status').textContent = '录制中...';
+        }
+
+        function stopRecording() {
+            isRecording = false;
+            document.getElementById('record-btn').classList.remove('stop');
+            document.getElementById('record-btn').classList.add('start');
+            document.getElementById('record-btn').textContent = '⏺';
+            document.getElementById('record-status').textContent = `已录制 ${recordedFrames.length} 帧`;
+            document.getElementById('play-btn').disabled = false;
+        }
+
+        function recordFrame() {
+            if (!isRecording) return;
+
+            const now = performance.now();
+            if (now - lastRecordTime < 50) return;
+            lastRecordTime = now;
+
+            const pos = isMobile ? camera.position.clone() : controls.getObject().position.clone();
+            const rot = camera.quaternion.clone();
+
+            recordedFrames.push({
+                position: { x: pos.x, y: pos.y, z: pos.z },
+                rotation: { x: rot.x, y: rot.y, z: rot.z, w: rot.w },
+                floor: currentFloor,
+                timestamp: now
+            });
+        }
+
+        function togglePlayback() {
+            if (isRecording) {
+                stopRecording();
+            }
+            if (!isPlaying) {
+                startPlayback();
+            } else {
+                stopPlayback();
+            }
+        }
+
+        function startPlayback() {
+            if (recordedFrames.length === 0) return;
+
+            isPlaying = true;
+            playIndex = 0;
+            document.getElementById('play-btn').textContent = '⏸';
+            document.getElementById('record-status').textContent = '播放中...';
+            cancelNavigation();
+        }
+
+        function stopPlayback() {
+            isPlaying = false;
+            document.getElementById('play-btn').textContent = '▶';
+            document.getElementById('record-status').textContent = '播放完成';
+            setTimeout(() => {
+                if (!isRecording) document.getElementById('record-status').textContent = '待机中';
+            }, 2000);
+        }
+
+        function updatePlayback() {
+            if (!isPlaying || playIndex >= recordedFrames.length) {
+                if (playIndex >= recordedFrames.length) {
+                    stopPlayback();
+                }
+                return;
+            }
+
+            const frame = recordedFrames[playIndex];
+            const nextFrame = recordedFrames[playIndex + 1];
+            if (!nextFrame) {
+                playIndex++;
+                return;
+            }
+
+            const progress = (performance.now() - frame.timestamp) / (nextFrame.timestamp - frame.timestamp);
+
+            if (progress >= 1) {
+                playIndex++;
+                return;
+            }
+
+            const pos = new THREE.Vector3(
+                frame.position.x + (nextFrame.position.x - frame.position.x) * progress,
+                frame.position.y + (nextFrame.position.y - frame.position.y) * progress,
+                frame.position.z + (nextFrame.position.z - frame.position.z) * progress
+            );
+
+            const rot = new THREE.Quaternion(
+                frame.rotation.x + (nextFrame.rotation.x - frame.rotation.x) * progress,
+                frame.rotation.y + (nextFrame.rotation.y - frame.rotation.y) * progress,
+                frame.rotation.z + (nextFrame.rotation.z - frame.rotation.z) * progress,
+                frame.rotation.w + (nextFrame.rotation.w - frame.rotation.w) * progress
+            );
+
+            if (frame.floor !== currentFloor) {
+                showFloor(frame.floor);
+            }
+
+            if (isMobile) {
+                camera.position.copy(pos);
+                camera.quaternion.copy(rot);
+            } else {
+                controls.getObject().position.copy(pos);
+                camera.quaternion.copy(rot);
+            }
+        }
+
+        function setupEventListeners() {
+            const onKeyDown = (event) => {
+                if (isPlaying) return;
+                switch (event.code) {
+                    case 'ArrowUp':
+                    case 'KeyW':
+                        moveForward = true;
+                        break;
+                    case 'ArrowLeft':
+                    case 'KeyA':
+                        moveLeft = true;
+                        break;
+                    case 'ArrowDown':
+                    case 'KeyS':
+                        moveBackward = true;
+                        break;
+                    case 'ArrowRight':
+                    case 'KeyD':
+                        moveRight = true;
+                        break;
+                    case 'Space':
+                        if (canJump) {
+                            velocity.y = JUMP_HEIGHT;
+                            canJump = false;
+                        }
+                        break;
+                    case 'KeyE':
+                        tryInteract();
+                        break;
+                    case 'KeyR':
+                        toggleRecording();
+                        break;
+                    case 'KeyP':
+                        togglePlayback();
+                        break;
+                    case 'KeyF':
+                        const floorPanel = document.getElementById('floor-panel');
+                        floorPanel.classList.toggle('active');
+                        break;
+                }
+            };
+
+            const onKeyUp = (event) => {
+                switch (event.code) {
+                    case 'ArrowUp':
+                    case 'KeyW':
+                        moveForward = false;
+                        break;
+                    case 'ArrowLeft':
+                    case 'KeyA':
+                        moveLeft = false;
+                        break;
+                    case 'ArrowDown':
+                    case 'KeyS':
+                        moveBackward = false;
+                        break;
+                    case 'ArrowRight':
+                    case 'KeyD':
+                        moveRight = false;
+                        break;
+                }
+            };
+
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+
+            window.addEventListener('resize', onWindowResize);
+
+            document.getElementById('start-btn').addEventListener('click', () => {
+                if (isMobile) {
+                    startMobileMode();
+                } else {
+                    controls.lock();
+                }
+            });
+
+            controls.addEventListener('lock', () => {
+                isLocked = true;
+                document.getElementById('start-screen').style.display = 'none';
+                document.getElementById('hud').style.display = 'block';
+                document.getElementById('crosshair').style.display = 'block';
+                document.getElementById('floor-panel').classList.add('active');
+                document.getElementById('record-panel').classList.add('active');
+                document.getElementById('minimap').classList.add('active');
+            });
+
+            controls.addEventListener('unlock', () => {
+                if (!isMobile) {
+                    isLocked = false;
+                    document.getElementById('start-screen').style.display = 'flex';
+                    document.getElementById('hud').style.display = 'none';
+                    document.getElementById('crosshair').style.display = 'none';
+                    document.getElementById('interact-hint').style.display = 'none';
+                    document.getElementById('floor-panel').classList.remove('active');
+                    document.getElementById('record-panel').classList.remove('active');
+                    document.getElementById('minimap').classList.remove('active');
+                    clearHighlight();
+                    cancelNavigation();
+                }
+            });
+
+            renderer.domElement.addEventListener('click', onCanvasClick);
+        }
+
+        function setupMobileControls() {
+            const joystickContainer = document.getElementById('joystick-container');
+            const joystickStick = document.getElementById('joystick-stick');
+            const interactBtn = document.getElementById('mobile-interact-btn');
+            const lookArea = document.getElementById('mobile-look-area');
+
+            let joystickCenterX = 0, joystickCenterY = 0;
+            const maxRadius = 45;
+
+            joystickContainer.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = joystickContainer.getBoundingClientRect();
+                joystickCenterX = rect.left + rect.width / 2;
+                joystickCenterY = rect.top + rect.height / 2;
+                joystickActive = true;
+                updateJoystick(touch.clientX, touch.clientY);
+            }, { passive: false });
+
+            document.addEventListener('touchmove', (e) => {
+                if (joystickActive) {
+                    e.preventDefault();
+                    const touch = Array.from(e.touches).find(t => {
+                        const target = document.elementFromPoint(t.clientX, t.clientY);
+                        return target && target.closest('#joystick-container');
+                    });
+                    if (touch) {
+                        updateJoystick(touch.clientX, touch.clientY);
+                    }
+                }
+            }, { passive: false });
+
+            document.addEventListener('touchend', (e) => {
+                const joystickTouch = Array.from(e.changedTouches).find(t => {
+                    const target = document.elementFromPoint(t.clientX, t.clientY);
+                    return target && target.closest('#joystick-container');
+                });
+                if (joystickTouch) {
+                    joystickActive = false;
+                    joystickVector.x = 0;
+                    joystickVector.y = 0;
+                    joystickStick.style.transform = 'translate(-50%, -50%)';
+                    moveForward = false;
+                    moveBackward = false;
+                    moveLeft = false;
+                    moveRight = false;
+                }
+            });
+
+            function updateJoystick(clientX, clientY) {
+                let dx = clientX - joystickCenterX;
+                let dy = clientY - joystickCenterY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > maxRadius) {
+                    dx = (dx / distance) * maxRadius;
+                    dy = (dy / distance) * maxRadius;
+                }
+
+                joystickStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+                
+                joystickVector.x = dx / maxRadius;
+                joystickVector.y = dy / maxRadius;
+
+                moveForward = joystickVector.y < -0.2;
+                moveBackward = joystickVector.y > 0.2;
+                moveLeft = joystickVector.x < -0.2;
+                moveRight = joystickVector.x > 0.2;
+            }
+
+            lookArea.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (e.touches.length === 1) {
+                    mobileLookActive = true;
+                    lastTouchX = e.touches[0].clientX;
+                    lastTouchY = e.touches[0].clientY;
+                }
+            }, { passive: false });
+
+            lookArea.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (mobileLookActive && e.touches.length === 1) {
+                    const touch = e.touches[0];
+                    const deltaX = touch.clientX - lastTouchX;
+                    const deltaY = touch.clientY - lastTouchY;
+                    
+                    const sensitivity = 0.003;
+                    
+                    const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+                    euler.setFromQuaternion(camera.quaternion);
+                    euler.y -= deltaX * sensitivity;
+                    euler.x -= deltaY * sensitivity;
+                    euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, euler.x));
+                    camera.quaternion.setFromEuler(euler);
+                    
+                    lastTouchX = touch.clientX;
+                    lastTouchY = touch.clientY;
+                }
+            }, { passive: false });
+
+            lookArea.addEventListener('touchend', () => {
+                mobileLookActive = false;
+            });
+
+            interactBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                tryInteract();
+            }, { passive: false });
+
+            renderer.domElement.addEventListener('touchstart', (e) => {
+                const touch = e.touches[0];
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (!target.closest('#joystick-container') && !target.closest('#mobile-look-area') && !target.closest('#mobile-interact-btn')) {
+                    if (isLocked) {
+                        tryInteract();
+                    }
+                }
+            });
+        }
+
+        function startMobileMode() {
+            isLocked = true;
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('crosshair').style.display = 'block';
+            document.getElementById('hud').style.display = 'none';
+            document.getElementById('floor-panel').classList.add('active');
+            document.getElementById('record-panel').classList.add('active');
+            document.getElementById('minimap').classList.add('active');
+        }
+
+        function onCanvasClick(event) {
+            if (!isLocked || isPlaying) return;
+            tryInteract();
+        }
+
+        function tryInteract() {
+            raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+            raycaster.far = 3;
+
+            const intersects = raycaster.intersectObjects(interactiveObjects, true);
+
+            if (intersects.length > 0) {
+                let obj = intersects[0].object;
+                while (obj && !obj.userData.interactive) {
+                    obj = obj.parent;
+                }
+                if (obj && obj.userData.interactive) {
+                    if (obj.userData.dataKey === 'elevator') {
+                        const nextFloor = currentFloor % 3 + 1;
+                        switchFloor(nextFloor);
+                    } else {
+                        showInfoPanel(obj.userData.dataKey);
+                    }
+                }
+            }
+        }
+
+        function updateHighlight() {
+            if (!isLocked || isPlaying) {
+                clearHighlight();
+                return;
+            }
+
+            raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+            raycaster.far = 3;
+
+            const intersects = raycaster.intersectObjects(interactiveObjects, true);
+
+            if (intersects.length > 0) {
+                let obj = intersects[0].object;
+                while (obj && !obj.userData.interactive) {
+                    obj = obj.parent;
+                }
+                if (obj && obj.userData.interactive) {
+                    if (highlightedObject !== obj) {
+                        clearHighlight();
+                        highlightedObject = obj;
+                        applyHighlight(obj);
+                    }
+                    document.getElementById('interact-hint').style.display = 'block';
+                    return;
+                }
+            }
+
+            clearHighlight();
+            document.getElementById('interact-hint').style.display = 'none';
+        }
+
+        function applyHighlight(object) {
+            const selectedObjects = [];
+            object.traverse((child) => {
+                if (child.isMesh) {
+                    selectedObjects.push(child);
+                }
+            });
+            outlinePass.selectedObjects = selectedObjects;
+        }
+
+        function clearHighlight() {
+            highlightedObject = null;
+            outlinePass.selectedObjects = [];
+        }
+
+        function showInfoPanel(dataKey) {
+            const data = furnitureData[dataKey];
+            if (!data) return;
+
+            const panel = document.getElementById('info-panel');
+            const title = document.getElementById('info-title');
+            const content = document.getElementById('info-content');
+
+            title.textContent = data.title;
+            content.innerHTML = '';
+
+            for (const [key, value] of Object.entries(data.info)) {
+                const p = document.createElement('p');
+                p.innerHTML = `<span class="info-label">${key}:</span>${value}`;
+                content.appendChild(p);
+            }
+
+            panel.classList.add('active');
+            if (!isMobile) {
+                controls.unlock();
+            }
+            clearHighlight();
+        }
+
+        window.closeInfoPanel = function() {
+            document.getElementById('info-panel').classList.remove('active');
+            if (!isMobile && !isLocked) {
+                controls.lock();
+            }
+        };
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = performance.now();
+            const delta = (time - prevTime) / 1000;
+
+            if (isLocked && !isPlaying) {
+                if (navActive) {
+                    updateNavigation(delta);
+                } else {
+                    velocity.x -= velocity.x * 10.0 * delta;
+                    velocity.z -= velocity.z * 10.0 * delta;
+                    velocity.y -= GRAVITY * delta;
+
+                    direction.z = Number(moveForward) - Number(moveBackward);
+                    direction.x = Number(moveRight) - Number(moveLeft);
+                    direction.normalize();
+
+                    if (moveForward || moveBackward) {
+                        velocity.z -= direction.z * MOVE_SPEED * delta;
+                    }
+                    if (moveLeft || moveRight) {
+                        velocity.x -= direction.x * MOVE_SPEED * delta;
+                    }
+
+                    const forward = new THREE.Vector3();
+                    camera.getWorldDirection(forward);
+                    forward.y = 0;
+                    forward.normalize();
+
+                    const right = new THREE.Vector3();
+                    right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+
+                    const moveX = (-velocity.x * right.x - velocity.z * forward.x) * delta;
+                    const moveZ = (-velocity.x * right.z - velocity.z * forward.z) * delta;
+
+                    const newPosition = isMobile ? camera.position.clone() : controls.getObject().position.clone();
+                    
+                    const testX = newPosition.clone();
+                    testX.x += moveX;
+                    if (!checkCollision(testX)) {
+                        newPosition.x = testX.x;
+                    }
+
+                    const testZ = newPosition.clone();
+                    testZ.z += moveZ;
+                    if (!checkCollision(testZ)) {
+                        newPosition.z = testZ.z;
+                    }
+
+                    newPosition.y += velocity.y * delta;
+
+                    if (newPosition.y < PLAYER_HEIGHT + floors[currentFloor].yOffset) {
+                        velocity.y = 0;
+                        newPosition.y = PLAYER_HEIGHT + floors[currentFloor].yOffset;
+                        canJump = true;
+                    }
+
+                    if (isMobile) {
+                        camera.position.copy(newPosition);
+                    } else {
+                        controls.getObject().position.copy(newPosition);
+                    }
+                }
+
+                updateHighlight();
+                recordFrame();
+                updateMinimapPlayer();
+            }
+
+            if (isPlaying) {
+                updatePlayback();
+            }
+
+            prevTime = time;
+            composer.render();
+        }
+
+        init();
+    </script>
+</body>
+</html>
