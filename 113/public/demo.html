@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>热力图系统演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .header .info {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .header .info-item {
+            background: #f0f3ff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .header .info-item span {
+            font-weight: bold;
+            color: #667eea;
+        }
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .panel h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .demo-area {
+            min-height: 500px;
+            position: relative;
+        }
+        .demo-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .demo-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .demo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .demo-btn.secondary {
+            background: #6c757d;
+        }
+        .click-zone {
+            border: 3px dashed #ddd;
+            border-radius: 10px;
+            min-height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fafafa;
+            position: relative;
+            overflow: hidden;
+        }
+        .click-zone::before {
+            content: '点击此区域测试热力图采集';
+            color: #999;
+            font-size: 16px;
+        }
+        .click-indicator {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 0, 0, 0.5);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            animation: clickFade 1s ease-out forwards;
+        }
+        @keyframes clickFade {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(2); }
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        .stat-card .label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        .heatmap-preview {
+            background: #f5f5f5;
+            border-radius: 10px;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .heatmap-preview canvas {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        .log-panel {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+        }
+        .log-entry .time {
+            color: #888;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .control-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .control-btn:hover, .control-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        .target-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .target-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        .target-item .name {
+            font-weight: 500;
+        }
+        .target-item .count {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 热力图与UVM分析系统</h1>
+            <p>基于Canvas指纹的访客识别与点击热力图追踪</p>
+            <div class="info">
+                <div class="info-item">
+                    设备指纹: <span id="fingerprint">-</span>
+                </div>
+                <div class="info-item">
+                    会话ID: <span id="sessionId">-</span>
+                </div>
+                <div class="info-item">
+                    已采集点击: <span id="clickCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="panel">
+                <h2>📍 点击采集区域</h2>
+                <div class="demo-buttons">
+                    <button class="demo-btn" id="btn1">按钮 A</button>
+                    <button class="demo-btn" id="btn2">按钮 B</button>
+                    <button class="demo-btn secondary" id="btn3">导航链接</button>
+                    <button class="demo-btn secondary" id="btn4">表单提交</button>
+                    <button class="demo-btn" id="btn5">下载</button>
+                    <button class="demo-btn" id="btn6">帮助</button>
+                </div>
+                <div class="click-zone" id="clickZone"></div>
+                <div class="log-panel" id="logPanel">
+                    <div class="log-entry"><span class="time">[系统]</span> 热力图SDK已加载</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>📊 实时统计</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number" id="uvCount">-</div>
+                        <div class="label">UV (独立访客)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" id="mvCount">-</div>
+                        <div class="label">MV (多次访问)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" id="sessionCount">-</div>
+                        <div class="label">会话数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" id="totalClicks">-</div>
+                        <div class="label">总点击</div>
+                    </div>
+                </div>
+
+                <h2>🎯 热门点击区域</h2>
+                <div class="target-list" id="targetList">
+                    <div class="target-item">
+                        <span class="name">加载中...</span>
+                        <span class="count">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" style="margin-top: 20px;">
+            <h2>🖼️ 热力图可视化</h2>
+            <div class="controls">
+                <button class="control-btn active" id="showHeatmap">显示热力图</button>
+                <button class="control-btn" id="refreshData">刷新数据</button>
+                <button class="control-btn" id="downloadSVG">下载SVG</button>
+            </div>
+            <div class="heatmap-preview" id="heatmapPreview">
+                <canvas id="heatmapCanvas" width="800" height="500"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="/sdk/heatmap-sdk.js"></script>
+    <script>
+        let totalClicks = 0;
+        let heatmapInstance = null;
+
+        setTimeout(() => {
+            if (window.heatmapInstance) {
+                heatmapInstance = window.heatmapInstance;
+                document.getElementById('fingerprint').textContent = heatmapInstance.getFingerprint();
+                document.getElementById('sessionId').textContent = heatmapInstance.getSessionId();
+                addLog('SDK初始化完成，开始采集点击数据');
+            }
+        }, 500);
+
+        function addLog(message) {
+            const logPanel = document.getElementById('logPanel');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="time">[${time}]</span> ${message}`;
+            logPanel.insertBefore(entry, logPanel.firstChild);
+        }
+
+        const clickZone = document.getElementById('clickZone');
+        clickZone.addEventListener('click', (e) => {
+            const rect = clickZone.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const indicator = document.createElement('div');
+            indicator.className = 'click-indicator';
+            indicator.style.left = x + 'px';
+            indicator.style.top = y + 'px';
+            clickZone.appendChild(indicator);
+            
+            setTimeout(() => indicator.remove(), 1000);
+            
+            totalClicks++;
+            document.getElementById('clickCount').textContent = totalClicks;
+            addLog(`点击已记录 (${e.clientX}, ${e.clientY})`);
+        });
+
+        async function fetchStats() {
+            try {
+                const response = await fetch('/api/heatmap/data?path=/demo.html');
+                const data = await response.json();
+                
+                document.getElementById('uvCount').textContent = data.uvm.uv;
+                document.getElementById('mvCount').textContent = data.uvm.mv;
+                document.getElementById('totalClicks').textContent = data.uvm.totalClicks;
+                document.getElementById('sessionCount').textContent = '-';
+                
+                const targetList = document.getElementById('targetList');
+                targetList.innerHTML = '';
+                
+                if (data.topTargets && data.topTargets.length > 0) {
+                    data.topTargets.forEach(target => {
+                        const item = document.createElement('div');
+                        item.className = 'target-item';
+                        const name = target.target_id || target.target_class || target.target;
+                        item.innerHTML = `
+                            <span class="name">${name}</span>
+                            <span class="count">${target.click_count}</span>
+                        `;
+                        targetList.appendChild(item);
+                    });
+                } else {
+                    targetList.innerHTML = '<div class="target-item"><span class="name">暂无数据</span></div>';
+                }
+
+                drawHeatmap(data.heatmap);
+            } catch (e) {
+                console.error('Fetch stats error:', e);
+            }
+        }
+
+        function drawHeatmap(points) {
+            const canvas = document.getElementById('heatmapCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (!points || points.length === 0) {
+                ctx.fillStyle = '#999';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('暂无热力图数据', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+
+            const maxValue = Math.max(...points.map(p => p.value));
+            const radius = 40;
+
+            points.forEach(point => {
+                const intensity = point.value / maxValue;
+                const x = point.x * (canvas.width / 1920);
+                const y = point.y * (canvas.height / 1080);
+                
+                const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius * intensity);
+                
+                const r = Math.floor(255 * intensity);
+                const g = Math.floor(100 * (1 - intensity));
+                const b = 0;
+                
+                gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${0.8 * intensity})`);
+                gradient.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${0.4 * intensity})`);
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(x, y, radius * intensity, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        document.getElementById('refreshData').addEventListener('click', () => {
+            fetchStats();
+            addLog('手动刷新统计数据');
+        });
+
+        document.getElementById('downloadSVG').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/heatmap/overlay', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: '/demo.html', width: 1920, height: 1080 })
+                });
+                const svg = await response.text();
+                const blob = new Blob([svg], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'heatmap.svg';
+                a.click();
+                URL.revokeObjectURL(url);
+                addLog('热力图SVG已下载');
+            } catch (e) {
+                addLog('下载失败: ' + e.message);
+            }
+        });
+
+        fetchStats();
+        setInterval(fetchStats, 5000);
+    </script>
+</body>
+</html>
