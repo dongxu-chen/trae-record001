@@ -1,0 +1,163 @@
+<div class="upload-container">
+  <app-vips-loader></app-vips-loader>
+
+  <div
+    class="drop-zone"
+    [class.dragging]="isDragging"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+    (click)="fileInput.click()"
+  >
+    <input
+      #fileInput
+      type="file"
+      multiple
+      accept="image/*,.psd,.svg,.heic,.heif"
+      style="display: none;"
+      (change)="onFileSelected($event)"
+    >
+
+    <div class="drop-zone-content">
+      <div class="drop-icon">
+        <span nz-icon nzType="cloud-upload" nzTheme="outline"></span>
+      </div>
+      <h3>点击或拖拽图片到此处上传</h3>
+      <p>支持 JPG, PNG, GIF, WebP, <strong>PSD, SVG, HEIC</strong> 等格式</p>
+
+      <div class="vips-badge" *ngIf="vipsReady">
+        <nz-tag nzColor="#52c41a" nzBordered="false">
+          <span nz-icon nzType="thunderbolt"></span>
+          WASM 引擎已就绪
+        </nz-tag>
+      </div>
+
+      <div class="feature-tags">
+        <nz-tag nzColor="#1890ff">批量处理</nz-tag>
+        <nz-tag nzColor="#722ed1">智能裁剪</nz-tag>
+        <nz-tag nzColor="#eb2f96">WebP/AVIF</nz-tag>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="files.length > 0" style="margin-top: 24px;">
+    <!-- 高级处理选项 -->
+    <nz-card class="options-card" nzSize="small" style="margin-bottom: 16px;">
+      <div nz-row [nzGutter]="16" nzAlign="middle">
+        <div nz-col [nzSpan]="6">
+          <label class="option-label">目标格式</label>
+          <nz-select [(ngModel)]="targetFormat" style="width: 100%;">
+            <nz-option nzValue="original" nzLabel="保持原格式"></nz-option>
+            <nz-option nzValue="jpeg" nzLabel="JPEG"></nz-option>
+            <nz-option nzValue="webp" nzLabel="WebP"></nz-option>
+            <nz-option nzValue="avif" nzLabel="AVIF (下一代)"></nz-option>
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <label class="option-label">目标宽度</label>
+          <nz-input-number [(ngModel)]="targetWidth" [nzMin]="640" [nzMax]="4096" [nzStep]="320" style="width: 100%;"></nz-input-number>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <label class="option-label">压缩质量</label>
+          <nz-slider [(ngModel)]="targetQuality" [nzMin]="0.5" [nzMax]="1" [nzStep]="0.05"></nz-slider>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-switch [(ngModel)]="autoResize" nzCheckedChildren="缩放" nzUnCheckedChildren="原尺寸"></nz-switch>
+          <br>
+          <nz-switch [(ngModel)]="enableSmartCrop" nzCheckedChildren="智能裁剪" nzUnCheckedChildren="保持比例"></nz-switch>
+        </div>
+        <div nz-col [nzSpan]="6" style="text-align: right;">
+          <button nz-button nzType="default" (click)="clearAll()" [disabled]="isBatchUploading" style="margin-right: 8px;">
+            <span nz-icon nzType="delete"></span>
+            清空
+          </button>
+          <button nz-button nzType="primary" (click)="uploadAll()" [disabled]="isBatchUploading" [nzLoading]="isBatchUploading">
+            <span nz-icon nzType="thunderbolt"></span>
+            {{ isBatchUploading ? '处理中...' : '批量处理' }}
+          </button>
+        </div>
+      </div>
+    </nz-card>
+
+    <!-- 进度条 -->
+    <nz-progress
+      *ngIf="isBatchUploading"
+      [nzPercent]="uploadAllProgress"
+      [nzStatus]="'active'"
+      [nzStrokeColor]="'#52c41a'"
+      style="margin-bottom: 16px;"
+    ></nz-progress>
+
+    <!-- 文件列表 -->
+    <div class="file-grid">
+      <div *ngFor="let file of files; let i = index" class="file-item">
+        <div class="file-preview">
+          <img [src]="file.preview" [alt]="file.name" *ngIf="file.preview">
+          <div *ngIf="file.vipsProcessed" class="vips-processed-badge">
+            <nz-tag nzColor="#52c41a" nzSize="small">VIPS</nz-tag>
+          </div>
+        </div>
+        
+        <div class="file-info">
+          <p class="file-name" [nzTooltipTitle]="file.name">{{ file.name }}</p>
+          <p class="file-size">{{ (file.file.size / 1024).toFixed(1) }} KB</p>
+          
+          <nz-progress
+            *ngIf="file.status === 'uploading'"
+            [nzPercent]="file.progress"
+            [nzSize]="'small'"
+            [nzStrokeColor]="file.vipsProcessed ? '#52c41a' : '#1890ff'"
+            style="margin-top: 8px;"
+          ></nz-progress>
+
+          <p *ngIf="file.status === 'uploading' && file.retryCount > 0" class="retry-text">
+            正在重试... ({{ file.retryCount }}/3)
+          </p>
+
+          <div class="file-actions" *ngIf="file.status !== 'uploading'">
+            <button
+              nz-button
+              nzSize="small"
+              nzType="default"
+              (click)="openEditor(i)"
+              style="margin-right: 8px;"
+            >
+              <span nz-icon nzType="edit"></span>
+              编辑
+            </button>
+            <button
+              nz-button
+              nzSize="small"
+              nzType="default"
+              (click)="runBenchmark(i)"
+              style="margin-right: 8px;"
+            >
+              <span nz-icon nzType="bar-chart"></span>
+              基准
+            </button>
+            <button
+              nz-button
+              nzSize="small"
+              [nzType]="file.status === 'error' ? 'danger' : 'primary'"
+              (click)="uploadFile(i)"
+              [disabled]="file.status === 'success'"
+            >
+              <span nz-icon [nzType]="file.status === 'error' ? 'reload' : 'check'"></span>
+              {{ file.status === 'success' ? '已完成' : (file.status === 'error' ? '重试' : '处理') }}
+            </button>
+            <button
+              nz-button
+              nzSize="small"
+              nzType="text"
+              nzDanger
+              (click)="removeFile(i)"
+              style="margin-left: 8px;"
+            >
+              <span nz-icon nzType="close"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

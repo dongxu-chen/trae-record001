@@ -1,0 +1,243 @@
+<div class="image-list-container">
+  <div style="margin-bottom: 24px;">
+    <nz-row [nzGutter]="16" nzAlign="middle">
+      <nz-col [nzSpan]="12" [nzXs]="24" [nzSm]="10">
+        <nz-input-group [nzPrefix]="prefixIcon">
+          <input
+            type="text"
+            nz-input
+            placeholder="搜索图片名称、描述..."
+            [(ngModel)]="searchText"
+          >
+        </nz-input-group>
+        <ng-template #prefixIcon>
+          <span nz-icon nzType="search"></span>
+        </ng-template>
+      </nz-col>
+      <nz-col [nzSpan]="5" [nzXs]="12" [nzSm]="5">
+        <nz-select [(ngModel)]="sortField" style="width: 100%;">
+          <nz-option nzValue="createdAt" nzLabel="按时间排序"></nz-option>
+          <nz-option nzValue="name" nzLabel="按名称排序"></nz-option>
+          <nz-option nzValue="size" nzLabel="按大小排序"></nz-option>
+          <nz-option nzValue="nsfw" nzLabel="按风险等级"></nz-option>
+        </nz-select>
+      </nz-col>
+      <nz-col [nzSpan]="2" [nzXs]="6" [nzSm]="2">
+        <button
+          nz-button
+          (click)="sortOrder = sortOrder === 'ascend' ? 'descend' : 'ascend'"
+          style="width: 100%;"
+        >
+          <span nz-icon [nzType]="sortOrder === 'ascend' ? 'ascending' : 'descending'"></span>
+        </button>
+      </nz-col>
+      <nz-col [nzSpan]="5" [nzXs]="18" [nzSm]="7">
+        <nz-space>
+          <nz-switch
+            [(ngModel)]="showNsfwOnly"
+            nzCheckedChildren="仅违规"
+            nzUnCheckedChildren="全部"
+          ></nz-switch>
+          <button
+            nz-button
+            nzType="default"
+            [disabled]="isAnalyzing"
+            (click)="analyzeAllImages()"
+          >
+            <span nz-icon [nzType]="isAnalyzing ? 'loading' : 'apartment'"></span>
+            智能分析
+          </button>
+          <nz-button-group>
+            <button
+              nz-button
+              [nzType]="viewMode === 'grid' ? 'primary' : 'default'"
+              (click)="viewMode = 'grid'"
+            >
+              <span nz-icon nzType="appstore"></span>
+            </button>
+            <button
+              nz-button
+              [nzType]="viewMode === 'list' ? 'primary' : 'default'"
+              (click)="viewMode = 'list'"
+            >
+              <span nz-icon nzType="unordered-list"></span>
+            </button>
+          </nz-button-group>
+        </nz-space>
+      </nz-col>
+    </nz-row>
+  </div>
+
+  <nz-empty
+    *ngIf="filteredImages.length === 0"
+    nzNotFoundImage="simple"
+    [nzDescription]="'暂无图片'"
+  ></nz-empty>
+
+  <nz-row *ngIf="viewMode === 'grid' && filteredImages.length > 0" [nzGutter]="[16, 16]">
+    <nz-col *ngFor="let image of filteredImages" [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="6" [nzXl]="4">
+      <nz-card class="image-card" hoverable>
+        <div style="position: relative; cursor: pointer;" (click)="previewImage(image)">
+          <img
+            [src]="image.thumbnail"
+            [alt]="image.name"
+            style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px;"
+            [class.nsfw-blur]="image.analysis?.isNsfw"
+          >
+          <div *ngIf="image.analysis?.isNsfw" class="nsfw-badge">
+            <span nz-icon nzType="warning"></span>
+            疑似违规
+          </div>
+          <div *ngIf="image.analysis && image.analysis.faceCount > 0" class="face-badge">
+            <span nz-icon nzType="user"></span>
+            {{ image.analysis.faceCount }}人
+          </div>
+          <div class="image-overlay">
+            <nz-space>
+              <button
+                nz-button
+                nzType="text"
+                nzShape="circle"
+                (click)="$event.stopPropagation(); openEditor(image)"
+                nzTooltipTitle="编辑"
+              >
+                <span nz-icon nzType="edit" style="color: white;"></span>
+              </button>
+              <button
+                nz-button
+                nzType="text"
+                nzShape="circle"
+                (click)="$event.stopPropagation(); downloadImage(image)"
+                nzTooltipTitle="下载"
+              >
+                <span nz-icon nzType="download" style="color: white;"></span>
+              </button>
+              <button
+                nz-button
+                nzType="text"
+                nzShape="circle"
+                (click)="$event.stopPropagation(); copyUrl(image)"
+                nzTooltipTitle="复制链接"
+              >
+                <span nz-icon nzType="copy" style="color: white;"></span>
+              </button>
+              <button
+                nz-button
+                nzType="text"
+                nzShape="circle"
+                nzDanger
+                (click)="$event.stopPropagation(); deleteImage(image)"
+                nzTooltipTitle="删除"
+              >
+                <span nz-icon nzType="delete" style="color: white;"></span>
+              </button>
+            </nz-space>
+          </div>
+        </div>
+
+        <div style="margin-top: 12px;">
+          <p
+            style="margin: 0 0 8px; font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+            [nzTooltipTitle]="image.name"
+          >
+            {{ image.name }}
+          </p>
+          <div *ngIf="image.analysis?.description" style="margin: 0 0 8px; font-size: 12px; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            {{ image.analysis.description }}
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: #666;">
+            <span>{{ image.width }} × {{ image.height }}</span>
+            <span>{{ formatSize(image.size) }}</span>
+          </div>
+          <div style="margin-top: 4px; font-size: 12px; color: #999; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+            <nz-tag [nzColor]="'blue'" nzSize="small">{{ image.format }}</nz-tag>
+            <ng-container *ngIf="image.analysis">
+              <nz-tag
+                *ngIf="image.analysis.nsfwScore >= 0"
+                [nzColor]="getNsfwLabel(image.analysis.nsfwScore).color"
+                nzSize="small"
+              >
+                {{ getNsfwLabel(image.analysis.nsfwScore).text }}
+              </nz-tag>
+              <nz-tag
+                *ngIf="image.analysis.hasFace"
+                nzColor="purple"
+                nzSize="small"
+              >
+                人脸
+              </nz-tag>
+            </ng-container>
+            <span>{{ formatDate(image.createdAt) }}</span>
+          </div>
+        </div>
+      </nz-card>
+    </nz-col>
+  </nz-row>
+
+  <nz-table
+    *ngIf="viewMode === 'list' && filteredImages.length > 0"
+    [nzData]="filteredImages"
+    [nzShowPagination]="false"
+    nzSize="middle"
+  >
+    <thead>
+      <tr>
+        <th>预览</th>
+        <th>文件名</th>
+        <th>智能标签</th>
+        <th>尺寸</th>
+        <th>格式</th>
+        <th>大小</th>
+        <th>创建时间</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let image of filteredImages">
+        <td>
+          <img
+            [src]="image.thumbnail"
+            [alt]="image.name"
+            style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px; cursor: pointer;"
+            [class.nsfw-blur]="image.analysis?.isNsfw"
+            (click)="previewImage(image)"
+          >
+        </td>
+        <td>
+          <span style="cursor: pointer;" (click)="previewImage(image)">{{ image.name }}</span>
+          <div *ngIf="image.analysis?.description" style="font-size: 11px; color: #888; margin-top: 2px;">
+            {{ image.analysis.description }}
+          </div>
+        </td>
+        <td>
+          <ng-container *ngIf="image.analysis; else noAnalysis">
+            <nz-tag
+              [nzColor]="getNsfwLabel(image.analysis.nsfwScore).color"
+              nzSize="small"
+            >
+              {{ getNsfwLabel(image.analysis.nsfwScore).text }}
+            </nz-tag>
+            <nz-tag *ngIf="image.analysis.hasFace" nzColor="purple" nzSize="small">
+              {{ image.analysis.faceCount }}人脸
+            </nz-tag>
+          </ng-container>
+          <ng-template #noAnalysis>
+            <span style="color: #999; font-size: 12px;">未分析</span>
+          </ng-template>
+        </td>
+        <td>{{ image.width }} × {{ image.height }}</td>
+        <td><nz-tag [nzColor]="'blue'" nzSize="small">{{ image.format }}</nz-tag></td>
+        <td>{{ formatSize(image.size) }}</td>
+        <td>{{ formatDate(image.createdAt) }}</td>
+        <td>
+          <nz-space>
+            <a (click)="openEditor(image)">编辑</a>
+            <a (click)="downloadImage(image)">下载</a>
+            <a (click)="copyUrl(image)">复制链接</a>
+            <a (click)="deleteImage(image)" style="color: #ff4d4f;">删除</a>
+          </nz-space>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</div>

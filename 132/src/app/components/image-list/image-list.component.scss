@@ -1,0 +1,67 @@
+.image-list-container {
+  padding: 0;
+}
+
+.image-card {
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+    .image-overlay {
+      opacity: 1;
+    }
+  }
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 4px;
+}
+
+.nsfw-blur {
+  filter: blur(8px);
+}
+
+.nsfw-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(255, 77, 79, 0.9);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+}
+
+.face-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(114, 46, 209, 0.9);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+}

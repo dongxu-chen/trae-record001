@@ -1,0 +1,268 @@
+<div class="editor-container">
+  <div class="editor-content">
+    <div class="canvas-wrapper" [class.cropping]="isCropping">
+      <canvas
+        #canvas
+        class="editor-canvas"
+        (mousedown)="startCrop($event)"
+        (mousemove)="doCrop($event)"
+        (mouseup)="endCrop()"
+        (mouseleave)="endCrop()"
+      ></canvas>
+      <div
+        *ngIf="isCropping && cropConfig.width > 0"
+        class="crop-selection"
+        [style.left.px]="cropConfig.x"
+        [style.top.px]="cropConfig.y"
+        [style.width.px]="cropConfig.width"
+        [style.height.px]="cropConfig.height"
+      ></div>
+    </div>
+  </div>
+
+  <div class="editor-sidebar">
+    <nz-tabset [nzSelectedIndex]="0" (nzSelectedIndexChange)="onTabChange(['scale', 'crop', 'watermark', 'analyze', 'webp'][$event])">
+      <nz-tab nzTitle="缩放旋转">
+        <div style="padding: 16px 0;">
+          <div style="margin-bottom: 24px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">缩放比例: {{ currentScale }}%</label>
+            <nz-slider
+              [nzMin]="10"
+              [nzMax]="200"
+              [nzStep]="5"
+              [(ngModel)]="currentScale"
+              (ngModelChange)="onScaleChange()"
+            ></nz-slider>
+          </div>
+
+          <div>
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">旋转</label>
+            <nz-space>
+              <button nz-button (click)="rotate(-90)">
+                <span nz-icon nzType="rotate-left"></span>
+                左旋 90°
+              </button>
+              <button nz-button (click)="rotate(90)">
+                <span nz-icon nzType="rotate-right"></span>
+                右旋 90°
+              </button>
+            </nz-space>
+          </div>
+        </div>
+      </nz-tab>
+
+      <nz-tab nzTitle="智能裁剪">
+        <div style="padding: 16px 0;">
+          <nz-alert
+            nzType="info"
+            nzMessage="智能裁剪功能"
+            nzDescription="自动识别人脸位置并保留关键区域，适用于头像制作等场景。"
+            style="margin-bottom: 16px;"
+          ></nz-alert>
+
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">选择裁剪尺寸</label>
+            <nz-radio-group [(ngModel)]="selectedCropPreset">
+              <nz-space nzDirection="vertical" *nzSpaceItem>
+                <label nz-radio *ngFor="let preset of cropPresets; let i = index" [nzValue]="i">
+                  {{ preset.label }}
+                </label>
+              </nz-space>
+            </nz-radio-group>
+          </div>
+
+          <nz-space style="width: 100%;" nzDirection="vertical">
+            <button
+              nz-button
+              nzType="primary"
+              [disabled]="selectedCropPreset === 0 || isAnalyzing"
+              (click)="smartCrop(selectedCropPreset)"
+              style="width: 100%;"
+            >
+              <span nz-icon nzType="scan"></span>
+              智能裁剪（保人脸）
+            </button>
+            <button
+              nz-button
+              [nzType]="isCropping ? 'primary' : 'default'"
+              (click)="toggleCropMode()"
+              style="width: 100%;"
+            >
+              <span nz-icon [nzType]="isCropping ? 'stop' : 'scissor'"></span>
+              {{ isCropping ? '取消手动裁剪' : '手动裁剪' }}
+            </button>
+          </nz-space>
+        </div>
+      </nz-tab>
+
+      <nz-tab nzTitle="水印设置">
+        <div style="padding: 16px 0;">
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">水印文字</label>
+            <input
+              nz-input
+              [(ngModel)]="watermarkConfig.text"
+              (input)="drawImage()"
+              placeholder="输入水印文字"
+            >
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">字体大小: {{ watermarkConfig.fontSize }}px</label>
+            <nz-slider
+              [nzMin]="12"
+              [nzMax]="120"
+              [nzStep]="4"
+              [(ngModel)]="watermarkConfig.fontSize"
+              (ngModelChange)="drawImage()"
+            ></nz-slider>
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">透明度: {{ (watermarkConfig.opacity * 100).toFixed(0) }}%</label>
+            <nz-slider
+              [nzMin]="0.1"
+              [nzMax]="1"
+              [nzStep]="0.05"
+              [(ngModel)]="watermarkConfig.opacity"
+              (ngModelChange)="drawImage()"
+            ></nz-slider>
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">文字颜色</label>
+            <input
+              type="color"
+              [(ngModel)]="watermarkConfig.color"
+              (input)="drawImage()"
+              style="width: 100%; height: 40px; border: 1px solid #d9d9d9; border-radius: 4px; cursor: pointer;"
+            >
+          </div>
+
+          <div>
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">水印位置（九宫格）</label>
+            <div class="position-grid">
+              <button
+                *ngFor="let pos of watermarkPositions"
+                nz-button
+                nzSize="small"
+                [nzType]="watermarkConfig.position === pos.key ? 'primary' : 'default'"
+                (click)="watermarkConfig.position = pos.key; drawImage();"
+              >
+                {{ pos.label }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </nz-tab>
+
+      <nz-tab nzTitle="智能分析">
+        <div style="padding: 16px 0;">
+          <button
+            nz-button
+            nzType="primary"
+            [disabled]="isAnalyzing"
+            (click)="analyzeImage()"
+            style="width: 100%; margin-bottom: 16px;"
+          >
+            <span nz-icon [nzType]="isAnalyzing ? 'loading' : 'apartment'"></span>
+            {{ isAnalyzing ? '分析中...' : '开始智能分析' }}
+          </button>
+
+          <nz-collapse *ngIf="analysisResult" [nzBordered]="false">
+            <nz-collapse-panel nzHeader="人脸检测结果" nzActive>
+              <nz-empty *ngIf="!analysisResult.faces.length" nzNotFoundContent="未检测到人脸" style="margin: 16px 0;"></nz-empty>
+              <div *ngIf="analysisResult.faces.length">
+                <nz-tag nzColor="green">检测到 {{ analysisResult.faces.length }} 个人脸</nz-tag>
+                <div style="margin-top: 12px;">
+                  <nz-switch [(ngModel)]="showFaceRegions" (ngModelChange)="drawImage()" nzCheckedChildren="显示框"></nz-switch>
+                  <span style="margin-left: 8px;">显示人脸框</span>
+                </div>
+                <div *ngFor="let face of analysisResult.faces; let i = index" style="margin-top: 8px; padding: 8px; background: #f5f5f5; border-radius: 4px;">
+                  <p style="margin: 0;">人脸 {{ i + 1 }}: 置信度 {{ (face.confidence * 100).toFixed(0) }}%</p>
+                  <p style="margin: 4px 0 0; font-size: 12px; color: #666;">位置: ({{ face.x.toFixed(0) }}, {{ face.y.toFixed(0) }})</p>
+                </div>
+              </div>
+            </nz-collapse-panel>
+
+            <nz-collapse-panel nzHeader="内容安全检测">
+              <nz-progress
+                [nzPercent]="(analysisResult.nsfw.score * 100).toFixed(0)"
+                [nzStatus]="analysisResult.nsfw.isNsfw ? 'exception' : 'normal'"
+                [nzStrokeColor]="getNsfwLabel(analysisResult.nsfw.score).color"
+                style="margin-bottom: 16px;"
+              ></nz-progress>
+              <nz-tag [nzColor]="getNsfwLabel(analysisResult.nsfw.score).color">
+                {{ getNsfwLabel(analysisResult.nsfw.score).text }}
+              </nz-tag>
+              <div style="margin-top: 12px; font-size: 13px;">
+                <p><strong>分类得分：</strong></p>
+                <p>色情: {{ (analysisResult.nsfw.classifications.porn * 100).toFixed(1) }}%</p>
+                <p>性感: {{ (analysisResult.nsfw.classifications.sexy * 100).toFixed(1) }}%</p>
+                <p>正常: {{ (analysisResult.nsfw.classifications.neutral * 100).toFixed(1) }}%</p>
+                <p> hentai: {{ (analysisResult.nsfw.classifications.hentai * 100).toFixed(1) }}%</p>
+                <p>漫画: {{ (analysisResult.nsfw.classifications.drawings * 100).toFixed(1) }}%</p>
+              </div>
+            </nz-collapse-panel>
+
+            <nz-collapse-panel nzHeader="OCR 文字识别">
+              <div style="background: #f5f5f5; padding: 12px; border-radius: 4px;">
+                <p style="margin: 0 0 8px; font-weight: 500;">识别结果：</p>
+                <p style="margin: 0;">{{ analysisResult.ocr.text }}</p>
+              </div>
+              <div style="margin-top: 12px; font-size: 13px; color: #666;">
+                <p>置信度: {{ (analysisResult.ocr.confidence * 100).toFixed(1) }}%</p>
+                <p>描述行: {{ analysisResult.ocr.lines.join(' | ') }}</p>
+              </div>
+            </nz-collapse-panel>
+          </nz-collapse>
+
+          <nz-alert
+            *ngIf="!analysisResult"
+            nzType="info"
+            nzMessage="功能说明"
+            nzDescription="点击上方按钮进行智能分析，包括人脸检测、内容安全评估、图片描述生成。结果将用于智能裁剪和图片管理。"
+            style="margin-top: 16px;"
+          ></nz-alert>
+        </div>
+      </nz-tab>
+
+      <nz-tab nzTitle="WebP转换">
+        <div style="padding: 16px 0;">
+          <nz-alert
+            nzType="info"
+            nzMessage="格式转换说明"
+            nzDescription="优先尝试转换为 WebP 格式（相比 JPG/PNG 可减少约 25-35% 文件大小）。若浏览器不支持 WebP，将自动降级为 JPEG 格式（质量 90%）。"
+            style="margin-bottom: 16px;"
+          ></nz-alert>
+          <button
+            nz-button
+            nzType="primary"
+            (click)="convertToWebP()"
+            style="width: 100%;"
+          >
+            <span nz-icon nzType="download"></span>
+            转换并下载
+          </button>
+        </div>
+      </nz-tab>
+    </nz-tabset>
+
+    <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #f0f0f0;">
+      <nz-space style="width: 100%;" nzDirection="vertical">
+        <button nz-button nzType="default" (click)="reset()" style="width: 100%;">
+          <span nz-icon nzType="reload"></span>
+          重置所有修改
+        </button>
+        <nz-space style="width: 100%;">
+          <button nz-button (click)="cancel()" style="flex: 1;">
+            取消
+          </button>
+          <button nz-button nzType="primary" (click)="save()" style="flex: 1;">
+            保存
+          </button>
+        </nz-space>
+      </nz-space>
+    </div>
+  </div>
+</div>
