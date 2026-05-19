@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 轨迹回放</title>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="map"></div>
+    
+    <div class="control-panel">
+        <h3>轨迹回放控制</h3>
+        
+        <div class="upload-section">
+            <label for="gpx-file" class="upload-label">📁 上传 GPX 文件</label>
+            <input type="file" id="gpx-file" accept=".gpx">
+            <div id="file-info" class="file-info"></div>
+        </div>
+
+        <div class="layer-controls">
+            <label>
+                <input type="checkbox" id="heatmap-toggle" checked>
+                显示热力图
+            </label>
+            <label>
+                <input type="checkbox" id="trail-toggle" checked>
+                显示轨迹线
+            </label>
+        </div>
+
+        <div class="progress-container">
+            <input type="range" id="progress-slider" min="0" max="100" value="0" step="0.1">
+            <div class="time-display">
+                <span id="current-time">00:00</span>
+                <span>/</span>
+                <span id="total-time">00:00</span>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="play-btn" class="btn">▶ 播放</button>
+            <button id="pause-btn" class="btn">⏸ 暂停</button>
+            <button id="reset-btn" class="btn">⏮ 重置</button>
+        </div>
+        <div class="speed-control">
+            <label>播放速度:</label>
+            <select id="speed-select">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+                <option value="4">4x</option>
+                <option value="8">8x</option>
+            </select>
+        </div>
+
+        <div class="velocity-chart-container">
+            <h4>📊 速度曲线</h4>
+            <canvas id="velocity-chart"></canvas>
+            <div id="current-velocity" class="current-velocity">当前速度: 0 km/h</div>
+        </div>
+
+        <div class="info-panel">
+            <p><strong>当前位置:</strong></p>
+            <p>经度: <span id="lng">--</span></p>
+            <p>纬度: <span id="lat">--</span></p>
+            <p>高度: <span id="alt">--</span> m</p>
+            <p>速度: <span id="speed">--</span> km/h</p>
+            <p>距离: <span id="distance">--</span> km</p>
+        </div>
+    </div>
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
+    <script src="map.js"></script>
+    <script src="trail.js"></script>
+    <script src="marker.js"></script>
+    <script src="heatmap.js"></script>
+    <script src="gpx_loader.js"></script>
+    <script src="animation.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+        });
+    </script>
+</body>
+</html>
