@@ -1,0 +1,228 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: healthchecks.health.k8s.health.checker.io
+spec:
+  group: health.k8s.health.checker.io
+  names:
+    kind: HealthCheck
+    listKind: HealthCheckList
+    plural: healthchecks
+    singular: healthcheck
+    shortNames:
+    - hc
+  scope: Namespaced
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          apiVersion:
+            type: string
+          kind:
+            type: string
+          metadata:
+            type: object
+          spec:
+            type: object
+            properties:
+              intervalMinutes:
+                type: integer
+                minimum: 1
+                description: Health check interval in minutes
+              podCheck:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                  namespaces:
+                    type: array
+                    items:
+                      type: string
+                  unhealthyStates:
+                    type: array
+                    items:
+                      type: string
+                  minRestartCount:
+                    type: integer
+              nodeCheck:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                  unschedulableAsUnhealthy:
+                    type: boolean
+              autoRemediation:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                  restartCrashingPods:
+                    type: object
+                    properties:
+                      enabled:
+                        type: boolean
+                      maxRestarts:
+                        type: integer
+                      backoffSeconds:
+                        type: integer
+                      maxBackoffSeconds:
+                        type: integer
+                  drainNodes:
+                    type: object
+                    properties:
+                      enabled:
+                        type: boolean
+                      checkPDB:
+                        type: boolean
+                      gracePeriodSeconds:
+                        type: integer
+                      ignoreNamespaces:
+                        type: array
+                        items:
+                          type: string
+              prometheusTrigger:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                  serverAddress:
+                    type: string
+                  triggerAlerts:
+                    type: array
+                    items:
+                      type: string
+                  webhookPort:
+                    type: integer
+              report:
+                type: object
+                properties:
+                  format:
+                    type: string
+                    enum: [html, yaml, text]
+                  saveToPVC:
+                    type: boolean
+                  pvcName:
+                    type: string
+                  emailNotification:
+                    type: object
+                    properties:
+                      enabled:
+                        type: boolean
+                      smtpHost:
+                        type: string
+                      smtpPort:
+                        type: integer
+                      username:
+                        type: string
+                      password:
+                        type: string
+                      from:
+                        type: string
+                      to:
+                        type: array
+                        items:
+                          type: string
+                  dingTalkNotification:
+                    type: object
+                    properties:
+                      enabled:
+                        type: boolean
+                      webhookURL:
+                        type: string
+                      secret:
+                        type: string
+                      atMobiles:
+                        type: array
+                        items:
+                          type: string
+                      atAll:
+                        type: boolean
+                  weWorkNotification:
+                    type: object
+                    properties:
+                      enabled:
+                        type: boolean
+                      webhookURL:
+                        type: string
+          status:
+            type: object
+            properties:
+              lastCheckTime:
+                type: string
+                format: date-time
+              phase:
+                type: string
+                enum: [Running, Completed, Failed]
+              unhealthyPods:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    namespace:
+                      type: string
+                    name:
+                      type: string
+                    reason:
+                      type: string
+              unhealthyNodes:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    ready:
+                      type: boolean
+                    reason:
+                      type: string
+              summary:
+                type: object
+                properties:
+                  totalPodsChecked:
+                    type: integer
+                  unhealthyPodCount:
+                    type: integer
+                  totalNodesChecked:
+                    type: integer
+                  unhealthyNodeCount:
+                    type: integer
+                  containersRestarted:
+                    type: integer
+                  quotaRecommendationsCount:
+                    type: integer
+                  imageSecurityIssuesCount:
+                    type: integer
+                  errorsCount:
+                    type: integer
+                  warningsCount:
+                    type: integer
+                  durationSeconds:
+                    type: integer
+              errors:
+                type: array
+                items:
+                  type: string
+              warnings:
+                type: array
+                items:
+                  type: string
+    additionalPrinterColumns:
+    - name: Age
+      type: date
+      jsonPath: .metadata.creationTimestamp
+    - name: Phase
+      type: string
+      jsonPath: .status.phase
+    - name: LastCheck
+      type: date
+      jsonPath: .status.lastCheckTime
+    - name: UnhealthyPods
+      type: integer
+      jsonPath: .status.summary.unhealthyPodCount
+    - name: UnhealthyNodes
+      type: integer
+      jsonPath: .status.summary.unhealthyNodeCount

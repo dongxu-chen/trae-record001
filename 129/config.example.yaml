@@ -1,0 +1,16 @@
+email:
+  smtp_server: smtp.example.com
+  smtp_port: 587
+  sender: k8s-checker@example.com
+  recipients:
+    - admin@example.com
+    - devops@example.com
+  username: k8s-checker@example.com
+  password: your-password-here
+  use_tls: true
+
+checker:
+  namespace: all
+  auto_restart: false
+  max_restarts: 5
+  dry_run: true

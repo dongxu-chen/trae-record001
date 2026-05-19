@@ -1,0 +1,50 @@
+apiVersion: health.k8s.health.checker.io/v1
+kind: HealthCheck
+metadata:
+  name: cluster-health-check
+  namespace: healthcheck-operator-system
+spec:
+  intervalMinutes: 5
+  podCheck:
+    enabled: true
+    namespaces: []
+    unhealthyStates:
+      - CrashLoopBackOff
+      - ImagePullBackOff
+      - Error
+      - Pending
+    minRestartCount: 3
+  nodeCheck:
+    enabled: true
+    unschedulableAsUnhealthy: true
+  autoRemediation:
+    enabled: true
+    restartCrashingPods:
+      enabled: true
+      maxRestarts: 5
+      backoffSeconds: 60
+      maxBackoffSeconds: 300
+    drainNodes:
+      enabled: false
+      checkPDB: true
+      gracePeriodSeconds: 300
+      ignoreNamespaces:
+        - kube-system
+  prometheusTrigger:
+    enabled: false
+    serverAddress: http://prometheus-server:9090
+    triggerAlerts:
+      - KubePodCrashLooping
+      - KubeNodeNotReady
+    webhookPort: 9094
+  report:
+    format: html
+    saveToPVC: false
+    dingTalkNotification:
+      enabled: false
+      webhookURL: ""
+      secret: ""
+      atAll: false
+    weWorkNotification:
+      enabled: false
+      webhookURL: ""

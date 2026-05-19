@@ -1,0 +1,22 @@
+resources:
+- bases/health.k8s.health.checker.io_healthchecks.yaml
+
+# +kubebuilder:scaffold:crdkustomizeresource
+
+patchesStrategicMerge:
+# [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix.
+# patches:
+# - path: webhook_in_healthchecks.yaml
+# [CERTMANAGER] To enable cert-manager, uncomment all sections with 'CERTMANAGER'.
+# 'CERTMANAGER' needs to be enabled to use ca injection
+# patches:
+# - path: cainjection_in_healthchecks.yaml
+# Uncomment the next line to enable auth proxy
+# - path: auth_proxy_service.yaml
+# [CONVERSION] To enable conversion webhook, uncomment to add CRD conversion definition
+# patches:
+# - path: conversion_in_healthchecks.yaml
+
+# the following config is for teaching kustomize to do CRD proper substitutions.
+nameSuffix: ""
+commonLabels: {}
