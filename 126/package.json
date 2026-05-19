@@ -1,0 +1,29 @@
+{
+  "name": "graphql-api-orchestration",
+  "version": "3.0.0",
+  "description": "BFF Gateway - GraphQL + gRPC Microservices + Service Discovery",
+  "main": "src/bff-gateway.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/bff-gateway.js",
+    "dev": "node --watch src/bff-gateway.js",
+    "grpc:user": "node src/grpc/services/user-service.js",
+    "grpc:post": "node src/grpc/services/post-service.js",
+    "grpc:comment": "node src/grpc/services/comment-service.js",
+    "grpc:all": "node src/start-grpc-services.js"
+  },
+  "dependencies": {
+    "@apollo/server": "^4.10.0",
+    "@apollo/standalone-server": "^4.10.0",
+    "@grpc/grpc-js": "^1.9.0",
+    "@grpc/proto-loader": "^0.7.10",
+    "apollo-datasource-rest": "^3.7.0",
+    "axios": "^1.6.0",
+    "dataloader": "^2.2.2",
+    "graphql": "^16.8.0",
+    "graphql-type-json": "^0.3.2",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^9.0.1"
+  },
+  "keywords": ["graphql", "grpc", "bff", "microservices", "orchestration"]
+}
