@@ -1,0 +1,60 @@
+{
+  "metrics": [
+    {
+      "name": "up",
+      "labels": {
+        "job": "node_exporter",
+        "instance": "localhost:9100"
+      },
+      "value": 1
+    },
+    {
+      "name": "up",
+      "labels": {
+        "job": "api_server",
+        "instance": "localhost:8080"
+      },
+      "value": 0
+    },
+    {
+      "name": "up",
+      "labels": {
+        "job": "database",
+        "instance": "localhost:5432"
+      },
+      "value": 1
+    },
+    {
+      "name": "node_memory_MemTotal_bytes",
+      "labels": {
+        "job": "node_exporter",
+        "instance": "localhost:9100"
+      },
+      "value": 17179869184
+    },
+    {
+      "name": "node_memory_MemAvailable_bytes",
+      "labels": {
+        "job": "node_exporter",
+        "instance": "localhost:9100"
+      },
+      "value": 2147483648
+    },
+    {
+      "name": "process_open_fds",
+      "labels": {
+        "job": "api_server",
+        "instance": "localhost:8080"
+      },
+      "value": 470
+    },
+    {
+      "name": "process_max_fds",
+      "labels": {
+        "job": "api_server",
+        "instance": "localhost:8080"
+      },
+      "value": 512
+    }
+  ]
+}

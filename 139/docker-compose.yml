@@ -1,0 +1,138 @@
+version: '3.8'
+
+services:
+  # Thanos Receiver - 统一接收多集群指标
+  thanos-receiver:
+    image: thanosio/thanos:v0.32.2
+    command:
+      - receive
+      - --grpc-address=0.0.0.0:10901
+      - --http-address=0.0.0.0:10902
+      - --remote-write.address=0.0.0.0:19291
+      - --tsdb.path=/thanos/data
+      - --label=replica=$(HOSTNAME)
+      - --objstore.config-file=/thanos/objstore.yml
+    ports:
+      - "10901:10901"
+      - "10902:10902"
+      - "19291:19291"
+    volumes:
+      - thanos-data:/thanos/data
+      - ./config/objstore.yml:/thanos/objstore.yml
+    environment:
+      - HOSTNAME=thanos-receiver-01
+
+  # Thanos Query - 统一查询接口
+  thanos-query:
+    image: thanosio/thanos:v0.32.2
+    command:
+      - query
+      - --grpc-address=0.0.0.0:10901
+      - --http-address=0.0.0.0:9090
+      - --store=thanos-receiver:10901
+      - --query.replica-label=replica
+    ports:
+      - "9090:9090"
+    depends_on:
+      - thanos-receiver
+
+  # API Backend - 告警测试平台后端
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8080:8080"
+    environment:
+      - THANOS_ENDPOINT=http://thanos-query:9090
+      - GIN_MODE=release
+    depends_on:
+      - thanos-query
+    volumes:
+      - ./config:/app/config
+
+  # 模拟 Prometheus - US East
+  prometheus-us-east-1:
+    image: prom/prometheus:v2.45.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.console.libraries=/usr/share/prometheus/console_libraries
+      - --web.console.templates=/usr/share/prometheus/consoles
+      - --enable-feature=remote-write-receiver
+    volumes:
+      - ./config/prometheus-us-east-1.yml:/etc/prometheus/prometheus.yml
+      - prometheus-us-east-1-data:/prometheus
+    environment:
+      - CLUSTER=us-east-1
+    depends_on:
+      - thanos-receiver
+
+  # 模拟 Prometheus - EU West
+  prometheus-eu-west-1:
+    image: prom/prometheus:v2.45.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.console.libraries=/usr/share/prometheus/console_libraries
+      - --web.console.templates=/usr/share/prometheus/consoles
+      - --enable-feature=remote-write-receiver
+    volumes:
+      - ./config/prometheus-eu-west-1.yml:/etc/prometheus/prometheus.yml
+      - prometheus-eu-west-1-data:/prometheus
+    environment:
+      - CLUSTER=eu-west-1
+    depends_on:
+      - thanos-receiver
+
+  # 模拟 Prometheus - AP Southeast
+  prometheus-ap-southeast-1:
+    image: prom/prometheus:v2.45.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.console.libraries=/usr/share/prometheus/console_libraries
+      - --web.console.templates=/usr/share/prometheus/consoles
+      - --enable-feature=remote-write-receiver
+    volumes:
+      - ./config/prometheus-ap-southeast-1.yml:/etc/prometheus/prometheus.yml
+      - prometheus-ap-southeast-1-data:/prometheus
+    environment:
+      - CLUSTER=ap-southeast-1
+    depends_on:
+      - thanos-receiver
+
+  # 指标模拟器 - 为各个集群生成模拟指标
+  metrics-simulator:
+    build:
+      context: .
+      dockerfile: Dockerfile.simulator
+    environment:
+      - PROMETHEUS_ENDPOINTS=prometheus-us-east-1:9090,prometheus-eu-west-1:9090,prometheus-ap-southeast-1:9090
+      - SIMULATION_INTERVAL=15s
+    depends_on:
+      - prometheus-us-east-1
+      - prometheus-eu-west-1
+      - prometheus-ap-southeast-1
+
+  # Grafana - 可视化仪表板
+  grafana:
+    image: grafana/grafana:10.0.0
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./config/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      - thanos-query
+
+volumes:
+  thanos-data:
+  prometheus-us-east-1-data:
+  prometheus-eu-west-1-data:
+  prometheus-ap-southeast-1-data:
+  grafana-data:
