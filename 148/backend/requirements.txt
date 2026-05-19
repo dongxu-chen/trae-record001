@@ -1,0 +1,15 @@
+prefect>=2.14.0
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+sqlalchemy>=2.0.0
+python-multipart>=0.0.6
+pandas>=2.1.0
+numpy>=1.24.0
+
+# DuckDB + Ibis 流批一体依赖
+duckdb>=0.9.0
+ibis-framework>=8.0.0
+kafka-python>=2.0.2
+pyarrow>=14.0.0

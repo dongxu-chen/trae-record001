@@ -1,0 +1,97 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+.dndnode {
+  padding: 16px;
+  border-radius: 8px;
+  border: 2px solid #1890ff;
+  background: white;
+  min-width: 150px;
+}
+
+.dndnode.extract {
+  border-color: #52c41a;
+  background: #f6ffed;
+}
+
+.dndnode.transform {
+  border-color: #1890ff;
+  background: #e6f7ff;
+}
+
+.dndnode.load {
+  border-color: #fa8c16;
+  background: #fff7e6;
+}
+
+.dndnode.data-quality {
+  border-color: #eb2f96;
+  background: #fff0f6;
+}
+
+.node-header {
+  font-weight: bold;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.node-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.react-flow__handle {
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: 2px solid #1890ff;
+}
+
+.sidebar-node {
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.sidebar-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-node:active {
+  cursor: grabbing;
+}
+
+.pipeline-canvas {
+  width: 100%;
+  height: calc(100vh - 64px);
+}
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
