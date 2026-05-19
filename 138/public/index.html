@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D模型编辑器</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.babylonjs.com/babylon.webgpu.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@gltf-transform/core@3.10.0/dist/core.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@gltf-transform/functions@3.10.0/dist/functions.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🎨 3D模型编辑器</h1>
+            <div class="header-actions">
+                <button id="uploadBtn" class="btn btn-primary">上传模型</button>
+                <button id="exportBtn" class="btn btn-secondary">导出glTF</button>
+                <button id="renderBtn" class="btn btn-success">提交渲染</button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <div class="panel">
+                    <h3>📁 模型列表</h3>
+                    <div id="modelList" class="model-list"></div>
+                </div>
+
+                <div class="panel">
+                    <h3>🎭 材质编辑</h3>
+                    <div id="materialPanel" class="material-panel">
+                        <div class="form-group">
+                            <label>选择材质:</label>
+                            <select id="materialSelect"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>基础颜色 (Albedo):</label>
+                            <input type="color" id="albedoColor" value="#ffffff">
+                        </div>
+                        <div class="form-group">
+                            <label>金属度 (Metallic):</label>
+                            <input type="range" id="metallic" min="0" max="1" step="0.01" value="0">
+                            <span id="metallicValue">0</span>
+                        </div>
+                        <div class="form-group">
+                            <label>粗糙度 (Roughness):</label>
+                            <input type="range" id="roughness" min="0" max="1" step="0.01" value="0.5">
+                            <span id="roughnessValue">0.5</span>
+                        </div>
+                        <div class="form-group">
+                            <label>自发光颜色:</label>
+                            <input type="color" id="emissiveColor" value="#000000">
+                        </div>
+                        <div class="form-group">
+                            <label>自发光强度:</label>
+                            <input type="range" id="emissiveIntensity" min="0" max="5" step="0.1" value="0">
+                            <span id="emissiveIntensityValue">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>🎬 动画控制</h3>
+                    <div id="animationPanel" class="animation-panel">
+                        <div class="form-group">
+                            <label>选择动画:</label>
+                            <select id="animationSelect"></select>
+                        </div>
+                        <div class="animation-controls">
+                            <button id="playAnimBtn" class="btn">▶ 播放</button>
+                            <button id="pauseAnimBtn" class="btn">⏸ 暂停</button>
+                            <button id="stopAnimBtn" class="btn">⏹ 停止</button>
+                        </div>
+                        <div class="form-group">
+                            <label>播放速度:</label>
+                            <input type="range" id="animSpeed" min="0.1" max="3" step="0.1" value="1">
+                            <span id="animSpeedValue">1x</span>
+                        </div>
+                        <div class="form-group">
+                            <label>插值模式:</label>
+                            <select id="interpolationMode">
+                                <option value="LINEAR" selected>线性插值 (LINEAR)</option>
+                                <option value="STEP">步进 (STEP)</option>
+                                <option value="CUBICSPLINE">三次样条 (CUBICSPLINE)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>目标帧率:</label>
+                            <select id="targetFps">
+                                <option value="30">30 FPS</option>
+                                <option value="60" selected>60 FPS</option>
+                                <option value="120">120 FPS</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>📋 渲染任务队列</h3>
+                    <div id="renderJobs" class="render-jobs">
+                        <p style="color: #888; font-size: 12px;">暂无渲染任务</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>� PBR材质库</h3>
+                    <div id="materialLibrary" class="material-library">
+                        <div class="material-preset" data-preset="gold">
+                            <div class="material-preview" style="background: linear-gradient(135deg, #FFD700, #B8860B);"></div>
+                            <span>金属-金</span>
+                        </div>
+                        <div class="material-preset" data-preset="silver">
+                            <div class="material-preview" style="background: linear-gradient(135deg, #C0C0C0, #808080);"></div>
+                            <span>金属-银</span>
+                        </div>
+                        <div class="material-preset" data-preset="copper">
+                            <div class="material-preview" style="background: linear-gradient(135deg, #B87333, #8B4513);"></div>
+                            <span>金属-铜</span>
+                        </div>
+                        <div class="material-preset" data-preset="steel">
+                            <div class="material-preview" style="background: linear-gradient(135deg, #71797E, #4A4A4A);"></div>
+                            <span>金属-钢</span>
+                        </div>
+                        <div class="material-preset" data-preset="plastic-red">
+                            <div class="material-preview" style="background: linear-gradient(135deg, #FF4444, #CC0000);"></div>
+                            <span>塑料-红</span>
+                        </div>
+                        <div class="material-preset" data-preset="plastic-blue">
+                            <div class="material-preview" style="background: linear-gradient(135deg, #4444FF, #0000CC);"></div>
+                            <span>塑料-蓝</span>
+                        </div>
+                        <div class="material-preset" data-preset="fabric-cotton">
+                            <div class="material-preview" style="background: linear-gradient(135deg, #E8E4E1, #D4CFCA);"></div>
+                            <span>布料-棉</span>
+                        </div>
+                        <div class="material-preset" data-preset="fabric-denim">
+                            <div class="material-preview" style="background: linear-gradient(135deg, #1560BD, #0D3F7A);"></div>
+                            <span>布料-牛仔</span>
+                        </div>
+                        <div class="material-preset" data-preset="rubber">
+                            <div class="material-preview" style="background: linear-gradient(135deg, #333333, #111111);"></div>
+                            <span>橡胶</span>
+                        </div>
+                        <div class="material-preset" data-preset="glass">
+                            <div class="material-preview" style="background: linear-gradient(135deg, rgba(200,220,255,0.5), rgba(150,180,255,0.3));"></div>
+                            <span>玻璃</span>
+                        </div>
+                        <div class="material-preset" data-preset="wood">
+                            <div class="material-preview" style="background: linear-gradient(135deg, #8B4513, #5D3A1A);"></div>
+                            <span>木材</span>
+                        </div>
+                        <div class="material-preset" data-preset="marble">
+                            <div class="material-preview" style="background: linear-gradient(135deg, #F5F5F5, #D0D0D0);"></div>
+                            <span>大理石</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>🦴 自动骨骼绑定</h3>
+                    <div class="binding-panel">
+                        <div class="form-group">
+                            <label>绑定类型:</label>
+                            <select id="bindingType">
+                                <option value="humanoid">人形 (Humanoid)</option>
+                                <option value="quadruped">四足动物</option>
+                                <option value="custom">自定义</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>骨骼数量:</label>
+                            <input type="range" id="boneCount" min="10" max="50" step="1" value="24">
+                            <span id="boneCountValue">24</span>
+                        </div>
+                        <div class="form-group">
+                            <label>自动权重计算:</label>
+                            <input type="checkbox" id="autoWeight" checked>
+                        </div>
+                        <button id="autoBindBtn" class="btn btn-primary">执行自动绑定</button>
+                        <div id="bindingProgress" style="margin-top: 10px; display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                            <span id="bindingStatus">准备中...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>✂️ 模型减面优化</h3>
+                    <div class="decimation-panel">
+                        <div class="model-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">当前三角面:</span>
+                                <span id="currentFaces" class="stat-value">-</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">顶点数:</span>
+                                <span id="currentVertices" class="stat-value">-</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>目标三角面数:</label>
+                            <select id="targetFaceCount">
+                                <option value="100">100 (极低)</option>
+                                <option value="500">500 (低)</option>
+                                <option value="1000">1000 (中低)</option>
+                                <option value="5000" selected>5000 (中等)</option>
+                                <option value="10000">10000 (中高)</option>
+                                <option value="50000">50000 (高)</option>
+                                <option value="custom">自定义</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="customFaceGroup" style="display: none;">
+                            <label>自定义面数:</label>
+                            <input type="number" id="customFaceCount" min="10" value="1000">
+                        </div>
+                        <div class="form-group">
+                            <label>优化质量:</label>
+                            <input type="range" id="decimateQuality" min="0" max="1" step="0.1" value="0.7">
+                            <span id="decimateQualityValue">0.7</span>
+                        </div>
+                        <button id="decimateBtn" class="btn btn-secondary">执行减面优化</button>
+                        <button id="resetModelBtn" class="btn" style="margin-top: 5px;">恢复原模型</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>📥 渲染结果</h3>
+                    <div id="renderResults" class="render-results">
+                        <p style="color: #888; font-size: 12px;">暂无渲染结果</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>🔥 渲染引擎设置</h3>
+                    <div class="form-group">
+                        <label>引擎类型:</label>
+                        <select id="renderEngineType">
+                            <option value="webgpu" selected>WebGPU</option>
+                            <option value="webgl">WebGL 2.0</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>光线追踪预览:</label>
+                        <input type="checkbox" id="rayTracingEnabled">
+                    </div>
+                    <div class="form-group">
+                        <label>光线追踪质量:</label>
+                        <input type="range" id="rayTracingQuality" min="1" max="8" step="1" value="2">
+                        <span id="rayTracingQualityValue">2</span>
+                    </div>
+                    <div class="form-group">
+                        <label>GPU骨骼动画:</label>
+                        <input type="checkbox" id="gpuSkinningEnabled" checked>
+                    </div>
+                    <div id="webgpuInfo" style="margin-top: 10px; padding: 10px; background: #2d2d4a; border-radius: 6px; font-size: 12px;">
+                        <div style="color: #00ff88; margin-bottom: 5px;">✅ WebGPU 已启用</div>
+                        <div id="gpuAdapterName" style="color: #aaa;">检测中...</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>🌤️ 场景设置</h3>
+                    <div class="form-group">
+                        <label>环境强度:</label>
+                        <input type="range" id="envIntensity" min="0" max="2" step="0.1" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label>背景颜色:</label>
+                        <input type="color" id="bgColor" value="#1a1a2e">
+                    </div>
+                </div>
+            </aside>
+
+            <main class="viewport">
+                <canvas id="renderCanvas"></canvas>
+                <div class="viewport-overlay">
+                    <span id="modelInfo">请上传或选择一个3D模型</span>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>上传3D模型</h2>
+            <form id="uploadForm">
+                <div class="form-group">
+                    <label>模型名称:</label>
+                    <input type="text" id="modelName" required>
+                </div>
+                <div class="form-group">
+                    <label>描述:</label>
+                    <textarea id="modelDesc" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>选择文件 (glTF, GLB, OBJ):</label>
+                    <input type="file" id="modelFile" accept=".gltf,.glb,.obj" required>
+                </div>
+                <button type="submit" class="btn btn-primary">上传</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="renderModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>提交云端渲染</h2>
+            <form id="renderForm">
+                <div class="form-group">
+                    <label>渲染名称:</label>
+                    <input type="text" id="renderName" required>
+                </div>
+                <div class="form-group">
+                    <label>分辨率:</label>
+                    <select id="renderResolution">
+                        <option value="1920x1080">1920 x 1080 (Full HD)</option>
+                        <option value="2560x1440">2560 x 1440 (2K)</option>
+                        <option value="3840x2160">3840 x 2160 (4K)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>采样数:</label>
+                    <select id="renderSamples">
+                        <option value="64">64 (快速)</option>
+                        <option value="128">128 (标准)</option>
+                        <option value="256">256 (高质量)</option>
+                        <option value="512">512 (超高)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>渲染引擎:</label>
+                    <select id="renderEngine">
+                        <option value="cycles">Cycles (光线追踪)</option>
+                        <option value="eevee">Eevee (实时)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success">提交渲染任务</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
