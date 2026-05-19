@@ -1,0 +1,105 @@
+acme:
+  directory_url: https://acme-v02.api.letsencrypt.org/directory
+  email: your-email@example.com
+  key_type: rsa2048
+
+dns:
+  provider: aliyun
+  aliyun:
+    access_key_id: your-access-key-id
+    access_key_secret: your-access-key-secret
+    region_id: cn-hangzhou
+  cloudflare:
+    api_key: your-cloudflare-api-key
+    email: your-email@example.com
+
+deploy:
+  nginx:
+    enabled: true
+    cert_path: /etc/nginx/ssl/fullchain.pem
+    key_path: /etc/nginx/ssl/privkey.pem
+    reload_command: systemctl reload nginx
+  aliyun_slb:
+    enabled: false
+    access_key_id: your-access-key-id
+    access_key_secret: your-access-key-secret
+    region_id: cn-hangzhou
+    load_balancer_id: lb-xxxxxx
+    listener_port: 443
+
+security:
+  hsm:
+    enabled: false
+    provider: software
+    key_id: ssl-master-key
+    key_file_path: ./master.key
+    encrypt_dir: ./encrypted-keys
+
+monitoring:
+  enabled: true
+  listen_addr: :8080
+
+tenants:
+  - id: team-platform
+    name: 平台团队
+    description: 负责基础平台服务
+    permissions:
+      - "*"
+    certificates:
+      - name: example.com
+        domains:
+          - example.com
+          - www.example.com
+        output_dir: ./certs/team-platform/example.com
+        deploy_target: nginx
+
+  - id: team-ecommerce
+    name: 电商团队
+    description: 负责电商业务系统
+    acme:
+      email: ecommerce@example.com
+    dns:
+      provider: aliyun
+      aliyun:
+        access_key_id: ecommerce-access-key-id
+        access_key_secret: ecommerce-access-key-secret
+        region_id: cn-hangzhou
+    deploy:
+      aliyun_slb:
+        enabled: true
+        access_key_id: ecommerce-access-key-id
+        access_key_secret: ecommerce-access-key-secret
+        region_id: cn-hangzhou
+        load_balancer_id: lb-ecommerce
+        listener_port: 443
+    permissions:
+      - "cert:read"
+      - "cert:renew"
+    certificates:
+      - name: shop.example.com
+        domains:
+          - shop.example.com
+          - api.shop.example.com
+        output_dir: ./certs/team-ecommerce/shop.example.com
+        deploy_target: aliyun_slb
+
+      - name: pay.example.com
+        domains:
+          - pay.example.com
+        output_dir: ./certs/team-ecommerce/pay.example.com
+        deploy_target: aliyun_slb
+
+  - id: team-data
+    name: 数据团队
+    description: 负责数据分析平台
+    certificates:
+      - name: data.example.com
+        domains:
+          - data.example.com
+          - analytics.example.com
+        output_dir: ./certs/team-data/data.example.com
+        deploy_target: nginx
+
+renewal:
+  check_interval: 24h
+  days_before: 30
