@@ -1,0 +1,158 @@
+.container {
+  padding: 30rpx;
+  padding-bottom: 120rpx;
+}
+
+.ai-alert {
+  background: #e3f2fd;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  display: flex;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.ai-icon {
+  font-size: 60rpx;
+  margin-right: 20rpx;
+}
+
+.ai-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #1976d2;
+  margin-bottom: 8rpx;
+}
+
+.ai-desc {
+  font-size: 24rpx;
+  color: #424242;
+}
+
+.publish-card {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.publish-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.publish-input {
+  width: 100%;
+  min-height: 150rpx;
+  font-size: 28rpx;
+  line-height: 1.6;
+  border: 1rpx solid #e0e0e0;
+  border-radius: 8rpx;
+  padding: 20rpx;
+  box-sizing: border-box;
+}
+
+.publish-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20rpx;
+}
+
+.char-count {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.publish-btn {
+  background: #17a2b8;
+  color: white;
+  font-size: 28rpx;
+  padding: 12rpx 40rpx;
+  border-radius: 8rpx;
+}
+
+.publish-btn[disabled] {
+  background: #ccc;
+}
+
+.list-header {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.confession-list {
+  margin-bottom: 30rpx;
+}
+
+.empty-tip {
+  text-align: center;
+  padding: 100rpx 0;
+  color: #999;
+  font-size: 28rpx;
+}
+
+.confession-item {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.crisis-badge {
+  display: inline-block;
+  background: #f8d7da;
+  color: #721c24;
+  font-size: 22rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  margin-bottom: 16rpx;
+}
+
+.crisis-badge.warning {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.crisis-badge.info {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.confession-content {
+  font-size: 28rpx;
+  line-height: 1.7;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.confession-time {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 16rpx;
+}
+
+.confession-actions {
+  border-top: 1rpx solid #f0f0f0;
+  padding-top: 16rpx;
+}
+
+.reply-btn {
+  font-size: 24rpx;
+  color: #0d6efd;
+  background: transparent;
+  padding: 0;
+}
+
+.loading {
+  text-align: center;
+  padding: 40rpx;
+  color: #999;
+  font-size: 28rpx;
+}

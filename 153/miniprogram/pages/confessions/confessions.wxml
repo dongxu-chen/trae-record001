@@ -1,0 +1,49 @@
+<view class="container">
+  <view class="ai-alert">
+    <view class="ai-icon">🤖</view>
+    <view class="ai-content">
+      <view class="ai-title">AI危机预警已启用</view>
+      <view class="ai-desc">系统会自动分析倾诉内容，检测风险及时预警</view>
+    </view>
+  </view>
+  
+  <view class="publish-card">
+    <view class="publish-title">发布新的倾诉</view>
+    <textarea 
+      class="publish-input" 
+      placeholder="在这里写下你的心里话，我们会一直陪着你..." 
+      value="{{content}}"
+      bindinput="onInput"
+      maxlength="500"
+    ></textarea>
+    <view class="publish-footer">
+      <text class="char-count">{{content.length}}/500</text>
+      <button class="publish-btn" bindtap="publish" disabled="{{!content.trim()}}">发布</button>
+    </view>
+  </view>
+  
+  <view class="list-header">
+    <text>最新倾诉</text>
+  </view>
+  
+  <view class="confession-list">
+    <view class="empty-tip" wx:if="{{list.length === 0 && !loading}}">
+      <text>还没有倾诉，来做第一个吧！</text>
+    </view>
+    
+    <view class="confession-item" wx:for="{{list}}" wx:key="id">
+      <view class="crisis-badge" wx:if="{{item.crisis_level === '紧急'}}">🚨 紧急风险</view>
+      <view class="crisis-badge warning" wx:elif="{{item.crisis_level === '警告'}}">⚠️ 警告风险</view>
+      <view class="crisis-badge info" wx:elif="{{item.crisis_level === '关注'}}">🔍 需要关注</view>
+      
+      <view class="confession-content">{{item.content}}</view>
+      <view class="confession-time">{{item.created_at}}</view>
+      
+      <view class="confession-actions">
+        <button class="reply-btn" size="mini" bindtap="showReply" data-id="{{item.id}}">回复</button>
+      </view>
+    </view>
+  </view>
+  
+  <view class="loading" wx:if="{{loading}}">加载中...</view>
+</view>

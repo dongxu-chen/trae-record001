@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">欢迎来到校园心理健康中心</h1>
+        <p class="lead mb-5">我们致力于为每一位同学提供专业、温暖的心理支持服务</p>
+        <div class="row justify-content-center">
+            <div class="col-md-3 mb-3">
+                <a href="{{ url_for('counselors') }}" class="btn btn-light btn-lg w-100">
+                    👨‍⚕️ 预约咨询师
+                </a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <a href="{{ url_for('scl90') }}" class="btn btn-outline-light btn-lg w-100">
+                    📋 开始测评
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <h2 class="text-center mb-5">我们的服务</h2>
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card h-100 card-hover text-center p-4">
+                <div class="feature-icon mb-3">👨‍⚕️</div>
+                <h5 class="card-title">专业咨询</h5>
+                <p class="card-text text-muted">预约专业心理咨询师，获得一对一的专业辅导</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 card-hover text-center p-4">
+                <div class="feature-icon mb-3">📊</div>
+                <h5 class="card-title">心理测评</h5>
+                <p class="card-text text-muted">SCL-90专业量表，科学了解自己的心理状态</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 card-hover text-center p-4">
+                <div class="feature-icon mb-3">💬</div>
+                <h5 class="card-title">匿名倾诉</h5>
+                <p class="card-text text-muted">安全的匿名空间，说出心里话，获得同伴支持</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 card-hover text-center p-4">
+                <div class="feature-icon mb-3">📝</div>
+                <h5 class="card-title">记录管理</h5>
+                <p class="card-text text-muted">方便查看和管理您的预约历史记录</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-4">关于心理健康</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <p class="lead">心理健康是整体健康的重要组成部分。无论你是面临学业压力、人际关系困扰，还是只是想找人聊聊，我们都在这里陪伴你。</p>
+                <p class="text-muted">请记住：寻求帮助是勇敢的表现，而不是软弱的象征。</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

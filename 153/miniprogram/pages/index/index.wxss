@@ -1,0 +1,124 @@
+.container {
+  padding-bottom: 120rpx;
+}
+
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 80rpx 40rpx;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: 40rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+}
+
+.hero-subtitle {
+  font-size: 28rpx;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.section {
+  padding: 60rpx 40rpx;
+}
+
+.section.bg-light {
+  background-color: #f8f9fa;
+}
+
+.section-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 40rpx;
+  color: #333;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30rpx;
+}
+
+.service-item {
+  background: white;
+  border-radius: 16rpx;
+  padding: 40rpx 20rpx;
+  text-align: center;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.service-icon {
+  font-size: 60rpx;
+  margin-bottom: 16rpx;
+}
+
+.service-name {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.service-desc {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.content-card {
+  background: white;
+  border-radius: 16rpx;
+  padding: 40rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.content-text {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.8;
+}
+
+.content-text.highlight {
+  color: #0d6efd;
+  font-weight: 500;
+}
+
+.divider {
+  height: 1px;
+  background: #eee;
+  margin: 30rpx 0;
+}
+
+.emergency-card {
+  margin: 40rpx;
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  border-radius: 16rpx;
+  padding: 40rpx;
+  display: flex;
+  align-items: center;
+}
+
+.emergency-icon {
+  font-size: 80rpx;
+  margin-right: 30rpx;
+}
+
+.emergency-title {
+  font-size: 28rpx;
+  opacity: 0.9;
+}
+
+.emergency-phone {
+  font-size: 44rpx;
+  font-weight: bold;
+  margin: 8rpx 0;
+}
+
+.emergency-desc {
+  font-size: 24rpx;
+  opacity: 0.8;
+}
