@@ -1,0 +1,46 @@
+# 同义词词典
+# 格式: 同义词1,同义词2,同义词3 => 标准词
+# 或者: 同义词1,同义词2,同义词3 (双向映射)
+
+# 系统相关
+错误,异常,error,failure,exception => 错误
+警告,warning,warn => 警告
+信息,info,信息 => 信息
+调试,debug,调试 => 调试
+致命错误,fatal,致命 => 致命错误
+
+# 数据库相关
+数据库,db,database,mysql,oracle,postgresql => 数据库
+连接超时,timeout,超时 => 连接超时
+连接失败,connection failed,连接错误 => 连接失败
+死锁,deadlock,锁死 => 死锁
+
+# 网络相关
+网络,network,网络连接 => 网络
+超时,timeout,超时错误 => 超时
+拒绝连接,connection refused,连接被拒 => 拒绝连接
+
+# 安全相关
+认证失败,authentication failed,登录失败 => 认证失败
+授权失败,authorization failed,权限不足 => 授权失败
+未授权,unauthorized,无权限 => 未授权
+攻击,attack,入侵 => 攻击
+
+# 业务相关
+订单,order,订单号 => 订单
+用户,user,客户 => 用户
+商品,product,item,货物 => 商品
+支付,pay,payment,付款 => 支付
+退款,refund,退货 => 退款
+
+# 性能相关
+慢查询,slow query,查询慢 => 慢查询
+性能问题,performance,性能瓶颈 => 性能问题
+内存不足,out of memory,OOM,内存溢出 => 内存不足
+CPU过高,cpu high,CPU使用率高 => CPU过高
+
+# 常用技术术语
+空指针,null pointer,NPE,空指针异常 => 空指针
+数组越界,index out of bounds,数组下标越界 => 数组越界
+类未找到,class not found,找不到类 => 类未找到
+方法未找到,method not found,找不到方法 => 方法未找到

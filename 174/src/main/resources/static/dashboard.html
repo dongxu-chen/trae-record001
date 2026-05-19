@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日志查询平台 - 实时仪表盘</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: white;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .stat-card h3 {
+            font-size: 14px;
+            color: #8892b0;
+            margin-bottom: 10px;
+        }
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #64ffda;
+        }
+        .section {
+            background: #16213e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #ccd6f6;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        input, button {
+            padding: 8px 12px;
+            border: 1px solid #4a5568;
+            border-radius: 5px;
+            background: #0f3460;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+        button {
+            cursor: pointer;
+            background: #667eea;
+            border: none;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #764ba2;
+        }
+        .log-entry {
+            background: #0f3460;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            border-left: 3px solid transparent;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .log-entry.ERROR { border-color: #ff6b6b; }
+        .log-entry.WARN { border-color: #ffd93d; }
+        .log-entry.INFO { border-color: #6bcb77; }
+        .log-entry.DEBUG { border-color: #4d96ff; }
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 11px;
+            color: #8892b0;
+        }
+        .log-message {
+            color: #e0e0e0;
+            word-break: break-all;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-dot.connected { background: #6bcb77; animation: pulse 2s infinite; }
+        .status-dot.disconnected { background: #ff6b6b; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        #log-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .template-item {
+            background: #0f3460;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+        }
+        .template-pattern {
+            color: #64ffda;
+            font-family: monospace;
+            margin-bottom: 5px;
+        }
+        .template-meta {
+            font-size: 11px;
+            color: #8892b0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 统一日志查询平台 - 实时仪表盘</h1>
+        <div style="margin-top: 10px; font-size: 14px; color: rgba(255,255,255,0.8);">
+            <span class="status-dot disconnected" id="ws-status"></span>
+            <span id="ws-status-text">WebSocket 未连接</span>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>日志模板数</h3>
+            <div class="value" id="template-count">-</div>
+        </div>
+        <div class="stat-card">
+            <h3>日志聚类数</h3>
+            <div class="value" id="cluster-count">-</div>
+        </div>
+        <div class="stat-card">
+            <h3>总发生次数</h3>
+            <div class="value" id="total-occurrences">-</div>
+        </div>
+        <div class="stat-card">
+            <h3>WebSocket 连接数</h3>
+            <div class="value" id="ws-connections">-</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📡 实时日志流</h2>
+        <div class="controls">
+            <input type="text" id="filter-input" placeholder="输入过滤关键词..." style="flex: 1; min-width: 200px;">
+            <button onclick="setFilter()">设置过滤</button>
+            <button onclick="clearFilter()">清除过滤</button>
+            <button onclick="connectWebSocket()">连接</button>
+            <button onclick="disconnectWebSocket()">断开</button>
+        </div>
+        <div id="log-container"></div>
+    </div>
+
+    <div class="section">
+        <h2>📋 高频日志模板</h2>
+        <button onclick="loadTemplates()">刷新模板</button>
+        <div id="templates-container"></div>
+    </div>
+
+    <div class="section">
+        <h2>🔗 Trace 调用链分析</h2>
+        <div class="controls">
+            <input type="text" id="trace-id-input" placeholder="输入 TraceID..." style="flex: 1; min-width: 300px;">
+            <button onclick="analyzeTrace()">分析调用链</button>
+        </div>
+        <div id="trace-result"></div>
+    </div>
+
+    <script>
+        let ws = null;
+        let logCount = 0;
+
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/logs`;
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function() {
+                updateStatus(true);
+                addLog({ level: 'INFO', message: 'WebSocket 连接成功', timestamp: new Date().toISOString(), appName: 'SYSTEM' });
+            };
+
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.type === 'log') {
+                    addLog(data.data);
+                }
+            };
+
+            ws.onclose = function() {
+                updateStatus(false);
+                addLog({ level: 'WARN', message: 'WebSocket 连接已关闭', timestamp: new Date().toISOString(), appName: 'SYSTEM' });
+            };
+
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        function disconnectWebSocket() {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+        }
+
+        function updateStatus(connected) {
+            const dot = document.getElementById('ws-status');
+            const text = document.getElementById('ws-status-text');
+            if (connected) {
+                dot.className = 'status-dot connected';
+                text.textContent = 'WebSocket 已连接';
+            } else {
+                dot.className = 'status-dot disconnected';
+                text.textContent = 'WebSocket 未连接';
+            }
+        }
+
+        function setFilter() {
+            const filter = document.getElementById('filter-input').value;
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ action: 'filter', filter: filter }));
+                addLog({ level: 'INFO', message: `过滤条件已设置: ' + filter, timestamp: new Date().toISOString(), appName: 'SYSTEM' });
+            }
+        }
+
+        function clearFilter() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ action: 'filter', filter: '' }));
+                document.getElementById('filter-input').value = '';
+                addLog({ level: 'INFO', message: '过滤条件已清除', timestamp: new Date().toISOString(), appName: 'SYSTEM' });
+            }
+        }
+
+        function addLog(log) {
+            const container = document.getElementById('log-container');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${log.level || 'INFO'}`;
+
+            const timestamp = log.timestamp ? new Date(log.timestamp).toLocaleString() : new Date().toLocaleString();
+            const level = log.level || 'INFO';
+            const appName = log.appName || 'UNKNOWN';
+            const message = log.message || '';
+
+            entry.innerHTML = `
+                <div class="log-header">
+                    <span>[${timestamp}]</span>
+                    <span style="color: ${getLevelColor(level)};">[${level}]</span>
+                    <span>[${appName}]</span>
+                </div>
+                <div class="log-message">${escapeHtml(message)}</div>
+            `;
+
+            container.insertBefore(entry, container.firstChild);
+            logCount++;
+
+            if (logCount > 100) {
+                container.removeChild(container.lastChild);
+                logCount--;
+            }
+        }
+
+        function getLevelColor(level) {
+            const colors = {
+                'ERROR': '#ff6b6b',
+                'WARN': '#ffd93d',
+                'INFO': '#6bcb77',
+                'DEBUG': '#4d96ff'
+            };
+            return colors[level] || '#e0e0e0';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/dashboard/stats');
+                const data = await response.json();
+                document.getElementById('template-count').textContent = data.templateCount || 0;
+                document.getElementById('cluster-count').textContent = data.clusterCount || 0;
+                document.getElementById('total-occurrences').textContent = data.totalOccurrences || 0;
+                document.getElementById('ws-connections').textContent = data.activeWebSocketConnections || 0;
+            } catch (e) {
+                console.error('Failed to load stats:', e);
+            }
+        }
+
+        async function loadTemplates() {
+            try {
+                const response = await fetch('/api/dashboard/templates?limit=10');
+                const templates = await response.json();
+                const container = document.getElementById('templates-container');
+                container.innerHTML = '';
+
+                templates.forEach(tpl => {
+                    const item = document.createElement('div');
+                    item.className = 'template-item';
+                    item.innerHTML = `
+                        <div class="template-pattern">${escapeHtml(tpl.templatePattern)}</div>
+                        <div class="template-meta">
+                            发生次数: <strong>${tpl.occurrenceCount}</strong> | 
+                            严重程度: <strong>${tpl.severityScore.toFixed(1)}</strong> |
+                            影响服务: <strong>${tpl.affectedServices ? tpl.affectedServices.join(', ') : '无'}</strong>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            } catch (e) {
+                console.error('Failed to load templates:', e);
+            }
+        }
+
+        async function analyzeTrace() {
+            const traceId = document.getElementById('trace-id-input').value;
+            if (!traceId) {
+                alert('请输入 TraceID');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/dashboard/trace/${traceId}`);
+                const data = await response.json();
+                const container = document.getElementById('trace-result');
+
+                if (!data) {
+                    container.innerHTML = '<p style="color: #ff6b6b;">未找到该 TraceID 的日志</p>';
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div style="background: #0f3460; padding: 20px; border-radius: 10px;">
+                        <h3 style="color: #64ffda; margin-bottom: 15px;">Trace 分析结果</h3>
+                        <p><strong>状态:</strong> <span style="color: ${data.status === 'ERROR' ? '#ff6b6b' : '#6bcb77'}">${data.status}</span></p>
+                        <p><strong>总耗时:</strong> ${data.totalDurationMs}ms</p>
+                        <p><strong>服务数量:</strong> ${data.serviceCount}</p>
+                        <p><strong>日志数量:</strong> ${data.logCount}</p>
+                        <p><strong>错误数量:</strong> ${data.errorCount}</p>
+                        <p><strong>调用路径:</strong> ${data.servicePath ? data.servicePath.join(' → ') : '无'}</p>
+                        <p><strong>瓶颈服务:</strong> ${data.bottleneckService || '无'}</p>
+                        <h4 style="margin-top: 15px; color: #ccd6f6;">服务耗时分布:</h4>
+                        <pre style="background: #1a1a2e; padding: 10px; border-radius: 5px; overflow-x: auto;">${JSON.stringify(data.serviceDurationMap, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (e) {
+                console.error('Failed to analyze trace:', e);
+                document.getElementById('trace-result').innerHTML = '<p style="color: #ff6b6b;">分析失败: ' + e.message + '</p>';
+            }
+        }
+
+        loadStats();
+        loadTemplates();
+        setInterval(loadStats, 5000);
+    </script>
+</body>
+</html>

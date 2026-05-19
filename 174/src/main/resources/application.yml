@@ -1,0 +1,79 @@
+server:
+  port: 8080
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+
+spring:
+  application:
+    name: unified-log-query
+
+elasticsearch:
+  uris: http://localhost:9200
+  username: elastic
+  password: changeme
+  connect-timeout: 5s
+  socket-timeout: 30s
+  max-connections: 100
+  max-connections-per-route: 50
+  analysis:
+    use-smart: true
+    enable-synonym: true
+    synonym-path: elasticsearch/analysis/synonyms.txt
+    stopword-path: elasticsearch/analysis/stopwords.txt
+
+log:
+  collector:
+    file:
+      enabled: true
+      scan-interval: 5000
+      sources:
+        - name: app1
+          path: /var/log/app1/*.log
+          encoding: UTF-8
+          multiline-pattern: '^\\d{4}-\\d{2}-\\d{2}'
+        - name: app2
+          path: /var/log/app2/*.log
+          encoding: UTF-8
+    kafka:
+      enabled: false
+      bootstrap-servers: localhost:9092
+      topics:
+        - name: app-logs
+          group-id: log-collector-group
+          concurrency: 3
+    elasticsearch:
+      enabled: false
+      uris: http://localhost:9200
+      indices:
+        - name: app-logs-*
+          alias: unified-logs
+
+query:
+  default-page-size: 20
+  max-page-size: 100
+  highlight-fragment-size: 150
+  highlight-number-of-fragments: 3
+  highlight-pre-tag: <mark>
+  highlight-post-tag: </mark>
+  cache-expire-seconds: 300
+  cache-max-size: 1000
+
+export:
+  max-export-size: 100000
+  temp-dir: /tmp/log-exports
+  chunk-size: 1000
+  base-url: /api/logs/export/download
+  cleanup-interval-minutes: 60
+  max-age-minutes: 360
+
+mining:
+  similarity-threshold: 0.75
+  analysis-window-hours: 1
+  max-clusters: 100
+  max-templates: 50
+  interval-minutes: 5
+
+trace:
+  max-logs: 1000
+  default-time-range-hours: 24
