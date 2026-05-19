@@ -1,0 +1,24 @@
+{
+  "name": "clipboard-sync",
+  "version": "1.0.0",
+  "description": "跨平台剪贴板同步工具",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "keywords": ["clipboard", "sync", "electron"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bonjour": "^3.5.0",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "qrcode": "^1.5.3"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0"
+  }
+}
