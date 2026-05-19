@@ -1,0 +1,284 @@
+.code-snippet-container {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 16px 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.code-snippet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #1e1e1e;
+  border-bottom: 1px solid #333;
+}
+
+.light-theme .code-snippet-header {
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+}
+
+.language-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ccc;
+  text-transform: uppercase;
+}
+
+.light-theme .language-label {
+  color: #666;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.copy-btn,
+.theme-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.copy-btn {
+  background: #007acc;
+  color: white;
+}
+
+.copy-btn:hover {
+  background: #005a9e;
+}
+
+.copy-btn.copied {
+  background: #28a745;
+}
+
+.theme-btn {
+  background: #555;
+  color: white;
+}
+
+.theme-btn:hover {
+  background: #777;
+}
+
+.light-theme .theme-btn {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.light-theme .theme-btn:hover {
+  background: #d0d0d0;
+}
+
+.code-wrapper {
+  position: relative;
+  overflow-x: auto;
+}
+
+.code-content {
+  display: flex;
+  position: relative;
+}
+
+.code-table {
+  flex: 1;
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  padding: 0;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.code-row {
+  display: table-row;
+  width: 100%;
+  transition: background-color 0.15s ease;
+}
+
+.code-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.light-theme .code-row:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.line-number-cell {
+  display: table-cell;
+  width: 60px;
+  min-width: 60px;
+  padding: 0 8px;
+  text-align: right;
+  user-select: none;
+  font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  vertical-align: top;
+  white-space: nowrap;
+  border-right: 1px solid #333;
+  background: #1e1e1e;
+  color: #858585;
+}
+
+.light-theme .line-number-cell {
+  background: #f5f5f5;
+  border-right-color: #ddd;
+  color: #999;
+}
+
+.fold-button {
+  background: none;
+  border: none;
+  color: #858585;
+  cursor: pointer;
+  font-size: 10px;
+  padding: 2px 4px;
+  transition: transform 0.2s ease;
+  line-height: 1;
+  margin-right: 4px;
+}
+
+.fold-button:hover {
+  color: #ccc;
+}
+
+.fold-button.folded {
+  transform: rotate(-90deg);
+}
+
+.fold-placeholder {
+  color: #569cd6;
+  cursor: pointer;
+  font-style: italic;
+  padding: 2px 8px;
+  background: rgba(86, 156, 214, 0.1);
+  border-radius: 4px;
+  margin-left: 4px;
+}
+
+.fold-placeholder:hover {
+  background: rgba(86, 156, 214, 0.2);
+}
+
+.code-cell {
+  display: table-cell;
+  padding: 0 16px;
+  font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  vertical-align: top;
+  white-space: pre;
+  background: #1e1e1e;
+  color: #d4d4d4;
+}
+
+.light-theme .code-cell {
+  background: #ffffff;
+  color: #333;
+}
+
+.code-cell code {
+  display: inline;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.minimap {
+  width: 80px;
+  min-width: 80px;
+  position: relative;
+  background: #252526;
+  border-left: 1px solid #333;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.light-theme .minimap {
+  background: #f0f0f0;
+  border-left-color: #ddd;
+}
+
+.minimap-marker {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 3px;
+  border-radius: 2px;
+  transform: translateY(-50%);
+  opacity: 0.8;
+}
+
+.minimap-viewport {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.light-theme .minimap-viewport {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.custom-token {
+  border-radius: 2px;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(30, 30, 30, 0.8);
+  color: #ccc;
+  font-size: 14px;
+  z-index: 100;
+}
+
+.light-theme .loading-overlay {
+  background: rgba(255, 255, 255, 0.9);
+  color: #666;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #333;
+  border-top-color: #007acc;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+.light-theme .loading-spinner {
+  border-color: #ddd;
+  border-top-color: #007acc;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
