@@ -1,0 +1,17 @@
+{
+  "name": "config-manager",
+  "version": "1.0.0",
+  "description": "配置管理工具 - 支持YAML解析、环境变量覆盖、热更新、校验引擎",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node test/index.js",
+    "example": "node example/index.js"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "keywords": ["config", "yaml", "hot-reload", "validation"],
+  "author": "",
+  "license": "MIT"
+}
