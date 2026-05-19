@@ -1,0 +1,23 @@
+[package]
+name = "seqalign_rs"
+version = "0.1.0"
+edition = "2021"
+description = "High-performance sequence alignment with SIMD and Python bindings"
+license = "MIT"
+
+[lib]
+name = "seqalign_rs"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.20", features = ["extension-module"] }
+ndarray = "0.15"
+rayon = "1.8"
+thiserror = "1.0"
+byteorder = "1.4"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+target-cpu = "native"
