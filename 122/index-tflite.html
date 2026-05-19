@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D手势交互白板 - TFLite端侧推理版</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 3D手势交互白板 - TFLite端侧推理</h1>
+            <div class="status-bar">
+                <span id="statusText">等待摄像头...</span>
+                <span id="zoomLevel">缩放: 100%</span>
+                <span id="recordStatus">未录制</span>
+                <span id="connectionStatus">离线模式</span>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="video-container">
+                    <video id="video" autoplay playsinline></video>
+                    <canvas id="videoCanvas"></canvas>
+                </div>
+                
+                <div class="tool-panel">
+                    <h3>🎯 工具栏</h3>
+                    <div class="tool-buttons">
+                        <button id="undoBtn" class="tool-btn">↩️ 撤销</button>
+                        <button id="redoBtn" class="tool-btn">↪️ 重做</button>
+                    </div>
+                </div>
+                
+                <div class="info-panel">
+                    <h3>📊 性能监控</h3>
+                    <div id="perfInfo" class="perf-info">
+                        <p>推理时间: -- ms</p>
+                        <p>帧率: -- FPS</p>
+                        <p>后端: WebGL</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="canvas-container">
+                <canvas id="threeCanvas"></canvas>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>🎨 画笔颜色:</label>
+                <input type="color" id="colorPicker" value="#ff0000">
+            </div>
+            <div class="control-group">
+                <label>📏 画笔大小:</label>
+                <input type="range" id="brushSize" min="1" max="20" value="5">
+            </div>
+            <div class="control-group">
+                <label>🔍 缩放:</label>
+                <input type="range" id="zoomSlider" min="0.5" max="3" step="0.1" value="1">
+            </div>
+            <div class="control-group">
+                <button id="clearBtn">🗑️ 清空画布</button>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>📖 手势说明 (端侧TFLite推理):</h3>
+            <ul>
+                <li>☝️ 仅伸出食指 - 绘制</li>
+                <li>✊ 握拳（所有手指弯曲）- 擦除</li>
+                <li>✌️ 双手食指 - 旋转画布</li>
+                <li>🖖 三指左滑（食中无名指）- 撤销</li>
+            </ul>
+        </div>
+        
+        <div class="tech-info">
+            <h3>⚙️ 技术特性:</h3>
+            <ul>
+                <li>✅ 端侧推理（TensorFlow Lite / WebGL加速）</li>
+                <li>✅ 低延迟目标: < 30ms/帧</li>
+                <li>✅ 离线支持（模型本地缓存）</li>
+                <li>✅ 关键点平滑滤波（一阶低通）</li>
+                <li>✅ 手势防抖（200ms锁定）</li>
+                <li>✅ 四元数旋转坐标同步</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.14.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/hand-pose-detection@2.0.0/dist/hand-pose-detection.min.js"></script>
+    <script src="tfjs-hand-detection.js"></script>
+    <script src="app-tflite.js"></script>
+</body>
+</html>
