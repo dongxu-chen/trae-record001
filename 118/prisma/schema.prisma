@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Book {
+  id             Int           @id @default(autoincrement())
+  title          String
+  author         String?
+  description    String?
+  summary        String?       // AI 生成的书籍摘要
+  cover          String?
+  filePath       String
+  isCompleted    Boolean       @default(false) // 是否已读完
+  totalReadTime  Int           @default(0) // 总阅读时长（秒）
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  progress       Progress[]
+  annotations    Annotation[]
+  bookmarks      Bookmark[]
+  chapterSummaries ChapterSummary[]
+  readingSessions ReadingSession[]
+}
+
+model Progress {
+  id             Int           @id @default(autoincrement())
+  bookId         Int
+  location       String        // CFI 路径
+  percentage     Float
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  book           Book          @relation(fields: [bookId], references: [id], onDelete: Cascade)
+}
+
+model Annotation {
+  id             Int           @id @default(autoincrement())
+  bookId         Int
+  cfi            String        // 完整 CFI 路径
+  normalizedCfi  String?       // 标准化 CFI 路径，用于重排版后定位
+  text           String
+  note           String?
+  color          String        @default("#ffff00")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  book           Book          @relation(fields: [bookId], references: [id], onDelete: Cascade)
+}
+
+model Bookmark {
+  id             Int           @id @default(autoincrement())
+  bookId         Int
+  cfi            String        // 书签位置 CFI
+  chapter        String?       // 章节名称
+  note           String?       // 书签备注
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  book           Book          @relation(fields: [bookId], references: [id], onDelete: Cascade)
+}
+
+model ChapterSummary {
+  id             Int           @id @default(autoincrement())
+  bookId         Int
+  chapterIndex   Int           // 章节索引
+  chapterTitle   String        // 章节标题
+  summary        String        // AI 生成的章节摘要
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  book           Book          @relation(fields: [bookId], references: [id], onDelete: Cascade)
+}
+
+model ReadingSession {
+  id             Int           @id @default(autoincrement())
+  bookId         Int
+  startTime      DateTime      @default(now())
+  endTime        DateTime?
+  duration       Int           @default(0) // 阅读时长（秒）
+  startCfi       String?       // 开始位置
+  endCfi         String?       // 结束位置
+  pagesRead      Int           @default(0) // 阅读页数
+  createdAt      DateTime      @default(now())
+  book           Book          @relation(fields: [bookId], references: [id], onDelete: Cascade)
+}
+
+model ReadingStats {
+  id             Int           @id @default(autoincrement())
+  date           DateTime      @unique // 统计日期
+  totalReadTime  Int           @default(0) // 当日总阅读时长
+  booksCompleted Int           @default(0) // 当日完成书籍数
+  pagesRead      Int           @default(0) // 当日阅读页数
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}

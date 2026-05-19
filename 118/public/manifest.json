@@ -1,0 +1,93 @@
+{
+  "name": "电子书阅读器",
+  "short_name": "EPUB Reader",
+  "description": "一个支持离线阅读的现代化电子书阅读器应用",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/reader-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshots/reader-narrow.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "categories": ["books", "education", "productivity"],
+  "shortcuts": [
+    {
+      "name": "继续阅读",
+      "short_name": "继续",
+      "description": "打开上次阅读的书籍",
+      "url": "/",
+      "icons": [{ "src": "/icons/shortcut-read.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "我的书库",
+      "short_name": "书库",
+      "description": "查看已下载的书籍",
+      "url": "/",
+      "icons": [{ "src": "/icons/shortcut-library.png", "sizes": "96x96" }]
+    }
+  ],
+  "permissions": ["notifications", "storage"],
+  "gcm_sender_id": "103953800507"
+}
