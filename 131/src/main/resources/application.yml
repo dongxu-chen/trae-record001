@@ -1,0 +1,41 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: reconciliation-service
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/payment_reconciliation?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+
+  rocketmq:
+    name-server: 127.0.0.1:9876
+    producer:
+      group: reconciliation-producer-group
+      send-message-timeout: 3000
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.payment.reconciliation.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+reconciliation:
+  file:
+    upload-path: /data/reconciliation/upload
+    parse-path: /data/reconciliation/parsed
+  batch-size: 1000
+  auto-register-timeout-minutes: 1440
+  settlement-expected-hours: 24
+  warning-delay-minutes: 120
+  serious-delay-minutes: 360
+  emergency-delay-minutes: 720
+  mq:
+    topic:
+      reconciliation: reconciliation-topic
+      discrepancy: discrepancy-topic
+      fund: fund-transfer-topic

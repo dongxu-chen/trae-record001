@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.payment.reconciliation.mapper.TransactionFeeMapper">
+
+    <select id="selectBySettlementDate" resultType="com.payment.reconciliation.entity.TransactionFee">
+        SELECT * FROM transaction_fee
+        WHERE channel_code = #{channelCode}
+        AND settlement_date = #{settlementDate}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="sumFeeByDateRange" resultType="java.math.BigDecimal">
+        SELECT IFNULL(SUM(fee_amount), 0) FROM transaction_fee
+        WHERE channel_code = #{channelCode}
+        AND settlement_date BETWEEN #{startDate} AND #{endDate}
+    </select>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO transaction_fee (
+            fee_no, channel_code, merchant_no, transaction_no, order_no,
+            settlement_date, trans_amount, fee_amount, fee_rate, fee_type,
+            status, remark, create_time, update_time
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.feeNo}, #{item.channelCode}, #{item.merchantNo},
+                #{item.transactionNo}, #{item.orderNo}, #{item.settlementDate},
+                #{item.transAmount}, #{item.feeAmount}, #{item.feeRate},
+                #{item.feeType}, #{item.status}, #{item.remark},
+                #{item.createTime}, #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+
+</mapper>
