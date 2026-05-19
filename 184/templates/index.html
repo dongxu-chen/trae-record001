@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品评论情感分析仪表板</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>商品评论情感分析仪表板</h1>
+            <p class="subtitle">基于 SnowNLP 的电商评论情感分析与可视化</p>
+        </header>
+
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label>时间范围</label>
+                <input type="date" id="startDate" value="2024-01-01">
+                <span class="date-sep">至</span>
+                <input type="date" id="endDate" value="2024-12-31">
+            </div>
+            <div class="filter-group">
+                <label>商品类别</label>
+                <select id="categoryFilter">
+                    <option value="all">全部类别</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}">{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <button class="btn btn-primary" onclick="refreshData()">刷新数据</button>
+                <button class="btn btn-secondary" onclick="generateNewData()">生成新数据</button>
+                <button class="btn btn-warning" onclick="checkAlerts()" id="checkAlertsBtn">检测预警</button>
+            </div>
+            <div class="alert-badge" id="alertBadge" onclick="toggleAlertPanel()">
+                <span class="alert-icon">⚠️</span>
+                <span class="alert-count" id="alertCount">0</span>
+            </div>
+        </div>
+
+        <div class="alert-panel" id="alertPanel" style="display: none;">
+            <div class="alert-panel-header">
+                <h3>预警信息</h3>
+                <button class="btn btn-secondary" onclick="markAllAlertsRead()">全部已读</button>
+                <button class="btn-close" onclick="toggleAlertPanel()">×</button>
+            </div>
+            <div class="alert-list" id="alertList"></div>
+        </div>
+
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-value" id="totalComments">0</div>
+                <div class="stat-label">总评论数</div>
+            </div>
+            <div class="stat-card positive">
+                <div class="stat-value" id="positiveCount">0</div>
+                <div class="stat-label">正向评论</div>
+                <div class="stat-sub" id="positiveRate">0%</div>
+            </div>
+            <div class="stat-card neutral">
+                <div class="stat-value" id="neutralCount">0</div>
+                <div class="stat-label">中性评论</div>
+                <div class="stat-sub" id="neutralRate">0%</div>
+            </div>
+            <div class="stat-card negative">
+                <div class="stat-value" id="negativeCount">0</div>
+                <div class="stat-label">负向评论</div>
+                <div class="stat-sub" id="negativeRate">0%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgScore">0</div>
+                <div class="stat-label">平均情感分</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgRating">0</div>
+                <div class="stat-label">平均评分</div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-row">
+                <div class="chart-box">
+                    <h3>情感趋势图</h3>
+                    <div id="trendChart" class="chart"></div>
+                </div>
+            </div>
+
+            <div class="chart-row">
+                <div class="chart-box">
+                    <h3>情感分布</h3>
+                    <div id="sentimentPieChart" class="chart"></div>
+                </div>
+                <div class="chart-box">
+                    <h3>方面级情感分析</h3>
+                    <div id="aspectChart" class="chart"></div>
+                </div>
+            </div>
+
+            <div class="chart-row">
+                <div class="chart-box">
+                    <h3>词云展示
+                        <select id="wordcloudSentiment" onchange="updateWordcloud()" style="font-size: 14px; padding: 2px 8px; margin-left: 10px;">
+                            <option value="all">全部</option>
+                            <option value="positive">正向</option>
+                            <option value="negative">负向</option>
+                        </select>
+                    </h3>
+                    <div id="wordcloudChart" class="chart"></div>
+                </div>
+                <div class="chart-box">
+                    <h3>高频负面词统计</h3>
+                    <div id="negativeWordsChart" class="chart"></div>
+                </div>
+            </div>
+
+            <div class="chart-row">
+                <div class="chart-box">
+                    <h3>各类别评论分布</h3>
+                    <div id="categoryChart" class="chart"></div>
+                </div>
+                <div class="chart-box">
+                    <h3>各类别平均情感分</h3>
+                    <div id="categorySentimentChart" class="chart"></div>
+                </div>
+            </div>
+
+            <div class="chart-row">
+                <div class="chart-box">
+                    <h3>高频目标词统计</h3>
+                    <div id="targetWordsChart" class="chart"></div>
+                </div>
+                <div class="chart-box">
+                    <h3>高频观点词统计</h3>
+                    <div id="opinionWordsChart" class="chart"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-row">
+                <div class="chart-box">
+                    <h3>竞品情感对比
+                        <select id="competitorProduct" onchange="updateCompetitorComparison()" style="font-size: 14px; padding: 2px 8px; margin-left: 10px;"></select>
+                    </h3>
+                    <div id="competitorChart" class="chart"></div>
+                </div>
+                <div class="chart-box">
+                    <h3>竞品方面级对比</h3>
+                    <div id="competitorAspectChart" class="chart"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="comments-section">
+            <h3>评论列表</h3>
+            <div class="comments-filter">
+                <select id="commentSentiment" onchange="loadComments(1)">
+                    <option value="all">全部情感</option>
+                    <option value="positive">正向</option>
+                    <option value="neutral">中性</option>
+                    <option value="negative">负向</option>
+                </select>
+            </div>
+            <div id="commentsList" class="comments-list"></div>
+            <div id="pagination" class="pagination"></div>
+        </div>
+
+        <div class="reply-modal" id="replyModal" style="display: none;">
+            <div class="reply-modal-content">
+                <div class="reply-modal-header">
+                    <h3>智能回复生成</h3>
+                    <button class="btn-close" onclick="closeReplyModal()">×</button>
+                </div>
+                <div class="reply-modal-body">
+                    <div class="original-comment">
+                        <h4>用户评论:</h4>
+                        <p id="replyCommentText"></p>
+                    </div>
+                    <div class="reply-options">
+                        <h4>选择回复风格:</h4>
+                        <div class="style-buttons">
+                            <button class="style-btn active" data-style="professional">专业正式</button>
+                            <button class="style-btn" data-style="friendly">亲切友好</button>
+                            <button class="style-btn" data-style="sincere">诚恳道歉</button>
+                        </div>
+                    </div>
+                    <div class="generated-replies">
+                        <h4>生成的回复方案:</h4>
+                        <div id="replyOptions"></div>
+                    </div>
+                </div>
+                <div class="reply-modal-footer">
+                    <button class="btn btn-secondary" onclick="closeReplyModal()">关闭</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="analyze-section">
+            <h3>单条评论分析</h3>
+            <textarea id="analyzeInput" placeholder="请输入要分析的评论内容..."></textarea>
+            <button class="btn btn-primary" onclick="analyzeText()">分析</button>
+            <div id="analyzeResult" class="analyze-result"></div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
