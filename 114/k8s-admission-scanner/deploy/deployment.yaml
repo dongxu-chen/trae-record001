@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trivy-admission-scanner
+  namespace: trivy-admission-system
+  labels:
+    app: trivy-admission-scanner
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: trivy-admission-scanner
+  template:
+    metadata:
+      labels:
+        app: trivy-admission-scanner
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      serviceAccountName: trivy-admission-scanner
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+      - name: scanner
+        image: trivy-admission-scanner:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9443
+          name: webhook
+        - containerPort: 8080
+          name: metrics
+        env:
+        - name: WEBHOOK_PORT
+          value: "9443"
+        - name: METRICS_PORT
+          value: "8080"
+        - name: FAIL_OPEN
+          value: "false"
+        - name: TRIVY_CACHE_DIR
+          value: "/var/trivy-cache"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        volumeMounts:
+        - name: tls
+          mountPath: /run/secrets/tls
+          readOnly: true
+        - name: trivy-cache
+          mountPath: /var/trivy-cache
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: metrics
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: metrics
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: tls
+        secret:
+          secretName: trivy-admission-tls
+      - name: trivy-cache
+        emptyDir: {}

@@ -1,0 +1,30 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: trivy-admission-scanner
+  labels:
+    app: trivy-admission-scanner
+webhooks:
+- name: image-scan.security.trivy.io
+  admissionReviewVersions: ["v1"]
+  clientConfig:
+    service:
+      name: trivy-admission-scanner
+      namespace: trivy-admission-system
+      path: /validate-v1-pod
+      port: 443
+    caBundle: ${CA_BUNDLE}
+  rules:
+  - operations: ["CREATE", "UPDATE"]
+    apiGroups: [""]
+    apiVersions: ["v1"]
+    resources: ["pods"]
+    scope: "*"
+  failurePolicy: Fail
+  sideEffects: None
+  timeoutSeconds: 30
+  namespaceSelector:
+    matchExpressions:
+    - key: trivy-scanner-skip
+      operator: NotIn
+      values: ["true"]

@@ -1,0 +1,4 @@
+kopf>=1.36.0
+kubernetes>=26.0.0
+prometheus-client>=0.17.0
+requests>=2.31.0

@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: trivy-admission-scanner
+  namespace: trivy-admission-system
+  labels:
+    app: trivy-admission-scanner
+spec:
+  selector:
+    matchLabels:
+      app: trivy-admission-scanner
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 15s
