@@ -1,0 +1,12 @@
+export const SNIPPET = {
+  MAX_CODE_LENGTH: 10000,
+  MAX_TITLE_LENGTH: 200,
+  MAX_DESCRIPTION_LENGTH: 1000
+} as const
+
+export const MESSAGES = {
+  CODE_TOO_LONG: `代码长度不能超过 ${SNIPPET.MAX_CODE_LENGTH} 字符`,
+  TITLE_TOO_LONG: `标题长度不能超过 ${SNIPPET.MAX_TITLE_LENGTH} 字符`,
+  DESCRIPTION_TOO_LONG: `描述长度不能超过 ${SNIPPET.MAX_DESCRIPTION_LENGTH} 字符`,
+  REQUIRED_FIELD: '此字段为必填项'
+} as const
