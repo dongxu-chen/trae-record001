@@ -1,0 +1,8 @@
+kubernetes>=28.1.0
+slack_bolt>=1.18.0
+slack_sdk>=3.27.0
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+cachetools>=5.3.2
+aiohttp>=3.9.1
+requests>=2.31.0

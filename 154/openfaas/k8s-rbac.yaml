@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: openfaas-event-trigger
+  namespace: openfaas-fn
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: openfaas-event-trigger
+rules:
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: openfaas-event-trigger
+subjects:
+- kind: ServiceAccount
+  name: openfaas-event-trigger
+  namespace: openfaas-fn
+roleRef:
+  kind: ClusterRole
+  name: openfaas-event-trigger
+  apiGroup: rbac.authorization.k8s.io

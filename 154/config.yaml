@@ -1,0 +1,17 @@
+event:
+  namespaces:
+    - default
+  watch_interval: 5
+  dedup_ttl: 300
+
+actions:
+  restart:
+    enabled: true
+    max_retries: 3
+  logs:
+    enabled: true
+    tail_lines: 100
+
+slack:
+  bot_name: K8s Event Bot
+  bot_icon: ':kubernetes:'
