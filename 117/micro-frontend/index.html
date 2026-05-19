@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>仪表盘微前端 - Web Components</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+    }
+    
+    .header {
+      background: #fff;
+      padding: 16px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header h1 {
+      font-size: 20px;
+      color: #333;
+    }
+    
+    .toolbar {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border: 1px solid #d9d9d9;
+      background: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+    
+    .btn:hover {
+      border-color: #1890ff;
+      color: #1890ff;
+    }
+    
+    .btn-primary {
+      background: #1890ff;
+      color: #fff;
+      border-color: #1890ff;
+    }
+    
+    .btn-primary:hover {
+      background: #40a9ff;
+      color: #fff;
+    }
+    
+    .dashboard-container {
+      padding: 24px;
+    }
+    
+    .grid-layout {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 20px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    
+    .grid-item {
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .col-6 { grid-column: span 6; }
+    .col-4 { grid-column: span 4; }
+    .col-8 { grid-column: span 8; }
+    .col-12 { grid-column: span 12; }
+    
+    .info-panel {
+      background: #e6f7ff;
+      border: 1px solid #91d5ff;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .info-panel h3 {
+      color: #1890ff;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    
+    .info-panel ul {
+      margin-left: 20px;
+      color: #666;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #1890ff;
+      color: #fff;
+      border-radius: 10px;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+    
+    @media (max-width: 1200px) {
+      .col-6, .col-4, .col-8 { grid-column: span 6; }
+    }
+    
+    @media (max-width: 768px) {
+      .col-6, .col-4, .col-8, .col-12 { grid-column: span 12; }
+      .toolbar { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🎯 仪表盘微前端 <span class="badge">Web Components</span></h1>
+    <div class="toolbar">
+      <button class="btn btn-primary" onclick="addChart()">➕ 添加图表</button>
+      <button class="btn" onclick="refreshAll()">🔄 刷新全部</button>
+      <button class="btn" onclick="toggleTheme()">🌙 切换主题</button>
+      <button class="btn" onclick="exportConfig()">💾 导出配置</button>
+      <button class="btn" onclick="toggleFullscreen()">🖥️ 全屏模式</button>
+    </div>
+  </div>
+  
+  <div class="dashboard-container" id="dashboard">
+    <div class="info-panel">
+      <h3>📋 功能说明</h3>
+      <ul>
+        <li><strong>组件间联动：</strong>点击第一个图表（销售趋势）会触发联动刷新其他图表</li>
+        <li><strong>postMessage通信：</strong>所有图表通过window.postMessage进行跨组件通信</li>
+        <li><strong>独立发布：</strong>每个图表都是独立的Web Component，可单独发布到npm</li>
+        <li><strong>第三方嵌入：</strong>使用SDK可以在任何框架（React/Vue/Angular/原生）中嵌入</li>
+      </ul>
+    </div>
+    
+    <div class="grid-layout">
+      <div class="grid-item col-6">
+        <line-chart 
+          title="销售趋势" 
+          theme="light" 
+          height="320px"
+          enable-link
+          link-targets="all"
+          smooth
+        ></line-chart>
+      </div>
+      
+      <div class="grid-item col-6">
+        <bar-chart 
+          title="月度对比" 
+          theme="light" 
+          height="320px"
+        ></bar-chart>
+      </div>
+      
+      <div class="grid-item col-4">
+        <pie-chart 
+          title="流量来源" 
+          theme="light" 
+          height="320px"
+          doughnut
+        ></pie-chart>
+      </div>
+      
+      <div class="grid-item col-8">
+        <line-chart 
+          title="利润分析" 
+          theme="light" 
+          height="320px"
+          enable-link
+          smooth
+        ></line-chart>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { DashboardSDK, createDashboardSDK } from './src/sdk/index.js';
+    
+    const sdk = createDashboardSDK();
+    
+    window.currentTheme = 'light';
+    
+    window.addChart = () => {
+      const types = ['line', 'bar', 'pie'];
+      const randomType = types[Math.floor(Math.random() * types.length)];
+      
+      const chart = sdk[`create${randomType.charAt(0).toUpperCase() + randomType.slice(1)}Chart`]('.grid-layout', {
+        title: `新${randomType === 'line' ? '折线' : randomType === 'bar' ? '柱状' : '饼'}图`,
+        height: '320px'
+      });
+      
+      chart.classList.add('grid-item', 'col-6');
+    };
+    
+    window.refreshAll = () => {
+      sdk.refreshAll();
+    };
+    
+    window.toggleTheme = () => {
+      window.currentTheme = window.currentTheme === 'light' ? 'dark' : 'light';
+      sdk.setGlobalTheme(window.currentTheme);
+      document.body.style.background = window.currentTheme === 'dark' ? '#141414' : '#f0f2f5';
+    };
+    
+    window.exportConfig = () => {
+      sdk.exportConfig();
+    };
+    
+    window.toggleFullscreen = () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    };
+    
+    sdk.on('chart-click', (payload) => {
+      console.log('📊 图表点击事件:', payload);
+    });
+    
+    sdk.on('data-updated', (payload) => {
+      console.log('📈 数据更新事件:', payload);
+    });
+    
+    console.log('✅ Dashboard SDK 已初始化');
+    console.log('📊 当前图表数量:', sdk.getAllCharts().length);
+    console.log('🔧 SDK 版本:', sdk.version);
+    
+    window.sdk = sdk;
+  </script>
+</body>
+</html>
