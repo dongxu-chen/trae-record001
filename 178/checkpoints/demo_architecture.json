@@ -1,0 +1,103 @@
+{
+  "normal": [
+    {
+      "from": 0,
+      "to": 2,
+      "op": "conv3x3",
+      "weight": 0.85
+    },
+    {
+      "from": 1,
+      "to": 2,
+      "op": "identity",
+      "weight": 0.78
+    },
+    {
+      "from": 0,
+      "to": 3,
+      "op": "sep_conv3x3",
+      "weight": 0.92
+    },
+    {
+      "from": 2,
+      "to": 3,
+      "op": "conv5x5",
+      "weight": 0.81
+    },
+    {
+      "from": 0,
+      "to": 4,
+      "op": "conv3x3",
+      "weight": 0.76
+    },
+    {
+      "from": 3,
+      "to": 4,
+      "op": "avg_pool3x3",
+      "weight": 0.69
+    },
+    {
+      "from": 2,
+      "to": 5,
+      "op": "sep_conv5x5",
+      "weight": 0.88
+    },
+    {
+      "from": 4,
+      "to": 5,
+      "op": "identity",
+      "weight": 0.74
+    }
+  ],
+  "reduce": [
+    {
+      "from": 0,
+      "to": 2,
+      "op": "conv5x5",
+      "weight": 0.91
+    },
+    {
+      "from": 1,
+      "to": 2,
+      "op": "max_pool3x3",
+      "weight": 0.83
+    },
+    {
+      "from": 0,
+      "to": 3,
+      "op": "conv7x7",
+      "weight": 0.79
+    },
+    {
+      "from": 2,
+      "to": 3,
+      "op": "sep_conv3x3",
+      "weight": 0.87
+    },
+    {
+      "from": 1,
+      "to": 4,
+      "op": "conv3x3",
+      "weight": 0.72
+    },
+    {
+      "from": 3,
+      "to": 4,
+      "op": "identity",
+      "weight": 0.85
+    },
+    {
+      "from": 2,
+      "to": 5,
+      "op": "sep_conv5x5",
+      "weight": 0.93
+    },
+    {
+      "from": 4,
+      "to": 5,
+      "op": "avg_pool3x3",
+      "weight": 0.68
+    }
+  ],
+  "num_nodes": 4
+}
