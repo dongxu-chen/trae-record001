@@ -1,0 +1,62 @@
+{
+  "start_time": "2024-01-15T10:00:00Z",
+  "end_time": "2024-01-15T10:10:00Z",
+  "step": "15s",
+  "metrics": [
+    {
+      "name": "up",
+      "labels": {
+        "job": "api_server",
+        "instance": "localhost:8080"
+      },
+      "values": [
+        {
+          "timestamp": "2024-01-15T10:00:00Z",
+          "value": 1
+        },
+        {
+          "timestamp": "2024-01-15T10:02:00Z",
+          "value": 0
+        },
+        {
+          "timestamp": "2024-01-15T10:05:00Z",
+          "value": 0
+        },
+        {
+          "timestamp": "2024-01-15T10:10:00Z",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "node_memory_MemTotal_bytes",
+      "labels": {
+        "job": "node_exporter",
+        "instance": "localhost:9100"
+      },
+      "values": [
+        {
+          "timestamp": "2024-01-15T10:00:00Z",
+          "value": 17179869184
+        }
+      ]
+    },
+    {
+      "name": "node_memory_MemAvailable_bytes",
+      "labels": {
+        "job": "node_exporter",
+        "instance": "localhost:9100"
+      },
+      "values": [
+        {
+          "timestamp": "2024-01-15T10:00:00Z",
+          "value": 2147483648
+        },
+        {
+          "timestamp": "2024-01-15T10:05:00Z",
+          "value": 1073741824
+        }
+      ]
+    }
+  ]
+}

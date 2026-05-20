@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-success text-white text-center">
+                    <h3 class="mb-0">📊 测评结果</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <p class="mb-0"><strong>评分说明：</strong>因子分越高，说明该方面的症状越明显。一般来说，因子分≥2.5表示该因子存在轻度到中度的症状，≥3表示存在中度到重度的症状。</p>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>因子名称</th>
+                                    <th>因子分</th>
+                                    <th>状态</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for factor, score in scores.items() %}
+                                <tr>
+                                    <td>{{ factor }}</td>
+                                    <td><strong>{{ score }}</strong></td>
+                                    <td>
+                                        {% if score < 2 %}
+                                        <span class="badge bg-success">正常</span>
+                                        {% elif score < 2.5 %}
+                                        <span class="badge bg-info">轻度</span>
+                                        {% elif score < 3 %}
+                                        <span class="badge bg-warning">中度</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">偏重</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-4 p-4 bg-light rounded">
+                        <h5 class="mb-3">💡 建议</h5>
+                        {% if max_score >= 3 %}
+                        <p class="text-danger">您的测评结果显示某些方面的症状较为明显，建议及时寻求专业心理咨询师的帮助。</p>
+                        <a href="{{ url_for('counselors') }}" class="btn btn-primary">预约心理咨询师</a>
+                        {% elif max_score >= 2 %}
+                        <p class="text-warning">您的测评结果显示存在一些轻度症状，建议关注自身心理健康，必要时可以预约咨询师进行沟通。</p>
+                        {% else %}
+                        <p class="text-success">您的测评结果显示整体心理健康状况良好，请继续保持积极的心态！</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{{ url_for('scl90') }}" class="btn btn-secondary">重新测评</a>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-primary">返回首页</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

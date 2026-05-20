@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: config-center-example
+
+# 配置中心配置
+config:
+  center:
+    enabled: true
+    server-host: localhost
+    server-port: 9090
+    service-name: ${spring.application.name}
+    namespace: public
+    group: DEFAULT_GROUP
+    auto-startup: true
+    subscribe-data-ids:
+      - app-config
+      - db-config
+      - feature-flags
+
+# Actuator配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,configprops
+  endpoint:
+    health:
+      show-details: always
+
+# 日志配置
+logging:
+  level:
+    com.configcenter: DEBUG
+    root: INFO

@@ -1,0 +1,28 @@
+<nz-layout class="layout" style="min-height: 100vh;">
+  <nz-sider nzCollapsible [(nzCollapsed)]="isCollapsed" [nzBreakpoint]="'lg'">
+    <div class="logo">
+      <h2 style="color: white; text-align: center; padding: 16px 0; margin: 0;">
+        <span *ngIf="!isCollapsed">图片CDN</span>
+        <span *ngIf="isCollapsed">CDN</span>
+      </h2>
+    </div>
+    <ul nz-menu nzTheme="dark" nzMode="inline">
+      <li nz-menu-item nzSelected routerLink="/upload">
+        <span nz-icon nzType="upload"></span>
+        <span>图片上传</span>
+      </li>
+      <li nz-menu-item routerLink="/list">
+        <span nz-icon nzType="picture"></span>
+        <span>图片管理</span>
+      </li>
+    </ul>
+  </nz-sider>
+  <nz-layout>
+    <nz-header style="background: #fff; padding: 0 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <nz-page-header [nzTitle]="title" class="site-page-header"></nz-page-header>
+    </nz-header>
+    <nz-content style="margin: 24px; background: #fff; border-radius: 8px; padding: 24px;">
+      <router-outlet></router-outlet>
+    </nz-content>
+  </nz-layout>
+</nz-layout>

@@ -1,0 +1,17 @@
+general: {
+	json = "indented"
+	events = true
+	ws = true
+	ws_port = 8188
+	ws_interface = "0.0.0.0"
+	wss = false
+	wss_port = 8989
+	wss_interface = "0.0.0.0"
+	ws_logging = "err,warn"
+	#cert_pem = "/usr/local/share/janus/certs/mycert.pem"
+	#cert_key = "/usr/local/share/janus/certs/mycert.key"
+	keepalive = "true"
+	ice_trickle = true
+	max_graceful_close = 3
+	allow_origin = "*"
+}

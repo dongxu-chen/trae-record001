@@ -1,0 +1,53 @@
+[package]
+name = "clipboard-sync"
+version = "1.0.0"
+description = "跨平台剪贴板同步工具 - Tauri版本"
+authors = ["Your Name"]
+license = "MIT"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "clipboard_sync"
+
+[[bin]]
+name = "clipboard-sync-cli"
+path = "src/cli/main.rs"
+
+[dependencies]
+tauri = { version = "1.5", features = ["api-all", "clipboard-all", "dialog-all", "fs-all", "notification-all", "shell-open"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+mdns = "3.0"
+reqwest = { version = "0.11", features = ["json", "stream"] }
+warp = { version = "0.3", features = ["tls"] }
+aes-gcm = "0.10"
+p256 = { version = "0.13", features = ["ecdh", "std"] }
+sha2 = "0.10"
+rand = "0.8"
+hex = "0.4"
+futures-util = "0.3"
+bytes = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+dirs = "5.0"
+local-ip-address = "0.5"
+qrcode = { version = "0.12", features = ["image"] }
+clap = { version = "4.0", features = ["derive"] }
+anyhow = "1.0"
+thiserror = "1.0"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+arboard = "3.2"
+hostname = "0.3"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"

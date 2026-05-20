@@ -1,0 +1,9 @@
+{
+  "name": "k8s-event-handler-node",
+  "version": "1.0.0",
+  "description": "Kubernetes Event Handler for OpenFaaS",
+  "main": "handler.js",
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}

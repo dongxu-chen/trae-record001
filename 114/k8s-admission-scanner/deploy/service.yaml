@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: trivy-admission-scanner
+  namespace: trivy-admission-system
+  labels:
+    app: trivy-admission-scanner
+spec:
+  ports:
+  - port: 443
+    targetPort: 9443
+    name: webhook
+  - port: 8080
+    targetPort: 8080
+    name: metrics
+  selector:
+    app: trivy-admission-scanner

@@ -1,0 +1,31 @@
+apiVersion: security.trivy.io/v1alpha1
+kind: ImageScanPolicy
+metadata:
+  name: default-image-scan-policy
+spec:
+  enabled: true
+  namespaceSelector:
+    include:
+      - "*"
+    exclude:
+      - kube-system
+      - kube-public
+      - kube-node-lease
+      - trivy-admission-system
+  severityThreshold:
+    critical: 0
+    high: 2
+    medium: 10
+    low: 50
+    cvssScoreThreshold: 7.0
+  scanTimeout: 120
+  imageFilter:
+    include:
+      - "*"
+    exclude:
+      - registry.k8s.io/*
+      - gcr.io/*
+  remediation:
+    autoRemediate: false
+    commentTemplate: "镜像 {image} 存在 {critical_count} 个严重漏洞、{high_count} 个高危漏洞，总CVSS最高分为 {max_cvss}，请升级镜像到安全版本"
+  dryRun: false

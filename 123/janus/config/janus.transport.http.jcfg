@@ -1,0 +1,29 @@
+general: {
+	json = "indented"
+	events = true
+	http = true
+	port = 8088
+	interface = "0.0.0.0"
+	https = false
+	secure_port = 8089
+	secure_interface = "0.0.0.0"
+	#cert_pem = "/usr/local/share/janus/certs/mycert.pem"
+	#cert_key = "/usr/local/share/janus/certs/mycert.key"
+	accept_api_generated_secret = true
+	max_nack_queue = 500
+	http_accept_policy = "same_origin"
+}
+
+admin: {
+	admin_http = true
+	admin_port = 7088
+	admin_interface = "0.0.0.0"
+	admin_https = false
+	admin_secure_port = 7889
+	admin_secure_interface = "0.0.0.0"
+}
+
+cors: {
+	allow_origin = "*"
+	allow_headers = "content-type"
+}

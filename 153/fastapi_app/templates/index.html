@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">欢迎来到校园心理健康中心</h1>
+        <p class="lead mb-5">我们致力于为每一位同学提供专业、温暖、私密的心理健康服务</p>
+        <div class="row justify-content-center g-4">
+            <div class="col-md-3">
+                <a href="/counselors" class="btn btn-light btn-lg w-100">
+                    👨‍⚕️ 预约咨询
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="/scl90" class="btn btn-light btn-lg w-100">
+                    📊 心理测评
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="/confessions" class="btn btn-light btn-lg w-100">
+                    💬 匿名倾诉
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card text-center card-hover h-100">
+                <div class="card-body">
+                    <div class="feature-icon mb-3">👨‍⚕️</div>
+                    <h5 class="card-title">专业咨询师</h5>
+                    <p class="card-text text-muted">多位资深心理咨询师，为您提供一对一专业服务</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center card-hover h-100">
+                <div class="card-body">
+                    <div class="feature-icon mb-3">🔒</div>
+                    <h5 class="card-title">隐私保护</h5>
+                    <p class="card-text text-muted">AES-256加密存储，严格保护您的个人隐私</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center card-hover h-100">
+                <div class="card-body">
+                    <div class="feature-icon mb-3">🤖</div>
+                    <h5 class="card-title">AI危机预警</h5>
+                    <p class="card-text text-muted">智能分析倾诉内容，及时识别心理危机</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center card-hover h-100">
+                <div class="card-body">
+                    <div class="feature-icon mb-3">📹</div>
+                    <h5 class="card-title">视频咨询</h5>
+                    <p class="card-text text-muted">WebRTC实时视频，足不出户享受专业服务</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h2 class="mb-4">为什么选择我们？</h2>
+                <p class="lead text-muted mb-5">因为我们不仅专业，更懂得用心倾听</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="d-flex">
+                    <div class="flex-shrink-0 display-6 text-primary me-3">⚡</div>
+                    <div>
+                        <h5>异步架构</h5>
+                        <p class="text-muted">FastAPI异步处理，高性能并发支持</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex">
+                    <div class="flex-shrink-0 display-6 text-primary me-3">🛡️</div>
+                    <div>
+                        <h5>数据脱敏</h5>
+                        <p class="text-muted">自动识别并脱敏敏感个人信息</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex">
+                    <div class="flex-shrink-0 display-6 text-primary me-3">📱</div>
+                    <div>
+                        <h5>全端支持</h5>
+                        <p class="text-muted">Web端 + 微信小程序 + API接口</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

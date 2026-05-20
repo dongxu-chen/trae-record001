@@ -1,0 +1,133 @@
+package com.risk.engine.rules
+
+import com.risk.engine.model.RiskFact
+
+dialect "mvel"
+
+rule "NewUserReject"
+    salience 100
+    no-loop true
+    when
+        $fact: RiskFact(variables["isNewUser"] == true)
+    then
+        $fact.addHitRule("NewUserReject");
+        $fact.addScore(50);
+        $fact.setDecision("REVIEW");
+end
+
+rule "LargeAmountReject"
+    salience 90
+    no-loop true
+    when
+        $fact: RiskFact(variables["isLargeAmount"] == true)
+    then
+        $fact.addHitRule("LargeAmountReject");
+        $fact.addScore(60);
+        $fact.setDecision("REVIEW");
+end
+
+rule "AbnormalAmountReject"
+    salience 85
+    no-loop true
+    when
+        $fact: RiskFact(variables["isAbnormalAmount"] == true)
+    then
+        $fact.addHitRule("AbnormalAmountReject");
+        $fact.addScore(70);
+        $fact.setDecision("REJECT");
+end
+
+rule "DeviceNotMatchedReject"
+    salience 80
+    no-loop true
+    when
+        $fact: RiskFact(variables["isDeviceMatched"] == false)
+    then
+        $fact.addHitRule("DeviceNotMatchedReject");
+        $fact.addScore(40);
+end
+
+rule "MultiAccountDeviceReject"
+    salience 75
+    no-loop true
+    when
+        $fact: RiskFact(variables["isMultiAccountDevice"] == true)
+    then
+        $fact.addHitRule("MultiAccountDeviceReject");
+        $fact.addScore(80);
+        $fact.setDecision("REJECT");
+end
+
+rule "HighFailedAttemptsReject"
+    salience 70
+    no-loop true
+    when
+        $fact: RiskFact(variables["hasHighFailedAttempts"] == true)
+    then
+        $fact.addHitRule("HighFailedAttemptsReject");
+        $fact.addScore(65);
+        $fact.setDecision("REJECT");
+end
+
+rule "QuickOrderReview"
+    salience 65
+    no-loop true
+    when
+        $fact: RiskFact(variables["isQuickOrder"] == true)
+    then
+        $fact.addHitRule("QuickOrderReview");
+        $fact.addScore(30);
+end
+
+rule "QuickBrowserReview"
+    salience 60
+    no-loop true
+    when
+        $fact: RiskFact(variables["isQuickBrowser"] == true)
+    then
+        $fact.addHitRule("QuickBrowserReview");
+        $fact.addScore(25);
+end
+
+rule "IpNotSameCityReview"
+    salience 55
+    no-loop true
+    when
+        $fact: RiskFact(variables["isSameCityIp"] == false)
+    then
+        $fact.addHitRule("IpNotSameCityReview");
+        $fact.addScore(20);
+end
+
+rule "HighScoreReject"
+    salience 10
+    no-loop true
+    activation-group "final-decision"
+    when
+        $fact: RiskFact(score >= 100)
+    then
+        $fact.addHitRule("HighScoreReject");
+        $fact.setDecision("REJECT");
+end
+
+rule "MediumScoreReview"
+    salience 5
+    no-loop true
+    activation-group "final-decision"
+    when
+        $fact: RiskFact(score >= 50, score < 100, decision != "REJECT")
+    then
+        $fact.addHitRule("MediumScoreReview");
+        $fact.setDecision("REVIEW");
+end
+
+rule "LowScorePass"
+    salience 1
+    no-loop true
+    activation-group "final-decision"
+    when
+        $fact: RiskFact(score < 50, decision != "REJECT", decision != "REVIEW")
+    then
+        $fact.addHitRule("LowScorePass");
+        $fact.setDecision("PASS");
+end

@@ -1,0 +1,313 @@
+# Git Commit Message 规范配置文件
+# 由 git-commitlint Rust 工具使用
+
+# 允许的提交类型
+types = [
+  # 功能类
+  "feat",
+  "feature",
+  "fix",
+  "bugfix",
+  "hotfix",
+  
+  # 文档类
+  "docs",
+  "doc",
+  "readme",
+  "comment",
+  
+  # 代码样式
+  "style",
+  "format",
+  "lint",
+  "typo",
+  
+  # 重构类
+  "refactor",
+  "rework",
+  "rewrite",
+  "cleanup",
+  
+  # 性能类
+  "perf",
+  "performance",
+  "optimize",
+  
+  # 测试类
+  "test",
+  "tests",
+  "unittest",
+  "e2e",
+  
+  # 构建类
+  "build",
+  "bundle",
+  "compile",
+  "package",
+  
+  # CI/CD
+  "ci",
+  "cd",
+  "deploy",
+  "workflow",
+  
+  # 依赖管理
+  "deps",
+  "deps-dev",
+  "upgrade",
+  "downgrade",
+  
+  # 其他
+  "chore",
+  "task",
+  "misc",
+  "wip",
+  
+  # 回滚
+  "revert",
+  "rollback",
+  "revert-feat",
+  
+  # 安全
+  "security",
+  "sec",
+  "patch",
+  
+  # 国际化
+  "i18n",
+  "l10n",
+  "translation",
+  
+  # 设计
+  "design",
+  "ui",
+  "ux",
+  "theme",
+  
+  # 数据
+  "db",
+  "database",
+  "migration",
+  "seed",
+  
+  # 配置
+  "config",
+  "env",
+  "settings",
+  
+  # 日志
+  "log",
+  "logging",
+  "debug",
+  "trace",
+]
+
+# 各类型对应的 emoji
+[type_emojis]
+# 功能类
+feat = "✨"
+feature = "✨"
+fix = "🐛"
+bugfix = "🐛"
+hotfix = "🔥"
+
+# 文档类
+docs = "📝"
+doc = "📝"
+readme = "📖"
+comment = "💬"
+
+# 代码样式
+style = "💄"
+format = "🎨"
+lint = "🔍"
+typo = "✏️"
+
+# 重构类
+refactor = "♻️"
+rework = "🔄"
+rewrite = "📝"
+cleanup = "🧹"
+
+# 性能类
+perf = "⚡"
+performance = "⚡"
+optimize = "🚀"
+
+# 测试类
+test = "✅"
+tests = "✅"
+unittest = "🧪"
+e2e = "🔬"
+
+# 构建类
+build = "📦"
+bundle = "📦"
+compile = "🔨"
+package = "📦"
+
+# CI/CD
+ci = "🤖"
+cd = "🚀"
+deploy = "🚀"
+workflow = "🔄"
+
+# 依赖管理
+deps = "📦"
+"deps-dev" = "🔧"
+upgrade = "⬆️"
+downgrade = "⬇️"
+
+# 其他
+chore = "🔧"
+task = "📋"
+misc = "📍"
+wip = "🚧"
+
+# 回滚
+revert = "⏪"
+rollback = "⏪"
+"revert-feat" = "⏪✨"
+
+# 安全
+security = "🔒"
+sec = "🔒"
+patch = "🩹"
+
+# 国际化
+i18n = "🌍"
+l10n = "🌐"
+translation = "📚"
+
+# 设计
+design = "🎨"
+ui = "🖼️"
+ux = "🎯"
+theme = "🎭"
+
+# 数据
+db = "🗄️"
+database = "🗄️"
+migration = "📊"
+seed = "🌱"
+
+# 配置
+config = "⚙️"
+env = "🌿"
+settings = "⚙️"
+
+# 日志
+log = "📜"
+logging = "📜"
+debug = "🔍"
+trace = "🔍"
+
+# 各类型的中文描述
+[type_descriptions]
+# 功能类
+feat = "新功能"
+feature = "新功能"
+fix = "修复Bug"
+bugfix = "修复Bug"
+hotfix = "紧急修复"
+
+# 文档类
+docs = "文档更新"
+doc = "文档更新"
+readme = "README更新"
+comment = "代码注释"
+
+# 代码样式
+style = "代码格式"
+format = "格式化"
+lint = "Lint修复"
+typo = "拼写错误"
+
+# 重构类
+refactor = "代码重构"
+rework = "代码重写"
+rewrite = "重写代码"
+cleanup = "代码清理"
+
+# 性能类
+perf = "性能优化"
+performance = "性能优化"
+optimize = "优化代码"
+
+# 测试类
+test = "测试相关"
+tests = "测试相关"
+unittest = "单元测试"
+e2e = "端到端测试"
+
+# 构建类
+build = "构建系统"
+bundle = "打包相关"
+compile = "编译相关"
+package = "包管理"
+
+# CI/CD
+ci = "持续集成"
+cd = "持续部署"
+deploy = "部署相关"
+workflow = "工作流"
+
+# 依赖管理
+deps = "依赖更新"
+"deps-dev" = "开发依赖"
+upgrade = "升级依赖"
+downgrade = "降级依赖"
+
+# 其他
+chore = "日常维护"
+task = "任务处理"
+misc = "杂项"
+wip = "开发中"
+
+# 回滚
+revert = "回滚提交"
+rollback = "代码回滚"
+"revert-feat" = "回滚功能"
+
+# 安全
+security = "安全修复"
+sec = "安全相关"
+patch = "安全补丁"
+
+# 国际化
+i18n = "国际化"
+l10n = "本地化"
+translation = "翻译更新"
+
+# 设计
+design = "设计更新"
+ui = "界面更新"
+ux = "体验优化"
+theme = "主题更新"
+
+# 数据
+db = "数据库"
+database = "数据库"
+migration = "数据迁移"
+seed = "数据种子"
+
+# 配置
+config = "配置变更"
+env = "环境变量"
+settings = "设置更新"
+
+# 日志
+log = "日志相关"
+logging = "日志更新"
+debug = "调试代码"
+trace = "追踪代码"
+
+# 长度限制
+min_length = 10
+max_length = 100
+
+# 格式校验正则表达式
+pattern = "^(\\w+)(\\([^)]+\\))?:\\s*(.+)$"
+
+# 严格模式
+strict = true

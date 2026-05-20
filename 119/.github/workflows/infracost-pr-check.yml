@@ -1,0 +1,150 @@
+name: Infracost PR Cost Check
+
+on:
+  pull_request:
+    paths:
+      - '**.tf'
+      - '**.tfvars'
+      - '**.hcl'
+  workflow_dispatch:
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  GOOGLE_APPLICATION_CREDENTIALS_DATA: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_DATA }}
+  INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+
+jobs:
+  cost-check:
+    runs-on: ubuntu-latest
+    name: Cost Analysis
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout base
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          path: base
+
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          path: pr
+
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v3
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.0"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: |
+          cd pr
+          pip install -r requirements.txt 2>/dev/null || true
+
+      - name: Terraform Init (Base)
+        run: |
+          cd base
+          terraform init -backend=false -input=false 2>/dev/null || true
+
+      - name: Terraform Init (PR)
+        run: |
+          cd pr
+          terraform init -backend=false -input=false 2>/dev/null || true
+
+      - name: Run Infracost Diff
+        id: infracost
+        run: |
+          cd pr
+          python src/ci/infracost_check.py \
+            --base-path ../base \
+            --path . \
+            --threshold-percent 20 \
+            --threshold-amount 100 \
+            --output cost_change_report.md \
+            --json-output cost_change_result.json
+
+      - name: Check TFState Analysis
+        id: tfstate
+        run: |
+          cd pr
+          if [ -f "terraform.tfstate" ]; then
+            python src/analyzers/tfstate_analyzer.py \
+              --state terraform.tfstate \
+              --summary \
+              --output tfstate_analysis.json
+          else
+            echo "No tfstate file found, skipping analysis"
+          fi
+        continue-on-error: true
+
+      - name: Upload Cost Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cost-reports
+          path: |
+            pr/cost_change_report.md
+            pr/cost_change_result.json
+
+      - name: Read Cost Report
+        id: report
+        run: |
+          cd pr
+          content=$(cat cost_change_report.md)
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          echo "report=$content" >> $GITHUB_OUTPUT
+
+      - name: Comment PR with Cost Report
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: ${{ steps.report.outputs.report }}
+          comment_tag: cost_report
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check Block Merge
+        id: block-check
+        run: |
+          cd pr
+          python src/ci/infracost_check.py \
+            --base-path ../base \
+            --path . \
+            --threshold-percent 20 \
+            --threshold-amount 200 \
+            --check-block
+        continue-on-error: true
+
+      - name: Set PR Status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const exitCode = ${{ steps.block-check.outputs.exit_code }}
+            const state = exitCode == 1 ? 'failure' : 'success'
+            const description = exitCode == 1 ? 'Cost increase exceeds threshold' : 'Cost change within threshold'
+            
+            github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.payload.pull_request.head.sha,
+              state: state,
+              target_url: '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}',
+              description: description,
+              context: 'cost-check/infracost'
+            })

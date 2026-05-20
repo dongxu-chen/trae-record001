@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center mb-4">📊 SCL-90 心理症状自评量表</h1>
+    
+    <div class="alert alert-info mb-4">
+        <h6 class="alert-heading">说明</h6>
+        <p class="mb-0 small">以下列出了有些人可能会有的问题，请仔细阅读每一条，然后根据最近一星期以内下述情况影响您的实际感觉，选择最符合您的一项。</p>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            <form id="scl90Form">
+                <div class="mb-4">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 5%">#</th>
+                                <th style="width: 45%">题目</th>
+                                <th style="width: 10%" class="text-center">没有</th>
+                                <th style="width: 10%" class="text-center">很轻</th>
+                                <th style="width: 10%" class="text-center">中等</th>
+                                <th style="width: 10%" class="text-center">偏重</th>
+                                <th style="width: 10%" class="text-center">严重</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>头痛</td>
+                                <td class="text-center"><input type="radio" name="q1" value="0" checked></td>
+                                <td class="text-center"><input type="radio" name="q1" value="1"></td>
+                                <td class="text-center"><input type="radio" name="q1" value="2"></td>
+                                <td class="text-center"><input type="radio" name="q1" value="3"></td>
+                                <td class="text-center"><input type="radio" name="q1" value="4"></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>神经过敏，心中不踏实</td>
+                                <td class="text-center"><input type="radio" name="q2" value="0" checked></td>
+                                <td class="text-center"><input type="radio" name="q2" value="1"></td>
+                                <td class="text-center"><input type="radio" name="q2" value="2"></td>
+                                <td class="text-center"><input type="radio" name="q2" value="3"></td>
+                                <td class="text-center"><input type="radio" name="q2" value="4"></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>头脑中有不必要的想法或字句盘旋</td>
+                                <td class="text-center"><input type="radio" name="q3" value="0" checked></td>
+                                <td class="text-center"><input type="radio" name="q3" value="1"></td>
+                                <td class="text-center"><input type="radio" name="q3" value="2"></td>
+                                <td class="text-center"><input type="radio" name="q3" value="3"></td>
+                                <td class="text-center"><input type="radio" name="q3" value="4"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="text-center">
+                    <p class="text-muted mb-3">共90道题目，此处仅展示示例。完整测试请在正式环境中进行。</p>
+                    <button type="button" class="btn btn-primary btn-lg" onclick="submitTest()">
+                        提交测试
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function submitTest() {
+    const answers = [];
+    for (let i = 1; i <= 90; i++) {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        answers.push(selected ? selected.value : '0');
+    }
+    
+    alert('测试提交成功！在正式环境中会显示详细结果。');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,21 @@
+{
+  "name": "distributed-id-generator",
+  "version": "2.0.0",
+  "description": "分布式ID生成器服务 - 基于美团Leaf号段模式",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "keywords": ["leaf", "snowflake", "zookeeper", "distributed-id", "id-generator", "segment"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-zookeeper-client": "^1.1.3",
+    "prom-client": "^15.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

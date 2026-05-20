@@ -1,0 +1,73 @@
+server:
+  http_port: 9090
+  metrics_path: /metrics
+
+database:
+  mysql:
+    host: localhost
+    port: 3306
+    user: root
+    password: your_password
+    databases:
+      - database1
+      - database2
+    mysqldump_path: mysqldump
+    mysqlbinlog_path: mysqlbinlog
+
+  postgresql:
+    host: localhost
+    port: 5432
+    user: postgres
+    password: your_password
+    databases:
+      - database1
+      - database2
+    pg_dump_path: pg_dump
+
+storage:
+  type: s3
+  s3:
+    endpoint: oss-cn-hangzhou.aliyuncs.com
+    region: cn-hangzhou
+    bucket: your-bucket-name
+    access_key: your-access-key
+    secret_key: your-secret-key
+    use_ssl: true
+    path_style: false
+    prefix: backups/
+
+backup:
+  local_dir: ./backups
+  retention_days: 7
+  compress: true
+  encrypt: true
+  encryption_key: your-32-byte-encryption-key-here
+  enable_incremental: true
+  enable_verify: true
+  parallel_workers: 4
+  pipeline_size: 10
+
+notify:
+  dingtalk:
+    webhook_url: https://oapi.dingtalk.com/robot/send?access_token=your_token
+    secret: your_secret
+    at_mobiles:
+      - 13800138000
+    at_all: false
+
+  email:
+    smtp_host: smtp.example.com
+    smtp_port: 587
+    use_tls: true
+    username: your_email@example.com
+    password: your_password
+    from: backup@example.com
+    to:
+      - admin@example.com
+
+logging:
+  level: info
+  file: backup.log
+  max_size: 100
+  max_backups: 3
+  max_age: 28

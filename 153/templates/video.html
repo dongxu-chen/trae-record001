@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">📹 视频咨询 - 房间号: {{ room_id }}</h5>
+                    <span id="userCount" class="badge bg-light text-dark">在线: 0 人</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="video-container bg-dark" style="height: 450px; position: relative;">
+                        <video id="localVideo" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                        <video id="remoteVideo" autoplay playsinline style="position: absolute; top: 20px; right: 20px; width: 200px; height: 150px; border: 2px solid white; border-radius: 8px; display: none;"></video>
+                        <div id="waitingOverlay" class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center text-white" style="background: rgba(0,0,0,0.7);">
+                            <div class="text-center">
+                                <div class="spinner-border mb-3" role="status"></div>
+                                <p>等待对方加入...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-center gap-3">
+                            <button id="joinBtn" class="btn btn-success">
+                                📞 加入通话
+                            </button>
+                            <button id="leaveBtn" class="btn btn-danger" disabled>
+                                ❌ 结束通话
+                            </button>
+                            <button id="toggleVideo" class="btn btn-secondary">
+                                📷 摄像头
+                            </button>
+                            <button id="toggleAudio" class="btn btn-secondary">
+                                🎤 麦克风
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">💬 实时聊天</h6>
+                </div>
+                <div class="card-body">
+                    <div id="chatMessages" style="height: 250px; overflow-y: auto;" class="mb-3">
+                        <div class="text-center text-muted small py-3">
+                            发送消息给咨询师
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="chatInput" class="form-control" placeholder="输入消息..." disabled>
+                        <button id="sendBtn" class="btn btn-primary" disabled>发送</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">📋 咨询信息</h6>
+                </div>
+                <div class="card-body small">
+                    <p class="mb-2"><strong>咨询师:</strong> {{ appointment.counselor.name }}</p>
+                    <p class="mb-2"><strong>预约时间:</strong> {{ appointment.appointment_date }} {{ appointment.appointment_time }}</p>
+                    <p class="mb-2"><strong>状态:</strong> 
+                        <span class="badge bg-primary">{{ appointment.status }}</span>
+                    </p>
+                    <hr>
+                    <div class="d-grid">
+                        <a href="{{ url_for('appointments') }}" class="btn btn-outline-secondary btn-sm">
+                            返回预约列表
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+const roomId = '{{ room_id }}';
+let socket = null;
+let localStream = null;
+let peerConnection = null;
+let isInCall = false;
+let videoEnabled = true;
+let audioEnabled = true;
+
+const localVideo = document.getElementById('localVideo');
+const remoteVideo = document.getElementById('remoteVideo');
+const joinBtn = document.getElementById('joinBtn');
+const leaveBtn = document.getElementById('leaveBtn');
+const toggleVideoBtn = document.getElementById('toggleVideo');
+const toggleAudioBtn = document.getElementById('toggleAudio');
+const chatInput = document.getElementById('chatInput');
+const sendBtn = document.getElementById('sendBtn');
+const chatMessages = document.getElementById('chatMessages');
+const waitingOverlay = document.getElementById('waitingOverlay');
+const userCount = document.getElementById('userCount');
+
+const configuration = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+};
+
+joinBtn.addEventListener('click', async () => {
+    try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        localVideo.srcObject = localStream;
+        
+        socket = io({ transports: ['websocket'] });
+        setupSocketHandlers();
+        socket.emit('join', { room: roomId, user_type: 'user' });
+        
+        joinBtn.disabled = true;
+        leaveBtn.disabled = false;
+        chatInput.disabled = false;
+        sendBtn.disabled = false;
+        isInCall = true;
+    } catch (err) {
+        alert('无法访问摄像头/麦克风: ' + err.message);
+    }
+});
+
+leaveBtn.addEventListener('click', () => {
+    endCall();
+});
+
+function endCall() {
+    if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+    }
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+    if (socket) {
+        socket.emit('leave', { room: roomId });
+        socket.disconnect();
+        socket = null;
+    }
+    
+    localVideo.srcObject = null;
+    remoteVideo.style.display = 'none';
+    waitingOverlay.style.display = 'flex';
+    
+    joinBtn.disabled = false;
+    leaveBtn.disabled = true;
+    chatInput.disabled = true;
+    sendBtn.disabled = true;
+    isInCall = false;
+}
+
+toggleVideoBtn.addEventListener('click', () => {
+    if (localStream) {
+        videoEnabled = !videoEnabled;
+        localStream.getVideoTracks().forEach(track => track.enabled = videoEnabled);
+        toggleVideoBtn.textContent = videoEnabled ? '📷 摄像头' : '📷 已关闭';
+        toggleVideoBtn.classList.toggle('btn-outline-danger');
+    }
+});
+
+toggleAudioBtn.addEventListener('click', () => {
+    if (localStream) {
+        audioEnabled = !audioEnabled;
+        localStream.getAudioTracks().forEach(track => track.enabled = audioEnabled);
+        toggleAudioBtn.textContent = audioEnabled ? '🎤 麦克风' : '🎤 已静音';
+        toggleAudioBtn.classList.toggle('btn-outline-danger');
+    }
+});
+
+sendBtn.addEventListener('click', sendMessage);
+chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+});
+
+function sendMessage() {
+    const message = chatInput.value.trim();
+    if (message && socket) {
+        socket.emit('chat_message', { room: roomId, message: message });
+        addMessage(message, '我');
+        chatInput.value = '';
+    }
+}
+
+function addMessage(message, from) {
+    const div = document.createElement('div');
+    div.className = `mb-2 p-2 rounded ${from === '我' ? 'bg-primary text-white text-end' : 'bg-light'}`;
+    div.innerHTML = `<small class="opacity-75">${from}</small><br>${message}`;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function setupSocketHandlers() {
+    socket.on('user_joined', (data) => {
+        userCount.textContent = `在线: ${data.user_count} 人`;
+        if (data.user_count >= 2) {
+            waitingOverlay.style.display = 'none';
+        }
+    });
+    
+    socket.on('user_left', (data) => {
+        remoteVideo.style.display = 'none';
+        waitingOverlay.style.display = 'flex';
+    });
+    
+    socket.on('offer', async (data) => {
+        if (!peerConnection) createPeerConnection();
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        socket.emit('answer', { room: roomId, answer: answer });
+    });
+    
+    socket.on('answer', async (data) => {
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+    });
+    
+    socket.on('ice_candidate', async (data) => {
+        if (peerConnection) {
+            await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+        }
+    });
+    
+    socket.on('chat_message', (data) => {
+        if (data.from !== socket.id) {
+            addMessage(data.message, '对方');
+        }
+    });
+}
+
+function createPeerConnection() {
+    peerConnection = new RTCPeerConnection(configuration);
+    
+    localStream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, localStream);
+    });
+    
+    peerConnection.ontrack = (event) => {
+        remoteVideo.srcObject = event.streams[0];
+        remoteVideo.style.display = 'block';
+        waitingOverlay.style.display = 'none';
+    };
+    
+    peerConnection.onicecandidate = (event) => {
+        if (event.candidate && socket) {
+            socket.emit('ice_candidate', { room: roomId, candidate: event.candidate });
+        }
+    };
+    
+    setTimeout(() => {
+        if (peerConnection && !peerConnection.remoteDescription) {
+            createOffer();
+        }
+    }, 1000);
+}
+
+async function createOffer() {
+    if (!peerConnection) createPeerConnection();
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    socket.emit('offer', { room: roomId, offer: offer });
+}
+
+window.addEventListener('beforeunload', () => {
+    if (isInCall) endCall();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,24 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "seis_rs"
+requires-python = ">=3.8"
+authors = [
+    { name = "SeisProcessor Team" }
+]
+description = "Rust accelerated seismic data processing library"
+readme = "README_RUST.md"
+license = { file = "LICENSE" }
+keywords = ["seismology", "signal-processing", "steim2"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Rust",
+]
+
+[tool.maturin]
+features = ["pyo3/extension-module"]

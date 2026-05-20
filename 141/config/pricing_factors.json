@@ -1,0 +1,167 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2024-01-01",
+  "factors": [
+    {
+      "id": "base_auto",
+      "name": "基础费率-车险",
+      "factor_type": "base_rate",
+      "value": "0.005",
+      "description": "机动车辆保险基础费率",
+      "effective_date": "2024-01-01T00:00:00",
+      "expiry_date": null,
+      "is_active": true,
+      "metadata": {
+        "product_type": "车险",
+        "coverage_type": "comprehensive"
+      },
+      "priority": 1
+    },
+    {
+      "id": "base_life",
+      "name": "基础费率-寿险",
+      "factor_type": "base_rate",
+      "value": "0.002",
+      "description": "人寿保险基础费率",
+      "effective_date": "2024-01-01T00:00:00",
+      "expiry_date": null,
+      "is_active": true,
+      "metadata": {
+        "product_type": "寿险",
+        "coverage_type": "term"
+      },
+      "priority": 1
+    },
+    {
+      "id": "base_health",
+      "name": "基础费率-健康险",
+      "factor_type": "base_rate",
+      "value": "0.0035",
+      "description": "健康保险基础费率",
+      "effective_date": "2024-01-01T00:00:00",
+      "expiry_date": null,
+      "is_active": true,
+      "metadata": {
+        "product_type": "健康险",
+        "coverage_type": "major_medical"
+      },
+      "priority": 1
+    },
+    {
+      "id": "risk_high",
+      "name": "高风险调整因子",
+      "factor_type": "risk_adjustment",
+      "value": "1.5",
+      "description": "高风险客户保费调整系数",
+      "effective_date": "2024-01-01T00:00:00",
+      "expiry_date": null,
+      "is_active": true,
+      "metadata": {
+        "risk_threshold": 0.7,
+        "risk_category": "high"
+      },
+      "priority": 2
+    },
+    {
+      "id": "risk_medium",
+      "name": "中风险调整因子",
+      "factor_type": "risk_adjustment",
+      "value": "1.2",
+      "description": "中风险客户保费调整系数",
+      "effective_date": "2024-01-01T00:00:00",
+      "expiry_date": null,
+      "is_active": true,
+      "metadata": {
+        "risk_threshold_min": 0.4,
+        "risk_threshold_max": 0.7,
+        "risk_category": "medium"
+      },
+      "priority": 2
+    },
+    {
+      "id": "risk_low",
+      "name": "低风险调整因子",
+      "factor_type": "risk_adjustment",
+      "value": "0.8",
+      "description": "低风险客户保费调整系数",
+      "effective_date": "2024-01-01T00:00:00",
+      "expiry_date": null,
+      "is_active": true,
+      "metadata": {
+        "risk_threshold": 0.2,
+        "risk_category": "low"
+      },
+      "priority": 2
+    },
+    {
+      "id": "discount_no_claim",
+      "name": "无赔款优待折扣",
+      "factor_type": "discount",
+      "value": "0.1",
+      "description": "连续无赔款折扣比例",
+      "effective_date": "2024-01-01T00:00:00",
+      "expiry_date": null,
+      "is_active": true,
+      "metadata": {
+        "min_no_claim_years": 1,
+        "discount_type": "percentage"
+      },
+      "priority": 3
+    },
+    {
+      "id": "discount_multi_policy",
+      "name": "多保单折扣",
+      "factor_type": "discount",
+      "value": "0.05",
+      "description": "多保单同时投保折扣",
+      "effective_date": "2024-01-01T00:00:00",
+      "expiry_date": null,
+      "is_active": true,
+      "metadata": {
+        "min_policies": 2,
+        "discount_type": "percentage"
+      },
+      "priority": 3
+    },
+    {
+      "id": "expense_loading",
+      "name": "费用附加因子",
+      "factor_type": "expense_loading",
+      "value": "0.2",
+      "description": "运营费用附加比例",
+      "effective_date": "2024-01-01T00:00:00",
+      "expiry_date": null,
+      "is_active": true,
+      "metadata": {
+        "expense_components": ["commission", "administration", "marketing"]
+      },
+      "priority": 4
+    },
+    {
+      "id": "profit_loading",
+      "name": "利润附加因子",
+      "factor_type": "profit_loading",
+      "value": "0.1",
+      "description": "预期利润附加比例",
+      "effective_date": "2024-01-01T00:00:00",
+      "expiry_date": null,
+      "is_active": true,
+      "metadata": {
+        "target_profit_margin": "10%"
+      },
+      "priority": 5
+    }
+  ],
+  "risk_weights": {
+    "age": 0.2,
+    "claims_history": 0.3,
+    "occupation_risk": 0.2,
+    "health_status": 0.2,
+    "location_risk": 0.1
+  },
+  "calculation_rules": {
+    "rounding_precision": 2,
+    "max_discount_rate": 0.4,
+    "min_premium": "100.00"
+  }
+}

@@ -1,0 +1,2094 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>沉浸式音频可视化器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            transition: background 0.5s ease;
+        }
+
+        body.theme-dark {
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+        }
+
+        body.theme-light {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        body.theme-neon {
+            background: linear-gradient(135deg, #1a0a2e 0%, #0a1a2e 50%, #2e0a1a 100%);
+            animation: neonBg 10s ease infinite;
+        }
+
+        @keyframes neonBg {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            background: rgba(20, 20, 30, 0.85);
+            padding: 20px 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            max-width: 95vw;
+        }
+
+        .theme-light .controls {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-upload {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-upload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-mic {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-mic.active {
+            background: linear-gradient(135deg, #ef3b3b 0%, #ef7d38 100%);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 59, 59, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(239, 59, 59, 0); }
+        }
+
+        .btn-record {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-record.recording {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            animation: recordPulse 0.5s infinite alternate;
+        }
+
+        @keyframes recordPulse {
+            from { box-shadow: 0 0 10px rgba(255, 65, 108, 0.5); }
+            to { box-shadow: 0 0 30px rgba(255, 65, 108, 0.8); }
+        }
+
+        .btn-gif {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #333;
+        }
+
+        .btn-gif.exporting {
+            opacity: 0.7;
+            cursor: wait;
+        }
+
+        .btn-play {
+            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .btn-play:hover {
+            transform: scale(1.1);
+        }
+
+        .progress-container {
+            width: 250px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .theme-light .progress-container {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #f5576c);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .time-display {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            font-family: monospace;
+        }
+
+        .theme-light .time-display {
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .volume-slider {
+            width: 80px;
+            height: 4px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .theme-light .volume-slider {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .file-name {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .theme-light .file-name {
+            color: rgba(0, 0, 0, 0.7);
+        }
+
+        .visualization-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .viz-btn {
+            padding: 8px 16px;
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .theme-light .viz-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: rgba(0, 0, 0, 0.7);
+        }
+
+        .viz-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+            color: white;
+        }
+
+        .viz-btn:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .theme-switcher {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            display: flex;
+            gap: 8px;
+        }
+
+        .theme-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .theme-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-btn.active {
+            border-color: white;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .theme-btn-dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0a0a0f 100%);
+            color: white;
+        }
+
+        .theme-btn-light {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+        }
+
+        .theme-btn-neon {
+            background: linear-gradient(135deg, #ff00cc 0%, #3333ff 50%, #00ffcc 100%);
+            color: white;
+        }
+
+        .title {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f5576c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+        }
+
+        .theme-light .title {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .instructions {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 16px;
+            text-align: center;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .theme-light .instructions {
+            color: rgba(0, 0, 0, 0.5);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .recording-indicator {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 15;
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .recording-indicator::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            animation: blink 0.5s infinite alternate;
+        }
+
+        @keyframes blink {
+            from { opacity: 1; }
+            to { opacity: 0.3; }
+        }
+
+        .export-status {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 30px 50px;
+            border-radius: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .export-progress {
+            width: 200px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .export-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #f5576c);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .prerender-status {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 40px 60px;
+            border-radius: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            min-width: 350px;
+        }
+
+        .prerender-progress {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .prerender-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00ccff);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .btn-prerender {
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            color: #000;
+        }
+
+        .btn-prerender.active {
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+        }
+
+        .prerender-mode {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 15;
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            color: #000;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="theme-dark">
+    <canvas id="canvas"></canvas>
+    
+    <div class="title">🎵 沉浸式音频可视化器</div>
+    
+    <div class="theme-switcher">
+        <button class="theme-btn theme-btn-dark active" data-theme="dark" title="深色主题">🌙</button>
+        <button class="theme-btn theme-btn-light" data-theme="light" title="浅色主题">☀️</button>
+        <button class="theme-btn theme-btn-neon" data-theme="neon" title="炫彩主题">✨</button>
+    </div>
+    
+    <div class="visualization-switcher">
+        <button class="viz-btn active" data-viz="all">全部</button>
+        <button class="viz-btn" data-viz="spectrum">频谱</button>
+        <button class="viz-btn" data-viz="waveform">波形</button>
+        <button class="viz-btn" data-viz="circle">圆环</button>
+    </div>
+
+    <div class="recording-indicator hidden" id="recordingIndicator">
+        录制中... <span id="recordingTime">00:00</span>
+    </div>
+
+    <div class="prerender-mode hidden" id="prerenderMode">
+        ⚡ 预渲染模式
+    </div>
+
+    <div class="export-status hidden" id="exportStatus">
+        <div>正在导出 GIF...</div>
+        <div class="export-progress">
+            <div class="export-progress-bar" id="exportProgressBar"></div>
+        </div>
+        <div id="exportPercent" style="margin-top: 10px; font-size: 14px;">0%</div>
+    </div>
+
+    <div class="prerender-status hidden" id="prerenderStatus">
+        <div id="prerenderTitle">正在预渲染频谱数据...</div>
+        <div class="prerender-progress">
+            <div class="prerender-progress-bar" id="prerenderProgressBar"></div>
+        </div>
+        <div id="prerenderPercent" style="margin-top: 10px; font-size: 14px;">0%</div>
+        <div id="prerenderInfo" style="margin-top: 10px; font-size: 12px; opacity: 0.7;"></div>
+    </div>
+
+    <div class="instructions" id="instructions">
+        <h2>点击下方按钮开始体验</h2>
+        <p>支持音频文件、麦克风输入、视频录制、GIF导出</p>
+    </div>
+
+    <div class="controls">
+        <div class="file-name" id="fileName"></div>
+        
+        <div class="control-row">
+            <div class="file-input-wrapper">
+                <button class="btn btn-upload">📁 音频文件</button>
+                <input type="file" id="audioFile" accept="audio/*">
+            </div>
+
+            <button class="btn btn-mic" id="micBtn">🎤 麦克风</button>
+            
+            <button class="btn btn-record" id="recordBtn">⏺️ 录制</button>
+            
+            <button class="btn btn-gif" id="gifBtn">🖼️ 导出GIF</button>
+            
+            <button class="btn btn-prerender" id="prerenderBtn">⚡ 预渲染</button>
+        </div>
+
+        <div class="control-row">
+            <button class="btn btn-play" id="playBtn">▶</button>
+            
+            <div class="volume-control">
+                <span style="color: rgba(255,255,255,0.6);">🔊</span>
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="0.7">
+            </div>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div class="time-display">
+                <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AudioVisualizer {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
+                this.audioContext = null;
+                this.analyser = null;
+                this.source = null;
+                this.audio = new Audio();
+                this.dataArray = null;
+                this.bufferLength = null;
+                this.currentVisualization = 'all';
+                this.animationId = null;
+                this.lastFrameTime = 0;
+                this.frameInterval = 1000 / 60;
+                this.time = 0;
+                this.isUserInteracted = false;
+                this.currentObjectUrl = null;
+                
+                this.centerX = 0;
+                this.centerY = 0;
+                
+                this.isMicActive = false;
+                this.micStream = null;
+                
+                this.isRecording = false;
+                this.mediaRecorder = null;
+                this.recordedChunks = [];
+                this.recordingStartTime = 0;
+                this.recordingTimer = null;
+                
+                this.currentTheme = 'dark';
+                this.gifFrames = [];
+                this.isExportingGif = false;
+                
+                this.isPrerendered = false;
+                this.isPrerendering = false;
+                this.prerenderedData = null;
+                this.prerenderFps = 60;
+                this.fftSize = 2048;
+                this.audioBuffer = null;
+                this.currentFrameIndex = 0;
+                
+                this.initCanvas();
+                this.bindEvents();
+                this.animate();
+            }
+
+            initCanvas() {
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                
+                this.centerX = this.canvas.width / 2;
+                this.centerY = this.canvas.height / 2;
+            }
+
+            bindEvents() {
+                document.getElementById('audioFile').addEventListener('change', (e) => {
+                    this.isUserInteracted = true;
+                    this.stopMic();
+                    this.handleFileSelect(e);
+                });
+                
+                document.getElementById('playBtn').addEventListener('click', () => {
+                    this.isUserInteracted = true;
+                    this.togglePlay();
+                });
+                
+                document.getElementById('volumeSlider').addEventListener('input', (e) => {
+                    this.audio.volume = e.target.value;
+                });
+                
+                document.getElementById('progressContainer').addEventListener('click', (e) => {
+                    this.isUserInteracted = true;
+                    this.seek(e);
+                });
+
+                document.getElementById('micBtn').addEventListener('click', () => {
+                    this.isUserInteracted = true;
+                    this.toggleMic();
+                });
+
+                document.getElementById('recordBtn').addEventListener('click', () => {
+                    this.isUserInteracted = true;
+                    this.toggleRecording();
+                });
+
+                document.getElementById('gifBtn').addEventListener('click', () => {
+                    this.isUserInteracted = true;
+                    this.exportGif();
+                });
+
+                document.getElementById('prerenderBtn').addEventListener('click', () => {
+                    this.isUserInteracted = true;
+                    this.togglePrerender();
+                });
+
+                document.querySelectorAll('.viz-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.viz-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.currentVisualization = btn.dataset.viz;
+                    });
+                });
+
+                document.querySelectorAll('.theme-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.setTheme(btn.dataset.theme);
+                    });
+                });
+
+                this.audio.addEventListener('timeupdate', () => this.updateProgress());
+                this.audio.addEventListener('loadedmetadata', () => this.updateDuration());
+                this.audio.addEventListener('ended', () => {
+                    document.getElementById('playBtn').textContent = '▶';
+                });
+            }
+
+            setTheme(theme) {
+                document.body.classList.remove('theme-dark', 'theme-light', 'theme-neon');
+                document.body.classList.add(`theme-${theme}`);
+                this.currentTheme = theme;
+            }
+
+            async cleanupAudioResources() {
+                if (this.source) {
+                    try {
+                        this.source.disconnect();
+                    } catch (e) {
+                        console.log('Source disconnect error:', e);
+                    }
+                    this.source = null;
+                }
+
+                if (this.analyser) {
+                    try {
+                        this.analyser.disconnect();
+                    } catch (e) {
+                        console.log('Analyser disconnect error:', e);
+                    }
+                    this.analyser = null;
+                }
+
+                if (this.audioContext) {
+                    try {
+                        if (this.audioContext.state !== 'closed') {
+                            await this.audioContext.close();
+                        }
+                    } catch (e) {
+                        console.log('AudioContext close error:', e);
+                    }
+                    this.audioContext = null;
+                }
+
+                if (this.currentObjectUrl) {
+                    URL.revokeObjectURL(this.currentObjectUrl);
+                    this.currentObjectUrl = null;
+                }
+
+                this.dataArray = null;
+                this.bufferLength = null;
+                this.isPrerendered = false;
+                this.prerenderedData = null;
+                this.audioBuffer = null;
+            }
+
+            async togglePrerender() {
+                if (this.isPrerendering) {
+                    alert('正在预渲染中，请稍候...');
+                    return;
+                }
+
+                if (this.isPrerendered) {
+                    this.isPrerendered = false;
+                    this.prerenderedData = null;
+                    document.getElementById('prerenderBtn').classList.remove('active');
+                    document.getElementById('prerenderMode').classList.add('hidden');
+                    document.getElementById('fileName').textContent = 
+                        document.getElementById('fileName').textContent.replace(' ⚡', '');
+                    
+                    if (this.audio.src) {
+                        await this.initAudioContext();
+                    }
+                    return;
+                }
+
+                if (!this.audio.src) {
+                    alert('请先选择音频文件');
+                    return;
+                }
+
+                await this.prerenderSpectrumData();
+            }
+
+            async prerenderSpectrumData() {
+                this.isPrerendering = true;
+                document.getElementById('prerenderStatus').classList.remove('hidden');
+                document.getElementById('prerenderProgressBar').style.width = '0%';
+                document.getElementById('prerenderPercent').textContent = '0%';
+
+                try {
+                    await this.cleanupAudioResources();
+                    
+                    const file = document.getElementById('audioFile').files[0];
+                    if (!file) throw new Error('未选择音频文件');
+
+                    const arrayBuffer = await file.arrayBuffer();
+
+                    const tempContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.audioBuffer = await tempContext.decodeAudioData(arrayBuffer);
+                    await tempContext.close();
+
+                    const duration = this.audioBuffer.duration;
+                    const totalFrames = Math.ceil(duration * this.prerenderFps);
+                    const frequencyBinCount = this.fftSize / 2;
+
+                    document.getElementById('prerenderInfo').textContent = 
+                        `时长: ${Math.floor(duration / 60)}:${Math.floor(duration % 60).toString().padStart(2, '0')} | 帧数: ${totalFrames} | 频率分辨率: ${frequencyBinCount}`;
+
+                    const offlineContext = new OfflineAudioContext(
+                        this.audioBuffer.numberOfChannels,
+                        this.audioBuffer.length,
+                        this.audioBuffer.sampleRate
+                    );
+
+                    const offlineSource = offlineContext.createBufferSource();
+                    offlineSource.buffer = this.audioBuffer;
+
+                    const offlineAnalyser = offlineContext.createAnalyser();
+                    offlineAnalyser.fftSize = this.fftSize;
+                    offlineAnalyser.smoothingTimeConstant = 0;
+
+                    offlineSource.connect(offlineAnalyser);
+                    offlineAnalyser.connect(offlineContext.destination);
+                    offlineSource.start(0);
+
+                    this.prerenderedData = new Array(totalFrames);
+                    const dataArray = new Uint8Array(frequencyBinCount);
+                    const step = 1 / this.prerenderFps;
+
+                    for (let i = 0; i < totalFrames; i++) {
+                        const suspendTime = i * step;
+                        
+                        if (suspendTime < duration - 0.01) {
+                            offlineContext.suspend(suspendTime).then(() => {
+                                offlineAnalyser.getByteFrequencyData(dataArray);
+                                this.prerenderedData[i] = new Uint8Array(dataArray);
+                                offlineContext.resume();
+                            });
+                        }
+                    }
+
+                    const renderingPromise = offlineContext.startRendering();
+
+                    let progress = 0;
+                    const progressInterval = setInterval(() => {
+                        progress += 2;
+                        if (progress > 95) progress = 95;
+                        document.getElementById('prerenderProgressBar').style.width = progress + '%';
+                        document.getElementById('prerenderPercent').textContent = progress + '%';
+                    }, 100);
+
+                    await renderingPromise;
+
+                    if (!this.prerenderedData[totalFrames - 1]) {
+                        for (let i = 0; i < totalFrames; i++) {
+                            if (!this.prerenderedData[i]) {
+                                const prevFrame = i > 0 ? this.prerenderedData[i - 1] : new Uint8Array(frequencyBinCount);
+                                this.prerenderedData[i] = new Uint8Array(prevFrame);
+                            }
+                        }
+                    }
+
+                    clearInterval(progressInterval);
+
+                    this.applySmoothingToPrerenderedData();
+
+                    document.getElementById('prerenderProgressBar').style.width = '100%';
+                    document.getElementById('prerenderPercent').textContent = '100%';
+
+                    const dataSize = (totalFrames * frequencyBinCount / (1024 * 1024)).toFixed(2);
+                    document.getElementById('prerenderInfo').textContent = 
+                        `预渲染完成！数据大小: ${dataSize} MB`;
+
+                    this.isPrerendered = true;
+                    this.bufferLength = frequencyBinCount;
+                    this.dataArray = new Uint8Array(frequencyBinCount);
+
+                    document.getElementById('prerenderBtn').classList.add('active');
+                    document.getElementById('prerenderMode').classList.remove('hidden');
+                    document.getElementById('fileName').textContent += ' ⚡';
+
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+
+                } catch (error) {
+                    console.error('预渲染错误:', error);
+                    alert('预渲染失败: ' + error.message);
+                } finally {
+                    this.isPrerendering = false;
+                    document.getElementById('prerenderStatus').classList.add('hidden');
+                }
+            }
+
+            applySmoothingToPrerenderedData() {
+                const smoothFactor = 0.8;
+                const smoothedData = new Array(this.prerenderedData.length);
+                
+                smoothedData[0] = new Uint8Array(this.prerenderedData[0]);
+                
+                for (let i = 1; i < this.prerenderedData.length; i++) {
+                    const current = this.prerenderedData[i];
+                    const previous = smoothedData[i - 1];
+                    const smoothed = new Uint8Array(current.length);
+                    
+                    for (let j = 0; j < current.length; j++) {
+                        smoothed[j] = current[j] * (1 - smoothFactor) + previous[j] * smoothFactor;
+                    }
+                    
+                    smoothedData[i] = smoothed;
+                }
+                
+                this.prerenderedData = smoothedData;
+            }
+
+            downloadPrerenderedData() {
+                if (!this.prerenderedData) return;
+
+                const exportData = {
+                    fps: this.prerenderFps,
+                    fftSize: this.fftSize,
+                    duration: this.audio.duration,
+                    frameCount: this.prerenderedData.length,
+                    data: Array.from(this.prerenderedData).map(frame => Array.from(frame))
+                };
+
+                const blob = new Blob([JSON.stringify(exportData)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `spectrum-data-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            async handleFileSelect(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                await this.cleanupAudioResources();
+
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('instructions').classList.add('hidden');
+
+                this.currentObjectUrl = URL.createObjectURL(file);
+                this.audio.src = this.currentObjectUrl;
+                
+                if (this.isUserInteracted && !this.audioContext) {
+                    await this.initAudioContext();
+                }
+            }
+
+            async initAudioContext() {
+                if (this.audioContext) {
+                    return;
+                }
+
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                this.audioContext = new AudioContextClass();
+
+                if (this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                }
+
+                this.analyser = this.audioContext.createAnalyser();
+                this.analyser.fftSize = 2048;
+                this.analyser.smoothingTimeConstant = 0.8;
+                
+                try {
+                    this.source = this.audioContext.createMediaElementSource(this.audio);
+                    this.source.connect(this.analyser);
+                    this.analyser.connect(this.audioContext.destination);
+                } catch (e) {
+                    console.log('Audio node connection error:', e);
+                }
+
+                this.bufferLength = this.analyser.frequencyBinCount;
+                this.dataArray = new Uint8Array(this.bufferLength);
+            }
+
+            async toggleMic() {
+                if (this.isMicActive) {
+                    this.stopMic();
+                    return;
+                }
+
+                await this.startMic();
+            }
+
+            async startMic() {
+                try {
+                    this.audio.pause();
+                    document.getElementById('playBtn').textContent = '▶';
+                    
+                    await this.cleanupAudioResources();
+                    
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    this.audioContext = new AudioContextClass();
+
+                    if (this.audioContext.state === 'suspended') {
+                        await this.audioContext.resume();
+                    }
+
+                    this.micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    
+                    this.analyser = this.audioContext.createAnalyser();
+                    this.analyser.fftSize = 2048;
+                    this.analyser.smoothingTimeConstant = 0.8;
+
+                    this.source = this.audioContext.createMediaStreamSource(this.micStream);
+                    this.source.connect(this.analyser);
+                    
+                    this.bufferLength = this.analyser.frequencyBinCount;
+                    this.dataArray = new Uint8Array(this.bufferLength);
+
+                    this.isMicActive = true;
+                    document.getElementById('micBtn').classList.add('active');
+                    document.getElementById('micBtn').textContent = '🔴 停止';
+                    document.getElementById('fileName').textContent = '🎤 麦克风输入';
+                    document.getElementById('instructions').classList.add('hidden');
+
+                } catch (e) {
+                    console.error('Microphone error:', e);
+                    alert('无法访问麦克风，请检查权限设置');
+                }
+            }
+
+            stopMic() {
+                if (this.micStream) {
+                    this.micStream.getTracks().forEach(track => track.stop());
+                    this.micStream = null;
+                }
+                
+                this.isMicActive = false;
+                document.getElementById('micBtn').classList.remove('active');
+                document.getElementById('micBtn').textContent = '🎤 麦克风';
+                document.getElementById('fileName').textContent = '';
+            }
+
+            async togglePlay() {
+                if (this.isMicActive) {
+                    this.stopMic();
+                }
+
+                if (!this.audio.src) {
+                    alert('请先选择音频文件');
+                    return;
+                }
+
+                if (!this.audioContext) {
+                    await this.initAudioContext();
+                }
+
+                if (this.audioContext && this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                }
+
+                try {
+                    if (this.audio.paused) {
+                        await this.audio.play();
+                        document.getElementById('playBtn').textContent = '⏸';
+                    } else {
+                        this.audio.pause();
+                        document.getElementById('playBtn').textContent = '▶';
+                    }
+                } catch (e) {
+                    console.log('Play/Pause error:', e);
+                }
+            }
+
+            seek(e) {
+                if (!this.audio.duration) return;
+                
+                const rect = e.target.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                this.audio.currentTime = percent * this.audio.duration;
+            }
+
+            updateProgress() {
+                if (!this.audio.duration) return;
+                
+                const percent = (this.audio.currentTime / this.audio.duration) * 100;
+                document.getElementById('progressBar').style.width = percent + '%';
+                document.getElementById('currentTime').textContent = this.formatTime(this.audio.currentTime);
+            }
+
+            updateDuration() {
+                document.getElementById('duration').textContent = this.formatTime(this.audio.duration);
+            }
+
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            toggleRecording() {
+                if (this.isRecording) {
+                    this.stopRecording();
+                } else {
+                    this.startRecording();
+                }
+            }
+
+            startRecording() {
+                try {
+                    const stream = this.canvas.captureStream(60);
+                    
+                    let audioStream = null;
+                    if (this.audioContext) {
+                        const dest = this.audioContext.createMediaStreamDestination();
+                        if (this.analyser) {
+                            this.analyser.connect(dest);
+                        }
+                        audioStream = dest.stream;
+                        audioStream.getAudioTracks().forEach(track => {
+                            stream.addTrack(track);
+                        });
+                    }
+
+                    const mimeTypes = [
+                        'video/webm;codecs=vp9',
+                        'video/webm;codecs=vp8',
+                        'video/webm',
+                        'video/mp4'
+                    ];
+                    
+                    let selectedMimeType = '';
+                    for (const type of mimeTypes) {
+                        if (MediaRecorder.isTypeSupported(type)) {
+                            selectedMimeType = type;
+                            break;
+                        }
+                    }
+
+                    this.mediaRecorder = new MediaRecorder(stream, {
+                        mimeType: selectedMimeType || undefined,
+                        videoBitsPerSecond: 5000000
+                    });
+
+                    this.recordedChunks = [];
+                    
+                    this.mediaRecorder.ondataavailable = (e) => {
+                        if (e.data.size > 0) {
+                            this.recordedChunks.push(e.data);
+                        }
+                    };
+
+                    this.mediaRecorder.onstop = () => {
+                        const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `visualization-${Date.now()}.webm`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    };
+
+                    this.mediaRecorder.start(100);
+                    this.isRecording = true;
+                    this.recordingStartTime = Date.now();
+                    
+                    document.getElementById('recordBtn').classList.add('recording');
+                    document.getElementById('recordBtn').textContent = '⏹️ 停止';
+                    document.getElementById('recordingIndicator').classList.remove('hidden');
+                    
+                    this.recordingTimer = setInterval(() => {
+                        const elapsed = Math.floor((Date.now() - this.recordingStartTime) / 1000);
+                        const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                        const secs = (elapsed % 60).toString().padStart(2, '0');
+                        document.getElementById('recordingTime').textContent = `${mins}:${secs}`;
+                    }, 1000);
+
+                } catch (e) {
+                    console.error('Recording error:', e);
+                    alert('录制功能不支持或初始化失败');
+                }
+            }
+
+            stopRecording() {
+                if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+                    this.mediaRecorder.stop();
+                }
+
+                this.isRecording = false;
+                document.getElementById('recordBtn').classList.remove('recording');
+                document.getElementById('recordBtn').textContent = '⏺️ 录制';
+                document.getElementById('recordingIndicator').classList.add('hidden');
+
+                if (this.recordingTimer) {
+                    clearInterval(this.recordingTimer);
+                    this.recordingTimer = null;
+                }
+            }
+
+            async exportGif() {
+                if (this.isExportingGif) return;
+                
+                this.isExportingGif = true;
+                document.getElementById('gifBtn').classList.add('exporting');
+                document.getElementById('gifBtn').textContent = '⏳ 导出中...';
+                document.getElementById('exportStatus').classList.remove('hidden');
+
+                const frameCount = 60;
+                const delay = 1000 / 15;
+                const captureCanvas = document.createElement('canvas');
+                const captureCtx = captureCanvas.getContext('2d');
+                captureCanvas.width = Math.min(this.canvas.width, 600);
+                captureCanvas.height = Math.min(this.canvas.height, 400);
+                
+                const frames = [];
+                
+                for (let i = 0; i < frameCount; i++) {
+                    const percent = ((i + 1) / frameCount * 100).toFixed(0);
+                    document.getElementById('exportProgressBar').style.width = percent + '%';
+                    document.getElementById('exportPercent').textContent = percent + '%';
+                    
+                    captureCtx.drawImage(this.canvas, 0, 0, captureCanvas.width, captureCanvas.height);
+                    const imageData = captureCtx.getImageData(0, 0, captureCanvas.width, captureCanvas.height);
+                    frames.push(imageData);
+                    
+                    await new Promise(resolve => setTimeout(resolve, 16));
+                }
+
+                const gif = this.createGif(frames, captureCanvas.width, captureCanvas.height, delay);
+                
+                const blob = new Blob([gif], { type: 'image/gif' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `visualization-${Date.now()}.gif`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                document.getElementById('exportStatus').classList.add('hidden');
+                document.getElementById('gifBtn').classList.remove('exporting');
+                document.getElementById('gifBtn').textContent = '🖼️ 导出GIF';
+                this.isExportingGif = false;
+            }
+
+            createGif(frames, width, height, delay) {
+                const encoder = new GifEncoder(width, height);
+                encoder.writeHeader();
+                
+                frames.forEach(frame => {
+                    encoder.addFrame(frame, delay);
+                });
+                
+                encoder.writeTrailer();
+                return encoder.stream().bytes;
+            }
+
+            drawBackground() {
+                const gradient = this.ctx.createRadialGradient(
+                    this.centerX, this.centerY, 0,
+                    this.centerX, this.centerY, Math.max(this.canvas.width, this.canvas.height) / 2
+                );
+                
+                if (this.currentTheme === 'dark') {
+                    gradient.addColorStop(0, '#0f0f1a');
+                    gradient.addColorStop(0.5, '#0a0a0f');
+                    gradient.addColorStop(1, '#050508');
+                } else if (this.currentTheme === 'light') {
+                    gradient.addColorStop(0, '#ffffff');
+                    gradient.addColorStop(0.5, '#f5f7fa');
+                    gradient.addColorStop(1, '#e4e8f0');
+                } else if (this.currentTheme === 'neon') {
+                    const hue = (this.time * 0.01) % 360;
+                    gradient.addColorStop(0, `hsla(${hue}, 70%, 15%, 1)`);
+                    gradient.addColorStop(0.5, `hsla(${(hue + 60) % 360}, 70%, 10%, 1)`);
+                    gradient.addColorStop(1, `hsla(${(hue + 120) % 360}, 70%, 5%, 1)`);
+                }
+                
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+
+            drawSpectrum() {
+                if (!this.dataArray) return;
+
+                const barCount = 128;
+                const barWidth = (this.canvas.width / barCount) * 0.8;
+                const gap = (this.canvas.width / barCount) * 0.2;
+                const maxHeight = this.canvas.height * 0.4;
+
+                for (let i = 0; i < barCount; i++) {
+                    const dataIndex = Math.floor(i * (this.bufferLength / barCount));
+                    const value = this.dataArray[dataIndex] || 0;
+                    const barHeight = (value / 255) * maxHeight;
+                    
+                    const x = i * (barWidth + gap) + gap / 2;
+                    const y = this.canvas.height - barHeight - 150;
+
+                    const hue = this.currentTheme === 'neon' 
+                        ? ((i / barCount) * 360 + this.time * 0.1) % 360
+                        : (i / barCount) * 360;
+                        
+                    const gradient = this.ctx.createLinearGradient(x, y, x, this.canvas.height - 150);
+                    
+                    if (this.currentTheme === 'light') {
+                        gradient.addColorStop(0, `hsla(${hue}, 60%, 50%, 0.9)`);
+                        gradient.addColorStop(1, `hsla(${hue}, 60%, 70%, 0.3)`);
+                    } else {
+                        gradient.addColorStop(0, `hsla(${hue}, 100%, 60%, 0.9)`);
+                        gradient.addColorStop(1, `hsla(${hue + 60}, 100%, 40%, 0.3)`);
+                    }
+
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.beginPath();
+                    if (this.ctx.roundRect) {
+                        this.ctx.roundRect(x, y, barWidth, barHeight, [4, 4, 0, 0]);
+                    } else {
+                        this.ctx.rect(x, y, barWidth, barHeight);
+                    }
+                    this.ctx.fill();
+
+                    if (this.currentTheme === 'neon') {
+                        this.ctx.shadowBlur = 20;
+                        this.ctx.shadowColor = `hsla(${hue}, 100%, 60%, 0.8)`;
+                        this.ctx.fill();
+                        this.ctx.shadowBlur = 0;
+                    }
+                }
+            }
+
+            drawWaveform() {
+                if (!this.dataArray) return;
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, this.canvas.height / 2);
+
+                const sliceWidth = this.canvas.width / this.bufferLength;
+                let x = 0;
+
+                for (let i = 0; i < this.bufferLength; i++) {
+                    const v = this.dataArray[i] / 128.0;
+                    const y = (v * this.canvas.height) / 4 + this.canvas.height / 4;
+
+                    if (i === 0) {
+                        this.ctx.moveTo(x, y);
+                    } else {
+                        this.ctx.lineTo(x, y);
+                    }
+
+                    x += sliceWidth;
+                }
+
+                const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, 0);
+                
+                if (this.currentTheme === 'light') {
+                    gradient.addColorStop(0, 'rgba(74, 85, 104, 0.9)');
+                    gradient.addColorStop(0.5, 'rgba(45, 55, 72, 0.9)');
+                    gradient.addColorStop(1, 'rgba(74, 85, 104, 0.9)');
+                } else if (this.currentTheme === 'neon') {
+                    const hue = (this.time * 0.05) % 360;
+                    gradient.addColorStop(0, `hsla(${hue}, 100%, 60%, 0.9)`);
+                    gradient.addColorStop(0.5, `hsla(${(hue + 120) % 360}, 100%, 60%, 0.9)`);
+                    gradient.addColorStop(1, `hsla(${(hue + 240) % 360}, 100%, 60%, 0.9)`);
+                } else {
+                    gradient.addColorStop(0, 'rgba(102, 126, 234, 0.9)');
+                    gradient.addColorStop(0.33, 'rgba(118, 75, 162, 0.9)');
+                    gradient.addColorStop(0.66, 'rgba(240, 147, 251, 0.9)');
+                    gradient.addColorStop(1, 'rgba(245, 87, 108, 0.9)');
+                }
+
+                this.ctx.strokeStyle = gradient;
+                this.ctx.lineWidth = 3;
+                
+                if (this.currentTheme === 'neon') {
+                    this.ctx.shadowBlur = 20;
+                    this.ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+                }
+                
+                this.ctx.stroke();
+                this.ctx.shadowBlur = 0;
+
+                this.ctx.lineTo(this.canvas.width, this.canvas.height / 2);
+                this.ctx.lineTo(0, this.canvas.height / 2);
+                this.ctx.fillStyle = this.currentTheme === 'light' 
+                    ? 'rgba(74, 85, 104, 0.1)' 
+                    : 'rgba(102, 126, 234, 0.1)';
+                this.ctx.fill();
+            }
+
+            drawCircle() {
+                if (!this.dataArray) return;
+
+                const baseRadius = Math.min(this.canvas.width, this.canvas.height) * 0.15;
+                const barCount = 180;
+
+                for (let i = 0; i < barCount; i++) {
+                    const dataIndex = Math.floor(i * (this.bufferLength / barCount));
+                    const value = this.dataArray[dataIndex] || 0;
+                    const barHeight = (value / 255) * (baseRadius * 0.8) + baseRadius * 0.15;
+                    
+                    const angle = (i / barCount) * Math.PI * 2 + this.time * 0.001;
+                    const innerRadius = baseRadius;
+                    const outerRadius = baseRadius + barHeight;
+
+                    const x1 = this.centerX + Math.cos(angle) * innerRadius;
+                    const y1 = this.centerY + Math.sin(angle) * innerRadius;
+                    const x2 = this.centerX + Math.cos(angle) * outerRadius;
+                    const y2 = this.centerY + Math.sin(angle) * outerRadius;
+
+                    const hue = this.currentTheme === 'neon'
+                        ? ((i / barCount) * 360 + this.time * 0.2) % 360
+                        : (i / barCount) * 360;
+                        
+                    const gradient = this.ctx.createLinearGradient(x1, y1, x2, y2);
+                    gradient.addColorStop(0, `hsla(${hue}, 100%, 70%, 0.9)`);
+                    gradient.addColorStop(1, `hsla(${hue}, 100%, 50%, 0)`);
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x1, y1);
+                    this.ctx.lineTo(x2, y2);
+                    this.ctx.strokeStyle = gradient;
+                    this.ctx.lineWidth = 3;
+                    this.ctx.lineCap = 'round';
+                    this.ctx.stroke();
+                }
+
+                for (let i = 0; i < 3; i++) {
+                    const radius = baseRadius * 0.8 - i * (baseRadius * 0.15);
+                    const avgValue = this.dataArray ? 
+                        this.dataArray.slice(0, 100).reduce((a, b) => a + b, 0) / 100 : 0;
+                    const pulse = 1 + (avgValue / 255) * 0.3;
+
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.centerX, this.centerY, radius * pulse, 0, Math.PI * 2);
+                    this.ctx.strokeStyle = this.currentTheme === 'light'
+                        ? `rgba(74, 85, 104, ${0.3 - i * 0.08})`
+                        : `rgba(255, 255, 255, ${0.3 - i * 0.08})`;
+                    this.ctx.lineWidth = 2;
+                    this.ctx.stroke();
+                }
+
+                const glowSize = baseRadius + baseRadius * 0.3;
+                const glowGradient = this.ctx.createRadialGradient(
+                    this.centerX, this.centerY, baseRadius * 0.5,
+                    this.centerX, this.centerY, glowSize
+                );
+                
+                if (this.currentTheme === 'neon') {
+                    const hue = (this.time * 0.1) % 360;
+                    glowGradient.addColorStop(0, `hsla(${hue}, 100%, 60%, 0.4)`);
+                    glowGradient.addColorStop(1, `hsla(${(hue + 60) % 360}, 100%, 60%, 0)`);
+                } else if (this.currentTheme === 'light') {
+                    glowGradient.addColorStop(0, 'rgba(74, 85, 104, 0.2)');
+                    glowGradient.addColorStop(1, 'rgba(74, 85, 104, 0)');
+                } else {
+                    glowGradient.addColorStop(0, 'rgba(102, 126, 234, 0.3)');
+                    glowGradient.addColorStop(0.5, 'rgba(118, 75, 162, 0.1)');
+                    glowGradient.addColorStop(1, 'rgba(245, 87, 108, 0)');
+                }
+
+                this.ctx.beginPath();
+                this.ctx.arc(this.centerX, this.centerY, glowSize, 0, Math.PI * 2);
+                this.ctx.fillStyle = glowGradient;
+                this.ctx.fill();
+            }
+
+            drawParticles() {
+                if (!this.dataArray) return;
+
+                const particleCount = 50;
+                const baseDistance = Math.min(this.canvas.width, this.canvas.height) * 0.2;
+
+                for (let i = 0; i < particleCount; i++) {
+                    const dataIndex = Math.floor((i / particleCount) * this.bufferLength);
+                    const value = this.dataArray[dataIndex] || 0;
+                    
+                    const angle = (i / particleCount) * Math.PI * 2 + this.time * 0.002;
+                    const distance = baseDistance + (value / 255) * (baseDistance * 0.75) + Math.sin(this.time * 0.01 + i) * 30;
+                    
+                    const x = this.centerX + Math.cos(angle) * distance;
+                    const y = this.centerY + Math.sin(angle) * distance;
+                    const size = 2 + (value / 255) * 4;
+                    const hue = this.currentTheme === 'neon'
+                        ? ((i / particleCount) * 360 + this.time * 0.15) % 360
+                        : (i / particleCount) * 360;
+
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, size, 0, Math.PI * 2);
+                    this.ctx.fillStyle = `hsla(${hue}, 100%, 70%, ${0.5 + (value / 255) * 0.5})`;
+                    this.ctx.fill();
+                }
+            }
+
+            animate(currentTime = 0) {
+                this.animationId = requestAnimationFrame((time) => this.animate(time));
+
+                const deltaTime = currentTime - this.lastFrameTime;
+                if (deltaTime < this.frameInterval) {
+                    return;
+                }
+
+                this.lastFrameTime = currentTime - (deltaTime % this.frameInterval);
+                this.time += deltaTime;
+
+                if (this.isPrerendered && this.prerenderedData && this.audio.duration) {
+                    const progress = this.audio.currentTime / this.audio.duration;
+                    this.currentFrameIndex = Math.floor(progress * this.prerenderedData.length);
+                    this.currentFrameIndex = Math.min(this.currentFrameIndex, this.prerenderedData.length - 1);
+                    
+                    if (this.prerenderedData[this.currentFrameIndex]) {
+                        this.dataArray = this.prerenderedData[this.currentFrameIndex];
+                    }
+                } else if (this.analyser && this.dataArray) {
+                    this.analyser.getByteFrequencyData(this.dataArray);
+                }
+
+                this.drawBackground();
+
+                switch (this.currentVisualization) {
+                    case 'spectrum':
+                        this.drawSpectrum();
+                        break;
+                    case 'waveform':
+                        this.drawWaveform();
+                        break;
+                    case 'circle':
+                        this.drawCircle();
+                        this.drawParticles();
+                        break;
+                    case 'all':
+                    default:
+                        this.drawSpectrum();
+                        this.drawWaveform();
+                        this.drawCircle();
+                        this.drawParticles();
+                        break;
+                }
+            }
+        }
+
+        class GifEncoder {
+            constructor(width, height) {
+                this.width = width;
+                this.height = height;
+                this.image = null;
+                this.pixels = null;
+                this.indexedPixels = null;
+                this.colorDepth = 8;
+                this.colorTab = null;
+                this.usedEntry = new Array(256);
+                this.palSize = 7;
+                this.dispose = -1;
+                this.closeStream = false;
+                this.firstFrame = true;
+                this.sizeSet = false;
+                this.sample = 10;
+                this.delay = 0;
+                this.repeat = 0;
+                this.transparent = null;
+                this.transIndex = 0;
+                this.out = new ByteArray();
+            }
+
+            stream() {
+                return this.out;
+            }
+
+            setDelay(millis) {
+                this.delay = Math.round(millis / 10);
+            }
+
+            setFrameRate(fps) {
+                this.delay = Math.round(100 / fps);
+            }
+
+            setQuality(quality) {
+                if (quality < 1) quality = 1;
+                this.sample = quality;
+            }
+
+            setDispose(code) {
+                if (code >= 0) this.dispose = code;
+            }
+
+            addFrame(imageData, delay) {
+                if (delay !== undefined) {
+                    this.setDelay(delay);
+                }
+                
+                this.image = imageData;
+                this.getImagePixels();
+                this.analyzePixels();
+                
+                if (this.firstFrame) {
+                    this.writeLSD();
+                    this.writePalette();
+                    if (this.repeat >= 0) {
+                        this.writeNetscapeExt();
+                    }
+                }
+                
+                this.writeGraphicCtrlExt();
+                this.writeImageDesc();
+                
+                if (!this.firstFrame) {
+                    this.writePalette();
+                }
+                
+                this.writePixels();
+                this.firstFrame = false;
+            }
+
+            finish() {
+                this.out.writeByte(59);
+            }
+
+            getImagePixels() {
+                const w = this.width;
+                const h = this.height;
+                this.pixels = new Uint8Array(w * h * 3);
+                
+                const data = this.image.data;
+                let count = 0;
+                
+                for (let i = 0; i < h; i++) {
+                    for (let j = 0; j < w; j++) {
+                        const b = (i * w + j) * 4;
+                        this.pixels[count++] = data[b];
+                        this.pixels[count++] = data[b + 1];
+                        this.pixels[count++] = data[b + 2];
+                    }
+                }
+            }
+
+            analyzePixels() {
+                const len = this.pixels.length;
+                const nPix = len / 3;
+                this.indexedPixels = new Uint8Array(nPix);
+                
+                const img = new NeuQuant(this.pixels, len, this.sample);
+                this.colorTab = img.process();
+                
+                let k = 0;
+                for (let j = 0; j < nPix; j++) {
+                    const index = img.lookup(
+                        this.pixels[k++] & 0xff,
+                        this.pixels[k++] & 0xff,
+                        this.pixels[k++] & 0xff
+                    );
+                    this.usedEntry[index] = true;
+                    this.indexedPixels[j] = index;
+                }
+                
+                this.pixels = null;
+                this.colorDepth = 8;
+                this.palSize = 7;
+            }
+
+            writeLSD() {
+                this.writeShort(this.width);
+                this.writeShort(this.height);
+                
+                this.out.writeByte(0xf0 | 0x07);
+                this.out.writeByte(0);
+                this.out.writeByte(0);
+            }
+
+            writePalette() {
+                this.out.writeBytes(this.colorTab);
+                const n = (3 * 256) - this.colorTab.length;
+                for (let i = 0; i < n; i++) {
+                    this.out.writeByte(0);
+                }
+            }
+
+            writeGraphicCtrlExt() {
+                this.out.writeByte(33);
+                this.out.writeByte(249);
+                this.out.writeByte(4);
+                
+                let transp, disp;
+                if (this.transparent === null) {
+                    transp = 0;
+                    disp = 0;
+                } else {
+                    transp = 1;
+                    disp = 2;
+                }
+                
+                if (this.dispose >= 0) {
+                    disp = this.dispose & 7;
+                }
+                
+                disp <<= 2;
+                this.out.writeByte(disp | 0 | transp);
+                this.writeShort(this.delay);
+                this.out.writeByte(this.transIndex);
+                this.out.writeByte(0);
+            }
+
+            writeImageDesc() {
+                this.out.writeByte(44);
+                this.writeShort(0);
+                this.writeShort(0);
+                this.writeShort(this.width);
+                this.writeShort(this.height);
+                
+                if (this.firstFrame) {
+                    this.out.writeByte(0);
+                } else {
+                    this.out.writeByte(0x80 | 0x07);
+                }
+            }
+
+            writeNetscapeExt() {
+                this.out.writeByte(33);
+                this.out.writeByte(255);
+                this.out.writeByte(11);
+                this.out.writeUTFBytes("NETSCAPE2.0");
+                this.out.writeByte(3);
+                this.out.writeByte(1);
+                this.writeShort(this.repeat);
+                this.out.writeByte(0);
+            }
+
+            writePixels() {
+                const encoder = new LZWEncoder(this.width, this.height, this.indexedPixels, this.colorDepth);
+                encoder.encode(this.out);
+            }
+
+            writeShort(value) {
+                this.out.writeByte(value & 0xff);
+                this.out.writeByte((value >> 8) & 0xff);
+            }
+
+            writeHeader() {
+                this.out.writeUTFBytes("GIF89a");
+            }
+
+            writeTrailer() {
+                this.out.writeByte(59);
+            }
+        }
+
+        class ByteArray {
+            constructor() {
+                this.bytes = [];
+            }
+            
+            writeByte(value) {
+                this.bytes.push(value & 0xff);
+            }
+            
+            writeBytes(values) {
+                for (let i = 0; i < values.length; i++) {
+                    this.bytes.push(values[i] & 0xff);
+                }
+            }
+            
+            writeUTFBytes(string) {
+                for (let i = 0; i < string.length; i++) {
+                    this.bytes.push(string.charCodeAt(i) & 0xff);
+                }
+            }
+        }
+
+        class LZWEncoder {
+            constructor(width, height, pixels, colorDepth) {
+                this.width = width;
+                this.height = height;
+                this.pixels = pixels;
+                this.colorDepth = colorDepth;
+                this.remaining = 0;
+                this.bitCount = 0;
+                this.curByte = 0;
+                this.accum = new Uint8Array(256);
+                this.haccum = new Uint8Array(256);
+                this.codeMask = 0;
+                this.clearCode = 0;
+                this.eofCode = 0;
+                this.curBits = 0;
+                this.curCode = 0;
+                this.shiftState = 0;
+                this.freeEntry = 0;
+                this.maxCode = 0;
+                this.bitMask = 0;
+                this.dictSize = 0;
+                this.prefix = null;
+                this.suffix = null;
+                this.pixelCount = 0;
+                this.bits = colorDepth;
+                this.initCodeSize = Math.max(2, colorDepth);
+            }
+
+            encode(out) {
+                this.out = out;
+                this.resetCodeTable();
+                this.compress();
+            }
+
+            resetCodeTable() {
+                this.dictSize = 1 << this.initCodeSize;
+                this.clearCode = this.dictSize;
+                this.eofCode = this.clearCode + 1;
+                this.freeEntry = this.clearCode + 2;
+                this.curBits = this.initCodeSize + 1;
+                this.maxCode = (1 << this.curBits) - 1;
+                this.bitMask = this.maxCode;
+                
+                this.prefix = new Int32Array(4096);
+                this.suffix = new Int32Array(4096);
+                this.codeMask = new Array(4096);
+                
+                for (let i = 0; i < this.dictSize; i++) {
+                    this.prefix[i] = 0;
+                    this.suffix[i] = i;
+                    this.codeMask[i] = i;
+                }
+            }
+
+            compress() {
+                this.writeCode(this.clearCode);
+                
+                let c = this.nextPixel();
+                let ent = c;
+                
+                while ((c = this.nextPixel()) !== -1) {
+                    const key = (c << 12) + ent;
+                    
+                    if (this.codeMask[key] !== undefined) {
+                        ent = this.codeMask[key];
+                    } else {
+                        this.writeCode(ent);
+                        ent = c;
+                        
+                        if (this.freeEntry < 4096) {
+                            this.codeMask[key] = this.freeEntry;
+                            this.prefix[this.freeEntry] = ent;
+                            this.suffix[this.freeEntry] = c;
+                            this.freeEntry++;
+                            
+                            if (this.freeEntry > this.maxCode) {
+                                this.curBits++;
+                                if (this.curBits === 12) {
+                                    this.maxCode = 4096;
+                                } else {
+                                    this.maxCode = (1 << this.curBits) - 1;
+                                }
+                            }
+                        } else {
+                            this.writeCode(this.clearCode);
+                            this.resetCodeTable();
+                        }
+                    }
+                }
+                
+                this.writeCode(ent);
+                this.writeCode(this.eofCode);
+                this.flush();
+            }
+
+            nextPixel() {
+                if (this.pixelCount < this.pixels.length) {
+                    return this.pixels[this.pixelCount++];
+                }
+                return -1;
+            }
+
+            writeCode(code) {
+                this.accum[this.bitCount >> 3] |= code << (this.bitCount & 7);
+                this.accum[(this.bitCount >> 3) + 1] |= code >> (8 - (this.bitCount & 7));
+                
+                this.bitCount += this.curBits;
+                
+                while (this.bitCount >= 8) {
+                    this.out.writeByte(this.accum[0]);
+                    
+                    for (let i = 0; i < 255; i++) {
+                        this.accum[i] = this.accum[i + 1];
+                    }
+                    this.accum[255] = 0;
+                    this.bitCount -= 8;
+                }
+            }
+
+            flush() {
+                while (this.bitCount > 0) {
+                    this.out.writeByte(this.accum[0]);
+                    
+                    for (let i = 0; i < 255; i++) {
+                        this.accum[i] = this.accum[i + 1];
+                    }
+                    this.accum[255] = 0;
+                    this.bitCount -= 8;
+                }
+                
+                this.out.writeByte(0);
+            }
+        }
+
+        class NeuQuant {
+            constructor(pixels, len, sample) {
+                this.pixels = pixels;
+                this.lengthcount = len;
+                this.sample = sample;
+                this.netsize = 256;
+                this.maxnetpos = 255;
+                this.netbiasshift = 4;
+                this.initrad = this.netsize >> 3;
+                this.radiusbiasshift = 6;
+                this.initradius = this.initrad << this.radiusbiasshift;
+                this.cycles = 100;
+                this.alphabiasshift = 10;
+                this.initalpha = 1 << this.alphabiasshift;
+                this.gamma = 1024;
+                this.beta = 64;
+                this.betagamma = this.beta << 10;
+                this.network = new Array(256);
+                this.netindex = new Int32Array(256);
+                this.bias = new Array(256);
+                this.freq = new Array(256);
+                this.radpower = new Array(this.netsize >> 3);
+                
+                for (let i = 0; i < 256; i++) {
+                    this.network[i] = new Array(4);
+                }
+            }
+
+            process() {
+                this.init();
+                this.learn();
+                this.fix();
+                return this.colorMap();
+            }
+
+            init() {
+                for (let i = 0; i < this.netsize; i++) {
+                    const v = (i << (this.netbiasshift + 8)) / this.netsize;
+                    this.network[i][0] = v;
+                    this.network[i][1] = v;
+                    this.network[i][2] = v;
+                    this.freq[i] = 256;
+                    this.bias[i] = 0;
+                }
+            }
+
+            learn() {
+                let gamma, alpha, radius, delta, step, delta2;
+                let samplepixels = this.lengthcount / (3 * this.sample);
+                let pix = 0;
+                let lim = this.lengthcount;
+                
+                if (samplepixels <= 1) samplepixels = 2;
+                
+                delta = samplepixels / this.cycles;
+                alpha = this.initalpha;
+                radius = this.initradius;
+                
+                let rad = radius >> this.radiusbiasshift;
+                if (rad <= 1) rad = 0;
+                
+                for (let i = 0; i < rad; i++) {
+                    this.radpower[i] = alpha * (((rad * rad - i * i) * this.betagamma) / (rad * rad));
+                }
+                
+                let j = 0;
+                while (j < samplepixels) {
+                    const b = this.pixels[pix] & 0xff;
+                    const g = this.pixels[pix + 1] & 0xff;
+                    const r = this.pixels[pix + 2] & 0xff;
+                    
+                    const best = this.contest(b, g, r);
+                    
+                    this.alter(b, g, r, best, alpha, radius);
+                    
+                    pix += 3 * this.sample;
+                    if (pix >= lim) pix = 0;
+                    
+                    j++;
+                    
+                    if (delta === 0) delta = 1;
+                    if (j % delta === 0) {
+                        alpha -= alpha / 30;
+                        radius -= radius / 30;
+                        rad = radius >> this.radiusbiasshift;
+                        if (rad <= 1) rad = 0;
+                        
+                        for (let i = 0; i < rad; i++) {
+                            this.radpower[i] = alpha * (((rad * rad - i * i) * this.betagamma) / (rad * rad));
+                        }
+                    }
+                }
+            }
+
+            contest(b, g, r) {
+                let bestd = 1000000000;
+                let bestbiasd = bestd;
+                let bestpos = -1;
+                let bestbiaspos = bestpos;
+                
+                for (let i = 0; i < this.netsize; i++) {
+                    const n = this.network[i];
+                    let dist = n[0] - b;
+                    if (dist < 0) dist = -dist;
+                    let a = n[1] - g;
+                    if (a < 0) a = -a;
+                    dist += a;
+                    a = n[2] - r;
+                    if (a < 0) a = -a;
+                    dist += a;
+                    
+                    if (dist < bestd) {
+                        bestd = dist;
+                        bestpos = i;
+                    }
+                    
+                    const biasdist = dist - ((this.bias[i]) >> (this.netbiasshift - 1));
+                    if (biasdist < bestbiasd) {
+                        bestbiasd = biasdist;
+                        bestbiaspos = i;
+                    }
+                    
+                    this.bias[i] -= this.bias[i] >> this.alphabiasshift;
+                    this.freq[i] -= this.freq[i] >> this.alphabiasshift;
+                }
+                
+                this.bias[bestpos] += this.beta << this.netbiasshift;
+                this.freq[bestpos] += this.beta;
+                
+                return bestbiaspos;
+            }
+
+            alter(b, g, r, i, alpha, radius) {
+                let lo = 0;
+                if (radius === 0) lo = i;
+                
+                const m = Math.abs(i - lo);
+                
+                for (let j = lo; j < this.netsize; j++) {
+                    const a = this.radpower[Math.abs(j - i)] >> this.radiusbiasshift;
+                    if (a > 0) {
+                        const n = this.network[j];
+                        n[0] -= (a * (n[0] - b)) / this.alphabiasshift;
+                        n[1] -= (a * (n[1] - g)) / this.alphabiasshift;
+                        n[2] -= (a * (n[2] - r)) / this.alphabiasshift;
+                    }
+                }
+            }
+
+            fix() {
+                for (let i = 0; i < this.netsize; i++) {
+                    this.network[i][0] = Math.floor(this.network[i][0]);
+                    this.network[i][1] = Math.floor(this.network[i][1]);
+                    this.network[i][2] = Math.floor(this.network[i][2]);
+                    this.network[i][3] = i;
+                }
+            }
+
+            colorMap() {
+                const map = new Uint8Array(3 * this.netsize);
+                const index = new Array(this.netsize);
+                
+                for (let i = 0; i < this.netsize; i++) {
+                    index[this.network[i][3]] = i;
+                }
+                
+                let k = 0;
+                for (let i = 0; i < this.netsize; i++) {
+                    const j = index[i];
+                    map[k++] = this.network[j][0];
+                    map[k++] = this.network[j][1];
+                    map[k++] = this.network[j][2];
+                }
+                
+                return map;
+            }
+
+            lookup(b, g, r) {
+                let bestd = 1000;
+                let best = -1;
+                let i = 0;
+                let dist;
+                
+                for (let j = 0; j < this.netsize; j++) {
+                    const n = this.network[j];
+                    dist = n[0] - b;
+                    if (dist < 0) dist = -dist;
+                    let a = n[1] - g;
+                    if (a < 0) a = -a;
+                    dist += a;
+                    a = n[2] - r;
+                    if (a < 0) a = -a;
+                    dist += a;
+                    
+                    if (dist < bestd) {
+                        bestd = dist;
+                        best = j;
+                    }
+                }
+                
+                return best;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            new AudioVisualizer();
+        });
+    </script>
+</body>
+</html>

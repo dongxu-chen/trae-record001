@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数字人驱动系统 v4.0 - 3D全身动捕版</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 数字人驱动系统 v4.0 | MediaPipe Holistic + Three.js</h1>
+        
+        <div class="main-content">
+            <div class="video-panel">
+                <h3>📷 摄像头输入</h3>
+                <video id="inputVideo" autoplay playsinline muted></video>
+                <canvas id="overlayCanvas"></canvas>
+                <div class="performance-stats">
+                    <span>FPS: <strong id="fpsValue">0</strong></span>
+                    <span>推理时间: <strong id="inferenceTime">0</strong>ms</span>
+                    <span>后端: <strong id="backendType">检测中...</strong></span>
+                </div>
+            </div>
+            
+            <div class="avatar-panel">
+                <h3>👤 3D 虚拟形象</h3>
+                <div id="threejs-container"></div>
+                <div class="camera-controls">
+                    <button id="resetCamera">重置视角</button>
+                    <button id="toggleWireframe">线框模式</button>
+                    <button id="toggleSkeleton">显示骨骼</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="control-panel">
+            <div class="control-group">
+                <h3>🎬 追踪设置</h3>
+                <div class="tracking-modes">
+                    <button id="mode1" class="mode-btn active">仅面部</button>
+                    <button id="mode2" class="mode-btn">面部+身体</button>
+                    <button id="mode3" class="mode-btn">全身(含手)</button>
+                </div>
+                <button id="startCameraBtn">开启摄像头</button>
+                <button id="stopCameraBtn" disabled>停止追踪</button>
+                <div class="status-display">
+                    <span>检测人数: <strong id="personCount">0</strong>/4</span>
+                    <span>身体追踪: <strong id="poseStatus">未激活</strong></span>
+                    <span>手部追踪: <strong id="handStatus">未激活</strong></span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>🎨 形象设置</h3>
+                <div class="avatar-selector">
+                    <div class="avatar-option selected" data-model="default">
+                        <div class="avatar-preview">🧍</div>
+                        <span>默认人形</span>
+                    </div>
+                    <div class="avatar-option" data-model="robot">
+                        <div class="avatar-preview">🤖</div>
+                        <span>机器人</span>
+                    </div>
+                    <div class="avatar-option" data-model="cartoon">
+                        <div class="avatar-preview">😊</div>
+                        <span>卡通</span>
+                    </div>
+                    <div class="avatar-option" data-model="skeleton">
+                        <div class="avatar-preview">💀</div>
+                        <span>纯骨骼</span>
+                    </div>
+                </div>
+                <div class="slider-control">
+                    <label>形象缩放:</label>
+                    <input type="range" id="avatarScale" min="0.3" max="2" step="0.1" value="1">
+                    <span id="scaleValue">1.0x</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>⚡ 性能设置</h3>
+                <div class="backend-selector">
+                    <button id="webgpuBtn" class="backend-btn active">WebGPU</button>
+                    <button id="webglBtn" class="backend-btn">WebGL</button>
+                    <button id="cpuBtn" class="backend-btn">CPU</button>
+                </div>
+                <div class="slider-control">
+                    <label>模型复杂度:</label>
+                    <input type="range" id="modelComplexity" min="0" max="2" step="1" value="1">
+                    <span id="complexityValue">中等</span>
+                </div>
+                <label>
+                    <input type="checkbox" id="enableSmoothing" checked>
+                    启用动作平滑
+                </label>
+                <label>
+                    <input type="checkbox" id="showSkeleton">
+                    显示追踪骨架
+                </label>
+            </div>
+            
+            <div class="control-group">
+                <h3>👥 多人设置</h3>
+                <div class="slider-control">
+                    <label>最大追踪人数:</label>
+                    <input type="range" id="maxFaces" min="1" max="4" step="1" value="1">
+                    <span id="maxFacesValue">1</span>
+                </div>
+                <div class="person-selector">
+                    <button class="person-btn active" data-person="0">人物 1</button>
+                    <button class="person-btn" data-person="1">人物 2</button>
+                    <button class="person-btn" data-person="2">人物 3</button>
+                    <button class="person-btn" data-person="3">人物 4</button>
+                </div>
+                <div class="status-display">
+                    <span>当前选中: <strong id="selectedPerson">人物 1</strong></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="debug-panel">
+            <h3>🔧 调试信息</h3>
+            <div id="debugInfo">等待初始化...</div>
+            <div id="skeletonDebug" style="margin-top: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; font-size: 11px;"></div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5.1675469240/holistic.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466862/drawing_utils.min.js"></script>
+    
+    <script src="holisticTracker.js"></script>
+    <script src="threejsAvatar.js"></script>
+    <script src="skeletonMapper.js"></script>
+    <script src="multiPersonManager.js"></script>
+    <script src="app4.js"></script>
+</body>
+</html>

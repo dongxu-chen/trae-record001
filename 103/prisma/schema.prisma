@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(cuid())
+  name            String?
+  email           String    @unique
+  emailVerified   DateTime?
+  password        String
+  image           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  snippets        Snippet[]
+  accounts        Account[]
+  sessions        Session[]
+  comments        Comment[]
+  likes           Like[]
+  notifications   Notification[] @relation("UserNotifications")
+
+  @@map("users")
+}
+
+model Snippet {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  code            String    @db.Text
+  language        String
+  isPublic        Boolean   @default(true)
+  authorId        String
+  author          User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  versions        SnippetVersion[]
+  comments        Comment[]
+  likes           Like[]
+
+  @@index([language])
+  @@index([createdAt])
+  @@index([isPublic, language])
+  @@index([isPublic, createdAt])
+
+  @@map("snippets")
+}
+
+model SnippetVersion {
+  id              String    @id @default(cuid())
+  snippetId       String
+  snippet         Snippet   @relation(fields: [snippetId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  code            String    @db.Text
+  language        String
+  versionNumber   Int
+  createdById     String
+  createdBy       User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt       DateTime  @default(now())
+
+  @@index([snippetId, versionNumber])
+  @@unique([snippetId, versionNumber])
+  @@map("snippet_versions")
+}
+
+model Comment {
+  id              String    @id @default(cuid())
+  snippetId       String
+  snippet         Snippet   @relation(fields: [snippetId], references: [id], onDelete: Cascade)
+  authorId        String
+  author          User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content         String    @db.Text
+  parentId        String?
+  parent          Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies         Comment[] @relation("CommentReplies")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([snippetId])
+  @@index([parentId])
+  @@map("comments")
+}
+
+model Like {
+  id              String    @id @default(cuid())
+  snippetId       String
+  snippet         Snippet   @relation(fields: [snippetId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime  @default(now())
+
+  @@unique([snippetId, userId])
+  @@index([snippetId])
+  @@index([userId])
+  @@map("likes")
+}
+
+model Notification {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  type            String
+  title           String
+  content         String?
+  relatedId       String?
+  isRead          Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}

@@ -1,0 +1,126 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: imagescanpolicies.security.trivy.io
+  labels:
+    app: trivy-admission-scanner
+spec:
+  group: security.trivy.io
+  names:
+    kind: ImageScanPolicy
+    listKind: ImageScanPolicyList
+    plural: imagescanpolicies
+    singular: imagescanpolicy
+    shortNames:
+      - isp
+  scope: Cluster
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: 容器镜像漏洞扫描策略配置
+          properties:
+            spec:
+              type: object
+              description: 扫描策略规格
+              properties:
+                enabled:
+                  type: boolean
+                  default: true
+                  description: 是否启用扫描
+                namespaceSelector:
+                  type: object
+                  description: 命名空间选择器
+                  properties:
+                    include:
+                      type: array
+                      items:
+                        type: string
+                      description: 包含的命名空间列表（支持通配符*）
+                      default: ["*"]
+                    exclude:
+                      type: array
+                      items:
+                        type: string
+                      description: 排除的命名空间列表
+                      default:
+                        - kube-system
+                        - kube-public
+                        - kube-node-lease
+                severityThreshold:
+                  type: object
+                  description: 漏洞严重程度阈值
+                  properties:
+                    critical:
+                      type: integer
+                      default: 0
+                      description: 严重漏洞最大允许数量，0表示不允许
+                    high:
+                      type: integer
+                      default: 1
+                      description: 高危漏洞最大允许数量
+                    medium:
+                      type: integer
+                      default: 5
+                      description: 中危漏洞最大允许数量
+                    low:
+                      type: integer
+                      default: 100
+                      description: 低危漏洞最大允许数量
+                    cvssScoreThreshold:
+                      type: number
+                      default: 7.0
+                      description: CVSS分数阈值，超过则拒绝
+                scanTimeout:
+                  type: integer
+                  default: 120
+                  description: 单镜像扫描超时时间（秒）
+                imageFilter:
+                  type: object
+                  description: 镜像过滤规则
+                  properties:
+                    include:
+                      type: array
+                      items:
+                        type: string
+                      description: 包含的镜像仓库（支持通配符）
+                      default: ["*"]
+                    exclude:
+                      type: array
+                      items:
+                        type: string
+                      description: 排除的镜像仓库
+                      default:
+                        - registry.k8s.io/*
+                remediation:
+                  type: object
+                  description: 修复建议配置
+                  properties:
+                    autoRemediate:
+                      type: boolean
+                      default: false
+                      description: 是否尝试自动修复
+                    commentTemplate:
+                      type: string
+                      default: "镜像 {image} 存在 {count} 个高危漏洞，请升级镜像"
+                      description: 拒绝时的注释模板
+                dryRun:
+                  type: boolean
+                  default: false
+                  description: 试运行模式，只记录不拒绝
+            status:
+              type: object
+              description: 策略状态
+              x-kubernetes-preserve-unknown-fields: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Enabled
+          type: boolean
+          jsonPath: .spec.enabled
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp

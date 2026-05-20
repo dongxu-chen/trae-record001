@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.payment.reconciliation.mapper.DiscrepancyTrendMapper">
+
+    <select id="selectByDateRange" resultType="com.payment.reconciliation.entity.DiscrepancyTrend">
+        SELECT * FROM discrepancy_trend
+        <where>
+            <if test="channelCode != null">
+                AND channel_code = #{channelCode}
+            </if>
+            <if test="startDate != null">
+                AND statistics_date >= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND statistics_date &lt;= #{endDate}
+            </if>
+        </where>
+        ORDER BY statistics_date ASC
+    </select>
+
+    <select id="selectByDateAndChannel" resultType="com.payment.reconciliation.entity.DiscrepancyTrend">
+        SELECT * FROM discrepancy_trend
+        WHERE statistics_date = #{statisticsDate}
+        AND channel_code = #{channelCode}
+    </select>
+
+</mapper>

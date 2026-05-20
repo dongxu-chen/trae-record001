@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: trivy-admission-scanner
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: trivy-admission-scanner
+subjects:
+- kind: ServiceAccount
+  name: trivy-admission-scanner
+  namespace: trivy-admission-system

@@ -1,0 +1,4 @@
+pinocchio>=2.6.0
+meshcat>=0.3.0
+numpy>=1.21.0
+scipy>=1.7.0

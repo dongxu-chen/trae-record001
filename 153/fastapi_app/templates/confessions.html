@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center mb-4">💬 匿名倾诉广场</h1>
+    
+    <div class="alert alert-info mb-4">
+        <div class="d-flex align-items-center">
+            <span class="display-6 me-3">🤖</span>
+            <div>
+                <h6 class="alert-heading mb-1">AI危机预警已启用</h6>
+                <p class="mb-0 small">系统会自动分析倾诉内容，检测到风险时会及时预警。紧急情况请拨打心理援助热线：400-161-9995</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">发布新的倾诉</h5>
+                </div>
+                <div class="card-body">
+                    <form id="confessionForm">
+                        <div class="mb-3">
+                            <textarea id="confessionContent" class="form-control" rows="4" placeholder="在这里写下你的心里话，我们会一直陪着你..." required></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-info text-white">发布倾诉</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h3 class="mb-4">最新倾诉</h3>
+            <div id="confessionsList">
+                {% if confessions %}
+                    {% for confession in confessions %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            {% if confession.crisis_level == '紧急' %}
+                            <span class="badge badge-emergency mb-2">🚨 紧急风险</span>
+                            {% elif confession.crisis_level == '警告' %}
+                            <span class="badge badge-warning mb-2">⚠️ 警告风险</span>
+                            {% elif confession.crisis_level == '关注' %}
+                            <span class="badge badge-attention mb-2">🔍 需要关注</span>
+                            {% endif %}
+                            
+                            <p class="card-text">{{ confession.content }}</p>
+                            <p class="card-text"><small class="text-muted">{{ confession.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+                            
+                            {% if confession.crisis_keyword %}
+                            <p class="text-danger small"><em>检测关键词: {{ confession.crisis_keyword }}</em></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <p class="text-muted">还没有倾诉，来做第一个吧！</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('confessionForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const content = document.getElementById('confessionContent').value;
+    
+    try {
+        const response = await fetch('/api/confessions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: content })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            if (result.data && result.data.crisis_level && result.data.crisis_level !== '正常') {
+                alert('⚠️ 温馨提示：检测到内容可能存在风险，建议及时寻求专业帮助。如遇紧急情况请拨打心理援助热线：400-161-9995');
+            } else {
+                alert('倾诉发布成功！');
+            }
+            document.getElementById('confessionContent').value = '';
+            window.location.reload();
+        } else {
+            alert(result.message || '发布失败，请重试');
+        }
+    } catch (error) {
+        alert('网络错误，请重试');
+    }
+});
+</script>
+{% endblock %}

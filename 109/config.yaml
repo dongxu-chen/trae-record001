@@ -1,0 +1,54 @@
+database:
+  mysql:
+    host: localhost
+    port: 3306
+    user: root
+    password: your_password
+    databases:
+      - database1
+      - database2
+    mysqldump_path: mysqldump
+    mysqlbinlog_path: mysqlbinlog
+
+  postgresql:
+    host: localhost
+    port: 5432
+    user: postgres
+    password: your_password
+    databases:
+      - database1
+      - database2
+    pg_dump_path: pg_dump
+
+oss:
+  access_key_id: your_access_key_id
+  access_key_secret: your_access_key_secret
+  endpoint: oss-cn-hangzhou.aliyuncs.com
+  bucket_name: your_bucket_name
+  directory: backups
+
+dingtalk:
+  webhook_url: https://oapi.dingtalk.com/robot/send?access_token=your_token
+  secret: your_secret
+  at_mobiles:
+    - 13800138000
+  at_all: false
+
+email:
+  smtp_host: smtp.example.com
+  smtp_port: 587
+  use_tls: true
+  username: your_email@example.com
+  password: your_password
+  from: backup@example.com
+  to:
+    - admin@example.com
+    - dba@example.com
+
+backup:
+  local_dir: ./backups
+  retention_days: 7
+  compress: true
+  encrypt: false
+  enable_incremental: true
+  enable_verify: true

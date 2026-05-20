@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "📋 [pre-commit] 执行代码检查..."
+
+# 检查未暂存的文件
+UNSTAGED_FILES=$(git diff --name-only --diff-filter=ACM 2>/dev/null | wc -l)
+if [ "$UNSTAGED_FILES" -gt 0 ]; then
+  echo ""
+  echo "⚠️  发现 $UNSTAGED_FILES 个未暂存的文件:"
+  git diff --name-only --diff-filter=ACM 2>/dev/null | while read -r file; do
+    echo "   • $file"
+  done
+  echo ""
+  echo "💡 建议: 先执行 'git add' 暂存这些文件，或者确认这是有意的"
+  echo ""
+fi
+
+# 检查是否有需要提交的文件
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null | wc -l)
+if [ "$STAGED_FILES" -eq 0 ]; then
+  echo "❌ 错误: 没有暂存任何文件可供提交"
+  echo "💡 请先执行 'git add' 暂存要提交的文件"
+  exit 1
+fi
+
+echo "✅ [pre-commit] 代码检查完成"

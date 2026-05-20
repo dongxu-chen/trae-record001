@@ -1,0 +1,51 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/counselors/counselors",
+    "pages/book/book",
+    "pages/appointments/appointments",
+    "pages/confessions/confessions",
+    "pages/scl90/scl90"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#0d6efd",
+    "navigationBarTitleText": "校园心理健康",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f8f9fa"
+  },
+  "tabBar": {
+    "color": "#666",
+    "selectedColor": "#0d6efd",
+    "backgroundColor": "#fff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "images/home.png",
+        "selectedIconPath": "images/home-active.png"
+      },
+      {
+        "pagePath": "pages/counselors/counselors",
+        "text": "咨询师",
+        "iconPath": "images/doctor.png",
+        "selectedIconPath": "images/doctor-active.png"
+      },
+      {
+        "pagePath": "pages/confessions/confessions",
+        "text": "倾诉",
+        "iconPath": "images/chat.png",
+        "selectedIconPath": "images/chat-active.png"
+      },
+      {
+        "pagePath": "pages/appointments/appointments",
+        "text": "我的",
+        "iconPath": "images/user.png",
+        "selectedIconPath": "images/user-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

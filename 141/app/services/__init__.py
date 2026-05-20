@@ -1,0 +1,8 @@
+from app.services.factor_manager import factor_manager, FactorManager
+from app.services.actuarial_engine import actuarial_engine, ActuarialEngine
+from app.services.reinsurance_engine import reinsurance_engine, ReinsuranceEngine
+from app.services.ubi_pricing_engine import ubi_pricing_engine, UBIPricingEngine
+from app.services.dynamic_discount_engine import dynamic_discount_engine, DynamicDiscountEngine
+from app.services.risk_scorecard_engine import risk_scorecard_engine, RiskScoreCardEngine
+from app.services.pricing_comparison_engine import pricing_comparison_engine, PricingComparisonEngine
+from app.services.high_performance_pricing import OptimizedPricingService, get_pricing_service

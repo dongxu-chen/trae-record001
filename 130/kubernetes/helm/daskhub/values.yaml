@@ -1,0 +1,192 @@
+jupyterhub:
+  proxy:
+    secretToken: "GENERATE_WITH_openssl_rand_hex_32"
+    service:
+      type: LoadBalancer
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:region:account:certificate/id"
+        service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+
+  hub:
+    config:
+      JupyterHub:
+        authenticator_class: dummya
+      Authenticator:
+        admin_users:
+          - admin
+        allowed_users:
+          - user1
+          - user2
+    services:
+      dask-gateway:
+        apiToken: "GENERATE_WITH_openssl_rand_hex_32"
+    extraConfig:
+      00-spawner: |
+        from kubespawner import KubeSpawner
+
+        class PangeoSpawner(KubeSpawner):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                self.image_spec = "pangeo/pangeo-notebook:latest"
+                self.cpu_limit = 4
+                self.cpu_guarantee = 2
+                self.mem_limit = "8G"
+                self.mem_guarantee = "4G"
+                self.environment = {
+                    "DASK_GATEWAY_ADDRESS": "http://dask-gateway-api.dask-gateway.svc.cluster.local:8000",
+                    "DASK_GATEWAY_PROXY_ADDRESS": "http://dask-gateway-traefik.dask-gateway.svc.cluster.local:80",
+                    "AWS_S3_ENDPOINT": "https://s3.amazonaws.com",
+                }
+
+        c.JupyterHub.spawner_class = PangeoSpawner
+
+      01-dask-gateway: |
+        c.JupyterHub.load_roles = [
+            {
+                "name": "user",
+                "scopes": ["self", "access:services!service=dask-gateway"],
+            },
+            {
+                "name": "admin",
+                "scopes": ["admin-ui", "users", "groups", "list:services", "read:services!service=dask-gateway"],
+            },
+        ]
+
+  singleuser:
+    image:
+      name: pangeo/pangeo-notebook
+      tag: latest
+    cpu:
+      limit: 4
+      guarantee: 2
+    memory:
+      limit: 8G
+      guarantee: 4G
+    extraEnv:
+      DASK_GATEWAY__ADDRESS: "http://dask-gateway-api.dask-gateway.svc.cluster.local:8000"
+      DASK_GATEWAY__PROXY_ADDRESS: "http://dask-gateway-traefik.dask-gateway.svc.cluster.local:80"
+      DASK_DISTRIBUTED__DASHBOARD__LINK: "/user/{JUPYTERHUB_USER}/proxy/{port}/status"
+      PANGEO_SCRATCH: "s3://pangeo-scratch/"
+    startTimeout: 600
+    storage:
+      type: dynamic
+      capacity: 10Gi
+      storageClass: gp2
+
+dask-gateway:
+  enabled: true
+  gateway:
+    auth:
+      type: jupyterhub
+      jupyterhub:
+        apiToken: "GENERATE_WITH_openssl_rand_hex_32"
+        apiUrl: "http://proxy-public.jupyterhub.svc.cluster.local:80/hub/api"
+    backend:
+      type: kubernetes
+      kubernetes:
+        namespace: "pangeo-dask-workers"
+        worker:
+          image:
+            name: daskgateway/dask-gateway
+            tag: 2024.1.0
+          cores:
+            limit: 4
+            request: 2
+          memory:
+            limit: 16G
+            request: 8G
+          extraPodConfig:
+            nodeSelector:
+              "karpenter.sh/capacity-type": spot
+            tolerations:
+              - key: "spot"
+                operator: "Equal"
+                value: "true"
+                effect: "NoSchedule"
+        scheduler:
+          image:
+            name: daskgateway/dask-gateway
+            tag: 2024.1.0
+          cores:
+            limit: 2
+            request: 1
+          memory:
+            limit: 8G
+            request: 4G
+    extraConfig:
+      clusterOptions: |
+        from dask_gateway_server.options import Options, Integer, Float, String, Select, Bool
+
+        def cluster_options(user):
+            return Options(
+                Integer(
+                    "worker_cores",
+                    min=1,
+                    max=8,
+                    default=2,
+                    label="Worker Cores",
+                    help="Number of cores per worker"
+                ),
+                Float(
+                    "worker_memory",
+                    min=1,
+                    max=32,
+                    default=8,
+                    label="Worker Memory (GB)",
+                    help="Memory per worker in GB"
+                ),
+                Integer(
+                    "worker_count",
+                    min=1,
+                    max=100,
+                    default=4,
+                    label="Initial Worker Count",
+                    help="Initial number of workers"
+                ),
+                String(
+                    "image",
+                    default="pangeo/pangeo-notebook:latest",
+                    label="Worker Image",
+                    help="Docker image for dask workers"
+                ),
+                Select(
+                    "environment",
+                    options=["dev", "prod"],
+                    default="dev",
+                    label="Environment"
+                ),
+                Bool(
+                    "autoscale",
+                    default=True,
+                    label="Enable Autoscaling"
+                )
+            )
+
+        c.DaskGateway.cluster_options_factory = cluster_options
+
+  traefik:
+    service:
+      type: LoadBalancer
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+
+  controller:
+    enabled: true
+
+minio:
+  enabled: true
+  accessKey: "minioadmin"
+  secretKey: "minioadmin"
+  defaultBucket:
+    enabled: true
+    name: "climate-data"
+  persistence:
+    storageClass: gp2
+    size: 1Ti
+  resources:
+    requests:
+      cpu: 2
+      memory: 4Gi
+    limits:
+      cpu: 4
+      memory: 8Gi

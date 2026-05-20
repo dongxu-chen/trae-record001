@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拍卖直播秒杀中台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover, .tab-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+
+        .auction-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .product-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .product-image {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            border-radius: 20px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .product-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .product-desc {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .product-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+
+        .timer-section {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .timer-label {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .timer-display {
+            font-size: 3rem;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .timer-sync {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .price-section {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .price-box {
+            text-align: center;
+        }
+
+        .price-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .current-price {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .bid-count {
+            font-size: 1.2rem;
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        .bid-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .bid-input {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .bid-input:focus {
+            border-color: #667eea;
+        }
+
+        .bid-button {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+        }
+
+        .bid-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .bid-button:active {
+            transform: translateY(0);
+        }
+
+        .bid-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .quick-bids {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quick-bid-btn {
+            padding: 10px 20px;
+            background: #e8f4f8;
+            border: 1px solid #b8d4e3;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .quick-bid-btn:hover {
+            background: #d0e8f2;
+            transform: scale(1.05);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .bid-history, .deal-records, .conflict-panel, .audit-panel, .shard-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .bid-item {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bid-user {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .bid-price {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .bid-time {
+            font-size: 0.8rem;
+            color: #999;
+        }
+
+        .deal-item {
+            padding: 15px;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .deal-product {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .deal-user {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .deal-price {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 5px;
+        }
+
+        .status-message {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .user-info {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 1rem;
+        }
+
+        .connect-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .user-balance {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .balance-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .balance-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .auction-ended {
+            background: linear-gradient(135deg, #434343 0%, #000000 100%);
+            color: white;
+            text-align: center;
+            padding: 40px;
+            border-radius: 15px;
+        }
+
+        .auction-ended h2 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .auctioneer-panel, .arbitration-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .panel-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .panel-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .panel-btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+
+        .panel-btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .conflict-item {
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .conflict-bid {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: white;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        .conflict-bid.selected {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+
+        .shard-item {
+            padding: 15px;
+            background: #e8f4f8;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .shard-info {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+
+        .audit-item {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #6f42c1;
+        }
+
+        .audit-action {
+            font-weight: bold;
+            color: #6f42c1;
+            margin-bottom: 5px;
+        }
+
+        .audit-operator {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .audit-time {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .playback-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .playback-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .playback-slider {
+            flex: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 拍卖直播秒杀中台</h1>
+            <p>实时竞价 · 公平透明 · 毫秒级响应</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('auction')">拍卖大厅</button>
+            <button class="tab-btn" onclick="switchTab('auctioneer')">拍卖师</button>
+            <button class="tab-btn" onclick="switchTab('arbitration')">仲裁中心</button>
+            <button class="tab-btn" onclick="switchTab('audit')">审计日志</button>
+            <button class="tab-btn" onclick="switchTab('shard')">分片监控</button>
+        </div>
+
+        <div id="tab-auction" class="tab-content active">
+            <div class="main-content">
+                <div class="auction-card">
+                    <div id="statusMessage"></div>
+
+                    <div id="auctionContent">
+                        <div class="product-info">
+                            <span class="product-badge" id="productBadge">🔥 热门商品</span>
+                            <div class="product-image">📱</div>
+                            <div class="product-name" id="productName">加载中...</div>
+                            <div class="product-desc" id="productDesc">请稍候...</div>
+                        </div>
+
+                        <div class="timer-section">
+                            <div class="timer-label">⏱️ 剩余时间</div>
+                            <div class="timer-display" id="timer">00:00</div>
+                            <div class="timer-sync" id="timerSync">正在同步时间...</div>
+                        </div>
+
+                        <div class="price-section">
+                            <div class="price-box">
+                                <div class="price-label">当前价格</div>
+                                <div class="current-price" id="currentPrice">¥0.00</div>
+                            </div>
+                            <div class="price-box">
+                                <div class="price-label">出价次数</div>
+                                <div class="bid-count" id="bidCount">0</div>
+                            </div>
+                        </div>
+
+                        <div class="bid-section">
+                            <input type="number" id="bidInput" class="bid-input" placeholder="输入出价金额">
+                            <button class="bid-button" id="bidButton" onclick="submitBid()">出价</button>
+                        </div>
+
+                        <div class="quick-bids">
+                            <button class="quick-bid-btn" onclick="quickBid(100)">+¥100</button>
+                            <button class="quick-bid-btn" onclick="quickBid(200)">+¥200</button>
+                            <button class="quick-bid-btn" onclick="quickBid(500)">+¥500</button>
+                            <button class="quick-bid-btn" onclick="quickBid(1000)">+¥1000</button>
+                        </div>
+                    </div>
+
+                    <div id="auctionEnded" style="display: none;">
+                        <div class="auction-ended">
+                            <h2>🎉 拍卖已结束</h2>
+                            <p id="winnerInfo" style="margin-top: 20px; font-size: 1.2rem;"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <div class="user-info">
+                        <div class="section-title">👤 用户信息</div>
+                        <label>用户名:</label>
+                        <input type="text" id="username" class="user-input" placeholder="输入您的昵称" value="游客">
+                        <div class="user-balance">
+                            <div class="balance-label">可用预算</div>
+                            <div class="balance-value" id="userBalance">¥0.00</div>
+                        </div>
+                        <button class="connect-btn" onclick="connectWebSocket()">连接拍卖</button>
+                    </div>
+
+                    <div class="bid-history">
+                        <div class="section-title">📊 出价记录</div>
+                        <div id="bidHistory">
+                            <p style="color: #999; text-align: center;">暂无出价</p>
+                        </div>
+                    </div>
+
+                    <div class="deal-records">
+                        <div class="section-title">🏆 成交记录</div>
+                        <div id="dealRecords">
+                            <p style="color: #999; text-align: center;">暂无成交</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-auctioneer" class="tab-content">
+            <div class="auctioneer-panel">
+                <div class="panel-title">🎩 拍卖师控制面板</div>
+                <div class="user-input" style="margin-bottom: 15px;">
+                    <label>拍卖师ID:</label>
+                    <input type="text" id="auctioneerId" class="user-input" value="auctioneer_001">
+                </div>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <p><strong>当前最高出价:</strong> <span id="hammerCurrentPrice">¥0.00</span></p>
+                    <p><strong>最高出价用户:</strong> <span id="hammerUser">-</span></p>
+                    <p><strong>出价ID:</strong> <span id="hammerBidId">-</span></p>
+                </div>
+                <div class="user-input" style="margin-bottom: 15px;">
+                    <label>成交备注:</label>
+                    <input type="text" id="hammerRemark" class="user-input" placeholder="输入成交备注">
+                </div>
+                <button class="panel-btn panel-btn-success" onclick="hammerPrice()">🔨 落槌成交</button>
+                <button class="panel-btn panel-btn-primary" onclick="loadCurrentAuction()" style="margin-top: 10px;">刷新拍卖信息</button>
+            </div>
+        </div>
+
+        <div id="tab-arbitration" class="tab-content">
+            <div class="arbitration-panel">
+                <div class="panel-title">⚖️ 冲突仲裁</div>
+                <div id="conflictList">
+                    <p style="color: #999; text-align: center;">暂无冲突</p>
+                </div>
+                <button class="panel-btn panel-btn-primary" onclick="loadConflicts()" style="margin-top: 15px;">刷新冲突列表</button>
+            </div>
+
+            <div class="arbitration-panel">
+                <div class="panel-title">🔄 成交回滚</div>
+                <div class="user-input" style="margin-bottom: 15px;">
+                    <label>仲裁员ID:</label>
+                    <input type="text" id="arbitratorId" class="user-input" value="arbitrator_001">
+                </div>
+                <div class="user-input" style="margin-bottom: 15px;">
+                    <label>成交记录ID:</label>
+                    <input type="text" id="rollbackDealId" class="user-input" placeholder="输入要回滚的成交记录ID">
+                </div>
+                <div class="user-input" style="margin-bottom: 15px;">
+                    <label>回滚原因:</label>
+                    <input type="text" id="rollbackReason" class="user-input" placeholder="输入回滚原因">
+                </div>
+                <button class="panel-btn panel-btn-danger" onclick="rollbackDeal()">执行回滚</button>
+            </div>
+        </div>
+
+        <div id="tab-audit" class="tab-content">
+            <div class="main-content">
+                <div class="auction-card">
+                    <div class="panel-title">📜 出价历史回放</div>
+                    <div class="playback-controls">
+                        <button class="playback-btn" onclick="startPlayback()">▶ 播放</button>
+                        <button class="playback-btn" onclick="pausePlayback()">⏸ 暂停</button>
+                        <input type="range" class="playback-slider" id="playbackSlider" min="0" max="100" value="0">
+                        <span id="playbackProgress">0/0</span>
+                    </div>
+                    <div id="playbackBids" style="max-height: 400px; overflow-y: auto;">
+                        <p style="color: #999; text-align: center;">请先加载出价历史</p>
+                    </div>
+                    <button class="panel-btn panel-btn-primary" onclick="loadBidHistory()" style="margin-top: 15px; width: 100%;">加载出价历史</button>
+                </div>
+
+                <div class="sidebar">
+                    <div class="audit-panel">
+                        <div class="section-title">📋 审计日志</div>
+                        <div id="auditLogs">
+                            <p style="color: #999; text-align: center;">暂无日志</p>
+                        </div>
+                        <button class="panel-btn panel-btn-primary" onclick="loadAuditLogs()" style="margin-top: 15px; width: 100%;">刷新日志</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-shard" class="tab-content">
+            <div class="main-content">
+                <div class="auction-card">
+                    <div class="panel-title">🗄️ 分片统计信息</div>
+                    <div id="shardStats" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                    </div>
+                    <button class="panel-btn panel-btn-primary" onclick="loadShardStats()" style="margin-top: 20px; width: 100%;">刷新分片统计</button>
+                </div>
+
+                <div class="sidebar">
+                    <div class="shard-panel">
+                        <div class="section-title">📊 分片说明</div>
+                        <p style="color: #666; font-size: 0.9rem; line-height: 1.6;">
+                            系统使用一致性哈希分片算法，将热门商品分配到不同的Redis节点，
+                            实现负载均衡和高并发支持。每个分片独立处理自己的拍卖请求，
+                            提高系统整体吞吐量。
+                        </p>
+                        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                            <p><strong>分片数:</strong> <span id="totalShards">0</span></p>
+                            <p><strong>总拍卖数:</strong> <span id="totalAuctions">0</span></p>
+                            <p><strong>总连接数:</strong> <span id="totalConnections">0</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let currentAuction = null;
+        let currentAuctionId = null;
+        let currentPrice = 0;
+        let userId = 'user_' + Math.random().toString(36).substr(2, 9);
+        let userBudget = 10000.0;
+        let lastServerTime = 0;
+        let timeOffset = 0;
+        let remainingSeconds = 0;
+        let allBids = [];
+        let playbackInterval = null;
+        let currentPlaybackIndex = 0;
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+            setTimeout(() => {
+                statusEl.innerHTML = '';
+            }, 3000);
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function formatPrice(price) {
+            return '¥' + price.toFixed(2);
+        }
+
+        function formatTimeStamp(timestamp) {
+            const date = new Date(timestamp * 1000);
+            return date.toLocaleTimeString();
+        }
+
+        function generateRequestId() {
+            return Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        }
+
+        async function loadCurrentAuction() {
+            try {
+                const response = await fetch('/api/auctions');
+                const auctions = await response.json();
+                if (auctions.length > 0) {
+                    currentAuction = auctions[0];
+                    currentAuctionId = currentAuction.id;
+                    currentPrice = currentAuction.current_price;
+                    
+                    document.getElementById('productName').textContent = currentAuction.product.name;
+                    document.getElementById('productDesc').textContent = currentAuction.product.description;
+                    document.getElementById('currentPrice').textContent = formatPrice(currentPrice);
+                    document.getElementById('bidCount').textContent = currentAuction.bid_count;
+                    document.getElementById('bidInput').placeholder = `最低 ${formatPrice(currentPrice + 1)}`;
+                    
+                    document.getElementById('hammerCurrentPrice').textContent = formatPrice(currentPrice);
+                    if (currentAuction.highest_bid) {
+                        document.getElementById('hammerUser').textContent = currentAuction.highest_bid.username;
+                        document.getElementById('hammerBidId').textContent = currentAuction.highest_bid.id;
+                    }
+
+                    if (currentAuction.product.is_hot) {
+                        document.getElementById('productBadge').style.display = 'inline-block';
+                    } else {
+                        document.getElementById('productBadge').style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('加载拍卖失败:', error);
+            }
+        }
+
+        async function loadUserBalance() {
+            try {
+                const response = await fetch(`/api/user/balance?user_id=${userId}`);
+                const data = await response.json();
+                userBudget = data.balance;
+                document.getElementById('userBalance').textContent = formatPrice(userBudget);
+            } catch (error) {
+                console.error('加载用户余额失败:', error);
+                document.getElementById('userBalance').textContent = formatPrice(userBudget);
+            }
+        }
+
+        async function loadDealRecords() {
+            try {
+                const response = await fetch('/api/deals');
+                const records = await response.json();
+                const dealRecordsEl = document.getElementById('dealRecords');
+                
+                if (records.length === 0) {
+                    dealRecordsEl.innerHTML = '<p style="color: #999; text-align: center;">暂无成交</p>';
+                    return;
+                }
+
+                dealRecordsEl.innerHTML = records.map(record => `
+                    <div class="deal-item">
+                        <div class="deal-product">${record.product_name}</div>
+                        <div class="deal-user">买家: ${record.username}</div>
+                        <div class="deal-price">成交价格: ${formatPrice(record.price)}</div>
+                        ${record.is_rollback ? '<div style="color: #dc3545; font-size: 0.8rem; margin-top: 5px;">已回滚</div>' : ''}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('加载成交记录失败:', error);
+            }
+        }
+
+        async function loadConflicts() {
+            try {
+                const response = await fetch(`/api/auction/conflicts?auction_id=${currentAuctionId}`);
+                const conflicts = await response.json();
+                const conflictListEl = document.getElementById('conflictList');
+                
+                if (conflicts.length === 0) {
+                    conflictListEl.innerHTML = '<p style="color: #999; text-align: center;">暂无冲突</p>';
+                    return;
+                }
+
+                conflictListEl.innerHTML = conflicts.map(conflict => `
+                    <div class="conflict-item">
+                        <div style="font-weight: bold; margin-bottom: 10px;">
+                            冲突时间: ${new Date(conflict.timestamp_ms).toLocaleString()}
+                        </div>
+                        ${conflict.bids.map((bid, index) => `
+                            <div class="conflict-bid" id="conflict-bid-${bid.id}" onclick="selectBid('${bid.id}', '${conflict.id}')">
+                                <span>${bid.username}</span>
+                                <span style="color: #e74c3c; font-weight: bold;">${formatPrice(bid.price)}</span>
+                            </div>
+                        `).join('')}
+                        <div style="margin-top: 10px;">
+                            <input type="text" placeholder="仲裁原因" id="reason-${conflict.id}" class="user-input" style="margin-bottom: 10px;">
+                            <button class="panel-btn panel-btn-primary" onclick="resolveConflict('${conflict.id}')" style="width: 100%; padding: 8px;">
+                                确认仲裁结果
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('加载冲突失败:', error);
+            }
+        }
+
+        let selectedBids = {};
+
+        function selectBid(bidId, conflictId) {
+            selectedBids[conflictId] = bidId;
+            document.querySelectorAll(`[id^="conflict-bid-"]`).forEach(el => {
+                el.classList.remove('selected');
+            });
+            document.getElementById(`conflict-bid-${bidId}`).classList.add('selected');
+        }
+
+        async function resolveConflict(conflictId) {
+            const winnerBidId = selectedBids[conflictId];
+            if (!winnerBidId) {
+                alert('请先选择获胜出价');
+                return;
+            }
+
+            const arbitratorId = document.getElementById('arbitratorId').value;
+            const reason = document.getElementById(`reason-${conflictId}`).value;
+
+            try {
+                const response = await fetch('/api/arbitration/resolve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        conflict_id: conflictId,
+                        arbitrator_id: arbitratorId,
+                        winner_bid_id: winnerBidId,
+                        reason: reason
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('仲裁成功');
+                    loadConflicts();
+                } else {
+                    alert('仲裁失败: ' + data.message);
+                }
+            } catch (error) {
+                console.error('仲裁失败:', error);
+            }
+        }
+
+        async function rollbackDeal() {
+            const dealId = document.getElementById('rollbackDealId').value;
+            const reason = document.getElementById('rollbackReason').value;
+            const arbitratorId = document.getElementById('arbitratorId').value;
+
+            if (!dealId || !reason) {
+                alert('请填写完整信息');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/arbitration/rollback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        deal_id: dealId,
+                        reason: reason,
+                        arbitrator_id: arbitratorId
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('回滚成功');
+                    loadDealRecords();
+                } else {
+                    alert('回滚失败: ' + data.message);
+                }
+            } catch (error) {
+                console.error('回滚失败:', error);
+            }
+        }
+
+        async function hammerPrice() {
+            const auctioneerId = document.getElementById('auctioneerId').value;
+            const remark = document.getElementById('hammerRemark').value;
+            
+            if (!currentAuction || !currentAuction.highest_bid) {
+                alert('没有可成交的出价');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auction/hammer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        auction_id: currentAuctionId,
+                        auctioneer_id: auctioneerId,
+                        bid_id: currentAuction.highest_bid.id,
+                        price: currentAuction.highest_bid.price,
+                        remark: remark
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('成交成功！');
+                    loadDealRecords();
+                    loadCurrentAuction();
+                } else {
+                    alert('成交失败: ' + data.message);
+                }
+            } catch (error) {
+                console.error('落槌失败:', error);
+            }
+        }
+
+        async function loadBidHistory() {
+            try {
+                const response = await fetch(`/api/bids/history?auction_id=${currentAuctionId}`);
+                allBids = await response.json();
+                currentPlaybackIndex = 0;
+                
+                const playbackEl = document.getElementById('playbackBids');
+                playbackEl.innerHTML = allBids.map((bid, index) => `
+                    <div class="bid-item" id="playback-bid-${index}" style="opacity: 0.3;">
+                        <div>
+                            <div class="bid-user">${bid.username}</div>
+                            <div class="bid-time">${formatTimeStamp(bid.timestamp)}</div>
+                        </div>
+                        <div class="bid-price">${formatPrice(bid.price)}</div>
+                    </div>
+                `).join('');
+
+                document.getElementById('playbackSlider').max = allBids.length;
+                document.getElementById('playbackProgress').textContent = `0/${allBids.length}`;
+            } catch (error) {
+                console.error('加载出价历史失败:', error);
+            }
+        }
+
+        function startPlayback() {
+            if (playbackInterval) return;
+            playbackInterval = setInterval(() => {
+                if (currentPlaybackIndex < allBids.length) {
+                    document.getElementById(`playback-bid-${currentPlaybackIndex}`).style.opacity = '1';
+                    currentPlaybackIndex++;
+                    document.getElementById('playbackSlider').value = currentPlaybackIndex;
+                    document.getElementById('playbackProgress').textContent = `${currentPlaybackIndex}/${allBids.length}`;
+                } else {
+                    pausePlayback();
+                }
+            }, 500);
+        }
+
+        function pausePlayback() {
+            if (playbackInterval) {
+                clearInterval(playbackInterval);
+                playbackInterval = null;
+            }
+        }
+
+        async function loadAuditLogs() {
+            try {
+                const response = await fetch(`/api/audit/logs?auction_id=${currentAuctionId}`);
+                const logs = await response.json();
+                const auditLogsEl = document.getElementById('auditLogs');
+                
+                if (logs.length === 0) {
+                    auditLogsEl.innerHTML = '<p style="color: #999; text-align: center;">暂无日志</p>';
+                    return;
+                }
+
+                auditLogsEl.innerHTML = logs.map(log => `
+                    <div class="audit-item">
+                        <div class="audit-action">${log.action}</div>
+                        <div class="audit-operator">操作人: ${log.operator_name}</div>
+                        <div class="audit-time">${formatTimeStamp(log.timestamp)}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('加载审计日志失败:', error);
+            }
+        }
+
+        async function loadShardStats() {
+            try {
+                const response = await fetch('/api/shard/stats');
+                const stats = await response.json();
+                const shardStatsEl = document.getElementById('shardStats');
+                
+                let totalAuctions = 0;
+                let totalConnections = 0;
+
+                shardStatsEl.innerHTML = stats.map(shard => {
+                    totalAuctions += shard.total_auctions || 0;
+                    totalConnections += shard.connections || 0;
+                    return `
+                        <div class="shard-item">
+                            <div class="shard-info">
+                                <span>分片 #${shard.shard_id}</span>
+                            </div>
+                            <div class="shard-info">
+                                <span>拍卖数:</span>
+                                <span>${shard.total_auctions || 0}</span>
+                            </div>
+                            <div class="shard-info">
+                                <span>连接数:</span>
+                                <span>${shard.connections || 0}</span>
+                            </div>
+                            <div class="shard-info">
+                                <span>负载因子:</span>
+                                <span style="color: ${shard.load_factor > 70 ? '#dc3545' : '#28a745'}">${shard.load_factor || 0}%</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                document.getElementById('totalShards').textContent = stats.length;
+                document.getElementById('totalAuctions').textContent = totalAuctions;
+                document.getElementById('totalConnections').textContent = totalConnections;
+            } catch (error) {
+                console.error('加载分片统计失败:', error);
+            }
+        }
+
+        function connectWebSocket() {
+            if (!currentAuctionId) {
+                showStatus('请等待拍卖加载完成', 'error');
+                return;
+            }
+
+            const username = document.getElementById('username').value || '游客';
+            
+            if (ws) {
+                ws.close();
+            }
+
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws?client_id=${userId}&auction_id=${currentAuctionId}`;
+            
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function() {
+                showStatus('已连接到拍卖直播间！', 'success');
+                document.getElementById('bidButton').disabled = false;
+                loadUserBalance();
+            };
+
+            ws.onmessage = function(event) {
+                const message = JSON.parse(event.data);
+                handleMessage(message);
+            };
+
+            ws.onclose = function() {
+                showStatus('连接已断开，正在重连...', 'error');
+                setTimeout(connectWebSocket, 3000);
+            };
+
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                showStatus('连接出错', 'error');
+            };
+        }
+
+        function handleMessage(message) {
+            switch (message.type) {
+                case 'bid':
+                    handleBidUpdate(message.payload);
+                    break;
+                case 'timer':
+                    handleTimerUpdate(message.payload);
+                    break;
+                case 'bid_result':
+                    handleBidResult(message.payload);
+                    break;
+                case 'auction_end':
+                    handleAuctionEnd(message.payload);
+                    break;
+                case 'auctioneer':
+                    handleAuctioneerMessage(message.payload);
+                    break;
+            }
+        }
+
+        function handleBidUpdate(bid) {
+            currentPrice = bid.price;
+            document.getElementById('currentPrice').textContent = formatPrice(currentPrice);
+            document.getElementById('hammerCurrentPrice').textContent = formatPrice(currentPrice);
+            document.getElementById('hammerUser').textContent = bid.username;
+            document.getElementById('hammerBidId').textContent = bid.id;
+            document.getElementById('bidInput').placeholder = `最低 ${formatPrice(currentPrice + 1)}`;
+            
+            const currentCount = parseInt(document.getElementById('bidCount').textContent);
+            document.getElementById('bidCount').textContent = currentCount + 1;
+            
+            addBidToHistory(bid);
+            loadUserBalance();
+        }
+
+        function handleTimerUpdate(timer) {
+            const currentTime = Math.floor(Date.now() / 1000);
+            timeOffset = currentTime - timer.server_time;
+            lastServerTime = timer.server_time;
+            remainingSeconds = timer.remaining;
+            
+            const drift = Math.abs(timeOffset);
+            let syncStatus = '';
+            if (drift <= 1) {
+                syncStatus = `✓ 时间同步中 (偏差: ${drift}秒)`;
+            } else if (drift <= 5) {
+                syncStatus = `⚠ 时间偏差: ${drift}秒`;
+            } else {
+                syncStatus = `✗ 时间偏差较大: ${drift}秒`;
+            }
+            document.getElementById('timerSync').textContent = syncStatus;
+
+            document.getElementById('timer').textContent = formatTime(remainingSeconds);
+        }
+
+        function handleBidResult(result) {
+            if (result.success) {
+                showStatus(result.message, 'success');
+                loadUserBalance();
+            } else {
+                showStatus(result.message, 'error');
+            }
+        }
+
+        function handleAuctionEnd(payload) {
+            document.getElementById('auctionContent').style.display = 'none';
+            document.getElementById('auctionEnded').style.display = 'block';
+            
+            if (payload.deal) {
+                document.getElementById('winnerInfo').innerHTML = 
+                    `恭喜 <strong>${payload.deal.username}</strong> 以 <strong>${formatPrice(payload.deal.price)}</strong> 拍得商品！`;
+            } else {
+                document.getElementById('winnerInfo').textContent = '本次拍卖无人出价';
+            }
+            
+            loadDealRecords();
+            loadUserBalance();
+        }
+
+        function handleAuctioneerMessage(payload) {
+            if (payload.confirmed) {
+                showStatus(`拍卖已确认成交！赢家: ${payload.winner.username}`, 'success');
+                loadDealRecords();
+            }
+        }
+
+        function addBidToHistory(bid) {
+            const bidHistoryEl = document.getElementById('bidHistory');
+            const newBidHtml = `
+                <div class="bid-item">
+                    <div>
+                        <div class="bid-user">${bid.username}</div>
+                        <div class="bid-time">${formatTimeStamp(bid.timestamp)}</div>
+                    </div>
+                    <div class="bid-price">${formatPrice(bid.price)}</div>
+                </div>
+            `;
+            
+            if (bidHistoryEl.querySelector('p')) {
+                bidHistoryEl.innerHTML = newBidHtml;
+            } else {
+                bidHistoryEl.innerHTML = newBidHtml + bidHistoryEl.innerHTML;
+            }
+        }
+
+        function quickBid(amount) {
+            const newPrice = currentPrice + amount;
+            document.getElementById('bidInput').value = newPrice;
+        }
+
+        function submitBid() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                showStatus('请先连接到拍卖直播间', 'error');
+                return;
+            }
+
+            const bidInput = document.getElementById('bidInput');
+            const price = parseFloat(bidInput.value);
+            const username = document.getElementById('username').value || '游客';
+
+            if (isNaN(price) || price <= currentPrice) {
+                showStatus('出价必须高于当前价格', 'error');
+                return;
+            }
+
+            if (price > userBudget) {
+                showStatus(`出价超过您的预算 (${formatPrice(userBudget)})`, 'error');
+                return;
+            }
+
+            const requestId = generateRequestId();
+
+            const message = {
+                type: 'bid',
+                payload: {
+                    auction_id: currentAuctionId,
+                    user_id: userId,
+                    username: username,
+                    price: price,
+                    budget: userBudget,
+                    request_id: requestId
+                }
+            };
+
+            ws.send(JSON.stringify(message));
+            bidInput.value = '';
+            showStatus('出价已提交，正在处理...', 'info');
+        }
+
+        document.getElementById('bidInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitBid();
+            }
+        });
+
+        window.onload = function() {
+            loadCurrentAuction();
+            loadDealRecords();
+            setTimeout(connectWebSocket, 1000);
+        };
+
+        window.onbeforeunload = function() {
+            if (ws) {
+                ws.close();
+            }
+            if (playbackInterval) {
+                clearInterval(playbackInterval);
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+cleanup:
+  days_unused: 30
+  dry_run: true
+  schedule: "02:00"
+  remove_dangling: true
+
+auto_cleanup:
+  enable: true
+  disk_usage_threshold: 80
+  force_clean: false
+
+disk:
+  history_file: "./data/disk_history.json"
+
+dependency:
+  enable: true
+  dockerfile_paths:
+    - "./"
+
+whitelist:
+  repositories:
+    - "nginx"
+    - "alpine"
+    - "python"
+    - "node"
+    - "registry.example.com/*"
+  tags:
+    - "latest"
+    - "stable"
+    - "v*"
+  images:
+    - "busybox:1.36"
+    - "ubuntu:*"
+
+audit:
+  enable: true
+  log_file: "./logs/audit.log"
+  elk:
+    enable: false
+    host: "localhost"
+    port: 9200
+    index: "docker-cleaner-audit"
+
+report:
+  output_dir: "./reports"
+  format: "text"
+  send_email: false
+
+logging:
+  level: "INFO"
+  log_file: "./logs/docker_cleaner.log"

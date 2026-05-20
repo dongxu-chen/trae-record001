@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: healthcheck-operator
+subjects:
+- kind: ServiceAccount
+  name: healthcheck-operator
+  namespace: healthcheck-operator-system
+roleRef:
+  kind: ClusterRole
+  name: healthcheck-operator
+  apiGroup: rbac.authorization.k8s.io

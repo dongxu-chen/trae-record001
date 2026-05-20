@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.payment.reconciliation.mapper.TransactionMapper">
+
+    <select id="selectByDateAndChannel" resultType="com.payment.reconciliation.entity.Transaction">
+        SELECT * FROM transaction
+        WHERE DATE(trans_time) = #{date}
+        AND channel_code = #{channelCode}
+    </select>
+
+    <select id="selectCountByDateAndChannel" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM transaction
+        WHERE DATE(trans_time) = #{date}
+        AND channel_code = #{channelCode}
+    </select>
+
+    <select id="selectSumAmountByDateAndChannel" resultType="java.math.BigDecimal">
+        SELECT IFNULL(SUM(amount), 0) FROM transaction
+        WHERE DATE(trans_time) = #{date}
+        AND channel_code = #{channelCode}
+    </select>
+
+</mapper>

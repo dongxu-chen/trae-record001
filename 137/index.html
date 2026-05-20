@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapbox GL 路径规划沙盘</title>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet">
+    <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.1/mapbox-gl-geocoder.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+        .control-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            width: 340px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .control-panel h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #2196F3;
+        }
+        .section {
+            margin-bottom: 15px;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 14px;
+            background: #2196F3;
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1976D2, #1565C0);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #4CAF50, #388E3C);
+            color: white;
+        }
+        .btn-success:hover {
+            background: linear-gradient(135deg, #388E3C, #2E7D32);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+        }
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #F57C00, #EF6C00);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #d32f2f, #c62828);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+        .checkbox-group input {
+            margin-right: 8px;
+        }
+        .info-box {
+            background: #E3F2FD;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #1976D2;
+            margin-top: 10px;
+            border-left: 4px solid #2196F3;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 300px;
+        }
+        .notification.success {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+        .notification.warning {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+        }
+        .notification.error {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+        }
+        .notification.info {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateX(100%); }
+        }
+        .waypoint-list, .geofence-list, .demand-point-list {
+            max-height: 120px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .list-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+        .list-item:last-child {
+            border-bottom: none;
+        }
+        .delete-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-group {
+            display: flex;
+            gap: 5px;
+            margin: 5px 0;
+        }
+        .btn-group .btn {
+            flex: 1;
+            padding: 8px 10px;
+            font-size: 12px;
+            margin: 0;
+        }
+        .mapboxgl-ctrl-top-right {
+            top: 80px;
+        }
+        .file-input {
+            display: none;
+        }
+        .file-label {
+            display: block;
+            padding: 10px;
+            text-align: center;
+            border: 2px dashed #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #666;
+            transition: all 0.3s;
+        }
+        .file-label:hover {
+            border-color: #2196F3;
+            color: #2196F3;
+        }
+        .stats-box {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <div class="control-panel">
+        <h2>🗺️ Mapbox GL 沙盘</h2>
+        
+        <div class="section">
+            <div class="section-title">基础配置</div>
+            <div class="input-group">
+                <label>Mapbox Access Token</label>
+                <input type="text" id="accessToken" placeholder="输入您的Mapbox Token" value="pk.eyJ1IjoiZXhhbXBsZSIsImEiOiJjbHV6ZXhhbTAwMGRhMmpzMzJ0YnF0b2hrIn0.K3Qr1R6wP8E1P0H5Y0T7w">
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="initMapbox()">初始化地图</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">3D 显示控制</div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="show3DBuildings" onchange="toggle3DBuildings()" checked>
+                <label for="show3DBuildings">显示3D建筑</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="showTerrain" onchange="toggleTerrain()">
+                <label for="showTerrain">显示3D地形</label>
+            </div>
+            <div class="input-group">
+                <label>建筑透明度</label>
+                <input type="range" id="buildingOpacity" min="0" max="100" value="80" oninput="updateBuildingOpacity()">
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">离线地图 (MBTiles)</div>
+            <label for="mbtilesFile" class="file-label">
+                📁 点击上传 MBTiles 文件
+            </label>
+            <input type="file" id="mbtilesFile" class="file-input" accept=".mbtiles" onchange="loadMBTiles(event)">
+            <div id="mbtilesStatus" class="stats-box"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">多点路径规划</div>
+            <div class="info-box">点击地图添加途经点，支持多点路径规划</div>
+            <div class="waypoint-list" id="waypointList"></div>
+            <button class="btn btn-primary" onclick="calculateRoute()">计算路径</button>
+            <button class="btn btn-danger" onclick="clearWaypoints()">清除途经点</button>
+            <div class="stats-box" id="routeStats"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">轨迹回放</div>
+            <div class="input-group">
+                <label>播放速度</label>
+                <input type="range" id="playbackSpeed" min="1" max="10" value="3">
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="startPlayback()">▶ 播放</button>
+                <button class="btn btn-warning" onclick="pausePlayback()">⏸ 暂停</button>
+                <button class="btn btn-danger" onclick="stopPlayback()">⏹ 停止</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">P-中值选址分析</div>
+            <div class="info-box">点击地图添加需求点，使用RBush索引加速查询</div>
+            <div class="input-group">
+                <label>设施数量</label>
+                <input type="number" id="facilityCount" value="2" min="1" max="5">
+            </div>
+            <button class="btn btn-success" onclick="calculateOptimalLocations()">计算最优位置</button>
+            <button class="btn btn-danger" onclick="clearDemandPoints()">清除需求点</button>
+            <div class="demand-point-list" id="demandPointList"></div>
+            <div class="stats-box" id="locationStats"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">地理围栏</div>
+            <div class="input-group">
+                <label>围栏名称</label>
+                <input type="text" id="geofenceName" placeholder="输入围栏名称">
+            </div>
+            <div class="input-group">
+                <label>围栏半径 (米)</label>
+                <input type="number" id="geofenceRadius" value="500" min="100" max="5000">
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="startCreateCircleFence()">绘制圆形围栏</button>
+                <button class="btn btn-success" onclick="startCreatePolygonFence()">绘制多边形</button>
+            </div>
+            <button class="btn btn-danger" onclick="clearGeofences()">清除所有围栏</button>
+            <div class="geofence-list" id="geofenceList"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">数据导出</div>
+            <button class="btn btn-primary" onclick="exportToGeoJSON()">导出 GeoJSON</button>
+            <button class="btn btn-success" onclick="exportToGPX()">导出 GPX</button>
+        </div>
+
+        <div class="section">
+            <div class="section-title">视图控制</div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="resetView()">重置视图</button>
+                <button class="btn btn-warning" onclick="fitToBounds()">适应范围</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.1/mapbox-gl-geocoder.min.js"></script>
+    <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
+    <script src="https://unpkg.com/rbush@3.0.1/rbush.min.js"></script>
+    <script src="https://unpkg.com/@mapbox/mbview@0.10.0/mbview.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

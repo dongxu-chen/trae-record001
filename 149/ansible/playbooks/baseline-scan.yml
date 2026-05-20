@@ -1,0 +1,342 @@
+---
+- name: Security Baseline Scan
+  hosts: all
+  gather_facts: true
+  become: true
+
+  vars:
+    report_file: "/tmp/baseline_scan.json"
+    baseline_config: "{{ playbook_dir }}/../../config/security-baseline.yml"
+
+  pre_tasks:
+    - name: Load baseline configuration
+      ansible.builtin.include_vars:
+        file: "{{ baseline_config }}"
+      delegate_to: localhost
+      run_once: true
+
+  tasks:
+    - name: Initialize baseline results
+      ansible.builtin.set_fact:
+        baseline_results:
+          hostname: "{{ ansible_hostname }}"
+          ip_address: "{{ ansible_default_ipv4.address | default('N/A') }}"
+          os: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+          scan_time: "{{ ansible_date_time.iso8601 }}"
+          checks: {}
+          score: 0
+          status: "PENDING"
+
+    - name: Check SSH security configuration
+      block:
+        - name: Read sshd_config
+          ansible.builtin.slurp:
+            src: /etc/ssh/sshd_config
+          register: ssh_config_content
+
+        - name: Parse SSH configuration
+          ansible.builtin.set_fact:
+            ssh_config_parsed: >
+              {% set config = {} %}
+              {% for line in ssh_config_content.content | b64decode | split('\n') %}
+              {% if line | trim and not line.startswith('#') and ' ' in line %}
+              {% set parts = line.split() %}
+              {% set _ = config.update({parts[0]: parts[1]}) %}
+              {% endif %}
+              {% endfor %}
+              {{ config }}
+
+        - name: Evaluate SSH compliance
+          ansible.builtin.set_fact:
+            ssh_checks:
+              permit_root_login: >
+                {{ ssh_config_parsed.PermitRootLogin | default('') == baseline_config.system_security.ssh_security.permit_root_login }}
+              password_auth: >
+                {{ ssh_config_parsed.PasswordAuthentication | default('') == baseline_config.system_security.ssh_security.password_authentication }}
+              empty_passwords: >
+                {{ ssh_config_parsed.PermitEmptyPasswords | default('yes') == baseline_config.system_security.ssh_security.permit_empty_passwords }}
+              protocol: >
+                {{ ssh_config_parsed.Protocol | default('') == baseline_config.system_security.ssh_security.protocol }}
+
+        - name: Calculate SSH score
+          ansible.builtin.set_fact:
+            ssh_score: >
+              {% set pass = 0 %}
+              {% set total = 4 %}
+              {% if ssh_checks.permit_root_login %}{% set pass = pass + 1 %}{% endif %}
+              {% if ssh_checks.password_auth %}{% set pass = pass + 1 %}{% endif %}
+              {% if ssh_checks.empty_passwords %}{% set pass = pass + 1 %}{% endif %}
+              {% if ssh_checks.protocol %}{% set pass = pass + 1 %}{% endif %}
+              {{ (pass / total * 100) | round(2) }}
+
+        - name: Update baseline results with SSH
+          ansible.builtin.set_fact:
+            baseline_results: "{{ baseline_results | combine({'checks': {'ssh': {'pass': ssh_checks, 'score': ssh_score | float}}}, recursive=True) }}"
+
+    - name: Check password policy (PAM)
+      block:
+        - name: Check PAM configuration exists
+          ansible.builtin.stat:
+            path: /etc/pam.d/common-password
+          register: pam_config
+
+        - name: Get PAM password settings
+          ansible.builtin.shell: |
+            grep -E 'pam_pwquality|pam_unix' /etc/pam.d/common-password 2>/dev/null || echo "NOT_FOUND"
+          register: pam_settings
+          changed_when: false
+          failed_when: false
+          when: pam_config.stat.exists
+
+        - name: Evaluate password policy
+          ansible.builtin.set_fact:
+            pam_checks:
+              config_exists: "{{ pam_config.stat.exists }}"
+              pwquality_enabled: >
+                {{ 'pam_pwquality' in pam_settings.stdout | default('') }}
+
+        - name: Calculate PAM score
+          ansible.builtin.set_fact:
+            pam_score: >
+              {% set pass = 0 %}
+              {% set total = 2 %}
+              {% if pam_checks.config_exists %}{% set pass = pass + 1 %}{% endif %}
+              {% if pam_checks.pwquality_enabled %}{% set pass = pass + 1 %}{% endif %}
+              {{ (pass / total * 100) | round(2) }}
+
+        - name: Update baseline results with PAM
+          ansible.builtin.set_fact:
+            baseline_results: "{{ baseline_results | combine({'checks': {'authentication': {'pass': pam_checks, 'score': pam_score | float}}}, recursive=True) }}"
+
+    - name: Check security software installation
+      block:
+        - name: Check required packages (Debian)
+          ansible.builtin.package_facts:
+            manager: auto
+          when: ansible_os_family | lower == 'debian'
+
+        - name: Check fail2ban installed
+          ansible.builtin.set_fact:
+            fail2ban_installed: "{{ 'fail2ban' in ansible_facts.packages }}"
+
+        - name: Check auditd installed
+          ansible.builtin.set_fact:
+            auditd_installed: "{{ 'auditd' in ansible_facts.packages }}"
+
+        - name: Check fail2ban service running
+          ansible.builtin.systemd:
+            name: fail2ban
+            state: started
+          check_mode: true
+          register: fail2ban_service
+          failed_when: false
+
+        - name: Check auditd service running
+          ansible.builtin.systemd:
+            name: auditd
+            state: started
+          check_mode: true
+          register: auditd_service
+          failed_when: false
+
+        - name: Evaluate security software
+          ansible.builtin.set_fact:
+            security_software_checks:
+              fail2ban_installed: "{{ fail2ban_installed }}"
+              auditd_installed: "{{ auditd_installed }}"
+              fail2ban_running: "{{ fail2ban_service.state is defined and fail2ban_service.state == 'started' }}"
+              auditd_running: "{{ auditd_service.state is defined and auditd_service.state == 'started' }}"
+
+        - name: Calculate security software score
+          ansible.builtin.set_fact:
+            security_software_score: >
+              {% set pass = 0 %}
+              {% set total = 4 %}
+              {% if security_software_checks.fail2ban_installed %}{% set pass = pass + 1 %}{% endif %}
+              {% if security_software_checks.auditd_installed %}{% set pass = pass + 1 %}{% endif %}
+              {% if security_software_checks.fail2ban_running %}{% set pass = pass + 1 %}{% endif %}
+              {% if security_software_checks.auditd_running %}{% set pass = pass + 1 %}{% endif %}
+              {{ (pass / total * 100) | round(2) }}
+
+        - name: Update baseline results
+          ansible.builtin.set_fact:
+            baseline_results: "{{ baseline_results | combine({'checks': {'security_software': {'pass': security_software_checks, 'score': security_software_score | float}}}, recursive=True) }}"
+
+    - name: Check kernel security parameters
+      block:
+        - name: Get current sysctl values
+          ansible.builtin.command: sysctl -a
+          register: sysctl_output
+          changed_when: false
+
+        - name: Parse sysctl output
+          ansible.builtin.set_fact:
+            sysctl_current: >
+              {% set data = {} %}
+              {% for line in sysctl_output.stdout_lines %}
+              {% if ' = ' in line %}
+              {% set parts = line.split(' = ') %}
+              {% set _ = data.update({parts[0] | trim: parts[1] | trim}) %}
+              {% endif %}
+              {% endfor %}
+              {{ data }}
+
+        - name: Evaluate sysctl parameters
+          ansible.builtin.set_fact:
+            sysctl_checks: >
+              {% set checks = {} %}
+              {% for param in baseline_config.kernel_security.sysctl_params %}
+              {% set actual = sysctl_current[param.key] | default('') | int(-1) %}
+              {% set passed = actual == param.value %}
+              {% set _ = checks.update({param.key: passed}) %}
+              {% endfor %}
+              {{ checks }}
+
+        - name: Calculate sysctl score
+          ansible.builtin.set_fact:
+            sysctl_score: >
+              {% set pass = 0 %}
+              {% set total = baseline_config.kernel_security.sysctl_params | length %}
+              {% for key, passed in sysctl_checks.items() %}
+              {% if passed %}{% set pass = pass + 1 %}{% endif %}
+              {% endfor %}
+              {{ (pass / total * 100) | round(2) if total > 0 else 0 }}
+
+        - name: Update baseline results
+          ansible.builtin.set_fact:
+            baseline_results: "{{ baseline_results | combine({'checks': {'kernel': {'pass': sysctl_checks, 'score': sysctl_score | float}}}, recursive=True) }}"
+
+    - name: Check critical file permissions
+      block:
+        - name: Get file permissions
+          ansible.builtin.stat:
+            path: "{{ item.path }}"
+            get_checksum: false
+          loop: "{{ baseline_config.file_permissions.critical_files }}"
+          register: file_stats
+
+        - name: Evaluate file permissions
+          ansible.builtin.set_fact:
+            file_checks: >
+              {% set checks = {} %}
+              {% for result in file_stats.results %}
+              {% set file = result.item %}
+              {% set mode_ok = result.stat.exists and result.stat.mode == file.mode %}
+              {% set owner_ok = result.stat.exists and result.stat.pw_name == file.owner %}
+              {% set group_ok = result.stat.exists and result.stat.gr_name == file.group %}
+              {% set _ = checks.update({file.path: {'exists': result.stat.exists, 'mode_ok': mode_ok, 'owner_ok': owner_ok, 'group_ok': group_ok}}) %}
+              {% endfor %}
+              {{ checks }}
+
+        - name: Calculate file permissions score
+          ansible.builtin.set_fact:
+            file_score: >
+              {% set pass = 0 %}
+              {% set total = baseline_config.file_permissions.critical_files | length * 3 %}
+              {% for file, checks in file_checks.items() %}
+              {% if checks.mode_ok %}{% set pass = pass + 1 %}{% endif %}
+              {% if checks.owner_ok %}{% set pass = pass + 1 %}{% endif %}
+              {% if checks.group_ok %}{% set pass = pass + 1 %}{% endif %}
+              {% endfor %}
+              {{ (pass / total * 100) | round(2) if total > 0 else 0 }}
+
+        - name: Update baseline results
+          ansible.builtin.set_fact:
+            baseline_results: "{{ baseline_results | combine({'checks': {'filesystem': {'pass': file_checks, 'score': file_score | float}}}, recursive=True) }}"
+
+    - name: Check firewall status
+      block:
+        - name: Check ufw status (Debian)
+          ansible.builtin.shell: ufw status | head -1
+          register: ufw_status
+          changed_when: false
+          failed_when: false
+          when: ansible_os_family | lower == 'debian'
+
+        - name: Check firewalld status (RHEL)
+          ansible.builtin.shell: firewall-cmd --state 2>&1 || echo "not running"
+          register: firewalld_status
+          changed_when: false
+          failed_when: false
+          when: ansible_os_family | lower == 'redhat'
+
+        - name: Evaluate firewall status
+          ansible.builtin.set_fact:
+            firewall_checks:
+              running: >
+                {% if ansible_os_family | lower == 'debian' %}
+                {{ 'Status: active' in ufw_status.stdout | default('') }}
+                {% elif ansible_os_family | lower == 'redhat' %}
+                {{ 'running' in firewalld_status.stdout | default('') }}
+                {% else %}
+                false
+                {% endif %}
+
+        - name: Calculate firewall score
+          ansible.builtin.set_fact:
+            firewall_score: "{{ 100 if firewall_checks.running else 0 }}"
+
+        - name: Update baseline results
+          ansible.builtin.set_fact:
+            baseline_results: "{{ baseline_results | combine({'checks': {'network': {'pass': firewall_checks, 'score': firewall_score | float}}}, recursive=True) }}"
+
+    - name: Calculate overall baseline score
+      ansible.builtin.set_fact:
+        overall_score: >
+          {% set total_weight = 0 %}
+          {% set weighted_score = 0 %}
+          {% for category, config in baseline_config.compliance_checks.category.items() %}
+          {% if category in baseline_results.checks %}
+          {% set total_weight = total_weight + config.weight %}
+          {% set weighted_score = weighted_score + (baseline_results.checks[category].score * config.weight / 100) %}
+          {% endif %}
+          {% endfor %}
+          {{ (weighted_score / total_weight * 100) | round(2) if total_weight > 0 else 0 }}
+
+    - name: Determine baseline status
+      ansible.builtin.set_fact:
+        baseline_status: >
+          {% if overall_score | float >= 90 %}
+          COMPLIANT
+          {% elif overall_score | float >= 70 %}
+          WARNING
+          {% else %}
+          NON_COMPLIANT
+          {% endif %}
+
+    - name: Update final baseline results
+      ansible.builtin.set_fact:
+        baseline_results: "{{ baseline_results | combine({'score': overall_score | float, 'status': baseline_status}) }}"
+
+  post_tasks:
+    - name: Ensure report directory exists
+      ansible.builtin.file:
+        path: "{{ report_file | dirname }}"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      run_once: true
+
+    - name: Collect all baseline results
+      ansible.builtin.set_fact:
+        all_baseline_results: "{{ hostvars | json_query('*.baseline_results') }}"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Generate baseline scan report
+      ansible.builtin.copy:
+        content: |
+          {
+            "scan_date": "{{ ansible_date_time.iso8601 }}",
+            "baseline_version": "{{ baseline_config.baseline_version }}",
+            "total_hosts": {{ groups['all'] | length }},
+            "compliant_count": {{ all_baseline_results | selectattr('status', 'equalto', 'COMPLIANT') | list | length }},
+            "warning_count": {{ all_baseline_results | selectattr('status', 'equalto', 'WARNING') | list | length }},
+            "non_compliant_count": {{ all_baseline_results | selectattr('status', 'equalto', 'NON_COMPLIANT') | list | length }},
+            "average_score": {{ (all_baseline_results | map(attribute='score') | list | sum / groups['all'] | length) | round(2) }},
+            "hosts": {{ all_baseline_results | to_nice_json }}
+          }
+        dest: "{{ report_file }}"
+        mode: '0644'
+      delegate_to: localhost
+      run_once: true

@@ -1,0 +1,28 @@
+{
+  "name": "shortlink-analytics",
+  "version": "4.0.0",
+  "description": "短链系统与埋点平台 - Snowflake + Kafka + Flink 实时架构",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "kafka-consumer": "node services/kafkaConsumer.js",
+    "flink-worker": "node services/flinkRealTimeAggregator.js",
+    "all": "concurrently \"npm start\" \"npm run kafka-consumer\" \"npm run flink-worker\""
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "redis": "^4.6.10",
+    "@clickhouse/client": "^0.2.5",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "express-useragent": "^1.0.15",
+    "geoip-lite": "^1.4.7",
+    "kafkajs": "^2.2.4",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "concurrently": "^8.2.0"
+  }
+}

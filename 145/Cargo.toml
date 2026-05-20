@@ -1,0 +1,24 @@
+[package]
+name = "seis_rs"
+version = "0.1.0"
+edition = "2021"
+description = "Rust accelerated seismic data processing library"
+license = "MIT"
+
+[lib]
+name = "seis_rs"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.20", features = ["extension-module", "anyhow", "macros"] }
+ndarray = { version = "0.15", features = ["std"] }
+rayon = "1.8"
+thiserror = "1.0"
+byteorder = "1.4"
+num-traits = "0.2"
+anyhow = "1.0"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

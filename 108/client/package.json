@@ -1,0 +1,42 @@
+{
+  "name": "collaborative-editor-client",
+  "version": "2.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "socket.io-client": "^4.7.2",
+    "yjs": "^13.6.10",
+    "y-quill": "^1.0.1",
+    "y-websocket": "^1.5.0",
+    "quill": "^1.3.7",
+    "quill-cursors": "^4.0.2",
+    "uuid": "^9.0.1",
+    "idb": "^7.1.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "proxy": "http://localhost:3001"
+}

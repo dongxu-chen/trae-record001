@@ -1,0 +1,201 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+
+  html {
+    @apply bg-gray-50 text-gray-900;
+  }
+
+  html.dark {
+    @apply bg-gray-900 text-gray-100;
+  }
+}
+
+@layer components {
+  .markdown-body {
+    line-height: 1.8;
+    @apply text-gray-800 dark:text-gray-200;
+  }
+
+  .markdown-body h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 1.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid;
+    @apply border-gray-200 text-gray-900 dark:border-gray-700 dark:text-white;
+  }
+
+  .markdown-body h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.75rem;
+    @apply text-gray-900 dark:text-white;
+  }
+
+  .markdown-body h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 1rem 0 0.5rem;
+    @apply text-gray-900 dark:text-white;
+  }
+
+  .markdown-body p {
+    margin: 1rem 0;
+    @apply text-gray-700 dark:text-gray-300;
+  }
+
+  .markdown-body ul,
+  .markdown-body ol {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+    @apply text-gray-700 dark:text-gray-300;
+  }
+
+  .markdown-body li {
+    margin: 0.25rem 0;
+  }
+
+  .markdown-body code {
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    @apply bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200;
+  }
+
+  .markdown-body pre {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+    @apply bg-gray-900 text-gray-100 dark:bg-gray-800;
+  }
+
+  .markdown-body pre code {
+    background-color: transparent;
+    padding: 0;
+    color: inherit;
+  }
+
+  .markdown-body blockquote {
+    border-left: 4px solid;
+    padding-left: 1rem;
+    margin: 1rem 0;
+    font-style: italic;
+    @apply border-primary-500 text-gray-600 dark:text-gray-400;
+  }
+
+  .markdown-body a {
+    text-decoration: underline;
+    @apply text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300;
+  }
+
+  .markdown-body img {
+    max-width: 100%;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+  }
+
+  .markdown-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+  }
+
+  .markdown-body th,
+  .markdown-body td {
+    border: 1px solid;
+    padding: 0.5rem;
+    text-align: left;
+    @apply border-gray-200 dark:border-gray-700;
+  }
+
+  .markdown-body th {
+    font-weight: 600;
+    @apply bg-gray-50 text-gray-900 dark:bg-gray-800 dark:text-white;
+  }
+
+  .markdown-body tr:nth-child(even) {
+    @apply bg-gray-50 dark:bg-gray-800/50;
+  }
+
+  .markdown-body hr {
+    margin: 2rem 0;
+    border: none;
+    border-top: 1px solid;
+    @apply border-gray-200 dark:border-gray-700;
+  }
+
+  .markdown-body strong {
+    font-weight: 600;
+    @apply text-gray-900 dark:text-white;
+  }
+
+  .markdown-body em {
+    font-style: italic;
+  }
+
+  .markdown-body del {
+    text-decoration: line-through;
+    @apply text-gray-500 dark:text-gray-400;
+  }
+}
+
+.hljs {
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-built_in,
+.hljs-name,
+.hljs-tag {
+  @apply text-pink-400;
+}
+
+.hljs-string,
+.hljs-title,
+.hljs-section,
+.hljs-attribute,
+.hljs-literal,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-type,
+.hljs-addition {
+  @apply text-green-400;
+}
+
+.hljs-comment,
+.hljs-quote,
+.hljs-deletion,
+.hljs-meta {
+  @apply text-gray-500;
+}
+
+.hljs-number,
+.hljs-regexp,
+.hljs-literal,
+.hljs-bullet,
+.hljs-link {
+  @apply text-orange-400;
+}
+
+.hljs-variable,
+.hljs-params,
+.hljs-class .hljs-title {
+  @apply text-yellow-300;
+}
+
+.hljs-function,
+.hljs-doctag,
+.hljs-attr,
+.hljs-subst {
+  @apply text-blue-400;
+}

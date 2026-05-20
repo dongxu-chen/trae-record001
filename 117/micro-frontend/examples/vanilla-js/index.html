@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>原生JS嵌入示例 - 仪表盘SDK</title>
+  <style>
+    body {
+      font-family: -apple-system, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .header {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    .code-block {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-x: auto;
+    }
+    .code-block .keyword { color: #569cd6; }
+    .code-block .string { color: #ce9178; }
+    .code-block .comment { color: #6a9955; }
+    .code-block .function { color: #dcdcaa; }
+    h1, h2 { color: #333; }
+    .note {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🟨 原生JavaScript嵌入示例</h1>
+      <p>展示如何在纯HTML/JS项目中使用仪表盘Web Components</p>
+    </div>
+    
+    <div class="note">
+      <strong>💡 提示：</strong>Web Components是原生浏览器特性，兼容任何前端框架或无框架环境！
+    </div>
+
+    <h2>📦 方式一：通过Script标签引入</h2>
+    <div class="code-block">
+<span class="comment">&lt;!-- 1. 引入SDK --&gt;</span><br>
+<span class="tag">&lt;script <span class="attr">type</span>=<span class="string">"module"</span> <span class="attr">src</span>=<span class="string">"/dist/dashboard-sdk.esm.js"</span>&gt;&lt;/script&gt;</span><br><br>
+<span class="comment">&lt;!-- 2. 直接使用自定义标签 --&gt;</span><br>
+<span class="tag">&lt;<span class="tag">line-chart</span> <span class="attr">title</span>=<span class="string">"销售趋势"</span> <span class="attr">height</span>=<span class="string">"300px"</span> <span class="attr">smooth</span>&gt;&lt;/<span class="tag">line-chart</span>&gt;</span><br>
+<span class="tag">&lt;<span class="tag">bar-chart</span> <span class="attr">title</span>=<span class="string">"月度对比"</span> <span class="attr">height</span>=<span class="string">"300px"</span>&gt;&lt;/<span class="tag">bar-chart</span>&gt;</span><br>
+<span class="tag">&lt;<span class="tag">pie-chart</span> <span class="attr">title</span>=<span class="string">"流量来源"</span> <span class="attr">doughnut</span>&gt;&lt;/<span class="tag">pie-chart</span>&gt;</span>
+    </div>
+
+    <h2>🔧 方式二：通过SDK动态创建</h2>
+    <div class="code-block">
+<span class="tag">&lt;script <span class="attr">type</span>=<span class="string">"module"</span>&gt;</span><br>
+<span class="keyword">import</span> { createDashboardSDK } <span class="keyword">from</span> <span class="string">'./dist/dashboard-sdk.esm.js'</span>;<br><br>
+<span class="comment">// 初始化SDK</span><br>
+<span class="keyword">const</span> sdk = <span class="function">createDashboardSDK</span>();<br><br>
+<span class="comment">// 动态创建图表</span><br>
+<span class="keyword">const</span> chart = sdk.createLineChart(<span class="string">'#chart-container'</span>, {<br>
+&nbsp;&nbsp;title: <span class="string">'实时数据'</span>,<br>
+&nbsp;&nbsp;theme: <span class="string">'dark'</span>,<br>
+&nbsp;&nbsp;smooth: <span class="keyword">true</span><br>
+});<br><br>
+<span class="comment">// 监听事件</span><br>
+sdk.on(<span class="string">'chart-click'</span>, (<span class="function">payload</span>) => {<br>
+&nbsp;&nbsp;console.log(<span class="string">'图表被点击:'</span>, payload);<br>
+});<br><br>
+<span class="comment">// 所有图表实例</span><br>
+console.log(sdk.getAllCharts());<br>
+<span class="tag">&lt;/script&gt;</span>
+    </div>
+
+    <h2>📡 跨组件通信示例</h2>
+    <div class="code-block">
+<span class="comment">// 组件A发送消息</span><br>
+sdk.send(<span class="string">'target-chart-id'</span>, <span class="string">'update-data'</span>, {<br>
+&nbsp;&nbsp;series: [{ name: <span class="string">'新数据'</span>, data: [1, 2, 3] }]<br>
+});<br><br>
+<span class="comment">// 广播消息给所有组件</span><br>
+sdk.broadcast(<span class="string">'update-theme'</span>, { theme: <span class="string">'dark'</span> });<br><br>
+<span class="comment">// 订阅消息</span><br>
+sdk.on(<span class="string">'refresh-chart'</span>, (<span class="function">payload</span>) => {<br>
+&nbsp;&nbsp;console.log(<span class="string">'收到刷新指令'</span>);<br>
+});
+    </div>
+
+    <h2>🎯 实际效果演示</h2>
+    <div id="demo-container" style="background: #fff; padding: 20px; border-radius: 8px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div id="chart1"></div>
+        <div id="chart2"></div>
+      </div>
+      <div style="margin-top: 20px;" id="chart3"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createDashboardSDK } from '../../src/sdk/index.js';
+    
+    const sdk = createDashboardSDK();
+    
+    sdk.createLineChart('#chart1', {
+      title: '销售趋势',
+      height: '250px',
+      smooth: ''
+    });
+    
+    sdk.createBarChart('#chart2', {
+      title: '月度对比',
+      height: '250px'
+    });
+    
+    sdk.createPieChart('#chart3', {
+      title: '流量来源',
+      height: '300px',
+      doughnut: ''
+    });
+    
+    console.log('✅ 原生JS示例加载成功！');
+    console.log('📊 图表数量:', sdk.getAllCharts().length);
+  </script>
+</body>
+</html>

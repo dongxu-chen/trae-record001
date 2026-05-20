@@ -1,0 +1,10 @@
+Flask>=2.0.0
+Flask-Cors>=3.0.0
+SnowNLP>=0.12.3
+jieba>=0.42.1
+pandas>=1.3.0
+numpy>=1.21.0
+wordcloud>=1.8.0
+matplotlib>=3.4.0
+transformers>=4.20.0
+torch>=1.12.0

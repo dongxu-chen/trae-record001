@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import 'highlight.js/styles/github-dark.css';
+
+.hljs {
+  @apply bg-gray-900 rounded-lg p-4;
+}

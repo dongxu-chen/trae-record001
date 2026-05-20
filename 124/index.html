@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>剪贴板同步工具 - 安全增强版</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 15px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .card.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .card h2 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card h2::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #667eea;
+      border-radius: 50%;
+    }
+
+    .clipboard-status {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+
+    .clipboard-label {
+      font-size: 0.8rem;
+      color: #666;
+      margin-bottom: 6px;
+    }
+
+    .clipboard-content {
+      font-size: 0.95rem;
+      color: #333;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .clipboard-type {
+      display: inline-block;
+      padding: 3px 10px;
+      background: #667eea;
+      color: white;
+      border-radius: 15px;
+      font-size: 0.75rem;
+      margin-bottom: 8px;
+    }
+
+    .device-list {
+      list-style: none;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .device-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .device-item.trusted {
+      border-left: 3px solid #28a745;
+    }
+
+    .device-item:hover {
+      background: #e9ecef;
+      transform: translateX(3px);
+    }
+
+    .device-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .device-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.9rem;
+    }
+
+    .device-name {
+      font-weight: 600;
+      color: #333;
+      font-size: 0.9rem;
+    }
+
+    .device-platform {
+      font-size: 0.7rem;
+      color: #666;
+    }
+
+    .device-source {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 0.65rem;
+      border-radius: 4px;
+      margin-left: 6px;
+      color: white;
+    }
+
+    .device-source.mdns {
+      background: #28a745;
+    }
+
+    .device-source.ip-scan {
+      background: #17a2b8;
+    }
+
+    .device-source.qrcode {
+      background: #ffc107;
+      color: #333;
+    }
+
+    .btn {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      color: white;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+      color: white;
+    }
+
+    .btn-info {
+      background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+      color: white;
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+    }
+
+    .btn-small {
+      padding: 5px 10px;
+      font-size: 0.75rem;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 8px 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      transition: border-color 0.3s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .filter-select {
+      padding: 8px 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      background: white;
+      cursor: pointer;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .history-list {
+      list-style: none;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      padding: 10px 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border-left: 3px solid #667eea;
+    }
+
+    .history-item.send {
+      border-left-color: #11998e;
+    }
+
+    .history-item.receive {
+      border-left-color: #764ba2;
+    }
+
+    .history-item.encrypted {
+      border-right: 3px solid #28a745;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .history-type {
+      display: inline-block;
+      padding: 2px 6px;
+      background: #667eea;
+      color: white;
+      border-radius: 10px;
+      font-size: 0.65rem;
+    }
+
+    .history-direction {
+      font-size: 0.7rem;
+      color: #666;
+    }
+
+    .history-content {
+      font-size: 0.85rem;
+      color: #333;
+      word-break: break-all;
+      line-height: 1.4;
+    }
+
+    .history-time {
+      font-size: 0.7rem;
+      color: #999;
+      margin-top: 5px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px 15px;
+      color: #999;
+    }
+
+    .empty-state-icon {
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.show .modal {
+      transform: scale(1);
+    }
+
+    .modal h3 {
+      color: #333;
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+    }
+
+    .modal p {
+      color: #666;
+      margin-bottom: 15px;
+      line-height: 1.5;
+      font-size: 0.9rem;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .file-select-area {
+      border: 2px dashed #ddd;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      margin-top: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .file-select-area:hover {
+      border-color: #667eea;
+      background: #f8f9fa;
+    }
+
+    .file-select-area p {
+      color: #666;
+      font-size: 0.85rem;
+    }
+
+    .selected-file {
+      margin-top: 8px;
+      padding: 8px;
+      background: #e8f5e9;
+      border-radius: 6px;
+      color: #2e7d32;
+      font-size: 0.85rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .card-header h2 {
+      margin-bottom: 0;
+    }
+
+    .status-message {
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-size: 0.85rem;
+      display: none;
+    }
+
+    .status-message.show {
+      display: block;
+    }
+
+    .status-message.info {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .status-message.success {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .status-message.error {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .status-message.warning {
+      background: #fff3e0;
+      color: #ef6c00;
+    }
+
+    .ip-scan-section {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+
+    .ip-scan-section h3 {
+      font-size: 0.9rem;
+      color: #333;
+      margin-bottom: 12px;
+    }
+
+    .ip-input-group {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .ip-input {
+      flex: 1;
+      min-width: 120px;
+      padding: 7px 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      transition: border-color 0.3s ease;
+    }
+
+    .ip-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .ip-separator {
+      color: #666;
+      font-weight: 500;
+      font-size: 0.85rem;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      transition: width 0.3s ease;
+      border-radius: 4px;
+    }
+
+    .progress-text {
+      font-size: 0.75rem;
+      color: #666;
+      margin-top: 5px;
+      text-align: center;
+    }
+
+    .transfer-section {
+      margin-top: 15px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .transfer-section.show {
+      display: block;
+    }
+
+    .feature-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: #e3f2fd;
+      color: #1565c0;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      margin-left: 6px;
+    }
+
+    .feature-badge.secure {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    .tab {
+      padding: 8px 16px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: #666;
+      border-radius: 6px 6px 0 0;
+      transition: all 0.3s ease;
+    }
+
+    .tab.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .qr-container {
+      text-align: center;
+      padding: 15px;
+    }
+
+    .qr-image {
+      max-width: 220px;
+      border: 4px solid white;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      border-radius: 10px;
+    }
+
+    .qr-hint {
+      margin-top: 12px;
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+    .camera-area {
+      width: 100%;
+      height: 220px;
+      background: #000;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.85rem;
+      overflow: hidden;
+    }
+
+    .camera-area video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .whitelist-actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .device-id {
+      font-size: 0.65rem;
+      color: #999;
+      font-family: monospace;
+    }
+
+    .security-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.7rem;
+      color: #28a745;
+      margin-left: 8px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a1a1a1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h2>📋 当前剪贴板
+        <span class="feature-badge secure">✓ AES加密</span>
+        <span class="feature-badge">✓ MD5校验</span>
+      </h2>
+      <div id="statusMessage" class="status-message"></div>
+      <div class="clipboard-status">
+        <div class="clipboard-label">剪贴板内容：</div>
+        <div id="clipboardType" class="clipboard-type" style="display: none;">文本</div>
+        <div id="clipboardContent" class="clipboard-content">剪贴板为空</div>
+      </div>
+      
+      <div id="transferSection" class="transfer-section">
+        <div class="clipboard-label">传输进度：</div>
+        <div class="progress-bar">
+          <div id="progressBarFill" class="progress-bar-fill" style="width: 0%"></div>
+        </div>
+        <div id="progressText" class="progress-text">0%</div>
+      </div>
+      
+      <div class="file-select-area" id="fileSelectArea">
+        <p>📁 点击选择要发送的文件（支持大文件分片传输）</p>
+      </div>
+      <div id="selectedFile" class="selected-file" style="display: none;"></div>
+    </div>
+
+    <div class="card">
+      <h2>🔍 发现的设备
+        <span class="feature-badge">✓ mDNS</span>
+        <span class="feature-badge">✓ IP扫描</span>
+      </h2>
+      <ul id="deviceList" class="device-list">
+        <li class="empty-state">
+          <div class="empty-state-icon">🔍</div>
+          <p>正在搜索局域网内的设备...</p>
+        </li>
+      </ul>
+      
+      <div class="ip-scan-section">
+        <h3>🌐 IP范围扫描（支持跨网段）</h3>
+        <div class="ip-input-group">
+          <input type="text" id="startIP" class="ip-input" placeholder="起始IP" value="192.168.1.1">
+          <span class="ip-separator">至</span>
+          <input type="text" id="endIP" class="ip-input" placeholder="结束IP" value="192.168.1.254">
+          <button id="scanBtn" class="btn btn-info btn-small">开始扫描</button>
+        </div>
+        <div id="scanStatus" style="font-size: 0.75rem; color: #666;"></div>
+      </div>
+    </div>
+
+    <div class="card full-width">
+      <div class="card-header">
+        <h2>📜 同步历史记录</h2>
+        <button id="clearHistoryBtn" class="btn btn-danger btn-small">清空历史</button>
+      </div>
+      
+      <div class="search-bar">
+        <input type="text" id="searchKeyword" class="search-input" placeholder="搜索内容、设备名...">
+        <select id="filterType" class="filter-select">
+          <option value="all">全部类型</option>
+          <option value="text">文本</option>
+          <option value="image">图片</option>
+          <option value="file">文件</option>
+        </select>
+        <input type="date" id="startDate" class="filter-select" placeholder="开始日期">
+        <input type="date" id="endDate" class="filter-select" placeholder="结束日期">
+        <button id="searchBtn" class="btn btn-primary btn-small">搜索</button>
+      </div>
+      
+      <ul id="historyList" class="history-list">
+        <li class="empty-state">
+          <div class="empty-state-icon">📜</div>
+          <p>暂无同步历史</p>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="tabs">
+        <button class="tab active" data-tab="whitelist">✓ 白名单设备</button>
+        <button class="tab" data-tab="pairing">📱 二维码配对</button>
+      </div>
+      
+      <div id="whitelistTab" class="tab-content active">
+        <ul id="whitelistList" class="device-list">
+          <li class="empty-state">
+            <div class="empty-state-icon">🔒</div>
+            <p>暂无信任设备，只有白名单设备可以进行加密传输</p>
+          </li>
+        </ul>
+      </div>
+      
+      <div id="pairingTab" class="tab-content">
+        <div class="qr-container">
+          <img id="qrCode" class="qr-image" src="" alt="配对二维码">
+          <p class="qr-hint">使用另一台设备扫描此二维码进行快速配对</p>
+          <button id="refreshQR" class="btn btn-info btn-small" style="margin-top: 10px;">刷新二维码</button>
+        </div>
+        
+        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+          <h3 style="font-size: 0.9rem; margin-bottom: 10px;">📷 扫描对方二维码</h3>
+          <div class="camera-area" id="cameraArea">
+            <p>点击启用摄像头扫描二维码</p>
+          </div>
+          <button id="startCamera" class="btn btn-primary btn-small" style="margin-top: 10px; width: 100%;">
+            启用摄像头
+          </button>
+          <video id="video" style="display: none;"></video>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="requestModal" class="modal-overlay">
+    <div class="modal">
+      <h3>📨 接收剪贴板请求</h3>
+      <p id="requestMessage"></p>
+      <p id="encryptedIndicator" style="display: none; color: #28a745; font-size: 0.8rem;">
+        🔒 此传输将使用AES-GCM端到端加密
+      </p>
+      <p style="font-size: 0.75rem; color: #999; margin-top: 8px;">
+        ⚠️ 30秒内未响应将自动拒绝
+      </p>
+      <div class="modal-buttons">
+        <button id="acceptBtn" class="btn btn-success">接受</button>
+        <button id="rejectBtn" class="btn btn-danger">拒绝</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pairingModal" class="modal-overlay">
+    <div class="modal">
+      <h3>🔐 设备配对请求</h3>
+      <p id="pairingMessage"></p>
+      <p style="font-size: 0.8rem; color: #666;">
+        配对后将使用ECC密钥协商生成共享密钥，所有传输将自动加密
+      </p>
+      <div class="modal-buttons">
+        <button id="acceptPairingBtn" class="btn btn-success">接受配对</button>
+        <button id="rejectPairingBtn" class="btn btn-danger">拒绝</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script>
+    const { ipcRenderer } = require('electron');
+    
+    let devices = [];
+    let history = [];
+    let whitelist = [];
+    let currentRequest = null;
+    let currentPairingRequest = null;
+    let selectedFile = null;
+    let pendingSend = null;
+    let isScanning = false;
+    let cameraStream = null;
+
+    function showStatus(message, type = 'info') {
+      const statusEl = document.getElementById('statusMessage');
+      statusEl.textContent = message;
+      statusEl.className = `status-message show ${type}`;
+      setTimeout(() => {
+        statusEl.classList.remove('show');
+      }, 5000);
+    }
+
+    function renderDevices() {
+      const listEl = document.getElementById('deviceList');
+      
+      if (devices.length === 0) {
+        listEl.innerHTML = `
+          <li class="empty-state">
+            <div class="empty-state-icon">🔍</div>
+            <p>未发现其他设备，请确保其他设备也运行了本程序</p>
+          </li>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = devices.map(device => {
+        const isTrusted = whitelist.some(w => w.id === device.id);
+        return `
+          <li class="device-item ${isTrusted ? 'trusted' : ''}">
+            <div class="device-info">
+              <div class="device-icon">💻</div>
+              <div>
+                <div style="display: flex; align-items: center;">
+                  <span class="device-name">${device.name}</span>
+                  <span class="device-source ${device.source || 'mdns'}">
+                    ${device.source === 'ip-scan' ? 'IP扫描' : device.source === 'qrcode' ? '二维码' : 'mDNS'}
+                  </span>
+                  ${isTrusted ? '<span class="security-indicator">🔒 已信任</span>' : ''}
+                </div>
+                <div class="device-platform">${device.platform || '未知系统'} | ${device.address}</div>
+                <div class="device-id">ID: ${device.id}</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 5px; flex-direction: column; align-items: flex-end;">
+              ${isTrusted ? `
+                <button class="btn btn-primary btn-small" onclick="sendClipboard('${device.id}')">发送剪贴板</button>
+                ${selectedFile ? `<button class="btn btn-success btn-small" onclick="sendFile('${device.id}')">发送文件</button>` : ''}
+              ` : `
+                <button class="btn btn-warning btn-small" onclick="sendPairingRequest('${device.id}')">请求配对</button>
+              `}
+            </div>
+          </li>
+        `;
+      }).join('');
+    }
+
+    function renderWhitelist() {
+      const listEl = document.getElementById('whitelistList');
+      
+      if (whitelist.length === 0) {
+        listEl.innerHTML = `
+          <li class="empty-state">
+            <div class="empty-state-icon">🔒</div>
+            <p>暂无信任设备，只有白名单设备可以进行加密传输</p>
+          </li>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = whitelist.map(device => `
+        <li class="device-item trusted">
+          <div class="device-info">
+            <div class="device-icon">✅</div>
+            <div>
+              <div class="device-name">${device.name}</div>
+              <div class="device-id">ID: ${device.id}</div>
+              <div style="font-size: 0.65rem; color: #28a745; margin-top: 3px;">
+                已添加: ${new Date(device.addedAt).toLocaleString()}
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-danger btn-small" onclick="removeFromWhitelist('${device.id}')">移除</button>
+        </li>
+      `).join('');
+    }
+
+    function renderHistory(historyData = history) {
+      const listEl = document.getElementById('historyList');
+      
+      if (historyData.length === 0) {
+        listEl.innerHTML = `
+          <li class="empty-state">
+            <div class="empty-state-icon">📜</div>
+            <p>暂无同步历史</p>
+          </li>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = historyData.map(item => {
+        const typeLabel = item.type === 'text' ? '文本' : item.type === 'image' ? '图片' : '文件';
+        const directionLabel = item.direction === 'send' 
+          ? `发送到: ${item.to}` 
+          : `来自: ${item.from}`;
+        const time = new Date(item.timestamp).toLocaleString('zh-CN');
+        
+        return `
+          <li class="history-item ${item.direction} ${item.encrypted ? 'encrypted' : ''}">
+            <div class="history-header">
+              <span class="history-type">${typeLabel}</span>
+              <span class="history-direction">
+                ${directionLabel}
+                ${item.encrypted ? ' 🔒' : ''}
+              </span>
+            </div>
+            <div class="history-content">${item.content || item.preview || '数据'}</div>
+            <div class="history-time">${time}</div>
+          </li>
+        `;
+      }).join('');
+    }
+
+    function sendClipboard(deviceId) {
+      ipcRenderer.send('send-clipboard', deviceId);
+      showStatus('正在发送请求...', 'info');
+    }
+
+    function sendFile(deviceId) {
+      if (selectedFile) {
+        ipcRenderer.send('send-file', { deviceId, filePath: selectedFile });
+        showStatus('正在发送文件请求...', 'info');
+      }
+    }
+
+    function sendPairingRequest(deviceId) {
+      ipcRenderer.send('send-pairing-request', deviceId);
+      showStatus('正在发送配对请求...', 'info');
+    }
+
+    function removeFromWhitelist(deviceId) {
+      if (confirm('确定要移除该设备吗？之后需要重新配对才能传输。')) {
+        ipcRenderer.send('remove-from-whitelist', deviceId);
+      }
+    }
+
+    ipcRenderer.on('clipboard-changed', (event, data) => {
+      const typeEl = document.getElementById('clipboardType');
+      const contentEl = document.getElementById('clipboardContent');
+      
+      typeEl.style.display = 'inline-block';
+      typeEl.textContent = data.type === 'text' ? '文本' : '图片';
+      contentEl.textContent = data.preview;
+    });
+
+    ipcRenderer.on('devices-updated', (event, deviceList) => {
+      devices = deviceList;
+      renderDevices();
+    });
+
+    ipcRenderer.on('history-updated', (event, historyList) => {
+      history = historyList;
+      renderHistory();
+    });
+
+    ipcRenderer.on('whitelist-updated', (event, whitelistList) => {
+      whitelist = whitelistList;
+      renderWhitelist();
+      renderDevices();
+    });
+
+    ipcRenderer.on('search-results', (event, results) => {
+      renderHistory(results);
+    });
+
+    ipcRenderer.on('clipboard-request', (event, data) => {
+      currentRequest = data;
+      const typeLabel = data.type === 'text' ? '文本' : data.type === 'image' ? '图片' : '文件';
+      const sizeText = data.totalSize ? ` (${(data.totalSize / 1024 / 1024).toFixed(2)} MB)` : '';
+      document.getElementById('requestMessage').textContent = 
+        `设备 "${data.from}" 想要发送${typeLabel}${sizeText}给您：\n${data.preview}`;
+      document.getElementById('encryptedIndicator').style.display = data.encrypted ? 'block' : 'none';
+      document.getElementById('requestModal').classList.add('show');
+    });
+
+    ipcRenderer.on('pairing-request', (event, data) => {
+      currentPairingRequest = data;
+      document.getElementById('pairingMessage').textContent = 
+        `设备 "${data.fromDeviceName}" 想要与您配对`;
+      document.getElementById('pairingModal').classList.add('show');
+    });
+
+    ipcRenderer.on('pairing-sent', (event, data) => {
+      showStatus(`配对请求已发送到 "${data.deviceName}"，配对码: ${data.pairingCode}`, 'info');
+    });
+
+    ipcRenderer.on('pairing-completed', (event, data) => {
+      if (data.accepted) {
+        showStatus('配对成功！现在可以进行加密传输了', 'success');
+      }
+      document.getElementById('pairingModal').classList.remove('show');
+      currentPairingRequest = null;
+    });
+
+    ipcRenderer.on('clipboard-response', (event, data) => {
+      if (data.accepted) {
+        showStatus(`设备 "${data.from}" 接受了请求，正在发送数据...`, 'success');
+        if (pendingSend && pendingSend.fileId) {
+          ipcRenderer.send('confirm-file-send', {
+            fileId: pendingSend.fileId,
+            accepted: true
+          });
+        }
+        pendingSend = null;
+      } else {
+        showStatus(`设备 "${data.from}" 拒绝了请求`, 'error');
+        pendingSend = null;
+        document.getElementById('transferSection').classList.remove('show');
+      }
+    });
+
+    ipcRenderer.on('request-timeout', (event, data) => {
+      showStatus(`设备 "${data.from}" 的请求已超时（30秒）`, 'warning');
+      document.getElementById('requestModal').classList.remove('show');
+    });
+
+    ipcRenderer.on('send-status', (event, data) => {
+      if (data.status === 'waiting') {
+        showStatus(`已向 "${data.device}" 发送请求，等待回应（30秒超时）...`, 'info');
+        pendingSend = { 
+          filePath: data.filePath, 
+          deviceId: data.deviceId,
+          fileId: data.fileId,
+          type: data.type
+        };
+      }
+    });
+
+    ipcRenderer.on('transfer-progress', (event, data) => {
+      const section = document.getElementById('transferSection');
+      const fill = document.getElementById('progressBarFill');
+      const text = document.getElementById('progressText');
+      
+      section.classList.add('show');
+      fill.style.width = `${data.percentage}%`;
+      text.textContent = `分片 ${data.current}/${data.total} - ${data.percentage}%`;
+      
+      if (data.percentage === 100) {
+        setTimeout(() => {
+          section.classList.remove('show');
+          showStatus('传输完成！已使用AES-GCM加密', 'success');
+        }, 1000);
+      }
+    });
+
+    ipcRenderer.on('send-error', (event, error) => {
+      showStatus(error, 'error');
+      document.getElementById('transferSection').classList.remove('show');
+    });
+
+    ipcRenderer.on('pairing-error', (event, error) => {
+      showStatus('配对失败: ' + error, 'error');
+    });
+
+    ipcRenderer.on('file-selected', (event, filePath) => {
+      selectedFile = filePath;
+      const fileName = filePath.split(/[\\/]/).pop();
+      document.getElementById('selectedFile').textContent = `已选择文件: ${fileName}`;
+      document.getElementById('selectedFile').style.display = 'block';
+      renderDevices();
+    });
+
+    ipcRenderer.on('scan-complete', (event, data) => {
+      document.getElementById('scanStatus').textContent = 
+        `✓ 扫描完成，发现 ${data.found} 个设备`;
+      document.getElementById('scanBtn').disabled = false;
+      document.getElementById('scanBtn').textContent = '开始扫描';
+      isScanning = false;
+    });
+
+    ipcRenderer.on('scan-error', (event, data) => {
+      document.getElementById('scanStatus').textContent = `✗ 扫描失败: ${data.message}`;
+      document.getElementById('scanBtn').disabled = false;
+      document.getElementById('scanBtn').textContent = '开始扫描';
+      isScanning = false;
+    });
+
+    ipcRenderer.on('qrcode-generated', (event, qrImage) => {
+      document.getElementById('qrCode').src = qrImage;
+    });
+
+    ipcRenderer.on('qrscan-success', (event, data) => {
+      showStatus(`成功扫描到设备: ${data.deviceName}`, 'success');
+      stopCamera();
+    });
+
+    ipcRenderer.on('qrscan-error', (event, error) => {
+      showStatus('扫描失败: ' + error, 'error');
+    });
+
+    document.getElementById('acceptBtn').addEventListener('click', () => {
+      if (currentRequest) {
+        ipcRenderer.send('respond-clipboard', { 
+          from: currentRequest.from, 
+          accepted: true,
+          requestId: currentRequest.requestId
+        });
+        showStatus('已接受请求，准备接收数据...', 'success');
+      }
+      document.getElementById('requestModal').classList.remove('show');
+      currentRequest = null;
+    });
+
+    document.getElementById('rejectBtn').addEventListener('click', () => {
+      if (currentRequest) {
+        ipcRenderer.send('respond-clipboard', { 
+          from: currentRequest.from, 
+          accepted: false,
+          requestId: currentRequest.requestId
+        });
+        showStatus('已拒绝请求', 'info');
+      }
+      document.getElementById('requestModal').classList.remove('show');
+      currentRequest = null;
+    });
+
+    document.getElementById('acceptPairingBtn').addEventListener('click', () => {
+      if (currentPairingRequest) {
+        ipcRenderer.send('respond-pairing', { 
+          requestId: currentPairingRequest.requestId, 
+          accepted: true 
+        });
+      }
+    });
+
+    document.getElementById('rejectPairingBtn').addEventListener('click', () => {
+      if (currentPairingRequest) {
+        ipcRenderer.send('respond-pairing', { 
+          requestId: currentPairingRequest.requestId, 
+          accepted: false 
+        });
+        showStatus('已拒绝配对请求', 'info');
+      }
+      document.getElementById('pairingModal').classList.remove('show');
+      currentPairingRequest = null;
+    });
+
+    document.getElementById('fileSelectArea').addEventListener('click', () => {
+      ipcRenderer.send('select-file');
+    });
+
+    document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+      if (confirm('确定要清空所有历史记录吗？')) {
+        ipcRenderer.send('clear-history');
+      }
+    });
+
+    document.getElementById('scanBtn').addEventListener('click', () => {
+      if (isScanning) return;
+      
+      const startIP = document.getElementById('startIP').value;
+      const endIP = document.getElementById('endIP').value;
+      
+      if (!startIP || !endIP) {
+        showStatus('请输入有效的IP范围', 'error');
+        return;
+      }
+      
+      isScanning = true;
+      document.getElementById('scanBtn').disabled = true;
+      document.getElementById('scanBtn').textContent = '扫描中...';
+      document.getElementById('scanStatus').textContent = '正在扫描IP范围，请稍候...';
+      
+      ipcRenderer.send('start-ip-scan', { startIP, endIP });
+    });
+
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      const keyword = document.getElementById('searchKeyword').value;
+      const type = document.getElementById('filterType').value;
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      
+      ipcRenderer.send('search-history', { keyword, type, startDate, endDate });
+    });
+
+    document.getElementById('searchKeyword').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('searchBtn').click();
+      }
+    });
+
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab + 'Tab').classList.add('active');
+        
+        if (tab.dataset.tab === 'pairing') {
+          ipcRenderer.send('generate-qrcode');
+        }
+      });
+    });
+
+    document.getElementById('refreshQR').addEventListener('click', () => {
+      ipcRenderer.send('generate-qrcode');
+    });
+
+    async function startCamera() {
+      try {
+        const video = document.getElementById('video');
+        const cameraArea = document.getElementById('cameraArea');
+        
+        cameraStream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'environment' } 
+        });
+        
+        video.srcObject = cameraStream;
+        video.style.display = 'block';
+        cameraArea.innerHTML = '';
+        cameraArea.appendChild(video);
+        video.play();
+        
+        document.getElementById('startCamera').textContent = '停止扫描';
+        
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        function scanQR() {
+          if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvas.height = video.videoHeight;
+            canvas.width = video.videoWidth;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+            
+            if (code) {
+              ipcRenderer.send('scan-qrcode', code.data);
+              stopCamera();
+              return;
+            }
+          }
+          
+          if (cameraStream) {
+            requestAnimationFrame(scanQR);
+          }
+        }
+        
+        scanQR();
+      } catch (err) {
+        showStatus('无法访问摄像头: ' + err.message, 'error');
+      }
+    }
+
+    function stopCamera() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+      
+      const video = document.getElementById('video');
+      video.style.display = 'none';
+      video.srcObject = null;
+      
+      const cameraArea = document.getElementById('cameraArea');
+      cameraArea.innerHTML = '<p>点击启用摄像头扫描二维码</p>';
+      
+      document.getElementById('startCamera').textContent = '启用摄像头';
+    }
+
+    document.getElementById('startCamera').addEventListener('click', () => {
+      if (cameraStream) {
+        stopCamera();
+      } else {
+        startCamera();
+      }
+    });
+
+    ipcRenderer.send('get-devices');
+    ipcRenderer.send('get-history');
+    ipcRenderer.send('get-whitelist');
+    ipcRenderer.send('generate-qrcode');
+  </script>
+</body>
+</html>

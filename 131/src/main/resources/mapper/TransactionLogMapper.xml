@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.payment.reconciliation.mapper.TransactionLogMapper">
+
+    <select id="selectByTransactionId" resultType="com.payment.reconciliation.entity.TransactionLog">
+        SELECT * FROM transaction_log WHERE transaction_id = #{transactionId}
+    </select>
+
+</mapper>

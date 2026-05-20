@@ -1,0 +1,8 @@
+domain: k8s.health.checker.io
+repo: github.com/k8s-health-checker/operator
+plugins:
+- manifests.sdk.kubebuilder.io/v2
+- rbac.sdk.kubebuilder.io/v2
+- scorecard.sdk.kubebuilder.io/v2
+projectName: k8s-health-checker
+version: "3"

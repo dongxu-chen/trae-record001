@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clipboard Sync - Tauri</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .device-info {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+
+        .tab {
+            padding: 16px 24px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: #6b7280;
+        }
+
+        .tab:hover {
+            color: #667eea;
+            background: #f3f4f6;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+
+        .content {
+            padding: 24px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input,
+        .search-bar select {
+            padding: 10px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-bar input:focus,
+        .search-bar select:focus {
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-success {
+            background: #10b981;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .device-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .device-card {
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s;
+        }
+
+        .device-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .device-card.trusted {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+
+        .device-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .device-details {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+
+        .device-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-trusted {
+            background: #10b981;
+            color: white;
+        }
+
+        .badge-text {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .badge-image {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .badge-file {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .history-item {
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .history-time {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .history-preview {
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .qrcode-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .qrcode {
+            font-family: monospace;
+            line-height: 1;
+            font-size: 10px;
+            letter-spacing: 0;
+            background: white;
+            padding: 20px;
+            display: inline-block;
+            border-radius: 8px;
+        }
+
+        .ip-scan-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .clipboard-preview {
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            min-height: 80px;
+        }
+
+        .clipboard-preview.empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Clipboard Sync</h1>
+            <div class="device-info" id="localDeviceInfo">加载中...</div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="devices">🔌 设备</div>
+            <div class="tab" data-tab="history">📜 历史记录</div>
+            <div class="tab" data-tab="whitelist">✓ 白名单</div>
+            <div class="tab" data-tab="pairing">📱 配对</div>
+        </div>
+
+        <div class="content">
+            <div id="devices" class="tab-content active">
+                <div class="ip-scan-form">
+                    <div class="form-group">
+                        <label>起始IP</label>
+                        <input type="text" id="startIp" value="192.168.1.1" placeholder="192.168.1.1">
+                    </div>
+                    <div class="form-group">
+                        <label>结束IP</label>
+                        <input type="text" id="endIp" value="192.168.1.255" placeholder="192.168.1.255">
+                    </div>
+                    <button class="btn" onclick="scanDevices()">🔍 扫描</button>
+                </div>
+
+                <div class="device-list" id="deviceList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔌</div>
+                        <p>暂无发现的设备</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="history" class="tab-content">
+                <div class="search-bar">
+                    <input type="text" id="searchKeyword" placeholder="搜索内容、设备名...">
+                    <select id="filterType">
+                        <option value="">全部类型</option>
+                        <option value="text">文本</option>
+                        <option value="image">图片</option>
+                        <option value="file">文件</option>
+                    </select>
+                    <input type="date" id="startDate">
+                    <input type="date" id="endDate">
+                    <button class="btn" onclick="searchHistory()">搜索</button>
+                    <button class="btn btn-danger" onclick="clearHistory()">清空</button>
+                </div>
+
+                <div id="historyList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📜</div>
+                        <p>暂无历史记录</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="whitelist" class="tab-content">
+                <div class="device-list" id="whitelist">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✓</div>
+                        <p>暂无信任设备</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="pairing" class="tab-content">
+                <div class="qrcode-container">
+                    <button class="btn" onclick="generateQrcode()">生成配对二维码</button>
+                    <div id="qrcode" class="qrcode" style="margin-top: 20px; display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { invoke } = window.__TAURI__.tauri;
+
+        async function init() {
+            await loadLocalDevice();
+            await loadDevices();
+            await loadHistory();
+            await loadWhitelist();
+            setupTabs();
+        }
+
+        function setupTabs() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(tab.dataset.tab).classList.add('active');
+                });
+            });
+        }
+
+        async function loadLocalDevice() {
+            try {
+                const device = await invoke('get_local_device_info');
+                document.getElementById('localDeviceInfo').textContent = 
+                    `${device.name} (${device.address}:${device.port})`;
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadDevices() {
+            try {
+                const devices = await invoke('get_devices');
+                renderDevices(devices, 'deviceList');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadWhitelist() {
+            try {
+                const devices = await invoke('get_whitelist_devices');
+                renderDevices(devices, 'whitelist', true);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderDevices(devices, containerId, isWhitelist = false) {
+            const container = document.getElementById(containerId);
+            
+            if (devices.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">${isWhitelist ? '✓' : '🔌'}</div>
+                        <p>${isWhitelist ? '暂无信任设备' : '暂无发现的设备'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = devices.map(device => `
+                <div class="device-card ${device.trusted ? 'trusted' : ''}">
+                    <div class="device-name">
+                        ${device.name}
+                        ${device.trusted ? '<span class="badge badge-trusted">已信任</span>' : ''}
+                    </div>
+                    <div class="device-details">
+                        ${device.address}:${device.port} • ${device.platform}
+                    </div>
+                    <div class="device-actions">
+                        ${!isWhitelist ? `
+                            <button class="btn btn-success" onclick="addToWhitelist('${device.id}')">
+                                ✓ 添加信任
+                            </button>
+                        ` : `
+                            <button class="btn btn-danger" onclick="removeFromWhitelist('${device.id}')">
+                                ✕ 移除
+                            </button>
+                        `}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function scanDevices() {
+            const start = document.getElementById('startIp').value;
+            const end = document.getElementById('endIp').value;
+            try {
+                await invoke('scan_ip_range', { start, end });
+                await loadDevices();
+            } catch (e) {
+                alert('扫描失败: ' + e);
+            }
+        }
+
+        async function addToWhitelist(deviceId) {
+            try {
+                const devices = await invoke('get_devices');
+                const device = devices.find(d => d.id === deviceId);
+                if (device) {
+                    await invoke('add_to_whitelist', { device });
+                    await loadWhitelist();
+                    await loadDevices();
+                }
+            } catch (e) {
+                alert('添加失败: ' + e);
+            }
+        }
+
+        async function removeFromWhitelist(deviceId) {
+            try {
+                await invoke('remove_from_whitelist', { deviceId });
+                await loadWhitelist();
+                await loadDevices();
+            } catch (e) {
+                alert('移除失败: ' + e);
+            }
+        }
+
+        async function loadHistory() {
+            try {
+                const history = await invoke('get_history');
+                renderHistory(history);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function searchHistory() {
+            const keyword = document.getElementById('searchKeyword').value || null;
+            const itemType = document.getElementById('filterType').value || null;
+            const startDate = document.getElementById('startDate').value || null;
+            const endDate = document.getElementById('endDate').value || null;
+
+            try {
+                const history = await invoke('search_history', { 
+                    keyword, 
+                    itemType, 
+                    startDate, 
+                    endDate 
+                });
+                renderHistory(history);
+            } catch (e) {
+                alert('搜索失败: ' + e);
+            }
+        }
+
+        async function clearHistory() {
+            if (confirm('确定要清空所有历史记录吗？')) {
+                try {
+                    await invoke('clear_history');
+                    await loadHistory();
+                } catch (e) {
+                    alert('清空失败: ' + e);
+                }
+            }
+        }
+
+        function renderHistory(history) {
+            const container = document.getElementById('historyList');
+
+            if (history.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📜</div>
+                        <p>暂无历史记录</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = history.map(item => {
+                const typeBadge = item.content_type === 'text' ? 'badge-text' :
+                                  item.content_type === 'image' ? 'badge-image' : 'badge-file';
+                const typeLabel = item.content_type === 'text' ? '文本' :
+                                  item.content_type === 'image' ? '图片' : '文件';
+                return `
+                    <div class="history-item">
+                        <div class="history-header">
+                            <span>
+                                <span class="badge ${typeBadge}">${typeLabel}</span>
+                                ${item.encrypted ? '<span class="badge badge-trusted">🔒 加密</span>' : ''}
+                                ${item.direction === 'send' ? '→ 发送到' : '← 接收自'} ${item.peer_device_name}
+                            </span>
+                            <span class="history-time">${new Date(item.timestamp.secs_since_epoch * 1000).toLocaleString()}</span>
+                        </div>
+                        <div class="history-preview">${item.content_preview}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function generateQrcode() {
+            try {
+                const qr = await invoke('generate_pairing_qrcode');
+                const qrContainer = document.getElementById('qrcode');
+                qrContainer.textContent = qr;
+                qrContainer.style.display = 'inline-block';
+            } catch (e) {
+                alert('生成二维码失败: ' + e);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+defaults: &defaults
+  timeout: 30
+  enabled: true
+
+server:
+  <<: *defaults
+  host: localhost
+  port: 3000
+
+database:
+  <<: *defaults
+  host: localhost
+  port: 5432
+  name: myapp
+  username: admin
+  password: secret
+
+logging:
+  level: info
+  file: app.log
+  maxSize: 100MB
+
+features:
+  - auth
+  - cache
+  - rate-limit

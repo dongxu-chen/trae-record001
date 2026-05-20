@@ -1,0 +1,96 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: http://127.0.0.1:8080
+
+functions:
+  k8s-event-handler-python:
+    lang: python3-http
+    handler: ./functions/python
+    image: k8s-event-handler-python:latest
+    environment:
+      write_debug: true
+      read_timeout: 30s
+      write_timeout: 30s
+      exec_timeout: 30s
+    environment_file:
+      - .env
+    limits:
+      memory: 256Mi
+      cpu: 200m
+    requests:
+      memory: 128Mi
+      cpu: 100m
+    annotations:
+      com.openfaas.scale.min: 0
+      com.openfaas.scale.max: 10
+      com.openfaas.scale.factor: 50
+      com.openfaas.scale.zero: true
+
+  k8s-event-handler-node:
+    lang: node17
+    handler: ./functions/nodejs
+    image: k8s-event-handler-node:latest
+    environment:
+      write_debug: true
+      read_timeout: 30s
+      write_timeout: 30s
+      exec_timeout: 30s
+    environment_file:
+      - .env
+    limits:
+      memory: 256Mi
+      cpu: 200m
+    requests:
+      memory: 128Mi
+      cpu: 100m
+    annotations:
+      com.openfaas.scale.min: 0
+      com.openfaas.scale.max: 10
+      com.openfaas.scale.factor: 50
+      com.openfaas.scale.zero: true
+
+  k8s-event-handler-go:
+    lang: golang-http
+    handler: ./functions/go
+    image: k8s-event-handler-go:latest
+    environment:
+      write_debug: true
+      read_timeout: 30s
+      write_timeout: 30s
+      exec_timeout: 30s
+    environment_file:
+      - .env
+    limits:
+      memory: 128Mi
+      cpu: 100m
+    requests:
+      memory: 64Mi
+      cpu: 50m
+    annotations:
+      com.openfaas.scale.min: 0
+      com.openfaas.scale.max: 20
+      com.openfaas.scale.factor: 30
+      com.openfaas.scale.zero: true
+
+  k8s-event-trigger:
+    lang: golang-http
+    handler: ./trigger
+    image: k8s-event-trigger:latest
+    environment:
+      write_debug: true
+      read_timeout: 60s
+      write_timeout: 60s
+      exec_timeout: 120s
+    environment_file:
+      - .env
+    limits:
+      memory: 256Mi
+      cpu: 200m
+    requests:
+      memory: 128Mi
+      cpu: 100m
+    annotations:
+      com.openfaas.scale.min: 1
+      com.openfaas.scale.max: 1
+      com.openfaas.scale.zero: false

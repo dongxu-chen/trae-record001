@@ -1,0 +1,80 @@
+.code-wrapper.light {
+  background: #ffffff;
+}
+
+.code-wrapper.light .line-numbers {
+  background: #f5f5f5;
+  border-right-color: #ddd;
+}
+
+.code-wrapper.light .line-number {
+  color: #999;
+}
+
+.code-wrapper.light code {
+  color: #000000;
+}
+
+.code-wrapper.light .token.comment,
+.code-wrapper.light .token.prolog,
+.code-wrapper.light .token.doctype,
+.code-wrapper.light .token.cdata {
+  color: #008000;
+}
+
+.code-wrapper.light .token.punctuation {
+  color: #000000;
+}
+
+.code-wrapper.light .token.property,
+.code-wrapper.light .token.tag,
+.code-wrapper.light .token.boolean,
+.code-wrapper.light .token.number,
+.code-wrapper.light .token.constant,
+.code-wrapper.light .token.symbol,
+.code-wrapper.light .token.deleted {
+  color: #0451a5;
+}
+
+.code-wrapper.light .token.selector,
+.code-wrapper.light .token.attr-name,
+.code-wrapper.light .token.string,
+.code-wrapper.light .token.char,
+.code-wrapper.light .token.builtin,
+.code-wrapper.light .token.inserted {
+  color: #a31515;
+}
+
+.code-wrapper.light .token.operator,
+.code-wrapper.light .token.entity,
+.code-wrapper.light .token.url,
+.code-wrapper.light .language-css .token.string,
+.code-wrapper.light .style .token.string {
+  color: #000000;
+}
+
+.code-wrapper.light .token.atrule,
+.code-wrapper.light .token.attr-value,
+.code-wrapper.light .token.keyword {
+  color: #0000ff;
+}
+
+.code-wrapper.light .token.function,
+.code-wrapper.light .token.class-name {
+  color: #795e26;
+}
+
+.code-wrapper.light .token.regex,
+.code-wrapper.light .token.important,
+.code-wrapper.light .token.variable {
+  color: #0000ff;
+}
+
+.code-wrapper.light .token.important,
+.code-wrapper.light .token.bold {
+  font-weight: bold;
+}
+
+.code-wrapper.light .token.italic {
+  font-style: italic;
+}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">预约 {{ counselor.name }}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4 p-3 bg-light rounded">
+                        <p class="mb-1"><strong>职称：</strong>{{ counselor.title }}</p>
+                        <p class="mb-1"><strong>专长：</strong>{{ counselor.specialty }}</p>
+                        <p class="mb-0"><strong>可预约时间：</strong>{{ counselor.available_times }}</p>
+                    </div>
+                    
+                    <form method="POST">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">姓名 *</label>
+                                <input type="text" class="form-control" name="student_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">学号 *</label>
+                                <input type="text" class="form-control" name="student_id" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">联系电话</label>
+                            <input type="tel" class="form-control" name="phone">
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">预约日期 *</label>
+                                <input type="date" class="form-control" name="appointment_date" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">预约时间 *</label>
+                                <select class="form-select" name="appointment_time" required>
+                                    <option value="">请选择</option>
+                                    <option value="09:00">09:00</option>
+                                    <option value="10:00">10:00</option>
+                                    <option value="11:00">11:00</option>
+                                    <option value="14:00">14:00</option>
+                                    <option value="15:00">15:00</option>
+                                    <option value="16:00">16:00</option>
+                                    <option value="17:00">17:00</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">咨询原因</label>
+                            <textarea class="form-control" name="reason" rows="4" placeholder="请简要描述您想咨询的问题..."></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('counselors') }}" class="btn btn-secondary">返回</a>
+                            <button type="submit" class="btn btn-primary">确认预约</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

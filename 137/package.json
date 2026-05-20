@@ -1,0 +1,31 @@
+{
+  "name": "mapbox-gl-sandbox",
+  "version": "2.0.0",
+  "description": "Mapbox GL 路径规划可视化沙盘",
+  "main": "app.js",
+  "scripts": {
+    "dev": "npx serve -p 8080",
+    "build": "echo 'Static project - no build required'",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "mapbox-gl",
+    "geospatial",
+    "routing",
+    "3d",
+    "rbush"
+  ],
+  "author": "Sandbox Developer",
+  "license": "MIT",
+  "dependencies": {
+    "@turf/turf": "^6.5.0",
+    "rbush": "^3.0.1",
+    "@mapbox/mbview": "^0.10.0",
+    "@mapbox/mbtiles": "^0.12.1",
+    "mapbox-gl": "^3.2.0",
+    "@mapbox/mapbox-gl-geocoder": "^5.0.1"
+  },
+  "devDependencies": {
+    "serve": "^14.2.1"
+  }
+}

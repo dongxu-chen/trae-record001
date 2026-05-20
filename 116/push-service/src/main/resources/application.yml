@@ -1,0 +1,86 @@
+server:
+  port: 8080
+  compression:
+    enabled: true
+  http2:
+    enabled: true
+  reactive:
+    session:
+      timeout: 30m
+
+spring:
+  application:
+    name: push-service
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/push_center?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: root
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+  webflux:
+    base-path: /
+    session:
+      cookie:
+        max-age: 30m
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+push:
+  apns:
+    bundle-id: com.your.app
+    key-id: your-key-id
+    team-id: your-team-id
+    private-key-path: /path/to/AuthKey.p8
+    sandbox: true
+    cert-path: /path/to/apns_cert.p12
+    cert-password: your-cert-password
+    alert-days-before-expiry: 7
+  fcm:
+    service-account-path: /path/to/service-account.json
+  websocket:
+    port: 9000
+    boss-threads: 1
+    worker-threads: 8
+    business-threads: 20
+  aggregate:
+    enabled: true
+    window-seconds: 300
+    max-messages: 10
+  thread-pool:
+    token-clean-core-size: 2
+    token-clean-max-size: 5
+    push-business-core-size: 10
+    push-business-max-size: 50
+    callback-core-size: 5
+    callback-max-size: 20
+    queue-capacity: 10000

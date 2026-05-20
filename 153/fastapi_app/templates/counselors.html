@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center mb-5">👨‍⚕️ 选择您的心理咨询师</h1>
+    
+    <div class="row g-4">
+        {% for counselor in counselors %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 card-hover">
+                <div class="card-body text-center">
+                    <div class="avatar-circle bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px; font-size: 2rem;">
+                        {{ counselor.name[0] }}
+                    </div>
+                    <h5 class="card-title">{{ counselor.name }}</h5>
+                    <h6 class="card-subtitle text-muted mb-3">{{ counselor.title }}</h6>
+                    <p class="card-text mb-3">{{ counselor.specialty }}</p>
+                    <div class="text-muted small mb-3">
+                        <i class="bi bi-clock"></i> {{ counselor.available_times }}
+                    </div>
+                    <a href="/book/{{ counselor.id }}" class="btn btn-primary w-100">
+                        立即预约
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
