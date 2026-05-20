@@ -1,0 +1,144 @@
+apiVersion: apps/v1
+kind: ServiceAccount
+metadata:
+  name: k8s-auditor
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: k8s-auditor
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps", "secrets", "persistentvolumeclaims", "namespaces", "resourcequotas", "serviceaccounts"]
+  verbs: ["get", "list", "watch", "update", "patch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets", "daemonsets"]
+  verbs: ["get", "list", "watch", "update", "patch"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses"]
+  verbs: ["get", "list", "watch", "update", "patch"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["clusterroles", "clusterrolebindings", "roles", "rolebindings"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: k8s-auditor
+subjects:
+- kind: ServiceAccount
+  name: k8s-auditor
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: k8s-auditor
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k8s-auditor-config
+  namespace: kube-system
+data:
+  config.yaml: |
+    kubeconfig: ""
+    namespace: ""
+    audit:
+      schedule: "0 0 * * *"
+      outputDir: "/app/reports"
+      enableTrends: true
+      enableRBAC: true
+      autoRemediate: false
+      dryRun: true
+      resources:
+        - pods
+        - services
+        - configmaps
+        - secrets
+        - deployments
+        - statefulsets
+        - daemonsets
+        - ingresses
+        - persistentvolumeclaims
+    rules:
+      resourceQuota:
+        enabled: true
+        cpuRequestMin: "100m"
+        cpuRequestMax: "4"
+        memoryRequestMin: "64Mi"
+        memoryRequestMax: "8Gi"
+        cpuLimitMin: "200m"
+        cpuLimitMax: "8"
+        memoryLimitMin: "128Mi"
+        memoryLimitMax: "16Gi"
+      labels:
+        enabled: true
+        required:
+          - app
+          - environment
+        patterns:
+          environment: "^(dev|staging|production)$"
+      imageSource:
+        enabled: true
+        allowedRegistries:
+          - "registry.company.com"
+          - "docker.io/library"
+        disallowedTags:
+          - "latest"
+        checkPrivateRegistryAuth: true
+        privateRegistries:
+          - "registry.company.com"
+    webhook:
+      enabled: false
+      url: ""
+      secret: ""
+      timeout: "30s"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-auditor
+  namespace: kube-system
+  labels:
+    app: k8s-auditor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-auditor
+  template:
+    metadata:
+      labels:
+        app: k8s-auditor
+    spec:
+      serviceAccountName: k8s-auditor
+      containers:
+      - name: auditor
+        image: k8s-auditor:latest
+        imagePullPolicy: IfNotPresent
+        args: ["--daemon"]
+        volumeMounts:
+        - name: config
+          mountPath: /app/config.yaml
+          subPath: config.yaml
+        - name: reports
+          mountPath: /app/reports
+      volumes:
+      - name: config
+        configMap:
+          name: k8s-auditor-config
+      - name: reports
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-auditor
+  namespace: kube-system
+spec:
+  selector:
+    app: k8s-auditor
+  ports:
+  - port: 80
+    targetPort: 8080

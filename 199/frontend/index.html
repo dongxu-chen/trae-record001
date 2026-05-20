@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电商直播数据大屏</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+</head>
+<body>
+    <div class="dashboard">
+        <header class="dashboard-header">
+            <h1>电商直播实时数据监控大屏</h1>
+            <div class="header-info">
+                <span class="live-status live">
+                    <span class="status-dot"></span>
+                    直播中
+                </span>
+                <span class="event-time-info" id="eventTimeInfo">
+                    <span class="info-label">事件时间:</span>
+                    <span id="eventTime">--:--:--</span>
+                    <span class="info-divider">|</span>
+                    <span class="info-label">水位线:</span>
+                    <span id="watermark">--:--:--</span>
+                    <span class="info-divider">|</span>
+                    <span class="info-label">延迟:</span>
+                    <span id="lag" class="lag-indicator">0s</span>
+                </span>
+                <span class="current-time" id="currentTime">--:--:--</span>
+            </div>
+        </header>
+
+        <main class="dashboard-main">
+            <section class="metrics-row">
+                <div class="metric-card card-viewers">
+                    <div class="metric-icon">👁</div>
+                    <div class="metric-content">
+                        <div class="metric-label">累计观看人数</div>
+                        <div class="metric-value" id="totalViewers">0</div>
+                        <div class="metric-sub">
+                            <span class="trend up">↑</span>
+                            <span id="viewersPerMin">+0</span> / 分钟
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-card card-online">
+                    <div class="metric-icon">👥</div>
+                    <div class="metric-content">
+                        <div class="metric-label">当前在线人数</div>
+                        <div class="metric-value" id="currentOnline">0</div>
+                        <div class="metric-sub">
+                            <span id="viewersPerSec">0</span> 人/秒进入
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-card card-likes">
+                    <div class="metric-icon">❤️</div>
+                    <div class="metric-content">
+                        <div class="metric-label">累计点赞数</div>
+                        <div class="metric-value" id="totalLikes">0</div>
+                        <div class="metric-sub">
+                            <span id="likesPerSec">0</span> 次/秒
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-card card-amount">
+                    <div class="metric-icon">💰</div>
+                    <div class="metric-content">
+                        <div class="metric-label">累计成交额</div>
+                        <div class="metric-value">¥<span id="totalAmount">0</span></div>
+                        <div class="metric-sub">
+                            <span id="ordersPerMin">0</span> 单/分钟
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-card card-conversion">
+                    <div class="metric-icon">📊</div>
+                    <div class="metric-content">
+                        <div class="metric-label">商品点击转化率</div>
+                        <div class="metric-value"><span id="conversionRate">0</span>%</div>
+                        <div class="metric-sub">
+                            点击 <span id="totalClicks">0</span> 次
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-card card-orders">
+                    <div class="metric-icon">📦</div>
+                    <div class="metric-content">
+                        <div class="metric-label">累计订单数</div>
+                        <div class="metric-value" id="totalOrders">0</div>
+                        <div class="metric-sub">
+                            成交额/分钟 ¥<span id="amountPerMin">0</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="charts-row">
+                <div class="chart-container chart-trend">
+                    <div class="chart-header">
+                        <h3>实时流量趋势</h3>
+                        <div class="chart-tags">
+                            <span class="tag tag-online">在线</span>
+                            <span class="tag tag-likes">点赞</span>
+                            <span class="tag tag-orders">订单</span>
+                        </div>
+                    </div>
+                    <div id="trendChart" class="chart"></div>
+                </div>
+
+                <div class="chart-container chart-hotwords">
+                    <div class="chart-header">
+                        <h3>弹幕热词云</h3>
+                    </div>
+                    <div id="hotwordChart" class="chart"></div>
+                </div>
+
+                <div class="chart-container chart-sentiment">
+                    <div class="chart-header">
+                        <h3>弹幕情感分析</h3>
+                    </div>
+                    <div id="sentimentChart" class="chart"></div>
+                </div>
+            </section>
+
+            <section class="bottom-row">
+                <div class="chart-container chart-products">
+                    <div class="chart-header">
+                        <h3>热销商品排行</h3>
+                    </div>
+                    <div id="productsChart" class="chart"></div>
+                </div>
+
+                <div class="chart-container chart-danmu">
+                    <div class="chart-header">
+                        <h3>实时弹幕流</h3>
+                        <div class="sentiment-stats">
+                            <span class="sentiment-positive">正面 <span id="sentimentPositive">0%</span></span>
+                            <span class="sentiment-neutral">中性 <span id="sentimentNeutral">0%</span></span>
+                            <span class="sentiment-negative">负面 <span id="sentimentNegative">0%</span></span>
+                        </div>
+                    </div>
+                    <div class="danmu-list" id="danmuList">
+                        <div class="danmu-empty">等待弹幕数据...</div>
+                    </div>
+                </div>
+
+                <div class="chart-container chart-suggestion">
+                    <div class="chart-header">
+                        <h3>🎯 主播话术建议</h3>
+                        <div class="incremental-stats" id="incrementalStats">
+                            <span class="stat-item">已处理: <span id="processedDanmu">0</span>条</span>
+                            <span class="stat-item">窗口: <span id="windowAge">0</span>s</span>
+                        </div>
+                    </div>
+                    <div class="suggestion-content" id="suggestionContent">
+                        <div class="suggestion-empty">
+                            <div class="empty-icon">💡</div>
+                            <p>正在分析直播数据...</p>
+                            <p class="sub-text">智能建议将在数据积累后生成</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <div class="connection-status" id="connectionStatus">
+            <span class="conn-dot"></span>
+            <span id="connText">连接中...</span>
+        </div>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

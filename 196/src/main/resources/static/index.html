@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电子合同签署平台</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Microsoft YaHei', sans-serif; }
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .login-box {
+            width: 400px;
+            padding: 40px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .login-title {
+            text-align: center;
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            height: 60px;
+            background: #409EFF;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+        }
+        .header h1 { margin: 0; font-size: 20px; }
+        .main-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        .sidebar {
+            width: 200px;
+            background: #304156;
+            color: #fff;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow: auto;
+            background: #f0f2f5;
+        }
+        .signature-pad {
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            cursor: crosshair;
+            background: #fff;
+        }
+        .signature-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .pdf-container {
+            height: 600px;
+            border: 1px solid #ddd;
+            overflow: auto;
+            background: #f5f5f5;
+        }
+        .sign-pos {
+            position: absolute;
+            border: 2px solid #409EFF;
+            background: rgba(64, 158, 255, 0.1);
+            cursor: move;
+            resize: both;
+            overflow: hidden;
+        }
+        .sign-pos-label {
+            position: absolute;
+            top: -20px;
+            left: 0;
+            color: #409EFF;
+            font-size: 12px;
+        }
+        .drag-signature {
+            display: inline-block;
+            padding: 10px 20px;
+            border: 1px solid #409EFF;
+            color: #409EFF;
+            border-radius: 5px;
+            cursor: grab;
+            user-select: none;
+            margin: 5px;
+        }
+        .drag-signature:active { cursor: grabbing; }
+        .template-card {
+            margin-bottom: 20px;
+        }
+        .evidence-info {
+            background: #f5f7fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .signer-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #e4e7ed;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .signer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #409EFF;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        .signer-info { flex: 1; }
+        .signer-status {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        .status-completed { background: #67C23A; color: #fff; }
+        .status-signing { background: #409EFF; color: #fff; }
+        .status-pending { background: #909399; color: #fff; }
+        .status-rejected { background: #F56C6C; color: #fff; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div v-if="!isLoggedIn" class="login-container">
+        <div class="login-box">
+            <h2 class="login-title">电子合同签署平台</h2>
+            <el-form :model="loginForm" :rules="loginRules" ref="loginForm">
+                <el-form-item prop="username">
+                    <el-input v-model="loginForm.username" placeholder="用户名/手机号" prefix-icon="el-icon-user"></el-input>
+                </el-form-item>
+                <el-form-item prop="password">
+                    <el-input v-model="loginForm.password" type="password" placeholder="密码" prefix-icon="el-icon-lock"></el-input>
+                </el-form-item>
+                <el-button type="primary" style="width: 100%" @click="handleLogin">登录</el-button>
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="javascript:void(0)" @click="showRegister = true">新用户注册</a>
+                </div>
+            </el-form>
+        </div>
+    </div>
+
+    <div v-else class="app-container">
+        <div class="header">
+            <h1>电子合同签署平台</h1>
+            <div>
+                <span style="margin-right: 20px;">欢迎，{{ userInfo.realName }}</span>
+                <el-button type="text" style="color: #fff;" @click="logout">退出登录</el-button>
+            </div>
+        </div>
+        <div class="main-container">
+            <div class="sidebar">
+                <el-menu
+                    :default-active="activeMenu"
+                    background-color="#304156"
+                    text-color="#fff"
+                    active-text-color="#ffd04b"
+                    @select="handleMenuSelect">
+                    <el-menu-item index="contract-list">
+                        <i class="el-icon-document"></i>
+                        <span>合同管理</span>
+                    </el-menu-item>
+                    <el-menu-item index="contract-create">
+                        <i class="el-icon-edit"></i>
+                        <span>发起合同</span>
+                    </el-menu-item>
+                    <el-menu-item index="pending-sign">
+                        <i class="el-icon-edit-outline"></i>
+                        <span>待我签署</span>
+                    </el-menu-item>
+                    <el-menu-item index="template">
+                        <i class="el-icon-folder-opened"></i>
+                        <span>模板管理</span>
+                    </el-menu-item>
+                    <el-menu-item index="identity">
+                        <i class="el-icon-user"></i>
+                        <span>实名认证</span>
+                    </el-menu-item>
+                    <el-menu-item index="blockchain-batch">
+                        <i class="el-icon-link"></i>
+                        <span>批量存证监控</span>
+                    </el-menu-item>
+                    <el-menu-item index="contract-review">
+                        <i class="el-icon-document-checked"></i>
+                        <span>合同审查</span>
+                    </el-menu-item>
+                    <el-menu-item index="witness-auth">
+                        <i class="el-icon-video-camera"></i>
+                        <span>意愿认证</span>
+                    </el-menu-item>
+                    <el-menu-item index="verify-entry">
+                        <i class="el-icon-key"></i>
+                        <span>验真入口</span>
+                    </el-menu-item>
+                </el-menu>
+            </div>
+            <div class="content">
+                <div v-if="activeMenu === 'contract-list'">
+                    <h3>合同管理</h3>
+                    <el-form :inline="true" :model="contractSearch" class="demo-form-inline">
+                        <el-form-item label="合同名称">
+                            <el-input v-model="contractSearch.contractName" placeholder="合同名称"></el-input>
+                        </el-form-item>
+                        <el-form-item label="状态">
+                            <el-select v-model="contractSearch.status" placeholder="全部">
+                                <el-option label="全部" value=""></el-option>
+                                <el-option label="待签署" value="PENDING"></el-option>
+                                <el-option label="签署中" value="SIGNING"></el-option>
+                                <el-option label="已完成" value="COMPLETED"></el-option>
+                                <el-option label="已拒签" value="REJECTED"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="searchContracts">搜索</el-button>
+                        </el-form-item>
+                    </el-form>
+                    <el-table :data="contractList" border>
+                        <el-table-column prop="contractNo" label="合同编号" width="180"></el-table-column>
+                        <el-table-column prop="contractName" label="合同名称"></el-table-column>
+                        <el-table-column prop="status" label="状态" width="100">
+                            <template slot-scope="scope">
+                                <el-tag :type="getStatusType(scope.row.status)">{{ getStatusText(scope.row.status) }}</el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="createTime" label="创建时间" width="160"></el-table-column>
+                        <el-table-column label="操作" width="430">
+                            <template slot-scope="scope">
+                                <el-button size="mini" type="primary" @click="viewContract(scope.row)">查看</el-button>
+                                <el-button size="mini" type="success" @click="downloadContract(scope.row)">下载</el-button>
+                                <el-button size="mini" type="info" @click="reviewContract(scope.row)">智能审查</el-button>
+                                <el-button size="mini" type="warning" @click="remindSigner(scope.row)" 
+                                    :disabled="scope.row.status !== 'SIGNING' && scope.row.status !== 'PENDING'">催办</el-button>
+                                <el-button size="mini" type="danger" @click="deleteContract(scope.row)">删除</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <el-pagination
+                        @current-change="handleContractPageChange"
+                        :current-page="contractPage.pageNum"
+                        :page-size="contractPage.pageSize"
+                        :total="contractPage.total"
+                        layout="total, prev, pager, next"
+                        style="margin-top: 20px;">
+                    </el-pagination>
+                </div>
+
+                <div v-if="activeMenu === 'contract-create'">
+                    <h3>发起合同</h3>
+                    <el-form :model="contractForm" :rules="contractRules" ref="contractForm" label-width="100px">
+                        <el-form-item label="合同名称" prop="contractName">
+                            <el-input v-model="contractForm.contractName" placeholder="请输入合同名称"></el-input>
+                        </el-form-item>
+                        <el-form-item label="选择模板">
+                            <el-select v-model="contractForm.templateId" placeholder="选择模板（可选）" @change="onTemplateChange">
+                                <el-option v-for="t in templateList" :key="t.id" :label="t.templateName" :value="t.id"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="上传文件">
+                            <el-upload
+                                ref="upload"
+                                :auto-upload="false"
+                                :show-file-list="true"
+                                :limit="1"
+                                accept=".pdf">
+                                <el-button slot="trigger" type="primary">选择PDF文件</el-button>
+                            </el-upload>
+                        </el-form-item>
+                        <el-form-item label="签署人">
+                            <div v-for="(signer, index) in contractForm.signers" :key="index" class="signer-item">
+                                <span>第{{ index + 1 }}方</span>
+                                <el-input v-model="signer.signerName" placeholder="姓名" style="width: 150px; margin-left: 10px;"></el-input>
+                                <el-input v-model="signer.signerPhone" placeholder="手机号" style="width: 150px; margin-left: 10px;"></el-input>
+                                <el-select v-model="signer.signerId" placeholder="选择用户" style="width: 150px; margin-left: 10px;">
+                                    <el-option label="管理员" :value="1"></el-option>
+                                    <el-option label="张三" :value="2"></el-option>
+                                    <el-option label="李四" :value="3"></el-option>
+                                </el-select>
+                                <el-button type="danger" size="mini" @click="removeSigner(index)" style="margin-left: 10px;">删除</el-button>
+                            </div>
+                            <el-button type="text" @click="addSigner">+ 添加签署方</el-button>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="submitContract">发起合同</el-button>
+                        </el-form-item>
+                    </el-form>
+                </div>
+
+                <div v-if="activeMenu === 'pending-sign'">
+                    <h3>待我签署</h3>
+                    <el-table :data="pendingList" border>
+                        <el-table-column prop="contractNo" label="合同编号" width="180"></el-table-column>
+                        <el-table-column prop="contractName" label="合同名称"></el-table-column>
+                        <el-table-column prop="createTime" label="发起时间" width="160"></el-table-column>
+                        <el-table-column label="操作" width="150">
+                            <template slot-scope="scope">
+                                <el-button size="mini" type="primary" @click="openSignDialog(scope.row)">签署</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+
+                <div v-if="activeMenu === 'template'">
+                    <h3>模板管理</h3>
+                    <el-button type="primary" @click="showTemplateDialog = true" style="margin-bottom: 20px;">上传模板</el-button>
+                    <el-table :data="templateList" border>
+                        <el-table-column prop="templateCode" label="模板编码" width="150"></el-table-column>
+                        <el-table-column prop="templateName" label="模板名称"></el-table-column>
+                        <el-table-column prop="templateType" label="类型" width="100"></el-table-column>
+                        <el-table-column prop="createTime" label="创建时间" width="160"></el-table-column>
+                    </el-table>
+                </div>
+
+                <div v-if="activeMenu === 'identity'">
+                    <h3>实名认证</h3>
+                    <el-alert v-if="userInfo.identityVerified === 1" type="success" :closable="false" style="margin-bottom: 20px;">
+                        您已完成实名认证
+                    </el-alert>
+                    <el-form :model="identityForm" label-width="100px">
+                        <el-form-item label="真实姓名">
+                            <el-input v-model="identityForm.realName"></el-input>
+                        </el-form-item>
+                        <el-form-item label="身份证号">
+                            <el-input v-model="identityForm.idCard"></el-input>
+                        </el-form-item>
+                        <el-form-item label="人脸照片">
+                            <el-upload
+                                :auto-upload="false"
+                                :show-file-list="false"
+                                accept="image/*"
+                                @change="handleFaceUpload">
+                                <el-button type="primary">上传人脸照片</el-button>
+                            </el-upload>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="identityVerify">提交认证</el-button>
+                        </el-form-item>
+                    </el-form>
+                </div>
+
+                <div v-if="activeMenu === 'blockchain-batch'">
+                    <h3>批量存证监控</h3>
+                    <el-row :gutter="20" style="margin-bottom: 20px;">
+                        <el-col :span="8">
+                            <el-card shadow="hover">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 24px; color: #409EFF; font-weight: bold;">{{ pendingQueueSize }}</div>
+                                    <div style="color: #909399; margin-top: 5px;">待上链队列</div>
+                                </div>
+                            </el-card>
+                        </el-col>
+                        <el-col :span="16">
+                            <el-card shadow="hover">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <span style="color: #909399;">系统自动每30秒检查一次，每5分钟或满10条自动打包上链</span>
+                                    </div>
+                                    <div>
+                                        <el-button type="primary" @click="loadBatchList">刷新</el-button>
+                                        <el-button type="success" @click="flushBatch" :disabled="pendingQueueSize === 0">手动打包</el-button>
+                                    </div>
+                                </div>
+                            </el-card>
+                        </el-col>
+                    </el-row>
+                    <el-table :data="batchList" border>
+                        <el-table-column prop="batchNo" label="批次号" width="220"></el-table-column>
+                        <el-table-column prop="evidenceCount" label="存证数量" width="100" align="center"></el-table-column>
+                        <el-table-column prop="totalGas" label="总Gas" width="120" align="center">
+                            <template slot-scope="scope">{{ scope.row.totalGas ? scope.row.totalGas.toLocaleString() : '-' }}</template>
+                        </el-table-column>
+                        <el-table-column prop="avgGas" label="平均Gas" width="120" align="center">
+                            <template slot-scope="scope">
+                                <span v-if="scope.row.avgGas">
+                                    {{ scope.row.avgGas.toLocaleString() }}
+                                    <el-tag size="mini" type="success" style="margin-left: 5px;">
+                                        节省{{ Math.round((1 - scope.row.avgGas / 25000) * 100 }}%
+                                    </el-tag>
+                                </span>
+                                <span v-else>-</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="status" label="状态" width="100" align="center">
+                            <template slot-scope="scope">
+                                <el-tag v-if="scope.row.status === 'SUCCESS'" type="success">成功</el-tag>
+                                <el-tag v-else-if="scope.row.status === 'FAILED'" type="danger">失败</el-tag>
+                                <el-tag v-else-if="scope.row.status === 'PROCESSING'" type="warning">处理中</el-tag>
+                                <el-tag v-else type="info">待处理</el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="merkleRoot" label="默克尔根" show-overflow-tooltip></el-table-column>
+                        <el-table-column prop="createTime" label="创建时间" width="160"></el-table-column>
+                    </el-table>
+                    <el-pagination
+                        @current-change="handleBatchPageChange"
+                        :current-page="batchPage.pageNum"
+                        :page-size="batchPage.pageSize"
+                        :total="batchPage.total"
+                        layout="total, prev, pager, next"
+                        style="margin-top: 20px;">
+                    </el-pagination>
+                </div>
+
+                <div v-if="activeMenu === 'contract-review'">
+                    <h3>📋 合同智能审查</h3>
+                    <el-table :data="contractList" border>
+                        <el-table-column prop="contractNo" label="合同编号" width="180"></el-table-column>
+                        <el-table-column prop="contractName" label="合同名称"></el-table-column>
+                        <el-table-column prop="reviewScore" label="评分" width="100" align="center">
+                            <template slot-scope="scope">
+                                <el-tag v-if="scope.row.reviewScore" :type="getScoreType(scope.row.reviewScore)">
+                                    {{ scope.row.reviewScore }}分
+                                </el-tag>
+                                <span v-else style="color: #909399;">未审查</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="riskLevel" label="风险等级" width="100" align="center">
+                            <template slot-scope="scope">
+                                <el-tag v-if="scope.row.riskLevel === 'HIGH'" type="danger">高风险</el-tag>
+                                <el-tag v-else-if="scope.row.riskLevel === 'MEDIUM'" type="warning">中风险</el-tag>
+                                <el-tag v-else-if="scope.row.riskLevel === 'LOW'" type="success">低风险</el-tag>
+                                <span v-else style="color: #909399;">-</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="reviewStatus" label="审查状态" width="100" align="center">
+                            <template slot-scope="scope">
+                                <el-tag v-if="scope.row.reviewStatus === 'REVIEWED'" type="success">已审查</el-tag>
+                                <el-tag v-else type="info">待审查</el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="createTime" label="创建时间" width="160"></el-table-column>
+                        <el-table-column label="操作" width="150" align="center">
+                            <template slot-scope="scope">
+                                <el-button size="mini" type="primary" @click="reviewContract(scope.row)" :loading="reviewLoading && reviewingContractId === scope.row.id">
+                                    {{ scope.row.reviewStatus === 'REVIEWED' ? '重新审查' : '开始审查' }}
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+
+                <div v-if="activeMenu === 'witness-auth'">
+                    <h3>🎥 意愿认证管理</h3>
+                    <el-alert type="info" show-icon style="margin-bottom: 20px;">
+                        <p>意愿认证通过录制签署人朗读合同声明的视频，结合人脸识别和活体检测，确保签署是本人真实意愿。</p>
+                    </el-alert>
+                    <el-table :data="pendingSignList" border v-if="pendingSignList && pendingSignList.length > 0">
+                        <el-table-column prop="contractNo" label="合同编号" width="180"></el-table-column>
+                        <el-table-column prop="contractName" label="合同名称"></el-table-column>
+                        <el-table-column prop="signerName" label="签署人" width="100"></el-table-column>
+                        <el-table-column prop="signOrder" label="签署顺序" width="80" align="center"></el-table-column>
+                        <el-table-column prop="signStatus" label="状态" width="100" align="center">
+                            <template slot-scope="scope">
+                                <el-tag v-if="scope.row.signStatus === 'SIGNING'" type="warning">待认证</el-tag>
+                                <el-tag v-else type="info">{{ scope.row.signStatus }}</el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="操作" width="150" align="center">
+                            <template slot-scope="scope">
+                                <el-button size="mini" type="primary" @click="startWitnessAuth(scope.row)" :disabled="scope.row.signStatus !== 'SIGNING'">
+                                    开始认证
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <el-empty v-else description="暂无需要认证的合同"></el-empty>
+                </div>
+
+                <div v-if="activeMenu === 'verify-entry'">
+                    <h3>🔍 合同验真入口</h3>
+                    <el-row :gutter="20">
+                        <el-col :span="12">
+                            <el-card shadow="hover">
+                                <div slot="header"><span>内部验真</span></div>
+                                <el-form :inline="true">
+                                    <el-form-item label="合同编号">
+                                        <el-input v-model="verifyContractNo" placeholder="请输入合同编号" style="width: 250px;"></el-input>
+                                    </el-form-item>
+                                    <el-form-item>
+                                        <el-button type="primary" :loading="verifyLoading" @click="verifyContractInternal">立即验真</el-button>
+                                    </el-form-item>
+                                </el-form>
+                                <div v-if="verifyResult" style="margin-top: 20px;">
+                                    <el-alert :title="verifyResult.overallPassed ? '验真通过' : '验真未通过'"
+                                        :type="verifyResult.overallPassed ? 'success' : 'error'" show-icon>
+                                    </el-alert>
+                                    <div v-if="verifyResult.contractExists" style="margin-top: 15px;">
+                                        <div style="margin-bottom: 8px;"><strong>合同名称：</strong>{{ verifyResult.contractName }}</div>
+                                        <div style="margin-bottom: 8px;"><strong>合同状态：</strong>{{ verifyResult.statusText }}</div>
+                                        <div style="margin-bottom: 8px;"><strong>签署进度：</strong>{{ verifyResult.completedSignCount }}/{{ verifyResult.signCount }}</div>
+                                        <div v-for="item in verifyResult.verifyItems" :key="item.name" style="margin-top: 10px;">
+                                            <span :style="{color: item.passed ? '#67c23a' : '#f56c6c'}">
+                                                <i :class="item.passed ? 'el-icon-circle-check' : 'el-icon-circle-close'"></i>
+                                            </span>
+                                            <strong style="margin-left: 5px;">{{ item.name }}：</strong>
+                                            {{ item.description }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </el-card>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-card shadow="hover">
+                                <div slot="header"><span>公开验真链接</span></div>
+                                <p style="color: #606266; margin-bottom: 15px;">
+                                    分享以下链接给第三方，他们无需登录即可验证合同真伪：
+                                </p>
+                                <el-input
+                                    :value="verifyPageUrl"
+                                    readonly
+                                    style="margin-bottom: 10px;">
+                                    <el-button slot="append" @click="copyVerifyUrl">复制链接</el-button>
+                                </el-input>
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                                    <p style="margin-bottom: 8px;"><strong>功能特点：</strong></p>
+                                    <ul style="padding-left: 20px; color: #606266;">
+                                        <li style="margin-bottom: 5px;">✅ 无需登录，输入合同号即可验证</li>
+                                        <li style="margin-bottom: 5px;">✅ 验证文件完整性，防止篡改</li>
+                                        <li style="margin-bottom: 5px;">✅ 验证区块链存证，确保不可抵赖</li>
+                                        <li style="margin-bottom: 5px;">✅ 验证签署完整性和身份认证</li>
+                                        <li>✅ 支持生成验真报告</li>
+                                    </ul>
+                                </div>
+                                <el-button type="text" style="margin-top: 15px; color: #409EFF;"
+                                    @click="openVerifyPage">
+                                    <i class="el-icon-top-right"></i> 在新窗口打开验真页面
+                                </el-button>
+                            </el-card>
+                        </el-col>
+                    </el-row>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <el-dialog title="🎥 意愿认证 - 视频录制" :visible.sync="witnessVisible" width="700px"
+        @close="closeWitnessAuth">
+        <div v-if="witnessAuthInfo">
+            <div style="background: #ecf5ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="color: #409EFF; margin-bottom: 8px;"><strong>📄 合同：</strong>{{ witnessAuthInfo.contractName }}</p>
+                <p style="color: #606266; white-space: pre-line; line-height: 1.8;">{{ witnessTips }}</p>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 20px;">
+                <video ref="witnessVideo" autoplay playsinline muted
+                    style="width: 100%; max-width: 480px; background: #000; border-radius: 8px;"></video>
+                <div v-if="recordedVideo" style="margin-top: 10px;">
+                    <p style="color: #67c23a; margin-bottom: 5px;"><i class="el-icon-circle-check"></i> 录制完成，视频时长：{{ formatDuration(recordDuration) }}</p>
+                    <video :src="recordedVideo" controls style="width: 100%; max-width: 480px; border-radius: 8px;"></video>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div v-if="witnessRecording" style="color: #f56c6c; font-size: 18px; margin-bottom: 10px;">
+                    <i class="el-icon-video-camera-solid" style="animation: pulse 1s infinite;"></i>
+                    录制中... {{ formatDuration(recordDuration) }}
+                </div>
+                <el-button type="danger" size="large" icon="el-icon-video-camera" v-if="!witnessRecording && !recordedVideo"
+                    @click="startRecording" :loading="!witnessAuthInfo">
+                    开始录制
+                </el-button>
+                <el-button type="success" size="large" icon="el-icon-circle-check" v-if="witnessRecording"
+                    @click="stopRecording" :disabled="recordDuration < 3">
+                    完成录制（至少3秒）
+                </el-button>
+                <div v-if="recordedVideo" style="margin-top: 15px;">
+                    <el-button type="primary" size="large" icon="el-icon-upload2" :loading="witnessSubmitting" @click="submitWitnessVideo">
+                        提交认证
+                    </el-button>
+                    <el-button size="large" icon="el-icon-refresh-left" @click="reRecord">重新录制</el-button>
+                </div>
+            </div>
+        </div>
+    </el-dialog>
+
+    <el-dialog title="📋 合同审查报告" :visible.sync="reviewDialogVisible" width="800px">
+        <div v-if="reviewResult">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div style="font-size: 48px; font-weight: bold; color: #409EFF;">
+                    {{ reviewResult.totalScore }}
+                    <span style="font-size: 24px; color: #909399;">分</span>
+                </div>
+                <el-tag size="large" :type="getRiskLevelType(reviewResult.riskLevel)" style="margin-top: 10px;">
+                    {{ getRiskLevelText(reviewResult.riskLevel) }}
+                </el-tag>
+            </div>
+
+            <div v-if="reviewResult.totalMissing > 0" style="margin-bottom: 25px;">
+                <h4 style="color: #f56c6c; margin-bottom: 15px;">
+                    <i class="el-icon-warning"></i> 缺失条款（{{ reviewResult.totalMissing }}项）
+                </h4>
+                <div v-for="item in reviewResult.missingClauses" :key="item.code"
+                    style="padding: 15px; background: #fef0f0; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="display: flex; align-items: start;">
+                        <el-tag size="mini" :type="item.severity === 'HIGH' ? 'danger' : item.severity === 'MEDIUM' ? 'warning' : 'info'">
+                            {{ item.severity === 'HIGH' ? '高' : item.severity === 'MEDIUM' ? '中' : '低' }}
+                        </el-tag>
+                        <div style="flex: 1; margin-left: 10px;">
+                            <div style="font-weight: 600; color: #303133;">{{ item.name }}</div>
+                            <div style="color: #606266; font-size: 13px; margin-top: 5px;">{{ item.suggestion }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="reviewResult.totalRisk > 0" style="margin-bottom: 25px;">
+                <h4 style="color: #e6a23c; margin-bottom: 15px;">
+                    <i class="el-icon-alarm-clock"></i> 风险条款（{{ reviewResult.totalRisk }}项）
+                </h4>
+                <div v-for="item in reviewResult.riskClauses" :key="item.code"
+                    style="padding: 15px; background: #fdf6ec; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="display: flex; align-items: start;">
+                        <el-tag size="mini" :type="item.level === 'HIGH' ? 'danger' : item.level === 'MEDIUM' ? 'warning' : 'info'">
+                            {{ item.level === 'HIGH' ? '高风险' : item.level === 'MEDIUM' ? '中风险' : '低风险' }}
+                        </el-tag>
+                        <div style="flex: 1; margin-left: 10px;">
+                            <div style="font-weight: 600; color: #303133;">{{ item.name }}</div>
+                            <div style="color: #606266; font-size: 13px; margin-top: 5px;">{{ item.description }}</div>
+                            <div style="background: #fff; padding: 8px; border-radius: 4px; margin-top: 8px; font-family: monospace; font-size: 12px; color: #f56c6c;">
+                                {{ item.matchedTexts[0] }}
+                            </div>
+                            <div style="color: #409EFF; font-size: 13px; margin-top: 5px;">💡 {{ item.suggestion }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="reviewResult.totalMissing === 0 && reviewResult.totalRisk === 0"
+                style="text-align: center; padding: 40px; background: #f0f9eb; border-radius: 8px;">
+                <div style="font-size: 48px;">🎉</div>
+                <div style="color: #67c23a; font-size: 18px; margin-top: 10px;">合同内容完整，未检测到风险条款</div>
+            </div>
+        </div>
+    </el-dialog>
+
+    <el-dialog title="注册" :visible.sync="showRegister" width="400px">
+        <el-form :model="registerForm" :rules="registerRules" ref="registerForm">
+            <el-form-item label="用户名" prop="username">
+                <el-input v-model="registerForm.username"></el-input>
+            </el-form-item>
+            <el-form-item label="密码" prop="password">
+                <el-input v-model="registerForm.password" type="password"></el-input>
+            </el-form-item>
+            <el-form-item label="真实姓名" prop="realName">
+                <el-input v-model="registerForm.realName"></el-input>
+            </el-form-item>
+            <el-form-item label="手机号" prop="phone">
+                <el-input v-model="registerForm.phone">
+                    <el-button slot="append" @click="sendSms" :disabled="smsCountdown > 0">
+                        {{ smsCountdown > 0 ? smsCountdown + 's' : '获取验证码' }}
+                    </el-button>
+                </el-input>
+            </el-form-item>
+            <el-form-item label="验证码" prop="smsCode">
+                <el-input v-model="registerForm.smsCode"></el-input>
+            </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="showRegister = false">取消</el-button>
+            <el-button type="primary" @click="handleRegister">注册</el-button>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="合同详情" :visible.sync="contractDetailVisible" width="900px">
+        <div v-if="currentContract">
+            <h4>{{ currentContract.contractName }} ({{ currentContract.contractNo }})</h4>
+            <div class="evidence-info" v-if="currentContract.blockchainTxId">
+                <strong>区块链存证信息：</strong>
+                <p>交易ID：{{ currentContract.blockchainTxId }}</p>
+                <p>存证哈希：{{ currentContract.blockchainHash }}</p>
+                <p>存证时间：{{ currentContract.blockchainTime }}</p>
+            </div>
+            <h5 style="margin-top: 20px;">签署状态</h5>
+            <div v-for="signer in currentSigners" :key="signer.id" class="signer-item">
+                <div class="signer-avatar">{{ signer.signerName.charAt(0) }}</div>
+                <div class="signer-info">
+                    <div style="font-weight: bold;">第{{ signer.signOrder }}方 - {{ signer.signerName }}</div>
+                    <div style="color: #909399; font-size: 12px;">{{ signer.signerPhone }}</div>
+                </div>
+                <span class="signer-status" :class="'status-' + signer.signStatus.toLowerCase()">
+                    {{ getSignerStatusText(signer.signStatus) }}
+                </span>
+            </div>
+        </div>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="contractDetailVisible = false">关闭</el-button>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="签署合同" :visible.sync="signDialogVisible" width="800px" @close="resetSignPad">
+        <el-tabs v-model="signType">
+            <el-tab-pane label="手写签名" name="HANDWRITE">
+                <div class="signature-container">
+                    <canvas ref="signPad" class="signature-pad" width="600" height="200"></canvas>
+                    <div style="margin-top: 10px;">
+                        <el-button @click="clearSignPad">清除</el-button>
+                        <el-button @click="undoSign">撤销</el-button>
+                    </div>
+                </div>
+            </el-tab-pane>
+            <el-tab-pane label="拖动签名" name="DRAG">
+                <p>拖动下方签名到指定位置：</p>
+                <div style="margin: 20px 0;">
+                    <div class="drag-signature" draggable="true" @dragstart="onDragStart($event, '张三')">张三</div>
+                    <div class="drag-signature" draggable="true" @dragstart="onDragStart($event, '李四')">李四</div>
+                    <div class="drag-signature" draggable="true" @dragstart="onDragStart($event, '公司公章')">公司公章</div>
+                </div>
+                <div class="pdf-container" ref="pdfArea" @drop="onDrop" @dragover.prevent>
+                    <div style="padding: 20px; text-align: center; color: #909399;">
+                        <p>PDF预览区域（演示）</p>
+                        <p style="font-size: 12px;">将左侧签名拖放到此处</p>
+                        <div v-for="(sig, index) in dropSignatures" :key="index"
+                             class="sign-pos"
+                             :style="{ left: sig.x + 'px', top: sig.y + 'px', width: sig.width + 'px', height: sig.height + 'px' }">
+                            <span class="sign-pos-label">{{ sig.name }}</span>
+                            {{ sig.name }}
+                        </div>
+                    </div>
+                </div>
+            </el-tab-pane>
+        </el-tabs>
+
+        <el-divider content-position="left">身份认证</el-divider>
+        <el-form :model="signForm" label-width="100px">
+            <el-form-item label="认证方式">
+                <el-radio-group v-model="signForm.authType">
+                    <el-radio label="SMS">短信认证</el-radio>
+                    <el-radio label="FACE">人脸认证</el-radio>
+                </el-radio-group>
+            </el-form-item>
+            <el-form-item v-if="signForm.authType === 'SMS'" label="验证码">
+                <el-input v-model="signForm.smsCode">
+                    <el-button slot="append" @click="sendSignSms" :disabled="signSmsCountdown > 0">
+                        {{ signSmsCountdown > 0 ? signSmsCountdown + 's' : '获取验证码' }}
+                    </el-button>
+                </el-input>
+            </el-form-item>
+            <el-form-item v-if="signForm.authType === 'FACE'" label="人脸照片">
+                <el-upload :auto-upload="false" :show-file-list="false" accept="image/*" @change="handleSignFaceUpload">
+                    <el-button type="primary">拍照/上传人脸照片</el-button>
+                </el-upload>
+            </el-form-item>
+            <el-form-item label="签署备注">
+                <el-input v-model="signForm.signNote" type="textarea" :rows="2"></el-input>
+            </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="signDialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="submitSign">确认签署</el-button>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="上传模板" :visible.sync="showTemplateDialog" width="500px">
+        <el-form :model="templateForm" label-width="100px">
+            <el-form-item label="模板名称">
+                <el-input v-model="templateForm.templateName"></el-input>
+            </el-form-item>
+            <el-form-item label="模板编码">
+                <el-input v-model="templateForm.templateCode"></el-input>
+            </el-form-item>
+            <el-form-item label="模板类型">
+                <el-select v-model="templateForm.templateType">
+                    <el-option label="劳动合同" value="LABOR"></el-option>
+                    <el-option label="租赁合同" value="LEASE"></el-option>
+                    <el-option label="销售合同" value="SALES"></el-option>
+                    <el-option label="其他" value="OTHER"></el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="文件">
+                <el-upload ref="templateUpload" :auto-upload="false" :show-file-list="true" :limit="1" accept=".pdf">
+                    <el-button type="primary">选择PDF文件</el-button>
+                </el-upload>
+            </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="showTemplateDialog = false">取消</el-button>
+            <el-button type="primary" @click="submitTemplate">上传</el-button>
+        </span>
+    </el-dialog>
+</div>
+
+<script src="https://unpkg.com/vue@2.6.14/dist/vue.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+    axios.defaults.baseURL = '/api';
+    axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
+
+    new Vue({
+        el: '#app',
+        data: {
+            isLoggedIn: false,
+            userInfo: {},
+            activeMenu: 'contract-list',
+            showRegister: false,
+            smsCountdown: 0,
+            signSmsCountdown: 0,
+            loginForm: { username: 'admin', password: '123456' },
+            loginRules: {
+                username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+                password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+            },
+            registerForm: { username: '', password: '', realName: '', phone: '', smsCode: '', bizType: 'REGISTER' },
+            registerRules: {
+                username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+                password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+                realName: [{ required: true, message: '请输入真实姓名', trigger: 'blur' }],
+                phone: [{ required: true, message: '请输入手机号', trigger: 'blur' }],
+                smsCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
+            },
+            contractSearch: { contractName: '', status: '' },
+            contractPage: { pageNum: 1, pageSize: 10, total: 0 },
+            contractList: [],
+            pendingList: [],
+            templateList: [],
+            contractForm: { contractName: '', templateId: null, formData: '', signers: [] },
+            contractRules: {
+                contractName: [{ required: true, message: '请输入合同名称', trigger: 'blur' }]
+            },
+            currentContract: null,
+            currentSigners: [],
+            contractDetailVisible: false,
+            signDialogVisible: false,
+            signType: 'HANDWRITE',
+            signForm: { contractId: null, signatureType: 'HANDWRITE', signatureImage: '', authType: 'SMS', smsCode: '', faceImage: '', signNote: '', pressureData: '' },
+            signPressureData: [],
+            lastX: 0, lastY: 0, lastTime: 0, lastPressure: 2,
+            batchList: [],
+            batchPage: { total: 0, pageNum: 1, pageSize: 10 },
+            pendingQueueSize: 0,
+            reviewResult: null,
+            reviewLoading: false,
+            witnessVisible: false,
+            witnessRecording: false,
+            witnessAuthInfo: null,
+            mediaRecorder: null,
+            recordedChunks: [],
+            recordDuration: 0,
+            recordTimer: null,
+            recordedVideo: null,
+            witnessTips: '',
+            reviewList: [],
+            verifyContractNo: '',
+            verifyResult: null,
+            verifyLoading: false,
+            witnessAuthVisible: false,
+            witnessAuthContractId: null,
+            reviewDialogVisible: false,
+            reviewingContractId: null,
+            witnessSubmitting: false,
+            signPadContext: null,
+            isDrawing: false,
+            signHistory: [],
+            dropSignatures: [],
+            dragName: '',
+            showTemplateDialog: false,
+            templateForm: { templateName: '', templateCode: '', templateType: 'OTHER' },
+            identityForm: { realName: '', idCard: '', faceImage: '' }
+        },
+        mounted() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                this.isLoggedIn = true;
+                this.loadUserInfo();
+                this.loadContracts();
+                this.loadPendingSign();
+                this.loadTemplates();
+            }
+            setTimeout(() => {
+                this.initSignPad();
+            }, 500);
+        },
+        computed: {
+            verifyPageUrl() {
+                return window.location.origin + '/api/verify-page.html';
+            }
+        },
+        methods: {
+            async handleLogin() {
+                try {
+                    const res = await axios.post('/auth/login', this.loginForm);
+                    if (res.data.code === 200) {
+                        localStorage.setItem('token', res.data.data.token);
+                        localStorage.setItem('userInfo', JSON.stringify(res.data.data));
+                        axios.defaults.headers.common['Authorization'] = 'Bearer ' + res.data.data.token;
+                        this.userInfo = res.data.data;
+                        this.isLoggedIn = true;
+                        this.loadUserInfo();
+                        this.loadContracts();
+                        this.loadPendingSign();
+                        this.loadTemplates();
+                        this.$message.success('登录成功');
+                    } else {
+                        this.$message.error(res.data.message);
+                    }
+                } catch (e) {
+                    this.$message.error('登录失败');
+                }
+            },
+            async sendSms() {
+                try {
+                    await axios.post('/sms/send', { phone: this.registerForm.phone, bizType: 'REGISTER' });
+                    this.$message.success('验证码已发送');
+                    this.smsCountdown = 60;
+                    const timer = setInterval(() => {
+                        this.smsCountdown--;
+                        if (this.smsCountdown <= 0) clearInterval(timer);
+                    }, 1000);
+                } catch (e) {
+                    this.$message.error('发送失败');
+                }
+            },
+            async handleRegister() {
+                try {
+                    const res = await axios.post('/auth/register', this.registerForm);
+                    if (res.data.code === 200) {
+                        this.$message.success('注册成功，请登录');
+                        this.showRegister = false;
+                    } else {
+                        this.$message.error(res.data.message);
+                    }
+                } catch (e) {
+                    this.$message.error('注册失败');
+                }
+            },
+            logout() {
+                localStorage.removeItem('token');
+                localStorage.removeItem('userInfo');
+                this.isLoggedIn = false;
+                this.userInfo = {};
+            },
+            async loadUserInfo() {
+                try {
+                    const res = await axios.get('/auth/info');
+                    if (res.data.code === 200) {
+                        this.userInfo = res.data.data;
+                    }
+                } catch (e) {}
+            },
+            handleMenuSelect(key) {
+                this.activeMenu = key;
+                if (key === 'contract-list') this.loadContracts();
+                if (key === 'pending-sign') this.loadPendingSign();
+                if (key === 'template') this.loadTemplates();
+                if (key === 'blockchain-batch') this.loadBatchList();
+                if (key === 'contract-review') this.loadContracts();
+                if (key === 'witness-auth') this.loadPendingSign();
+                if (key === 'verify-entry') { this.verifyResult = null;
+                    this.verifyContractNo = '';
+                }
+            },
+            async loadContracts() {
+                const res = await axios.get('/contract/page', { params: { ...this.contractSearch, ...this.contractPage } });
+                if (res.data.code === 200) {
+                    this.contractList = res.data.data.records;
+                    this.contractPage.total = res.data.data.total;
+                }
+            },
+            async loadPendingSign() {
+                const res = await axios.get('/contract/pending', { params: { pageNum: 1, pageSize: 100 } });
+                if (res.data.code === 200) {
+                    this.pendingList = res.data.data.records;
+                }
+            },
+            async loadTemplates() {
+                const res = await axios.get('/template/page', { params: { pageNum: 1, pageSize: 100 } });
+                if (res.data.code === 200) {
+                    this.templateList = res.data.data.records;
+                }
+            },
+            searchContracts() {
+                this.contractPage.pageNum = 1;
+                this.loadContracts();
+            },
+            handleContractPageChange(page) {
+                this.contractPage.pageNum = page;
+                this.loadContracts();
+            },
+            getStatusType(status) {
+                const map = { PENDING: 'warning', SIGNING: 'primary', COMPLETED: 'success', REJECTED: 'danger', DRAFT: 'info' };
+                return map[status] || 'info';
+            },
+            getStatusText(status) {
+                const map = { PENDING: '待签署', SIGNING: '签署中', COMPLETED: '已完成', REJECTED: '已拒签', DRAFT: '草稿', EXPIRED: '已过期' };
+                return map[status] || status;
+            },
+            getSignerStatusText(status) {
+                const map = { PENDING: '待签署', SIGNING: '签署中', COMPLETED: '已签署', REJECTED: '已拒签' };
+                return map[status] || status;
+            },
+            addSigner() {
+                this.contractForm.signers.push({ signerId: null, signerName: '', signerPhone: '', signOrder: this.contractForm.signers.length + 1 });
+            },
+            removeSigner(index) {
+                this.contractForm.signers.splice(index, 1);
+                this.contractForm.signers.forEach((s, i) => s.signOrder = i + 1);
+            },
+            onTemplateChange(templateId) {
+                console.log('Selected template:', templateId);
+            },
+            async submitContract() {
+                if (!this.contractForm.contractName || this.contractForm.signers.length === 0) {
+                    this.$message.error('请填写完整信息');
+                    return;
+                }
+                try {
+                    const formData = new FormData();
+                    formData.append('contract', new Blob([JSON.stringify(this.contractForm)], { type: 'application/json' }));
+                    if (this.$refs.upload && this.$refs.upload.uploadFiles.length > 0) {
+                        formData.append('file', this.$refs.upload.uploadFiles[0].raw);
+                    }
+                    const res = await axios.post('/contract', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                    if (res.data.code === 200) {
+                        this.$message.success('合同发起成功');
+                        this.activeMenu = 'contract-list';
+                        this.loadContracts();
+                        this.contractForm = { contractName: '', templateId: null, formData: '', signers: [] };
+                        if (this.$refs.upload) this.$refs.upload.clearFiles();
+                    } else {
+                        this.$message.error(res.data.message);
+                    }
+                } catch (e) {
+                    this.$message.error('发起失败');
+                }
+            },
+            async viewContract(row) {
+                try {
+                    const res = await axios.get('/contract/' + row.id);
+                    if (res.data.code === 200) {
+                        this.currentContract = res.data.data.contract;
+                        this.currentSigners = res.data.data.signers;
+                        this.contractDetailVisible = true;
+                    }
+                } catch (e) {}
+            },
+            async downloadContract(row) {
+                window.open('/api/contract/download/' + row.id);
+            },
+            async deleteContract(row) {
+                this.$confirm('确定删除此合同？', '提示', { type: 'warning' }).then(async () => {
+                    await axios.delete('/contract/' + row.id);
+                    this.$message.success('删除成功');
+                    this.loadContracts();
+                }).catch(() => {});
+            },
+            openSignDialog(row) {
+                this.signForm.contractId = row.id;
+                this.signDialogVisible = true;
+                setTimeout(() => this.initSignPad(), 100);
+            },
+            initSignPad() {
+                const canvas = this.$refs.signPad;
+                if (!canvas) return;
+                this.signPadContext = canvas.getContext('2d');
+                this.signPadContext.strokeStyle = '#000';
+                this.signPadContext.lineCap = 'round';
+                this.signPadContext.lineJoin = 'round';
+                this.signPressureData = [];
+                this.lastX = 0;
+                this.lastY = 0;
+                this.lastTime = 0;
+                this.lastPressure = 2;
+
+                const getPressure = (speed) => {
+                    const minPressure = 0.5;
+                    const maxPressure = 4;
+                    const normalizedSpeed = Math.min(speed / 10, 1);
+                    return maxPressure - (maxPressure - minPressure) * normalizedSpeed;
+                };
+
+                const drawStroke = (ctx, x1, y1, x2, y2, pressure) => {
+                    const steps = Math.ceil(Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) / 2);
+                    for (let i = 0; i <= steps; i++) {
+                        const t = i / steps;
+                        const x = x1 + (x2 - x1) * t;
+                        const y = y1 + (y2 - y1) * t;
+                        const p = pressure;
+                        ctx.beginPath();
+                        ctx.arc(x, y, p / 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                };
+
+                canvas.onmousedown = (e) => {
+                    this.isDrawing = true;
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    this.lastX = x;
+                    this.lastY = y;
+                    this.lastTime = Date.now();
+                    this.lastPressure = 2.5;
+                    this.signPadContext.fillStyle = '#000';
+                    this.signPadContext.beginPath();
+                    this.signPadContext.arc(x, y, 1.25, 0, Math.PI * 2);
+                    this.signPadContext.fill();
+                    this.signPressureData.push({ x, y, pressure: 2.5, time: this.lastTime });
+                    this.saveHistory();
+                };
+
+                canvas.onmousemove = (e) => {
+                    if (!this.isDrawing) return;
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const now = Date.now();
+                    const dt = now - this.lastTime;
+                    const dx = x - this.lastX;
+                    const dy = y - this.lastY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const speed = dt > 0 ? distance / dt : 0;
+                    const pressure = getPressure(speed);
+                    const smoothedPressure = this.lastPressure * 0.7 + pressure * 0.3;
+
+                    drawStroke(this.signPadContext, this.lastX, this.lastY, x, y, smoothedPressure);
+
+                    this.signPressureData.push({ x, y, pressure: smoothedPressure, time: now });
+                    this.lastX = x;
+                    this.lastY = y;
+                    this.lastTime = now;
+                    this.lastPressure = smoothedPressure;
+                };
+
+                canvas.onmouseup = () => { 
+                    this.isDrawing = false; 
+                    if (this.signPressureData.length > 0) {
+                        this.signForm.pressureData = JSON.stringify(this.signPressureData);
+                    }
+                };
+                canvas.onmouseleave = () => { 
+                    if (this.isDrawing) {
+                        this.isDrawing = false;
+                        if (this.signPressureData.length > 0) {
+                            this.signForm.pressureData = JSON.stringify(this.signPressureData);
+                        }
+                    }
+                };
+
+                canvas.ontouchstart = (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const mouseEvent = new MouseEvent('mousedown', {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY
+                    });
+                    canvas.dispatchEvent(mouseEvent);
+                };
+
+                canvas.ontouchmove = (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const mouseEvent = new MouseEvent('mousemove', {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY
+                    });
+                    canvas.dispatchEvent(mouseEvent);
+                };
+
+                canvas.ontouchend = (e) => {
+                    e.preventDefault();
+                    canvas.dispatchEvent(new MouseEvent('mouseup'));
+                };
+            },
+            saveHistory() {
+                this.signHistory.push(this.signPadContext.canvas.toDataURL());
+                if (this.signHistory.length > 20) this.signHistory.shift();
+            },
+            clearSignPad() {
+                this.signPadContext.clearRect(0, 0, 600, 200);
+                this.signHistory = [];
+            },
+            undoSign() {
+                if (this.signHistory.length > 0) {
+                    this.signHistory.pop();
+                    if (this.signHistory.length === 0) {
+                        this.clearSignPad();
+                    } else {
+                        const img = new Image();
+                        img.onload = () => {
+                            this.signPadContext.clearRect(0, 0, 600, 200);
+                            this.signPadContext.drawImage(img, 0, 0);
+                        };
+                        img.src = this.signHistory[this.signHistory.length - 1];
+                    }
+                }
+            },
+            resetSignPad() {
+                this.clearSignPad();
+                this.dropSignatures = [];
+            },
+            onDragStart(e, name) {
+                this.dragName = name;
+            },
+            onDrop(e) {
+                e.preventDefault();
+                const rect = this.$refs.pdfArea.getBoundingClientRect();
+                const x = e.clientX - rect.left - 50;
+                const y = e.clientY - rect.top - 15;
+                this.dropSignatures.push({ name: this.dragName, x, y, width: 100, height: 30 });
+            },
+            async sendSignSms() {
+                try {
+                    const phone = this.userInfo.phone || '13800000001';
+                    await axios.post('/sms/send', { phone, bizType: 'SIGN' });
+                    this.$message.success('验证码已发送');
+                    this.signSmsCountdown = 60;
+                    const timer = setInterval(() => {
+                        this.signSmsCountdown--;
+                        if (this.signSmsCountdown <= 0) clearInterval(timer);
+                    }, 1000);
+                } catch (e) {
+                    this.$message.success('验证码已发送（演示：123456）');
+                    this.signSmsCountdown = 60;
+                    const timer = setInterval(() => {
+                        this.signSmsCountdown--;
+                        if (this.signSmsCountdown <= 0) clearInterval(timer);
+                    }, 1000);
+                }
+            },
+            handleSignFaceUpload(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.signForm.faceImage = e.target.result;
+                };
+                reader.readAsDataURL(file.raw);
+            },
+            handleFaceUpload(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.identityForm.faceImage = e.target.result;
+                };
+                reader.readAsDataURL(file.raw);
+            },
+            async submitSign() {
+                this.signForm.signatureType = this.signType;
+                if (this.signType === 'HANDWRITE') {
+                    this.signForm.signatureImage = this.$refs.signPad.toDataURL();
+                } else {
+                    this.signForm.signatureImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+                    this.signForm.signPosition = JSON.stringify(this.dropSignatures);
+                }
+                try {
+                    const res = await axios.post('/contract/sign', this.signForm);
+                    if (res.data.code === 200) {
+                        this.$message.success('签署成功');
+                        this.signDialogVisible = false;
+                        this.loadContracts();
+                        this.loadPendingSign();
+                        this.resetSignPad();
+                    } else {
+                        this.$message.error(res.data.message);
+                    }
+                } catch (e) {
+                    this.$message.error('签署失败');
+                }
+            },
+            async submitTemplate() {
+                try {
+                    const formData = new FormData();
+                    formData.append('template', new Blob([JSON.stringify(this.templateForm)], { type: 'application/json' }));
+                    if (this.$refs.templateUpload && this.$refs.templateUpload.uploadFiles.length > 0) {
+                        formData.append('file', this.$refs.templateUpload.uploadFiles[0].raw);
+                    }
+                    const res = await axios.post('/template', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                    if (res.data.code === 200) {
+                        this.$message.success('上传成功');
+                        this.showTemplateDialog = false;
+                        this.loadTemplates();
+                        this.templateForm = { templateName: '', templateCode: '', templateType: 'OTHER' };
+                        if (this.$refs.templateUpload) this.$refs.templateUpload.clearFiles();
+                    } else {
+                        this.$message.error(res.data.message);
+                    }
+                } catch (e) {
+                    this.$message.error('上传失败');
+                }
+            },
+            async identityVerify() {
+                try {
+                    const res = await axios.post('/user/identity-verify', this.identityForm);
+                    if (res.data.code === 200) {
+                        this.$message.success('认证成功');
+                        this.loadUserInfo();
+                    } else {
+                        this.$message.error(res.data.message);
+                    }
+                } catch (e) {
+                    this.$message.success('认证成功（演示模式）');
+                    this.userInfo.identityVerified = 1;
+                }
+            },
+            async remindSigner(row) {
+                try {
+                    const res = await axios.post('/contract/remind/' + row.id);
+                    if (res.data.code === 200) {
+                        this.$message.success('催办成功，已发送短信通知');
+                    } else {
+                        this.$message.error(res.data.message);
+                    }
+                } catch (e) {
+                    this.$message.error(e.response ? e.response.data.message : '催办失败');
+                }
+            },
+            async loadBatchList() {
+                try {
+                    const res = await axios.get('/blockchain/batch/page', { params: this.batchPage });
+                    if (res.data.code === 200) {
+                        this.batchList = res.data.data.records;
+                        this.batchPage.total = res.data.data.total;
+                    }
+                } catch (e) {}
+                try {
+                    const res2 = await axios.get('/blockchain/batch/queue/size');
+                    if (res2.data.code === 200) {
+                        this.pendingQueueSize = res2.data.data.pendingSize;
+                    }
+                } catch (e) {}
+            },
+            async handleBatchPageChange(page) {
+                this.batchPage.pageNum = page;
+                this.loadBatchList();
+            },
+            async flushBatch() {
+                try {
+                    const res = await axios.post('/blockchain/batch/flush');
+                    if (res.data.code === 200) {
+                        this.$message.success('已触发批量打包');
+                        setTimeout(() => this.loadBatchList(), 1000);
+                    }
+                } catch (e) {
+                    this.$message.error('手动打包失败');
+                }
+            },
+            viewBatchDetail(row) {
+                this.$alert(`
+批次号：${row.batchNo}
+存证数量：${row.evidenceCount}
+总Gas：${row.totalGas ? row.totalGas.toLocaleString() : '-'}
+平均Gas：${row.avgGas ? row.avgGas.toLocaleString() : '-'}
+交易ID：${row.txId || '-'}
+区块高度：${row.blockHeight || '-'}
+区块哈希：${row.blockHash || '-'}
+默克尔根：${row.merkleRoot || '-'}
+创建时间：${row.createTime}
+                `, '批次详情');
+            },
+            async reviewContract(row) {
+                this.reviewingContractId = row.id;
+                this.reviewLoading = true;
+                this.reviewResult = null;
+                try {
+                    const res = await axios.post('/review/contract/' + row.id);
+                    if (res.data.code === 200) {
+                        this.reviewResult = res.data.data;
+                        this.reviewDialogVisible = true;
+                        this.loadContracts();
+                        this.$message.success('审查完成');
+                    } else {
+                        this.$message.error(res.data.message);
+                    }
+                } catch (e) {
+                    this.$message.error(e.response ? e.response.data.message : '审查失败');
+                } finally {
+                    this.reviewLoading = false;
+                    this.reviewingContractId = null;
+                }
+            },
+            getScoreType(score) {
+                if (score >= 80) return 'success';
+                if (score >= 60) return 'warning';
+                return 'danger';
+            },
+            getRiskLevelType(level) {
+                const map = { 'HIGH': 'danger', 'MEDIUM': 'warning', 'LOW': 'success' };
+                return map[level] || 'info';
+            },
+            getRiskLevelText(level) {
+                const map = { 'HIGH': '高风险', 'MEDIUM': '中风险', 'LOW': '低风险' };
+                return map[level] || '未知';
+            },
+            async startWitnessAuth(row) {
+                try {
+                    const res = await axios.post('/witness/start/' + row.contractId);
+                    if (res.data.code === 200) {
+                        this.witnessAuthInfo = res.data.data;
+                        this.witnessTips = res.data.data.tips;
+                        this.witnessVisible = true;
+                        this.witnessAuthContractId = row.contractId;
+                        this.recordedVideo = null;
+                        this.recordedChunks = [];
+                        this.recordDuration = 0;
+                        await this.initCamera();
+                    } else {
+                        this.$message.error(res.data.message);
+                    }
+                } catch (e) {
+                    this.$message.error(e.response ? e.response.data.message : '启动认证失败');
+                }
+            },
+            async initCamera() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { width: 640, height: 480 },
+                        audio: true
+                    });
+                    this.$refs.witnessVideo.srcObject = stream;
+                    this.mediaStream = stream;
+                } catch (e) {
+                    console.error('摄像头访问失败:', e);
+                    this.$message.error('无法访问摄像头，请确保已授权摄像头权限');
+                }
+            },
+            startRecording() {
+                if (!this.mediaStream) {
+                    this.$message.error('请先授权摄像头权限');
+                    return;
+                }
+                this.recordedChunks = [];
+                this.recordDuration = 0;
+                try {
+                    this.mediaRecorder = new MediaRecorder(this.mediaStream, {
+                        mimeType: 'video/webm;codecs=vp8'
+                    });
+                    this.mediaRecorder.ondataavailable = (e) => {
+                        if (e.data.size > 0) {
+                            this.recordedChunks.push(e.data);
+                        }
+                    };
+                    this.mediaRecorder.onstop = () => {
+                        const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
+                        this.recordedVideo = URL.createObjectURL(blob);
+                    };
+                    this.mediaRecorder.start(100);
+                    this.witnessRecording = true;
+                    this.recordTimer = setInterval(() => {
+                        this.recordDuration++;
+                    }, 1000);
+                } catch (e) {
+                    console.error('录制失败:', e);
+                    this.$message.error('浏览器不支持视频录制，请使用Chrome或Firefox浏览器');
+                }
+            },
+            stopRecording() {
+                if (this.mediaRecorder && this.witnessRecording) {
+                    this.mediaRecorder.stop();
+                    this.witnessRecording = false;
+                    if (this.recordTimer) {
+                        clearInterval(this.recordTimer);
+                        this.recordTimer = null;
+                    }
+                }
+            },
+            reRecord() {
+                this.recordedVideo = null;
+                this.recordedChunks = [];
+                this.recordDuration = 0;
+            },
+            async submitWitnessVideo() {
+                if (!this.recordedChunks || this.recordedChunks.length === 0) {
+                    this.$message.error('请先录制视频');
+                    return;
+                }
+                this.witnessSubmitting = true;
+                try {
+                    const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
+                    const formData = new FormData();
+                    formData.append('authId', this.witnessAuthInfo.authId);
+                    formData.append('videoFile', blob, 'witness.webm');
+                    formData.append('duration', this.recordDuration);
+                    formData.append('speechText', '我已阅读并同意合同内容，自愿签署');
+                    const res = await axios.post('/witness/submit', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                    if (res.data.code === 200) {
+                        const result = res.data.data;
+                        if (result.passed) {
+                            this.$message.success('意愿认证通过，现在可以签署合同了');
+                            this.witnessVisible = false;
+                            this.openSignDialog({ id: this.witnessAuthContractId });
+                        } else {
+                            this.$message.warning('认证未通过，请重新录制');
+                        }
+                    } else {
+                        this.$message.error(res.data.message);
+                    }
+                } catch (e) {
+                    this.$message.error(e.response ? e.response.data.message : '提交失败');
+                } finally {
+                    this.witnessSubmitting = false;
+                }
+            },
+            closeWitnessAuth() {
+                this.witnessVisible = false;
+                if (this.mediaRecorder && this.witnessRecording) {
+                    this.mediaRecorder.stop();
+                }
+                if (this.mediaStream) {
+                    this.mediaStream.getTracks().forEach(track => track.stop());
+                }
+                if (this.recordTimer) {
+                    clearInterval(this.recordTimer);
+                }
+                if (this.recordedVideo) {
+                    URL.revokeObjectURL(this.recordedVideo);
+                }
+                this.mediaRecorder = null;
+                this.mediaStream = null;
+                this.recordedVideo = null;
+                this.recordedChunks = [];
+                this.witnessAuthInfo = null;
+            },
+            formatDuration(seconds) {
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+            },
+            async verifyContractInternal() {
+                if (!this.verifyContractNo) {
+                    this.$message.warning('请输入合同编号');
+                    return;
+                }
+                this.verifyLoading = true;
+                this.verifyResult = null;
+                try {
+                    const res = await axios.get('/verify/internal', {
+                        params: { contractNo: this.verifyContractNo }
+                    });
+                    if (res.data.code === 200) {
+                        this.verifyResult = res.data.data;
+                    } else {
+                        this.$message.error(res.data.message);
+                    }
+                } catch (e) {
+                    this.$message.error(e.response ? e.response.data.message : '验真失败');
+                } finally {
+                    this.verifyLoading = false;
+                }
+            },
+            copyVerifyUrl() {
+                const input = document.createElement('textarea');
+                input.value = this.verifyPageUrl;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+                this.$message.success('验真链接已复制到剪贴板');
+            },
+            openVerifyPage() {
+                window.open(this.verifyPageUrl, '_blank');
+            }
+        }
+    });
+</script>
+</body>
+</html>

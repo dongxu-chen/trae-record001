@@ -1,0 +1,28 @@
+[chain]
+    id = "chain0"
+
+[network]
+    peers = ["127.0.0.1:20200", "127.0.0.1:20201"]
+
+[amop]
+    sendCoreThreads = 2
+    sendQueueCapacity = 100000
+
+[threadPool]
+    channelProcessorThreadSize = 16
+    receiptProcessorThreadSize = 16
+    maxBlockingQueueSize = 102400
+
+[cryptoMaterial]
+    certPath = "conf/"
+    enSSLType = 0
+
+[account]
+    keyStoreDir = "account/"
+    accountFilePath = ""
+    accountPassword = ""
+
+[service]
+    sm_crypto = false
+    connectSeconds = 10
+    connectSleepPerMillis = 1000

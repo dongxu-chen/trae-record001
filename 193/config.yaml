@@ -1,0 +1,52 @@
+kubeconfig: ""
+namespace: ""
+audit:
+  schedule: "0 0 * * *"
+  outputDir: "./reports"
+  enableTrends: true
+  enableRBAC: true
+  autoRemediate: false
+  dryRun: true
+  resources:
+    - pods
+    - services
+    - configmaps
+    - secrets
+    - deployments
+    - statefulsets
+    - daemonsets
+    - ingresses
+    - persistentvolumeclaims
+rules:
+  resourceQuota:
+    enabled: true
+    cpuRequestMin: "100m"
+    cpuRequestMax: "4"
+    memoryRequestMin: "64Mi"
+    memoryRequestMax: "8Gi"
+    cpuLimitMin: "200m"
+    cpuLimitMax: "8"
+    memoryLimitMin: "128Mi"
+    memoryLimitMax: "16Gi"
+  labels:
+    enabled: true
+    required:
+      - app
+      - environment
+    patterns:
+      environment: "^(dev|staging|production)$"
+  imageSource:
+    enabled: true
+    allowedRegistries:
+      - "registry.company.com"
+      - "docker.io/library"
+    disallowedTags:
+      - "latest"
+    checkPrivateRegistryAuth: true
+    privateRegistries:
+      - "registry.company.com"
+webhook:
+  enabled: false
+  url: ""
+  secret: ""
+  timeout: "30s"

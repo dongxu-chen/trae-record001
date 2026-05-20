@@ -1,0 +1,99 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: econtract-platform
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/econtract?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    database: 0
+    timeout: 3000ms
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.econtract.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+jwt:
+  secret: econtract-secret-key-2024-abcdefghijklmnopqrstuvwxyz
+  expire: 86400000
+
+sms:
+  aliyun:
+    access-key-id: your-access-key-id
+    access-key-secret: your-access-key-secret
+    region-id: cn-hangzhou
+    sign-name: 电子合同平台
+    template-code: SMS_123456789
+
+face:
+  aliyun:
+    access-key-id: your-access-key-id
+    access-key-secret: your-access-key-secret
+    region-id: cn-shanghai
+
+timestamp:
+  tsa:
+    url: http://timestamp.digicert.com
+    username:
+    password:
+
+blockchain:
+  fisco:
+    config-path: classpath:fisco/config.toml
+    group-id: 1
+    contract-address: 0x0000000000000000000000000000000000000000
+  batch:
+    enabled: true
+    max-size: 10
+    max-wait-seconds: 300
+    max-gas: 3000000
+
+sign:
+  timeout-hours: 24
+  remind-interval-hours: 6
+  max-remind-count: 3
+  auto-skip-timeout: true
+
+witness:
+  min-duration: 3
+  max-size: 50
+  required: true
+
+review:
+  auto-review: true
+  high-risk-block: false
+
+file:
+  upload-path: D:/econtract/files/
+  template-path: D:/econtract/templates/
+  signed-path: D:/econtract/signed/
+
+logging:
+  level:
+    com.econtract: debug
+    org.fisco: warn

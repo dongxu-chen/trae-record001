@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: multi-tenant-file-storage
+  servlet:
+    multipart:
+      max-file-size: 1024MB
+      max-request-size: 1024MB
+  datasource:
+    url: jdbc:mysql://localhost:3306/file_storage?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      database: 0
+      timeout: 3000
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+
+server:
+  port: 8080
+
+minio:
+  endpoint: http://localhost:9000
+  accessKey: minioadmin
+  secretKey: minioadmin
+  bucketPrefix: tenant-
+
+file:
+  chunk:
+    size: 5242880
+  thumbnail:
+    image:
+      enabled: true
+      width: 200
+      height: 200
+      quality: 0.8
+  recycle:
+    retention-days: 30
+  upload:
+    timeout-hours: 24
+  watermark:
+    enabled: true
+    text: CONFIDENTIAL
+    opacity: 0.3
+    font-size: 30
+    color: '#cccccc'
+    rotation: -30
+    interval-x: 200
+    interval-y: 150

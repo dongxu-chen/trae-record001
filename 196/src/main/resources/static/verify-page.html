@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电子合同验真平台</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .search-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+        .result-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 8px 24px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .status-pass {
+            background: #f0f9eb;
+            color: #67c23a;
+            border: 2px solid #67c23a;
+        }
+        .status-fail {
+            background: #fef0f0;
+            color: #f56c6c;
+            border: 2px solid #f56c23a;
+        }
+        .verify-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .verify-item:last-child { border-bottom: none; }
+        .verify-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .icon-pass {
+            background: #f0f9eb;
+            color: #67c23a;
+        }
+        .icon-fail {
+            background: #fef0f0;
+            color: #f56c6c;
+        }
+        .verify-content { flex: 1; }
+        .verify-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #303133;
+            margin-bottom: 4px;
+        }
+        .verify-desc {
+            font-size: 14px;
+            color: #606266;
+        }
+        .verify-detail {
+            font-size: 12px;
+            color: #909399;
+            margin-top: 4px;
+        }
+        .contract-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .contract-row {
+            display: flex;
+            margin-bottom: 12px;
+        }
+        .contract-label {
+            width: 120px;
+            color: #909399;
+            flex-shrink: 0;
+        }
+        .contract-value {
+            color: #303133;
+            font-weight: 500;
+            word-break: break-all;
+        }
+        .signer-list {
+            margin-top: 16px;
+        }
+        .signer-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .signer-order {
+            width: 32px;
+            height: 32px;
+            background: #409EFF;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .signer-info { flex: 1; }
+        .signer-name {
+            font-weight: 600;
+            color: #303133;
+        }
+        .signer-meta {
+            font-size: 12px;
+            color: #909399;
+            margin-top: 4px;
+        }
+        .footer {
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            margin-top: 40px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="header">
+                <h1>🔐 电子合同验真平台</h1>
+                <p>输入合同编号，验证电子合同的真实性和完整性</p>
+            </div>
+
+            <div class="search-card">
+                <el-form :inline="true" @submit.native.prevent="verifyContract">
+                    <el-form-item label="合同编号" label-width="100px">
+                        <el-input
+                            v-model="contractNo"
+                            placeholder="请输入合同编号，如：HT2024010100001"
+                            size="large"
+                            style="width: 400px;"
+                            clearable></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" size="large" :loading="loading" @click="verifyContract">
+                            <i class="el-icon-search"></i> 立即验真
+                        </el-button>
+                    </el-form-item>
+                </el-form>
+
+                <div style="margin-top: 20px; padding: 16px; background: #ecf5ff; border-radius: 8px;">
+                    <p style="color: #409EFF; font-size: 14px;">
+                        <i class="el-icon-info"></i>
+                        验真内容包括：合同存在性、文件完整性、区块链存证、签署完整性、可信时间戳、身份认证等6项验证
+                    </p>
+                </div>
+            </div>
+
+            <div v-if="result" class="result-card">
+                <div style="text-align: center;">
+                    <span class="status-badge" :class="result.overallPassed ? 'status-pass' : 'status-fail'">
+                        <i :class="result.overallPassed ? 'el-icon-circle-check' : 'el-icon-circle-close'"></i>
+                        {{ result.overallPassed ? '验真通过' : '验真未通过' }}
+                    </span>
+                </div>
+
+                <div v-if="result.contractExists" class="contract-info">
+                    <h3 style="margin-bottom: 20px; color: #303133;">
+                        <i class="el-icon-document"></i> 合同基本信息
+                    </h3>
+                    <div class="contract-row">
+                        <span class="contract-label">合同编号：</span>
+                        <span class="contract-value">{{ result.contractNo }}</span>
+                    </div>
+                    <div class="contract-row">
+                        <span class="contract-label">合同名称：</span>
+                        <span class="contract-value">{{ result.contractName }}</span>
+                    </div>
+                    <div class="contract-row">
+                        <span class="contract-label">合同状态：</span>
+                        <span class="contract-value">
+                            <el-tag :type="getStatusType(result.status)" size="small">{{ result.statusText }}</el-tag>
+                        </span>
+                    </div>
+                    <div class="contract-row">
+                        <span class="contract-label">创建时间：</span>
+                        <span class="contract-value">{{ result.createTime }}</span>
+                    </div>
+                    <div class="contract-row" v-if="result.blockchainTxId">
+                        <span class="contract-label">区块链交易：</span>
+                        <span class="contract-value" style="font-family: monospace; font-size: 13px;">{{ result.blockchainTxId }}</span>
+                    </div>
+                    <div class="contract-row" v-if="result.blockchainTime">
+                        <span class="contract-label">上链时间：</span>
+                        <span class="contract-value">{{ result.blockchainTime }}</span>
+                    </div>
+
+                    <div v-if="result.signers && result.signers.length > 0" class="signer-list">
+                        <h4 style="margin-bottom: 12px; color: #303133;">
+                            <i class="el-icon-user"></i> 签署方信息（{{ result.completedSignCount }}/{{ result.signCount }}）
+                        </h4>
+                        <div v-for="signer in result.signers" :key="signer.signOrder" class="signer-item">
+                            <div class="signer-order">{{ signer.signOrder }}</div>
+                            <div class="signer-info">
+                                <div class="signer-name">
+                                    {{ signer.signerName }}
+                                    <el-tag v-if="signer.signStatus === 'COMPLETED'" type="success" size="mini" style="margin-left: 8px;">已签署</el-tag>
+                                    <el-tag v-else-if="signer.signStatus === 'SIGNING'" type="warning" size="mini" style="margin-left: 8px;">签署中</el-tag>
+                                    <el-tag v-else type="info" size="mini" style="margin-left: 8px;">待签署</el-tag>
+                                </div>
+                                <div class="signer-meta">
+                                    {{ signer.signerPhone }}
+                                    <span v-if="signer.signTime"> · {{ signer.signTime }}</span>
+                                    <span v-if="signer.hasWitness"> · <i class="el-icon-video-camera" title="意愿认证"></i></span>
+                                    <span v-if="signer.hasPressureData"> · <i class="el-icon-edit" title="手写签名"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="result.authPassed === false" style="padding: 20px; background: #fef0f0; border-radius: 8px; text-align: center;">
+                    <p style="color: #f56c6c;"><i class="el-icon-warning"></i> 该合同不允许公开验真，请联系合同签署方获取授权</p>
+                </div>
+
+                <div v-if="result.authPassed !== false && result.verifyItems">
+                    <h3 style="margin-bottom: 20px; color: #303133;">
+                        <i class="el-icon-check-circle"></i> 验真明细
+                    </h3>
+                    <div v-for="(item, index) in result.verifyItems" :key="index" class="verify-item">
+                        <div class="verify-icon" :class="item.passed ? 'icon-pass' : 'icon-fail'">
+                            <i :class="item.passed ? 'el-icon-check' : 'el-icon-close'"></i>
+                        </div>
+                        <div class="verify-content">
+                            <div class="verify-name">{{ item.name }}</div>
+                            <div class="verify-desc">{{ item.description }}</div>
+                            <div class="verify-detail">{{ item.detail }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 24px; text-align: center; color: #909399; font-size: 13px;">
+                    验真时间：{{ result.verifyTime }}
+                </div>
+            </div>
+
+            <div class="footer">
+                <p>本平台提供电子合同真实性验证服务，所有数据均通过区块链存证，不可篡改</p>
+                <p style="margin-top: 8px;">© 2024 电子合同签署平台 版权所有</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@2.6.14/dist/vue.min.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data() {
+                return {
+                    contractNo: '',
+                    loading: false,
+                    result: null
+                }
+            },
+            mounted() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const no = urlParams.get('contractNo');
+                if (no) {
+                    this.contractNo = no;
+                    this.verifyContract();
+                }
+            },
+            methods: {
+                async verifyContract() {
+                    if (!this.contractNo || this.contractNo.trim() === '') {
+                        this.$message.warning('请输入合同编号');
+                        return;
+                    }
+                    this.loading = true;
+                    this.result = null;
+                    try {
+                        const res = await axios.get('/api/verify/public', {
+                            params: { contractNo: this.contractNo.trim() }
+                        });
+                        if (res.data.code === 200) {
+                            this.result = res.data.data;
+                        } else {
+                            this.$message.error(res.data.message || '验真失败');
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        if (e.response && e.response.data) {
+                            this.$message.error(e.response.data.message || '验真失败');
+                        } else {
+                            this.$message.error('网络错误，请稍后重试');
+                        }
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                getStatusType(status) {
+                    const map = {
+                        'COMPLETED': 'success',
+                        'SIGNING': 'warning',
+                        'PENDING': 'info',
+                        'DRAFT': 'info',
+                        'REJECTED': 'danger',
+                        'EXPIRED': 'danger'
+                    };
+                    return map[status] || 'info';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

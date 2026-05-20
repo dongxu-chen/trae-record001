@@ -1,0 +1,69 @@
+groups:
+  - name: infrastructure
+    rules:
+      - alert: HighCPUUsage
+        expr: cpu_usage{job="node"} > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High CPU usage detected on {{ $labels.instance }}
+          description: CPU usage is above 80% for 5 minutes. Current value: {{ $value }}%
+
+      - alert: HighMemoryUsage
+        expr: memory_usage{job="node"} > 90
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: High memory usage on {{ $labels.instance }}
+          description: Memory usage is above 90% for 10 minutes.
+
+      - alert: DiskSpaceLow
+        expr: disk_free{job="node"} / disk_total{job="node"} < 0.1
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: Disk space low on {{ $labels.instance }}
+          description: Disk free space is below 10%.
+
+  - name: application
+    rules:
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: High error rate on {{ $labels.service }}
+          description: Error rate is above 5% for 2 minutes.
+
+      - alert: SlowResponseTime
+        expr: avg by (service) (rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])) > 1
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: Slow response time for {{ $labels.service }}
+          description: Average response time is above 1 second.
+
+  - name: database
+    rules:
+      - alert: DatabaseConnectionHigh
+        expr: database_connections > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High database connections on {{ $labels.instance }}
+          description: Database connections exceeded 100 for 5 minutes.
+
+      - alert: SlowQueryRate
+        expr: rate(database_slow_queries_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High slow query rate on {{ $labels.instance }}
+          description: More than 10 slow queries per second.

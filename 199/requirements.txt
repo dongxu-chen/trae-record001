@@ -1,0 +1,12 @@
+kafka-python==2.0.2
+pyflink==1.18.0
+websockets==12.0
+fastapi==0.109.0
+uvicorn==0.27.0
+pydantic==2.5.3
+snownlp==0.12.3
+jieba==0.42.1
+numpy==1.24.4
+pandas==2.0.3
+python-multipart==0.0.6
+collections-extended==2.0.2
