@@ -1,0 +1,84 @@
+output: scan-report.html
+format: html
+severities:
+  - CRITICAL
+  - HIGH
+  - MEDIUM
+  - LOW
+scanners:
+  - vuln
+  - secret
+  - config
+fail_on_error: true
+
+database:
+  cache_dir: ~/.trivy/db
+  auto_update: true
+  update_hour: 2
+  update_minute: 0
+  skip_update: false
+
+thresholds:
+  vulnerabilities:
+    critical:
+      action: block
+      max_count: 0
+    high:
+      action: block
+      max_count: 0
+    medium:
+      action: warn
+      max_count: -1
+    low:
+      action: allow
+      max_count: -1
+  secrets:
+    critical:
+      action: block
+      max_count: 0
+    high:
+      action: block
+      max_count: 0
+    medium:
+      action: warn
+      max_count: -1
+    low:
+      action: allow
+      max_count: -1
+  misconfigurations:
+    critical:
+      action: block
+      max_count: 0
+    high:
+      action: block
+      max_count: 0
+    medium:
+      action: warn
+      max_count: -1
+    low:
+      action: allow
+      max_count: -1
+
+secret_whitelist:
+  rules: []
+  files:
+    - "test_*.py"
+    - "*_test.go"
+    - "*.test.js"
+  paths:
+    - "/test/"
+    - "/tests/"
+    - "/spec/"
+    - "/mock/"
+  match_values:
+    - "test"
+    - "example"
+    - "placeholder"
+    - "dummy"
+    - "fake"
+    - "sample"
+    - "xxxx"
+    - "****"
+    - "----"
+    - "changeme"
+    - "password123"

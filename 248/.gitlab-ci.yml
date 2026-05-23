@@ -1,0 +1,38 @@
+stages:
+  - build
+  - scan
+
+variables:
+  IMAGE_NAME: "my-app:latest"
+  SCANNER_VERSION: "latest"
+
+build_image:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t $IMAGE_NAME .
+    - docker save $IMAGE_NAME -o image.tar
+  artifacts:
+    paths:
+      - image.tar
+
+security_scan:
+  stage: scan
+  image: golang:1.21
+  before_script:
+    - apt-get update && apt-get install -y wget apt-transport-https gnupg lsb-release
+    - wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | tee /usr/share/keyrings/trivy.gpg > /dev/null
+    - echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | tee -a /etc/apt/sources.list.d/trivy.list
+    - apt-get update && apt-get install -y trivy
+    - go build -o container-scanner ./cmd/
+  script:
+    - ./container-scanner $IMAGE_NAME --config scanner-config.yaml --output scan-report.html
+  artifacts:
+    when: always
+    paths:
+      - scan-report.html
+    reports:
+      html: scan-report.html
+  allow_failure: false

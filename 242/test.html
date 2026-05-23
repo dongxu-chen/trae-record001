@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>性能监控SDK测试 - 增强版</title>
+  <script>
+    (function(w, d, s, q, o){
+      w[q] = w[q] || [];
+      var e = d.createElement(s),
+          t = d.getElementsByTagName(s)[0];
+      e.async = 1;
+      e.src = o;
+      t.parentNode.insertBefore(e, t);
+    })(window, document, 'script', '__perf_queue', './src/index.js');
+
+    __perf_queue.push(['init', {
+      reportUrl: 'https://example.com/report',
+      appId: 'test-app-001',
+      sampleRate: 1,
+      recordSampleRate: 1,
+      enableRecord: true,
+      batchSize: 5,
+      delay: 3000
+    }]);
+
+    __perf_queue.push(['setUserId', 'user_12345']);
+    __perf_queue.push(['trackEvent', 'page_view', { page: 'test_page' }]);
+  </script>
+</head>
+<body>
+  <h1>性能监控SDK测试页面 - 增强版</h1>
+  
+  <div style="margin: 20px 0;">
+    <h3>基础功能测试</h3>
+    <button onclick="testError()">触发JS错误</button>
+    <button onclick="testFetch()">测试Fetch请求</button>
+    <button onclick="testXhr()">测试XHR请求</button>
+    <button onclick="testCustomReport()">测试自定义上报</button>
+  </div>
+
+  <div style="margin: 20px 0;">
+    <h3>自定义事件打点测试</h3>
+    <button onclick="testTrackTiming()">测试耗时统计（startTrack/endTrack）</button>
+    <button onclick="testTrackEvent()">测试事件埋点（trackEvent）</button>
+  </div>
+
+  <div style="margin: 20px 0;">
+    <h3>性能评分测试</h3>
+    <button onclick="testGetScore()">获取当前性能评分</button>
+  </div>
+
+  <div style="margin: 20px 0;">
+    <h3>行为录屏测试（控制台查看）</h3>
+    <p>点击页面任意位置、滚动、输入都将被记录</p>
+    <input type="text" placeholder="输入测试" style="padding: 8px; width: 200px;">
+  </div>
+
+  <div style="height: 1000px;"></div>
+  <p>页面底部 - 用于测试滚动</p>
+
+  <div id="output" style="background: #f5f5f5; padding: 10px; margin-top: 20px; font-family: monospace; font-size: 12px; max-height: 400px; overflow-y: auto;"></div>
+
+  <script>
+    function log(msg) {
+      document.getElementById('output').innerHTML += new Date().toLocaleTimeString() + ' - ' + msg + '<br>';
+      console.log(msg);
+    }
+
+    function testError() {
+      log('触发JS错误...');
+      setTimeout(() => {
+        throw new Error('测试错误 - 这是一个JS错误示例');
+      }, 100);
+    }
+
+    function testFetch() {
+      log('测试Fetch请求...');
+      fetch('https://jsonplaceholder.typicode.com/todos/1')
+        .then(res => res.json())
+        .then(data => log('Fetch完成: ' + JSON.stringify(data).slice(0, 50)));
+    }
+
+    function testXhr() {
+      log('测试XHR请求...');
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'https://jsonplaceholder.typicode.com/posts/1');
+      xhr.onload = function() {
+        log('XHR完成: ' + xhr.responseText.slice(0, 50));
+      };
+      xhr.send();
+    }
+
+    function testCustomReport() {
+      log('测试自定义上报...');
+      PerfSDK.report({ event: 'button_click', button: 'custom_report' });
+      log('自定义上报已发送');
+    }
+
+    function testTrackTiming() {
+      log('开始耗时统计...');
+      PerfSDK.startTrack('test_operation', { type: 'test' });
+      
+      setTimeout(() => {
+        const duration = PerfSDK.endTrack('test_operation', { result: 'success' });
+        log(`耗时统计完成: ${duration}ms`);
+      }, Math.random() * 500 + 100);
+    }
+
+    function testTrackEvent() {
+      log('发送事件埋点...');
+      PerfSDK.trackEvent('button_click', {
+        button: 'track_event_btn',
+        page: 'test_page',
+        timestamp: Date.now()
+      });
+      log('事件埋点已发送');
+    }
+
+    function testGetScore() {
+      log('获取性能评分...');
+      const result = PerfSDK.getPerformanceScore();
+      log(`性能评分: ${result.score}分 (${result.level})`);
+      if (result.suggestions.length > 0) {
+        log('优化建议:');
+        result.suggestions.forEach((s, i) => {
+          log(`  ${i + 1}. ${s}`);
+        });
+      } else {
+        log('暂无优化建议，页面性能良好！');
+      }
+    }
+
+    log('SDK已初始化，打开控制台查看上报数据');
+    log('可用API: startTrack, endTrack, trackEvent, getPerformanceScore');
+  </script>
+</body>
+</html>

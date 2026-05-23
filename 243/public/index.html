@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CI/CD 流水线编辑器</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <div class="header-left">
+        <h1>🚀 CI/CD 流水线编辑器</h1>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-primary" onclick="showTemplates()">📦 模板市场</button>
+        <button class="btn btn-success" onclick="exportConfig()">💾 导出 YAML</button>
+        <button class="btn btn-secondary" onclick="importConfig()">📂 导入 YAML</button>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <h3>流水线配置</h3>
+          <div class="form-group">
+            <label>流水线名称</label>
+            <input type="text" id="pipelineName" value="My Pipeline" placeholder="输入流水线名称">
+          </div>
+          <div class="form-group">
+            <label>仓库地址</label>
+            <input type="text" id="repository" placeholder="username/repo">
+          </div>
+          <div class="form-group">
+            <label>默认分支</label>
+            <input type="text" id="branch" value="main">
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <h3>阶段组件</h3>
+          <div id="stagePalette" class="stage-palette"></div>
+        </div>
+
+        <div class="sidebar-section">
+          <h3>使用说明</h3>
+          <ul class="help-list">
+            <li>拖拽组件到画布添加阶段</li>
+            <li>拖拽阶段可调整顺序</li>
+            <li>点击阶段编辑配置</li>
+            <li>支持并行任务、缓存、质量红线</li>
+          </ul>
+        </div>
+      </aside>
+
+      <main class="canvas-container">
+        <div class="canvas-header">
+          <h2>流水线画布</h2>
+          <button class="btn btn-sm btn-outline" onclick="addCustomStage()">+ 添加自定义阶段</button>
+        </div>
+        
+        <div id="pipelineCanvas" class="pipeline-canvas">
+          <div class="empty-state" id="emptyState">
+            <div class="empty-icon">📋</div>
+            <p>从左侧拖拽组件到此处开始构建流水线</p>
+          </div>
+          
+          <div id="stagesList" class="stages-list hidden"></div>
+        </div>
+      </main>
+
+      <aside class="config-panel" id="configPanel">
+        <div class="config-header">
+          <h3>阶段配置</h3>
+          <button class="close-btn" onclick="closeConfigPanel()">×</button>
+        </div>
+        <div class="config-content" id="configContent"></div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="modal" id="templatesModal">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h2>📦 流水线模板市场</h2>
+        <button class="close-btn" onclick="closeTemplates()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="template-filters">
+          <input type="text" id="templateSearch" placeholder="搜索模板..." oninput="filterTemplates()">
+          <div class="category-filters" id="categoryFilters"></div>
+        </div>
+        <div class="templates-grid" id="templatesGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="exportModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>💾 导出配置</h2>
+        <button class="close-btn" onclick="closeExport()">×</button>
+      </div>
+      <div class="modal-body">
+        <pre class="code-output" id="exportOutput"></pre>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="copyToClipboard()">复制到剪贴板</button>
+        <button class="btn btn-primary" onclick="downloadYaml()">下载 YAML</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="importFile" accept=".yaml,.yml" style="display: none" onchange="handleImport(event)">
+
+  <script src="app.js"></script>
+</body>
+</html>

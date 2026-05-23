@@ -1,0 +1,46 @@
+name: Container Security Scan
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Install Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'image'
+          image-ref: 'alpine:latest'
+          format: 'json'
+          output: 'trivy-results.json'
+          exit-code: '0'
+
+      - name: Build scanner
+        run: go build -o container-scanner ./cmd/
+
+      - name: Run container scan
+        run: |
+          ./container-scanner alpine:latest \
+            --config scanner-config.yaml \
+            --output scan-report.html
+
+      - name: Upload scan report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-scan-report
+          path: scan-report.html
+          retention-days: 30

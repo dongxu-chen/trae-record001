@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package distributed.lock;
+
+option java_multiple_files = true;
+option java_package = "com.distributed.lock.proto";
+option java_outer_classname = "LockServiceProto";
+
+enum LockType {
+    EXCLUSIVE = 0;
+    READ = 1;
+    WRITE = 2;
+}
+
+message LockRequest {
+    string lock_name = 1;
+    string client_id = 2;
+    LockType lock_type = 3;
+    int64 lease_ttl_seconds = 4;
+    int64 timeout_ms = 5;
+    bool reentrant = 6;
+}
+
+message LockResponse {
+    bool success = 1;
+    string lock_token = 2;
+    string message = 3;
+    int64 lease_id = 4;
+}
+
+message UnlockRequest {
+    string lock_name = 1;
+    string lock_token = 2;
+    string client_id = 3;
+}
+
+message UnlockResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message TryLockRequest {
+    string lock_name = 1;
+    string client_id = 2;
+    LockType lock_type = 3;
+    int64 lease_ttl_seconds = 4;
+    bool reentrant = 5;
+}
+
+message TryLockResponse {
+    bool success = 1;
+    string lock_token = 2;
+    string message = 3;
+    int64 lease_id = 4;
+}
+
+message RenewLeaseRequest {
+    string lock_name = 1;
+    string lock_token = 2;
+    int64 lease_id = 3;
+}
+
+message RenewLeaseResponse {
+    bool success = 1;
+    int64 new_ttl = 2;
+    string message = 3;
+}
+
+message HeartbeatRequest {
+    string client_id = 1;
+    repeated string held_locks = 2;
+    int64 timestamp = 3;
+}
+
+message HeartbeatResponse {
+    bool success = 1;
+    int64 next_heartbeat_ms = 2;
+    repeated string expired_locks = 3;
+    string message = 4;
+}
+
+service LockService {
+    rpc Lock(LockRequest) returns (LockResponse);
+    rpc Unlock(UnlockRequest) returns (UnlockResponse);
+    rpc TryLock(TryLockRequest) returns (TryLockResponse);
+    rpc RenewLease(RenewLeaseRequest) returns (RenewLeaseResponse);
+    rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+}

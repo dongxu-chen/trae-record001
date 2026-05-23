@@ -1,0 +1,35 @@
+scale: 4
+num_channels: 1
+num_features: 64
+num_groups: 10
+num_blocks: 20
+reduction: 16
+
+train_dir: data/FLIR/train
+val_dir: data/FLIR/val
+test_dir: data/FLIR/test
+
+model_save_dir: models
+log_dir: logs
+result_dir: results
+
+patch_size: 64
+batch_size: 8
+num_epochs: 500
+num_workers: 0
+
+learning_rate: 1.0e-4
+optimizer: adam
+betas: [0.9, 0.999]
+
+scheduler: step
+step_size: 200
+gamma: 0.5
+
+loss_type: l1
+
+resume: false
+checkpoint_path: models/best_model.pth
+
+save_interval: 10
+use_tensorboard: true

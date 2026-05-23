@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+package distributed.lock;
+
+option java_multiple_files = true;
+option java_package = "com.distributed.lock.proto";
+option java_outer_classname = "LockMonitorProto";
+
+message LockStatusRequest {
+    string lock_name = 1;
+}
+
+message LockStatusResponse {
+    string lock_name = 1;
+    bool is_locked = 2;
+    LockType lock_type = 3;
+    string holder_client_id = 4;
+    int64 holder_count = 5;
+    int64 wait_queue_length = 6;
+    int64 lease_expire_time = 7;
+    repeated string waiting_clients = 8;
+}
+
+message AllLocksStatusRequest {
+    int32 page_size = 1;
+    int32 page_number = 2;
+}
+
+message AllLocksStatusResponse {
+    repeated LockStatusResponse locks = 1;
+    int32 total_count = 2;
+    int32 page_size = 3;
+    int32 page_number = 4;
+}
+
+message LockStatisticsRequest {
+}
+
+message LockStatisticsResponse {
+    int64 total_locks = 1;
+    int64 active_locks = 2;
+    int64 total_waiting = 3;
+    int64 lock_acquire_success_count = 4;
+    int64 lock_acquire_fail_count = 5;
+    int64 lock_release_count = 6;
+}
+
+message LockContentionRequest {
+    int32 top_n = 1;
+}
+
+message LockContentionInfo {
+    string lock_name = 1;
+    int64 acquire_count = 2;
+    double avg_wait_time_ms = 3;
+    double avg_hold_time_ms = 4;
+    double max_wait_time_ms = 5;
+    double max_hold_time_ms = 6;
+    int64 total_waiters = 7;
+    double contention_score = 8;
+}
+
+message LockContentionResponse {
+    repeated LockContentionInfo hot_locks = 1;
+    repeated LockContentionInfo all_locks = 2;
+    double overall_avg_wait_time_ms = 3;
+    double overall_avg_hold_time_ms = 4;
+}
+
+message DeadlockDetectionRequest {
+    bool auto_resolve = 1;
+}
+
+message DeadlockInfo {
+    repeated string involved_locks = 1;
+    repeated string involved_clients = 2;
+    string detected_cycle = 3;
+    string victim_client_id = 4;
+    string victim_lock_name = 5;
+    bool auto_resolved = 6;
+}
+
+message DeadlockDetectionResponse {
+    bool deadlock_detected = 1;
+    repeated DeadlockInfo deadlocks = 2;
+    int64 detection_time_ms = 3;
+}
+
+message LockMigrationRequest {
+    string from_node_id = 1;
+    string to_node_id = 2;
+    repeated string lock_names = 3;
+}
+
+message LockMigrationResponse {
+    bool success = 1;
+    repeated string migrated_locks = 2;
+    repeated string failed_locks = 3;
+    string message = 4;
+}
+
+message NodeStatusRequest {
+}
+
+message NodeStatusResponse {
+    string node_id = 1;
+    bool is_healthy = 2;
+    int64 active_locks = 3;
+    int64 total_locks = 4;
+    int64 uptime_ms = 5;
+    int64 last_heartbeat_ms = 6;
+}
+
+message WatchLockRequest {
+    string lock_name = 1;
+}
+
+message WatchLockEvent {
+    enum EventType {
+        ACQUIRED = 0;
+        RELEASED = 1;
+        WAIT_QUEUE_CHANGED = 2;
+        LEASE_RENEWED = 3;
+        DEADLOCK_DETECTED = 4;
+        LOCK_MIGRATED = 5;
+        CONTENTION_HIGH = 6;
+    }
+    EventType event_type = 1;
+    string lock_name = 2;
+    LockStatusResponse current_status = 3;
+    int64 timestamp = 4;
+    string details = 5;
+}
+
+service LockMonitorService {
+    rpc GetLockStatus(LockStatusRequest) returns (LockStatusResponse);
+    rpc GetAllLocksStatus(AllLocksStatusRequest) returns (AllLocksStatusResponse);
+    rpc GetLockStatistics(LockStatisticsRequest) returns (LockStatisticsResponse);
+    rpc GetLockContention(LockContentionRequest) returns (LockContentionResponse);
+    rpc DetectDeadlock(DeadlockDetectionRequest) returns (DeadlockDetectionResponse);
+    rpc MigrateLocks(LockMigrationRequest) returns (LockMigrationResponse);
+    rpc GetNodeStatus(NodeStatusRequest) returns (NodeStatusResponse);
+    rpc WatchLock(WatchLockRequest) returns (stream WatchLockEvent);
+}

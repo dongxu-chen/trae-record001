@@ -1,0 +1,132 @@
+port: 3000
+logLevel: info
+
+workDir: ./workspace
+cacheDir: ./cache
+archiveDir: ./archives
+
+webhook:
+  github:
+    secret: "your-github-webhook-secret"
+    enabled: true
+  gitlab:
+    secret: "your-gitlab-webhook-secret"
+    enabled: true
+
+docker:
+  socketPath: /var/run/docker.sock
+  defaultImage: node:18-alpine
+  network: cicd-network
+  timeout: 3600000
+
+jenkins:
+  url: http://localhost:8080
+  username: admin
+  apiToken: your-jenkins-api-token
+  enabled: false
+
+cache:
+  enabled: true
+  ttl: 86400000
+  maxSize: 10GB
+  branchIsolation: true
+  fallbackToDefaultBranch: true
+
+qualityGate:
+  defaultThreshold: 80
+  enabled: true
+
+pipeline:
+  defaultStages:
+    - checkout
+    - compile
+    - test
+    - build
+    - deploy
+  timeout: 7200000
+  maxParallel: 4
+  maxConcurrentPerGroup: 1
+  defaultRetries: 3
+
+repositories:
+  - name: "username/my-nodejs-app"
+    url: "https://github.com/username/my-nodejs-app.git"
+    branch: "main"
+    stages:
+      - name: checkout
+        script:
+          - "git clone $CLONE_URL ."
+          - "git checkout $GIT_COMMIT"
+      
+      - name: install
+        image: node:18-alpine
+        script:
+          - "npm install"
+        cache:
+          key: "node-modules-{{ checksum 'package-lock.json' }}"
+          paths:
+            - "node_modules"
+      
+      - name: test
+        image: node:18-alpine
+        parallel: true
+        retry: 3
+        retryOn:
+          - failure
+          - timeout
+        tasks:
+          - name: unit-test
+            script:
+              - "npm run test:unit"
+          - name: lint
+            script:
+              - "npm run lint"
+      
+      - name: build
+        image: node:18-alpine
+        script:
+          - "npm run build"
+        artifacts:
+          paths:
+            - "dist/"
+          name: "build-output"
+      
+      - name: deploy
+        image: docker:latest
+        condition:
+          branch: ["main", "master"]
+        script:
+          - "docker build -t my-app:$GIT_COMMIT ."
+          - "docker push my-app:$GIT_COMMIT"
+        volumes:
+          - "/var/run/docker.sock:/var/run/docker.sock"
+
+  - name: "username/my-java-app"
+    url: "https://github.com/username/my-java-app.git"
+    branch: "main"
+    stages:
+      - name: checkout
+        script:
+          - "git clone $CLONE_URL ."
+          - "git checkout $GIT_COMMIT"
+      
+      - name: build
+        image: maven:3.8-openjdk-17
+        script:
+          - "mvn clean package -DskipTests"
+        cache:
+          key: "maven-deps"
+          paths:
+            - "~/.m2/repository"
+      
+      - name: test
+        image: maven:3.8-openjdk-17
+        script:
+          - "mvn test"
+        parallel: false
+      
+      - name: deploy
+        useJenkins: true
+        jobName: "my-java-app-deploy"
+        condition:
+          previousStage: test
