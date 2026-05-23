@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>出租车OD需求预测可视化平台 - 增强版</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-title">
+                <h1>🚕 出租车OD需求预测可视化平台</h1>
+                <span class="meta-badge" id="metaBadge">元学习增强</span>
+            </div>
+            <div class="controls">
+                <div class="control-group">
+                    <label>日期:</label>
+                    <select id="dateSelect">
+                        <option value="2024-01-01">2024-01-01 (周一)</option>
+                        <option value="2024-01-02">2024-01-02 (周二)</option>
+                        <option value="2024-01-03">2024-01-03 (周三)</option>
+                        <option value="2024-01-04">2024-01-04 (周四)</option>
+                        <option value="2024-01-05">2024-01-05 (周五)</option>
+                        <option value="2024-01-06">2024-01-06 (周六)</option>
+                        <option value="2024-01-07">2024-01-07 (周日)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>时段:</label>
+                    <input type="range" id="hourSlider" min="0" max="23" value="8">
+                    <span id="hourDisplay">08:00</span>
+                </div>
+                <div class="control-group">
+                    <label>趋势粒度:</label>
+                    <select id="granularitySelect">
+                        <option value="5min">5分钟</option>
+                        <option value="15min">15分钟</option>
+                        <option value="1h" selected>1小时</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>模式:</label>
+                    <select id="modeSelect">
+                        <option value="history">历史数据</option>
+                        <option value="prediction">预测数据</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>视图:</label>
+                    <select id="viewSelect">
+                        <option value="2d">2D地图</option>
+                        <option value="3d">3D立体</option>
+                        <option value="supply_demand">供需分析</option>
+                        <option value="event">事件模拟</option>
+                    </select>
+                </div>
+                <button id="playBtn" class="btn btn-primary">▶ 播放趋势</button>
+            </div>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-value" id="totalDemand">0</div>
+                <div class="stat-label">总需求量</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="peakOrigin">0</div>
+                <div class="stat-label">热门出发网格</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="peakDest">0</div>
+                <div class="stat-label">热门到达网格</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgFlow">0</div>
+                <div class="stat-label">平均OD流量</div>
+            </div>
+        </div>
+
+        <div class="view-panels">
+            <div class="view-panel active" id="view-2d">
+                <div class="main-content">
+                    <div class="panel-left">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>OD矩阵热力图</h3>
+                                <span class="chart-hint">点击热力图查看相似网格</span>
+                            </div>
+                            <div id="heatmapChart" class="chart"></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>需求趋势</h3>
+                                <span class="chart-hint" id="trendGranularityHint">粒度: 1小时</span>
+                            </div>
+                            <div id="trendChart" class="chart"></div>
+                        </div>
+                    </div>
+                    <div class="panel-right">
+                        <div class="chart-card full-height">
+                            <div class="chart-header">
+                                <h3>流向地图 (2D)</h3>
+                                <span class="chart-hint">线宽: 对数缩放</span>
+                            </div>
+                            <div id="mapChart" class="chart map-chart"></div>
+                            <div class="map-legend">
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #5470c6;"></div>
+                                    <span>低流量</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #91cc75;"></div>
+                                    <span>中流量</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #ee6666;"></div>
+                                    <span>高流量</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bottom-panel">
+                    <div class="chart-card">
+                        <h3>出发地需求分布</h3>
+                        <div id="originBarChart" class="chart small-chart"></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>目的地需求分布</h3>
+                        <div id="destBarChart" class="chart small-chart"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="view-panel" id="view-3d">
+                <div class="full-screen-panel">
+                    <div class="chart-card full-height">
+                        <div class="chart-header">
+                            <h3>3D立体OD流向分布</h3>
+                            <div class="3d-controls">
+                                <button class="btn-small" id="resetCamera">重置视角</button>
+                                <button class="btn-small" id="autoRotate">自动旋转</button>
+                            </div>
+                        </div>
+                        <div id="chart3d" class="chart full-screen-chart"></div>
+                        <div class="map-legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #5470c6; height: 20px;"></div>
+                                <span>低流量弧</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #91cc75; height: 35px;"></div>
+                                <span>中流量弧</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #ee6666; height: 50px;"></div>
+                                <span>高流量弧</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="view-panel" id="view-supply_demand">
+                <div class="main-content">
+                    <div class="panel-left">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>供需平衡热力图</h3>
+                                <span class="chart-hint">红色=缺口 绿色=过剩</span>
+                            </div>
+                            <div id="supplyDemandChart" class="chart"></div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>供需对比</h3>
+                            <div id="supplyDemandCompareChart" class="chart small-chart"></div>
+                        </div>
+                    </div>
+                    <div class="panel-right">
+                        <div class="chart-card full-height">
+                            <div class="chart-header">
+                                <h3>缺口识别与调度建议</h3>
+                            </div>
+                            <div id="gapMapChart" class="chart map-chart"></div>
+                            <div class="gap-info">
+                                <div class="gap-stat">
+                                    <span class="gap-label">严重缺口网格:</span>
+                                    <span class="gap-value critical" id="criticalCount">0</span>
+                                </div>
+                                <div class="gap-stat">
+                                    <span class="gap-label">过剩网格:</span>
+                                    <span class="gap-value surplus" id="surplusCount">0</span>
+                                </div>
+                                <div class="gap-stat">
+                                    <span class="gap-label">总缺口:</span>
+                                    <span class="gap-value" id="totalGap">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="suggestions-panel">
+                    <h3>🚛 车辆调度建议</h3>
+                    <div id="suggestionsList" class="suggestions-list">
+                        <div class="suggestion-item">
+                            <span class="loading-text">加载调度建议中...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="view-panel" id="view-event">
+                <div class="event-panel">
+                    <div class="event-controls">
+                        <div class="chart-card">
+                            <h3>🎯 事件模拟</h3>
+                            <div class="event-selector">
+                                <label>选择事件类型:</label>
+                                <div id="eventButtons" class="event-buttons">
+                                </div>
+                            </div>
+                            <div id="eventParams" class="event-params">
+                            </div>
+                            <button id="simulateBtn" class="btn btn-primary" style="margin-top: 16px;">开始模拟</button>
+                        </div>
+                    </div>
+                    <div class="event-results">
+                        <div class="main-content">
+                            <div class="panel-left">
+                                <div class="chart-card">
+                                    <div class="chart-header">
+                                        <h3>事件影响 - OD变化热力图</h3>
+                                        <span class="chart-hint">红色=增加 蓝色=减少</span>
+                                    </div>
+                                    <div id="eventHeatmapChart" class="chart"></div>
+                                </div>
+                                <div class="chart-card">
+                                    <h3>事件影响统计</h3>
+                                    <div id="eventStatsChart" class="chart small-chart"></div>
+                                </div>
+                            </div>
+                            <div class="panel-right">
+                                <div class="chart-card full-height">
+                                    <div class="chart-header">
+                                        <h3>事件影响地图</h3>
+                                        <span class="chart-hint" id="eventImpactLabel">等待模拟...</span>
+                                    </div>
+                                    <div id="eventMapChart" class="chart map-chart"></div>
+                                    <div class="event-stats-bar">
+                                        <div class="event-stat">
+                                            <span class="event-stat-label">基准需求:</span>
+                                            <span class="event-stat-value" id="baseDemand">0</span>
+                                        </div>
+                                        <div class="event-stat">
+                                            <span class="event-stat-label">受影响需求:</span>
+                                            <span class="event-stat-value" id="affectedDemand">0</span>
+                                        </div>
+                                        <div class="event-stat">
+                                            <span class="event-stat-label">变化率:</span>
+                                            <span class="event-stat-value" id="changeRate">0%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="similarGridModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>相似网格知识迁移</h3>
+                    <span class="close-btn" id="closeModal">&times;</span>
+                </div>
+                <div class="modal-body" id="similarGridContent">
+                    <p>选择一个网格查看其相似网格...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
