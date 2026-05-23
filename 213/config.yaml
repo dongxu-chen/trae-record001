@@ -1,0 +1,29 @@
+server:
+  host: 0.0.0.0
+  port: 9091
+
+collector:
+  interval_seconds: 10
+  top_process_count: 10
+  disks: []
+  net_interfaces: []
+
+storage:
+  enabled: true
+  data_dir: ./data
+  retention_days: 7
+
+alert:
+  enabled: true
+  cpu_threshold: 80.0
+  memory_threshold: 85.0
+  duration_minutes: 5
+  silent_periods:
+    - start_hour: 2
+      end_hour: 4
+
+dingtalk:
+  webhook_url: ""
+  secret: ""
+  at_mobiles: []
+  is_at_all: false

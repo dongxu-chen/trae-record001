@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交通流量热力图</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@8.2.0/ol.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🚌 交通流量热力图分析系统</h1>
+            <div class="city-info">
+                <span id="cityName">未选择城市</span>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <div class="panel">
+                    <h3>📊 数据上传</h3>
+                    <div class="form-group">
+                        <label for="cityInput">城市名称</label>
+                        <input type="text" id="cityInput" placeholder="例如：北京" value="北京">
+                    </div>
+                    <div class="form-group">
+                        <label for="fileInput">GPS数据文件 (JSON)</label>
+                        <input type="file" id="fileInput" accept=".json">
+                    </div>
+                    <button id="uploadBtn" class="btn btn-primary">上传数据</button>
+                    <button id="loadSampleBtn" class="btn btn-secondary">加载示例数据</button>
+                    <div id="uploadStatus" class="status"></div>
+                </div>
+
+                <div class="panel">
+                    <h3>⚙️ 参数设置</h3>
+                    <div class="form-group">
+                        <label for="gridSize">网格大小 (度)</label>
+                        <input type="number" id="gridSize" value="0.001" step="0.001" min="0.0001" max="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="windowMinutes">时间窗口 (分钟)</label>
+                        <input type="number" id="windowMinutes" value="5" step="1" min="1" max="60">
+                    </div>
+                    <div class="form-group">
+                        <label for="congestionThreshold">拥堵阈值</label>
+                        <input type="number" id="congestionThreshold" value="0.3" step="0.1" min="0.1" max="1.0">
+                    </div>
+                    <button id="generateBtn" class="btn btn-primary">生成热力图</button>
+                </div>
+
+                <div class="panel">
+                    <h3>📈 数据统计</h3>
+                    <div id="statsInfo" class="stats">
+                        <p class="text-muted">暂无数据</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>⚠️ 拥堵预警</h3>
+                    <div class="form-group">
+                        <label for="alertThreshold">告警阈值</label>
+                        <input type="range" id="alertThreshold" min="0.3" max="0.95" value="0.7" step="0.05">
+                        <div class="range-value">
+                            <span id="alertThresholdValue">0.70</span>
+                        </div>
+                    </div>
+                    <div id="alertPanel" class="alert-panel" style="display:none">
+                        <div class="alert-header">🚨 当前告警</div>
+                        <div id="alertList" class="alert-list"></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>🚌 线路追踪</h3>
+                    <div class="control-row">
+                        <select id="routeSelector" class="form-control" style="flex:1">
+                            <option value="">选择线路...</option>
+                        </select>
+                        <button id="clearRouteBtn" class="btn btn-secondary" style="margin-left:8px">清除</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>📊 数据对比</h3>
+                    <button id="compareModeBtn" class="btn btn-info" style="width:100%">开启对比模式</button>
+                    
+                    <div id="compareControls" style="display:none;margin-top:12px">
+                        <div class="form-group">
+                            <label>窗口1</label>
+                            <select id="compareWindow1" class="form-control"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>窗口2</label>
+                            <select id="compareWindow2" class="form-control"></select>
+                        </div>
+                        <div id="compareSummary" class="compare-summary"></div>
+                        <div class="compare-legend">
+                            <span class="legend-item"><span class="legend-dot" style="background:#ff0000"></span>流量增加</span>
+                            <span class="legend-item"><span class="legend-dot" style="background:#00ff00"></span>流量减少</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>🚦 高拥堵路段</h3>
+                    <div id="congestionList" class="congestion-list">
+                        <p class="text-muted">暂无拥堵数据</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>🎨 图例</h3>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #00ff00;"></div>
+                            <span>低密度</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ffff00;"></div>
+                            <span>中密度</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ff8800;"></div>
+                            <span>较高密度</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ff0000;"></div>
+                            <span>高密度</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-marker" style="background: #ff00ff;"></div>
+                            <span>拥堵路段</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="map-container">
+                <div id="map" class="map"></div>
+                
+                <div class="time-control">
+                    <div class="time-display">
+                        <span id="currentTime">--:--</span>
+                        <span>至</span>
+                        <span id="endTime">--:--</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" id="timeSlider" min="0" max="0" value="0" step="1">
+                        <div class="slider-labels">
+                            <span id="sliderStart">--:--</span>
+                            <span id="sliderEnd">--:--</span>
+                        </div>
+                    </div>
+                    <div class="play-controls">
+                        <button id="prevBtn" class="btn btn-control">⏮</button>
+                        <button id="playBtn" class="btn btn-control">▶️</button>
+                        <button id="nextBtn" class="btn btn-control">⏭</button>
+                        <select id="playSpeed" class="speed-select">
+                            <option value="500">0.5x</option>
+                            <option value="1000" selected>1x</option>
+                            <option value="2000">2x</option>
+                            <option value="3000">3x</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="window-info">
+                    <span>时间窗口: <strong id="windowIndex">0</strong> / <strong id="totalWindows">0</strong></span>
+                    <span>网格数: <strong id="gridCount">0</strong></span>
+                    <span>车辆数: <strong id="vehicleCount">0</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ol@8.2.0/dist/ol.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

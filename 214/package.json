@@ -1,0 +1,14 @@
+{
+  "name": "freight-route-planner",
+  "version": "1.0.0",
+  "description": "货运路线规划可视化工具",
+  "scripts": {
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm start",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

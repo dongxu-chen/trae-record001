@@ -1,0 +1,53 @@
+stages:
+  - quality-check
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+    - .venv/
+
+code_quality:
+  stage: quality-check
+  image: python:3.11-slim
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends git nodejs npm default-jre
+    - python -m venv .venv
+    - source .venv/bin/activate
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+    - npm install -g eslint
+    - pip install pylint
+    - |
+      if [ ! -f checkstyle.jar ]; then
+        wget -q https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.12.6/checkstyle-10.12.6-all.jar -O checkstyle.jar
+      fi
+  script:
+    - echo "CI_MERGE_REQUEST_IID=$CI_MERGE_REQUEST_IID"
+    - echo "CI_COMMIT_BRANCH=$CI_COMMIT_BRANCH"
+    - echo "CI_DEFAULT_BRANCH=$CI_DEFAULT_BRANCH"
+    - |
+      if [ -n "$CI_MERGE_REQUEST_IID" ]; then
+        echo "Running incremental check for MR against $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+        python -m code_quality_checker check --incremental --base-branch "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" --format json
+      elif [ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ]; then
+        echo "Running full check on default branch"
+        python -m code_quality_checker check --no-incremental --format json
+      else
+        echo "Running incremental check against $CI_DEFAULT_BRANCH"
+        python -m code_quality_checker check --incremental --base-branch "$CI_DEFAULT_BRANCH" --format json
+      fi
+  artifacts:
+    paths:
+      - quality-reports/
+    reports:
+      codequality: quality-reports/*.json
+    when: always
+    expire_in: 30 days
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_BRANCH'
+  allow_failure: false

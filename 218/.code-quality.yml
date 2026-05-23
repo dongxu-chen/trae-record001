@@ -1,0 +1,100 @@
+thresholds:
+  error: 0
+  warning: 10
+  pylint_score: 8.0
+
+linters:
+  eslint:
+    enabled: true
+    config_file: ".eslintrc.js"
+    auto_fix: true
+    extensions: [".js", ".jsx", ".ts", ".tsx", ".vue"]
+
+  pylint:
+    enabled: true
+    config_file: ".pylintrc"
+    auto_fix: false
+    extensions: [".py"]
+    args: ["--max-line-length=120"]
+
+  black:
+    enabled: true
+    config_file: "pyproject.toml"
+    auto_fix: true
+    extensions: [".py", ".pyi"]
+    args: ["--line-length", "120"]
+
+  checkstyle:
+    enabled: true
+    config_file: "checkstyle.xml"
+    auto_fix: false
+    extensions: [".java"]
+    jar_path: "checkstyle.jar"
+
+custom_rules:
+  - name: "no-todo-comment"
+    pattern: "TODO|FIXME"
+    message: "Found TODO/FIXME comment: {match}"
+    severity: "warning"
+    extensions: [".py", ".js", ".ts", ".java"]
+    case_sensitive: false
+    fixable: false
+
+  - name: "no-console-log"
+    pattern: "console\\.log\\("
+    message: "Avoid using console.log in production code"
+    severity: "warning"
+    extensions: [".js", ".ts"]
+    exclude_patterns: ["test", "spec"]
+    fixable: false
+
+  - name: "no-print-statement"
+    pattern: "^\\s*print\\("
+    message: "Avoid using print statements, use logging instead"
+    severity: "warning"
+    extensions: [".py"]
+    exclude_patterns: ["test", "__init__"]
+    fixable: false
+
+quality_gate:
+  enabled: true
+  block_merge: true
+  rules:
+    - linter: "pylint"
+      min_score: 8.0
+      max_errors: 0
+      max_warnings: 10
+
+    - linter: "eslint"
+      max_errors: 0
+      max_warnings: 20
+
+    - linter: "black"
+      max_errors: 0
+
+    - linter: "checkstyle"
+      max_errors: 0
+      max_warnings: 50
+
+    - linter: "custom"
+      max_errors: 0
+      max_warnings: 10
+
+incremental:
+  enabled: true
+  base_branch: "main"
+
+report:
+  format: "table"
+  output_dir: "quality-reports"
+  show_summary: true
+  html:
+    enabled: true
+    include_charts: true
+    include_trend: true
+    include_details: true
+    theme: "default"
+
+ci:
+  fail_on_threshold: true
+  generate_badge: true

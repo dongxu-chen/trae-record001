@@ -1,0 +1,17 @@
+[Unit]
+Description=Server Resource Monitor Agent
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/monitor-agent
+ExecStart=/opt/monitor-agent/monitor-agent --config /opt/monitor-agent/config.yaml
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=monitor-agent
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,123 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/user/**
+        - id: order-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/order/**
+        - id: payment-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/payment/**
+        - id: admin-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/admin/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,circuitbreakers
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        slowCallDurationThreshold: 5s
+        slowCallRateThreshold: 50
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+gateway:
+  jwt:
+    secret: "your-256-bit-secret-key-must-be-at-least-32-characters-long-for-hs256"
+    issuer: "api-gateway"
+    expiration: 3600000
+  rate-limit:
+    enabled: true
+    requests-per-second: 10
+    window-size-in-seconds: 1
+  log:
+    enabled: true
+    mask-fields:
+      - password
+      - token
+      - secret
+      - cardNumber
+      - cardNo
+      - bankCard
+      - cvv
+      - mobile
+      - phone
+      - telephone
+      - email
+      - mail
+      - idCard
+      - id_card
+      - identity
+      - identityCard
+      - 身份证
+      - 手机号
+      - 银行卡
+      - 邮箱
+    max-body-size: 4096
+  auth:
+    exclude-paths:
+      - /api/auth/login
+      - /api/auth/register
+      - /api/auth/refresh
+      - /actuator/**
+  circuit-breaker:
+    enabled: true
+    failure-rate-threshold: 50
+    wait-duration-in-open-state: 30
+    permitted-calls-in-half-open-state: 3
+    sliding-window-size: 10
+    minimum-number-of-calls: 5
+    slow-call-duration-threshold: 5000
+    slow-call-rate-threshold: 50
+  gray-release:
+    enabled: true
+    version-header: X-API-Version
+    version-routes:
+      user-service-v2: http://localhost:8091
+      order-service-v2: http://localhost:8092
+      payment-service-v2: http://localhost:8093
+      admin-service-v2: http://localhost:8094
+  metrics:
+    enabled: true
