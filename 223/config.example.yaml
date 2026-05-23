@@ -1,0 +1,113 @@
+databases:
+  mysql:
+    host: localhost
+    port: 3306
+    user: root
+    password: your_password
+    database: your_database
+    mysqldump_path: mysqldump
+    mysql_path: mysql
+    binlog_path: /var/lib/mysql
+
+  postgresql:
+    host: localhost
+    port: 5432
+    user: postgres
+    password: your_password
+    database: your_database
+    pg_dump_path: pg_dump
+    psql_path: psql
+    pg_waldump_path: pg_waldump
+    wal_path: /var/lib/postgresql/14/main/pg_wal
+
+backup:
+  strategy: full
+  retention_days: 30
+  backup_dir: ./backups
+  temp_dir: ./temp
+
+  verification:
+    enabled: true
+    keep_versions: 3
+    verify_host: localhost
+    verify_port: 3307
+    verify_user: root
+    verify_password: verify_password
+    verify_database: verify_db
+    test_queries:
+      - "SELECT 1"
+      - "SHOW TABLES"
+
+storage:
+  type: multi
+  storages:
+    aliyun_oss:
+      type: aliyun_oss
+      enabled: true
+      priority: 10
+      endpoint: oss-cn-hangzhou.aliyuncs.com
+      access_key_id: your_access_key
+      access_key_secret: your_secret
+      bucket_name: your-bucket-name
+      prefix: backups/
+
+    tencent_cos:
+      type: tencent_cos
+      enabled: true
+      priority: 20
+      secret_id: your_secret_id
+      secret_key: your_secret_key
+      region: ap-guangzhou
+      bucket_name: your-bucket-name
+      prefix: backups/
+
+    aws_s3:
+      type: aws_s3
+      enabled: true
+      priority: 30
+      access_key_id: your_access_key
+      secret_access_key: your_secret_key
+      region: us-east-1
+      bucket_name: your-bucket-name
+      prefix: backups/
+
+  rclone:
+    remote_name: aliyunoss
+    remote_path: backups/
+
+encryption:
+  enabled: true
+  algorithm: AES-256-CBC
+  key: your-32-byte-encryption-key-here
+
+compression:
+  enabled: true
+  algorithm: gzip
+  level: 6
+
+logging:
+  level: INFO
+  file: ./logs/backup.log
+  max_size: 10MB
+  backup_count: 5
+
+reporting:
+  enabled: true
+  report_dir: ./reports
+  email:
+    enabled: true
+    from: backup@example.com
+    to:
+      - admin@example.com
+      - dba@example.com
+    smtp:
+      host: smtp.example.com
+      port: 587
+      user: backup@example.com
+      password: your_smtp_password
+      use_tls: true
+
+key_rotation:
+  enabled: true
+  rotation_days: 30
+  auto_rotate: true

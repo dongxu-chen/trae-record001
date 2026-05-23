@@ -1,0 +1,9 @@
+@echo off
+echo 安装依赖...
+pip install -r requirements.txt
+
+echo 生成样本数据...
+python generate_sample_data.py
+
+echo 启动服务...
+python main.py

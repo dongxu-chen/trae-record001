@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>出租车订单需求预测热力图</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/china.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 320px;
+            background: #16213e;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: #0f3460;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #00d4ff;
+        }
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .chart-container {
+            flex: 1;
+            padding: 20px;
+        }
+        #heatmap {
+            width: 100%;
+            height: 100%;
+            min-height: 500px;
+        }
+        .panel {
+            background: #0f3460;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        .panel h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #00d4ff;
+            border-bottom: 1px solid #1a4a7a;
+            padding-bottom: 10px;
+        }
+        .time-slider {
+            width: 100%;
+            margin: 15px 0;
+        }
+        .time-slider input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: #1a4a7a;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        .time-slider input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #00d4ff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .time-display {
+            text-align: center;
+            font-size: 18px;
+            color: #00d4ff;
+            margin: 10px 0;
+        }
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        .legend-high { background: #ef4444; }
+        .legend-medium { background: #f59e0b; }
+        .legend-low { background: #22c55e; }
+        .legend-vehicle { background: #3b82f6; border-radius: 50%; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .stat-card {
+            background: #1a4a7a;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #00d4ff;
+            color: #0f3460;
+        }
+        .btn-primary:hover {
+            background: #00b8e6;
+        }
+        .btn-secondary {
+            background: #1a4a7a;
+            color: #fff;
+        }
+        .btn-secondary:hover {
+            background: #2563eb;
+        }
+        .latency {
+            font-size: 12px;
+            color: #4ade80;
+        }
+        .file-upload {
+            margin: 10px 0;
+        }
+        .file-upload input[type="file"] {
+            display: none;
+        }
+        .file-upload label {
+            display: block;
+            padding: 10px;
+            background: #1a4a7a;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .file-upload label:hover {
+            background: #2563eb;
+        }
+        .vehicle-list {
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        .vehicle-item {
+            padding: 8px;
+            border-bottom: 1px solid #1a4a7a;
+            display: flex;
+            justify-content: space-between;
+        }
+        .vehicle-idle { color: #4ade80; }
+        .vehicle-busy { color: #f59e0b; }
+        .playback-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .play-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: #00d4ff;
+            color: #0f3460;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .play-btn:hover {
+            background: #00b8e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="panel">
+                <h3>📊 数据上传</h3>
+                <div class="file-upload">
+                    <label for="csvFile">选择CSV文件上传</label>
+                    <input type="file" id="csvFile" accept=".csv">
+                </div>
+                <button class="btn btn-primary" style="width:100%" onclick="uploadData()">训练模型</button>
+                <div id="trainStatus" style="margin-top:10px;font-size:12px;"></div>
+            </div>
+            
+            <div class="panel">
+                <h3>📈 预测统计</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="highDemand">0</div>
+                        <div class="stat-label">高需求区域</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="mediumDemand">0</div>
+                        <div class="stat-label">中需求区域</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="lowDemand">0</div>
+                        <div class="stat-label">低需求区域</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="idleVehicles">0</div>
+                        <div class="stat-label">空闲车辆</div>
+                    </div>
+                </div>
+                <div class="latency" style="margin-top:15px;text-align:center;">
+                    预测延迟: <span id="latency">--</span> ms
+                </div>
+                <div style="margin-top:10px;font-size:12px;text-align:center;">
+                    WebSocket: <span id="wsStatus" style="color:#f59e0b;">连接中</span>
+                    <span id="wsLatency" style="margin-left:10px;"></span>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h3>🎨 图例 & 网格层级</h3>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color legend-high"></div>
+                        <span>高需求 (≥15单/小时)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-medium"></div>
+                        <span>中需求 (5-14单/小时)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-low"></div>
+                        <span>低需求 (0-4单/小时)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-vehicle"></div>
+                        <span>空闲出租车</span>
+                    </div>
+                </div>
+                <div style="margin-top:15px;padding-top:10px;border-top:1px solid #1a4a7a;">
+                    <div style="font-size:13px;margin-bottom:10px;color:#00d4ff;">网格层级:</div>
+                    <div class="legend-item">
+                        <div style="width:20px;height:20px;border:2px solid #ef4444;border-radius:3px;"></div>
+                        <span>Level 2 (核心区, 最细)</span>
+                    </div>
+                    <div class="legend-item" style="margin-top:5px;">
+                        <div style="width:20px;height:20px;border:2px solid #f59e0b;border-radius:3px;"></div>
+                        <span>Level 1 (中间区, 中等)</span>
+                    </div>
+                    <div class="legend-item" style="margin-top:5px;">
+                        <div style="width:20px;height:20px;border:2px solid #22c55e;border-radius:3px;"></div>
+                        <span>Level 0 (外围区, 最粗)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h3>� 预警中心</h3>
+                <div id="alertsList" style="max-height:150px;overflow-y:auto;font-size:12px;">
+                    <div style="color:#94a3b8;text-align:center;padding:10px;">暂无预警</div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h3>🚚 派单模拟</h3>
+                <div style="margin-bottom:10px;">
+                    <label style="font-size:12px;color:#94a3b8;">派单策略:</label>
+                    <select id="dispatchStrategy" style="width:100%;padding:8px;background:#1a4a7a;border:none;border-radius:6px;color:#fff;margin-top:5px;">
+                        <option value="nearest">就近派单</option>
+                        <option value="balanced">平衡派单</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <label style="font-size:12px;color:#94a3b8;">订单数量:</label>
+                    <input type="number" id="orderCount" value="20" min="5" max="100" style="width:100%;padding:8px;background:#1a4a7a;border:none;border-radius:6px;color:#fff;margin-top:5px;">
+                </div>
+                <button class="btn btn-primary" style="width:100%;" onclick="runDispatchSimulation()">开始模拟</button>
+                <div id="dispatchResult" style="margin-top:10px;font-size:12px;"></div>
+            </div>
+            
+            <div class="panel">
+                <h3>� 车辆状态</h3>
+                <div class="vehicle-list" id="vehicleList">
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="header">
+                <h1>🗺️ 出租车订单需求预测热力图</h1>
+                <div class="status-bar">
+                    <div class="status-item">
+                        <div class="status-dot"></div>
+                        <span>系统运行中</span>
+                    </div>
+                    <div class="status-item">
+                        <span>模型状态: <span id="modelStatus">未训练</span></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div id="heatmap"></div>
+            </div>
+            
+            <div class="panel" style="margin:0 20px 20px;">
+                <h3>⏰ 时间轴控制</h3>
+                <div class="time-display" id="currentTime">--</div>
+                <div class="time-slider">
+                    <input type="range" id="timeSlider" min="0" max="11" value="0" step="1">
+                </div>
+                <div class="playback-controls">
+                    <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+                    <button class="btn btn-secondary" onclick="refreshData()">🔄 刷新数据</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chart = null;
+        let allPredictions = [];
+        let vehicles = [];
+        let isPlaying = false;
+        let playInterval = null;
+        let currentTimeIndex = 0;
+        let ws = null;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 10;
+
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/vehicles`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = function() {
+                console.log('WebSocket连接已建立');
+                reconnectAttempts = 0;
+                document.getElementById('wsStatus').textContent = '已连接';
+                document.getElementById('wsStatus').style.color = '#4ade80';
+            };
+            
+            ws.onmessage = function(event) {
+                try {
+                    const message = JSON.parse(event.data);
+                    if (message.type === 'vehicles_update') {
+                        const data = message.data;
+                        vehicles = data.vehicles;
+                        
+                        document.getElementById('idleVehicles').textContent = data.idle_count;
+                        document.getElementById('wsLatency').textContent = '实时';
+                        
+                        updateVehicleList();
+                        updateChart();
+                    }
+                } catch (e) {
+                    console.error('解析WebSocket消息失败:', e);
+                }
+            };
+            
+            ws.onerror = function(error) {
+                console.error('WebSocket错误:', error);
+            };
+            
+            ws.onclose = function() {
+                console.log('WebSocket连接已关闭');
+                document.getElementById('wsStatus').textContent = '连接断开';
+                document.getElementById('wsStatus').style.color = '#ef4444';
+                
+                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    reconnectAttempts++;
+                    console.log(`尝试重连 (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
+                    setTimeout(connectWebSocket, 2000);
+                }
+            };
+        }
+
+        function initChart() {
+            chart = echarts.init(document.getElementById('heatmap'));
+            
+            const option = {
+                backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function(params) {
+                        if (params.seriesType === 'scatter') {
+                            return `<strong>${params.data[2]}</strong><br/>状态: 空闲`;
+                        }
+                        return `<strong>需求预测</strong><br/>
+                                经度: ${params.data[0].toFixed(4)}<br/>
+                                纬度: ${params.data[1].toFixed(4)}<br/>
+                                预测量: ${params.data[2].toFixed(1)} 单/小时<br/>
+                                等级: ${params.data[3]}`;
+                    }
+                },
+                visualMap: {
+                    show: false,
+                    min: 0,
+                    max: 25,
+                    inRange: {
+                        color: ['#22c55e', '#f59e0b', '#ef4444']
+                    }
+                },
+                geo: {
+                    map: 'china',
+                    roam: true,
+                    center: [116.4, 39.9],
+                    zoom: 10,
+                    label: {
+                        show: false
+                    },
+                    itemStyle: {
+                        areaColor: '#0f3460',
+                        borderColor: '#1a4a7a'
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            areaColor: '#1a4a7a'
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: '需求热力图',
+                        type: 'effectScatter',
+                        coordinateSystem: 'geo',
+                        data: [],
+                        symbolSize: function(val) {
+                            return Math.max(val[2] * 1.5, 8);
+                        },
+                        showEffectOn: 'render',
+                        rippleEffect: {
+                            brushType: 'stroke',
+                            scale: 3
+                        },
+                        label: {
+                            show: false
+                        },
+                        itemStyle: {
+                            color: function(params) {
+                                const level = params.data[3];
+                                if (level === 'high') return '#ef4444';
+                                if (level === 'medium') return '#f59e0b';
+                                return '#22c55e';
+                            },
+                            shadowBlur: 10,
+                            shadowColor: '#333'
+                        }
+                    },
+                    {
+                        name: '空闲车辆',
+                        type: 'scatter',
+                        coordinateSystem: 'geo',
+                        data: [],
+                        symbolSize: 12,
+                        itemStyle: {
+                            color: '#3b82f6',
+                            shadowBlur: 10,
+                            shadowColor: '#3b82f6'
+                        },
+                        z: 10
+                    }
+                ]
+            };
+            
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        async function loadPredictions() {
+            try {
+                const response = await fetch('/api/predict/hours/12');
+                const data = await response.json();
+                allPredictions = data.predictions;
+                
+                document.getElementById('latency').textContent = data.latency_ms.toFixed(2);
+                
+                if (data.latency_ms > 200) {
+                    document.getElementById('latency').style.color = '#ef4444';
+                } else {
+                    document.getElementById('latency').style.color = '#4ade80';
+                }
+                
+                updateTimeSlider();
+                updateChart();
+                document.getElementById('modelStatus').textContent = '已训练';
+                document.getElementById('modelStatus').style.color = '#4ade80';
+            } catch (error) {
+                console.error('加载预测数据失败:', error);
+            }
+        }
+
+        async function loadVehicles() {
+            try {
+                const response = await fetch('/api/vehicles');
+                const data = await response.json();
+                vehicles = data.vehicles;
+                
+                document.getElementById('idleVehicles').textContent = data.idle_count;
+                
+                updateVehicleList();
+                updateChart();
+            } catch (error) {
+                console.error('加载车辆数据失败:', error);
+            }
+        }
+
+        function updateVehicleList() {
+            const list = document.getElementById('vehicleList');
+            const idleVehicles = vehicles.filter(v => v.status === 'idle');
+            
+            list.innerHTML = idleVehicles.slice(0, 10).map(v => `
+                <div class="vehicle-item">
+                    <span>${v.vehicle_id}</span>
+                    <span class="vehicle-idle">空闲</span>
+                </div>
+            `).join('');
+            
+            if (idleVehicles.length > 10) {
+                list.innerHTML += `<div class="vehicle-item" style="color:#94a3b8;">还有 ${idleVehicles.length - 10} 辆...</div>`;
+            }
+        }
+
+        function updateTimeSlider() {
+            const timestamps = [...new Set(allPredictions.map(p => p.timestamp))];
+            const slider = document.getElementById('timeSlider');
+            slider.max = timestamps.length - 1;
+            slider.value = currentTimeIndex;
+        }
+
+        function updateChart() {
+            if (!chart || allPredictions.length === 0) return;
+            
+            const timestamps = [...new Set(allPredictions.map(p => p.timestamp))];
+            const currentTs = timestamps[currentTimeIndex];
+            
+            const currentPredictions = allPredictions.filter(p => p.timestamp === currentTs);
+            
+            const heatData = currentPredictions.map(p => [p.lng, p.lat, p.demand, p.demand_level, p.grid_level]);
+            
+            const idleVehicles = vehicles.filter(v => v.status === 'idle').map(v => [v.lng, v.lat, v.vehicle_id]);
+            
+            const highCount = currentPredictions.filter(p => p.demand_level === 'high').length;
+            const mediumCount = currentPredictions.filter(p => p.demand_level === 'medium').length;
+            const lowCount = currentPredictions.filter(p => p.demand_level === 'low').length;
+            
+            document.getElementById('highDemand').textContent = highCount;
+            document.getElementById('mediumDemand').textContent = mediumCount;
+            document.getElementById('lowDemand').textContent = lowCount;
+            
+            const time = new Date(currentTs);
+            document.getElementById('currentTime').textContent = time.toLocaleString('zh-CN');
+            
+            chart.setOption({
+                series: [
+                    {
+                        name: '需求热力图',
+                        data: heatData,
+                        symbolSize: function(val) {
+                            const gridLevel = val[4];
+                            const demand = val[2];
+                            let baseSize;
+                            if (gridLevel === 2) {
+                                baseSize = 18;
+                            } else if (gridLevel === 1) {
+                                baseSize = 14;
+                            } else {
+                                baseSize = 10;
+                            }
+                            return baseSize + demand * 0.5;
+                        }
+                    },
+                    {
+                        name: '空闲车辆',
+                        data: idleVehicles
+                    }
+                ]
+            });
+        }
+
+        async function uploadData() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('请先选择CSV文件');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const statusEl = document.getElementById('trainStatus');
+            statusEl.innerHTML = '<span style="color:#f59e0b;">训练中...</span>';
+            
+            try {
+                const response = await fetch('/api/train', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    statusEl.innerHTML = `<span style="color:#4ade80;">训练完成！训练了 ${data.grids_trained} 个网格，耗时 ${data.training_time_ms.toFixed(0)}ms</span>`;
+                    await loadPredictions();
+                }
+            } catch (error) {
+                statusEl.innerHTML = `<span style="color:#ef4444;">训练失败: ${error.message}</span>`;
+            }
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playBtn');
+            
+            if (isPlaying) {
+                btn.textContent = '⏸';
+                playInterval = setInterval(() => {
+                    const slider = document.getElementById('timeSlider');
+                    const max = parseInt(slider.max);
+                    
+                    if (currentTimeIndex >= max) {
+                        currentTimeIndex = 0;
+                    } else {
+                        currentTimeIndex++;
+                    }
+                    
+                    slider.value = currentTimeIndex;
+                    updateChart();
+                }, 1500);
+            } else {
+                btn.textContent = '▶';
+                if (playInterval) {
+                    clearInterval(playInterval);
+                }
+            }
+        }
+
+        function refreshData() {
+            loadPredictions();
+            loadAlerts();
+        }
+
+        async function loadAlerts() {
+            try {
+                const response = await fetch('/api/alerts');
+                const data = await response.json();
+                updateAlertsDisplay(data.alerts);
+            } catch (error) {
+                console.error('加载预警失败:', error);
+            }
+        }
+
+        function updateAlertsDisplay(alerts) {
+            const alertsList = document.getElementById('alertsList');
+            
+            if (!alerts || alerts.length === 0) {
+                alertsList.innerHTML = '<div style="color:#94a3b8;text-align:center;padding:10px;">暂无预警</div>';
+                return;
+            }
+            
+            alertsList.innerHTML = alerts.map(alert => {
+                let bgColor, borderColor;
+                if (alert.level === 'critical') {
+                    bgColor = 'rgba(239, 68, 68, 0.2)';
+                    borderColor = '#ef4444';
+                } else if (alert.level === 'warning') {
+                    bgColor = 'rgba(245, 158, 11, 0.2)';
+                    borderColor = '#f59e0b';
+                } else {
+                    bgColor = 'rgba(59, 130, 246, 0.2)';
+                    borderColor = '#3b82f6';
+                }
+                
+                return `
+                    <div style="padding:8px;margin-bottom:8px;background:${bgColor};border-left:3px solid ${borderColor};border-radius:4px;">
+                        <div style="font-weight:bold;margin-bottom:3px;">${alert.message}</div>
+                        <div style="font-size:10px;color:#94a3b8;">${new Date(alert.timestamp).toLocaleTimeString('zh-CN')}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function runDispatchSimulation() {
+            const strategy = document.getElementById('dispatchStrategy').value;
+            const ordersCount = parseInt(document.getElementById('orderCount').value);
+            const resultEl = document.getElementById('dispatchResult');
+            
+            resultEl.innerHTML = '<span style="color:#f59e0b;">模拟中...</span>';
+            
+            try {
+                const response = await fetch('/api/dispatch/simulate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ strategy, orders_count: ordersCount })
+                });
+                const data = await response.json();
+                
+                const strategyName = data.strategy === 'nearest' ? '就近派单' : '平衡派单';
+                resultEl.innerHTML = `
+                    <div style="padding:8px;background:#1a4a7a;border-radius:6px;">
+                        <div style="color:#00d4ff;font-weight:bold;margin-bottom:5px;">${strategyName}</div>
+                        <div>总订单: ${data.total_orders}</div>
+                        <div>已派单: <span style="color:#4ade80;">${data.assigned_count}</span></div>
+                        <div>未派单: <span style="color:#ef4444;">${data.unassigned_count}</span></div>
+                        <div>平均距离: ${data.avg_distance.toFixed(2)} km</div>
+                    </div>
+                `;
+            } catch (error) {
+                resultEl.innerHTML = `<span style="color:#ef4444;">模拟失败: ${error.message}</span>`;
+            }
+        }
+
+        document.getElementById('timeSlider').addEventListener('input', function(e) {
+            currentTimeIndex = parseInt(e.target.value);
+            updateChart();
+        });
+
+        window.onload = function() {
+            initChart();
+            loadPredictions();
+            connectWebSocket();
+            loadAlerts();
+            
+            setInterval(loadAlerts, 10000);
+        };
+    </script>
+</body>
+</html>

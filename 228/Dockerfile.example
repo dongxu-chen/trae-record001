@@ -1,0 +1,62 @@
+# 多阶段构建示例 Dockerfile
+
+ARG GO_VERSION=1.21
+ARG NODE_VERSION=20
+ARG ALPINE_VERSION=3.19
+
+# 构建阶段 - Go 后端
+FROM golang:${GO_VERSION}-alpine AS builder
+WORKDIR /app
+
+# 缓存依赖层
+COPY go.mod go.sum ./
+RUN go mod download
+
+# 构建应用
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o myapp .
+
+# 构建阶段 - Node.js 前端
+FROM node:${NODE_VERSION}-alpine AS frontend
+WORKDIR /app
+
+# 缓存 node_modules
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --only=production
+
+# 构建前端资源
+COPY frontend/ .
+RUN npm run build
+
+# 测试阶段（可与 builder 并行执行）
+FROM golang:${GO_VERSION}-alpine AS tester
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN go test -v ./...
+
+# 最终镜像
+FROM alpine:${ALPINE_VERSION} AS final
+WORKDIR /app
+
+# 安装运行时依赖
+RUN apk add --no-cache ca-certificates tzdata && \
+    addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# 复制构建产物
+COPY --from=builder /app/myapp .
+COPY --from=frontend /app/dist ./static
+
+# 安全配置
+USER appuser
+
+# 暴露端口
+EXPOSE 8080
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=3s \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+
+# 启动命令
+CMD ["./myapp"]
