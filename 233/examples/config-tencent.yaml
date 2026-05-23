@@ -1,0 +1,31 @@
+prometheus:
+  address: http://localhost:9090
+  interval: 15s
+  timeout: 10s
+  cpu_query: 'avg(100 - (rate(node_cpu_seconds_total{mode="idle"}[5m]) * 100))'
+  mem_query: '(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100'
+
+scaling:
+  target_cpu_utilization: 70.0
+  target_memory_utilization: 75.0
+  min_instances: 2
+  max_instances: 10
+  cooldown_period: 5m
+  scale_up_threshold: 10.0
+  scale_down_threshold: 10.0
+  sliding_window_size: 5
+
+cloud:
+  provider: tencent
+  instance_group: web-servers
+  scaling_group_id: asg-xxxxxx
+  credentials:
+    region: ap-guangzhou
+    secret_id: ${TENCENTCLOUD_SECRET_ID}
+    secret_key: ${TENCENTCLOUD_SECRET_KEY}
+  infrastructure:
+    image_id: img-xxxxxx
+    instance_type: S5.MEDIUM4
+    security_group_id: sg-xxxxxx
+    subnet_id: subnet-xxxxxx
+    key_id: skey-xxxxxx

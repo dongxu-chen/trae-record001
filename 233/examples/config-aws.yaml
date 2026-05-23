@@ -1,0 +1,51 @@
+prometheus:
+  address: http://localhost:9090
+  interval: 15s
+  timeout: 10s
+  cpu_query: 'avg(100 - (rate(node_cpu_seconds_total{mode="idle"}[5m]) * 100))'
+  mem_query: '(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100'
+
+scaling:
+  mode: predictive
+  target_cpu_utilization: 70.0
+  target_memory_utilization: 75.0
+  min_instances: 2
+  max_instances: 10
+  cooldown_period: 5m
+  scale_up_threshold: 10.0
+  scale_down_threshold: 10.0
+  sliding_window_size: 5
+
+prediction:
+  enabled: true
+  mode: linear_regression
+  history_size: 100
+  prediction_steps: 5
+  min_confidence: 0.7
+  lead_time_minutes: 5
+
+history:
+  enabled: true
+  file_path: ./data/scaling-history.json
+  max_records: 1000
+
+cost:
+  enabled: true
+  idle_threshold: 10.0
+  underutil_threshold: 30.0
+  optimization_enabled: true
+
+cloud:
+  provider: aws
+  instance_group: web-servers
+  scaling_group_id: autoscaler-asg
+  credentials:
+    region: us-east-1
+    access_key_id: ${AWS_ACCESS_KEY_ID}
+    access_key_secret: ${AWS_SECRET_ACCESS_KEY}
+  infrastructure:
+    image_id: ami-12345678
+    instance_type: t2.medium
+    security_group_id: sg-12345678
+    subnet_id: subnet-12345678
+    key_id: my-key

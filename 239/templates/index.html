@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物流车辆路径规划优化工具</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🚚 物流车辆路径规划优化工具</h1>
+            <p class="subtitle">基于遗传算法的VRP求解器 | 多目标优化 + 实时交通 + 运力调度</p>
+        </header>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="panel">
+                    <h2>⚙️ 基础参数</h2>
+                    <div class="form-group">
+                        <label>车辆容量</label>
+                        <input type="number" id="vehicleCapacity" value="100" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>车辆数量</label>
+                        <input type="number" id="numVehicles" value="3" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>种群大小</label>
+                        <input type="number" id="populationSize" value="100" min="10">
+                    </div>
+                    <div class="form-group">
+                        <label>迭代次数</label>
+                        <input type="number" id="generations" value="50" min="10">
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>🎯 目标权重</h2>
+                    <div class="form-group">
+                        <label>总里程权重</label>
+                        <input type="number" id="weightDistance" value="1.0" min="0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>车辆数权重</label>
+                        <input type="number" id="weightVehicles" value="10.0" min="0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>时间窗权重</label>
+                        <input type="number" id="weightTimeWindow" value="5.0" min="0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>公平性权重</label>
+                        <input type="number" id="weightFairness" value="2.0" min="0" step="0.1">
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>🚦 实时交通</h2>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="enableTraffic" checked>
+                            启用实时交通数据
+                        </label>
+                    </div>
+                    <div class="button-group">
+                        <button id="refreshTraffic" class="btn btn-secondary">刷新交通数据</button>
+                    </div>
+                    <div id="trafficStatus" class="traffic-status">
+                        <span class="traffic-indicator"></span>
+                        <span class="traffic-text">未获取交通数据</span>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>📍 配送点管理</h2>
+                    <div class="button-group">
+                        <button id="loadSample" class="btn btn-secondary">加载示例数据</button>
+                        <button id="clearPoints" class="btn btn-danger">清空所有点</button>
+                    </div>
+                    <p class="hint">点击地图添加配送点（第一个点为仓库）</p>
+                    <div id="pointsList" class="points-list"></div>
+                </div>
+
+                <div class="panel">
+                    <h2>🚫 禁行区域</h2>
+                    <div class="button-group">
+                        <button id="addForbiddenArea" class="btn btn-warning">添加圆形禁行区</button>
+                        <button id="clearForbidden" class="btn btn-danger">清空禁行区</button>
+                    </div>
+                    <div id="forbiddenList" class="forbidden-list"></div>
+                </div>
+
+                <div class="panel">
+                    <button id="solveBtn" class="btn btn-primary btn-large">🔍 开始优化计算</button>
+                </div>
+
+                <div class="panel" id="capacityPanel" style="display: none;">
+                    <h2>📦 运力分析</h2>
+                    <div id="capacityAnalysis"></div>
+                </div>
+
+                <div class="panel" id="resultsPanel" style="display: none;">
+                    <h2>📊 计算结果</h2>
+                    <div class="result-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">总里程</span>
+                            <span class="stat-value" id="totalDistance">0</span>
+                            <span class="stat-unit">km</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">使用车辆</span>
+                            <span class="stat-value" id="usedVehicles">0</span>
+                            <span class="stat-unit">辆</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">装载率</span>
+                            <span class="stat-value" id="loadRate">0</span>
+                            <span class="stat-unit">%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">总载重</span>
+                            <span class="stat-value" id="totalLoad">0</span>
+                            <span class="stat-unit">单位</span>
+                        </div>
+                    </div>
+
+                    <div class="result-stats extra-stats">
+                        <div class="stat-item stat-small">
+                            <span class="stat-label">时间窗满足率</span>
+                            <span class="stat-value" id="twSatisfaction">0</span>
+                            <span class="stat-unit">%</span>
+                        </div>
+                        <div class="stat-item stat-small">
+                            <span class="stat-label">公平性评分</span>
+                            <span class="stat-value" id="fairnessScore">0</span>
+                            <span class="stat-unit">分</span>
+                        </div>
+                    </div>
+
+                    <div id="routesList" class="routes-list"></div>
+
+                    <div class="button-group">
+                        <button id="recalculateBtn" class="btn btn-secondary">重新计算手动调整</button>
+                    </div>
+                </div>
+
+                <div class="panel" id="suggestionsPanel" style="display: none;">
+                    <h2>💡 调度建议</h2>
+                    <div id="suggestionsList"></div>
+                </div>
+            </div>
+
+            <div class="map-container">
+                <div id="map"></div>
+                <div class="map-controls">
+                    <div class="legend">
+                        <h3>图例</h3>
+                        <div class="legend-item">
+                            <div class="legend-icon depot"></div>
+                            <span>仓库</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-icon customer"></div>
+                            <span>配送点</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-icon forbidden"></div>
+                            <span>禁行区域</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-icon locked"></div>
+                            <span>锁定路径</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-icon traffic-high"></div>
+                            <span>拥堵路段</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pointModal" class="modal">
+        <div class="modal-content">
+            <h3>编辑配送点</h3>
+            <div class="form-group">
+                <label>名称</label>
+                <input type="text" id="pointName" placeholder="配送点名称">
+            </div>
+            <div class="form-group">
+                <label>需求量</label>
+                <input type="number" id="pointDemand" value="10" min="0">
+            </div>
+            <div class="form-group">
+                <label>时间窗开始 (小时)</label>
+                <input type="number" id="pointTwStart" value="8" min="0" max="24" step="0.5">
+            </div>
+            <div class="form-group">
+                <label>时间窗结束 (小时)</label>
+                <input type="number" id="pointTwEnd" value="18" min="0" max="24" step="0.5">
+            </div>
+            <div class="button-group">
+                <button id="savePoint" class="btn btn-primary">保存</button>
+                <button id="cancelPoint" class="btn btn-secondary">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

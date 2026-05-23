@@ -1,0 +1,44 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-center-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: ${CONFIG_GIT_URI:./config-repo}
+          search-paths: '{application}/{profile}'
+          default-label: master
+          clone-on-start: true
+          timeout: 30
+          force-pull: true
+    bus:
+      enabled: true
+      trace:
+        enabled: true
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:/}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: bus-refresh, bus-env, health, info
+  endpoint:
+    health:
+      show-details: always
+
+config:
+  version:
+    max-versions: 100
+  long-polling:
+    timeout: 60000
+  git:
+    username-encrypted: ${GIT_USERNAME_ENCRYPTED:}
+    password-encrypted: ${GIT_PASSWORD_ENCRYPTED:}
