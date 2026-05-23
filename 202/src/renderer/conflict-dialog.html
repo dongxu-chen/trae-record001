@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文件冲突 - FileSync</title>
+  <link rel="stylesheet" href="conflict-dialog.css">
+</head>
+<body>
+  <div class="dialog-container">
+    <header class="dialog-header">
+      <div class="header-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+      <div class="header-title">
+        <h2>检测到文件冲突</h2>
+        <p>本地和云端的文件都发生了修改，请选择保留哪个版本</p>
+      </div>
+    </header>
+
+    <div class="file-info">
+      <div class="file-path">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+          <polyline points="13 2 13 9 20 9"></polyline>
+        </svg>
+        <span id="conflictFilePath">filename.txt</span>
+      </div>
+    </div>
+
+    <div class="compare-section">
+      <div class="version-card local-version" id="localCard">
+        <div class="version-header">
+          <div class="version-badge">本地版本</div>
+          <div class="version-time" id="localTime">--</div>
+        </div>
+        <div class="version-preview" id="localPreview">
+          <div class="preview-placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+              <polyline points="13 2 13 9 20 9"></polyline>
+            </svg>
+            <p>文件预览</p>
+          </div>
+        </div>
+        <div class="version-details">
+          <div class="detail-item">
+            <span class="detail-label">大小:</span>
+            <span class="detail-value" id="localSize">--</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">校验和:</span>
+            <span class="detail-value" id="localChecksum">--</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="vs-divider">
+        <span>VS</span>
+      </div>
+
+      <div class="version-card cloud-version" id="cloudCard">
+        <div class="version-header">
+          <div class="version-badge cloud">云端版本</div>
+          <div class="version-time" id="cloudTime">--</div>
+        </div>
+        <div class="version-preview" id="cloudPreview">
+          <div class="preview-placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+            </svg>
+            <p>文件预览</p>
+          </div>
+        </div>
+        <div class="version-details">
+          <div class="detail-item">
+            <span class="detail-label">大小:</span>
+            <span class="detail-value" id="cloudSize">--</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">校验和:</span>
+            <span class="detail-value" id="cloudChecksum">--</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="diff-section" id="diffSection" style="display: none;">
+      <div class="diff-header">
+        <h3>内容差异</h3>
+      </div>
+      <div class="diff-content" id="diffContent">
+        <div class="diff-loading">
+          <div class="spinner"></div>
+          <span>正在分析差异...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-section">
+      <button class="action-btn keep-local" id="keepLocalBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        保留本地版本
+      </button>
+      <button class="action-btn keep-cloud" id="keepCloudBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+        </svg>
+        保留云端版本
+      </button>
+      <button class="action-btn keep-both" id="keepBothBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        保留两者
+      </button>
+      <button class="action-btn cancel" id="cancelBtn">
+        稍后处理
+      </button>
+    </div>
+  </div>
+
+  <script src="conflict-dialog.js"></script>
+</body>
+</html>

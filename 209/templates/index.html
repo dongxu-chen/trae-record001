@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电商用户画像分析系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .tabs {
+            display: flex;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 20px;
+        }
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            color: white;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .tab.active {
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+        }
+        .tab:hover:not(.active) {
+            background: rgba(255,255,255,0.2);
+        }
+        .panel {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .panel.active {
+            display: block;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-card.high-value { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .stat-card.growth { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .stat-card.sleep { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .stat-card.churn { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .stat-card .number {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+        .stat-card .label {
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        .chart-container {
+            margin-bottom: 30px;
+        }
+        .chart-container h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-left: 4px solid #667eea;
+            padding-left: 10px;
+        }
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+        }
+        .config-section {
+            margin-bottom: 25px;
+        }
+        .config-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-left: 4px solid #667eea;
+            padding-left: 10px;
+        }
+        .segment-config {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .segment-config h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            color: #666;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        .form-group input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4);
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-bar select, .filter-bar input {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #f8f9fa;
+            color: #667eea;
+            font-weight: bold;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .pagination button {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .pagination button.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .event-marker {
+            position: absolute;
+            background: #ff6b6b;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            transform: rotate(-45deg);
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 50px;
+            color: #667eea;
+        }
+        .loading.show {
+            display: block;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 电商用户画像分析系统</h1>
+            <p>用户分群 · 趋势分析 · 规则配置 · 数据导出</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('overview')">📈 总览</div>
+            <div class="tab" onclick="switchTab('trends')">📉 趋势分析</div>
+            <div class="tab" onclick="switchTab('config')">⚙️ 规则配置</div>
+            <div class="tab" onclick="switchTab('users')">👥 用户明细</div>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <div id="overview" class="panel active">
+            <div class="stats-grid">
+                <div class="stat-card high-value">
+                    <div class="number" id="highValueCount">-</div>
+                    <div class="label">高价值用户</div>
+                </div>
+                <div class="stat-card growth">
+                    <div class="number" id="growthCount">-</div>
+                    <div class="label">成长用户</div>
+                </div>
+                <div class="stat-card sleep">
+                    <div class="number" id="sleepCount">-</div>
+                    <div class="label">沉睡用户</div>
+                </div>
+                <div class="stat-card churn">
+                    <div class="number" id="churnCount">-</div>
+                    <div class="label">流失用户</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>用户分群占比</h3>
+                <div class="chart-wrapper">
+                    <canvas id="segmentPieChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>各用户群特征对比</h3>
+                <div class="chart-wrapper">
+                    <canvas id="featureBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="trends" class="panel">
+            <div class="chart-container">
+                <h3>各类别用户数量月度变化（含业务活动节点）</h3>
+                <div class="chart-wrapper">
+                    <canvas id="trendLineChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>用户群结构变化趋势</h3>
+                <div class="chart-wrapper">
+                    <canvas id="stackedAreaChart"></canvas>
+                </div>
+            </div>
+
+            <div class="config-section">
+                <h3>📅 业务活动节点</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>月份</th>
+                            <th>活动名称</th>
+                            <th>影响程度</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eventsTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="config" class="panel">
+            <div class="config-section">
+                <h3>🔧 分析基础配置</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>分析日期</label>
+                        <input type="date" id="analysis_date">
+                    </div>
+                    <div class="form-group">
+                        <label>偏好计算天数</label>
+                        <input type="number" id="preference_days">
+                    </div>
+                    <div class="form-group">
+                        <label>数据分区数</label>
+                        <input type="number" id="num_partitions">
+                    </div>
+                </div>
+            </div>
+
+            <div class="config-section">
+                <h3>🎯 用户分类规则</h3>
+                <div id="segmentsConfig"></div>
+            </div>
+
+            <div class="config-section">
+                <h3>⚖️ 权重配置</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>订单数权重</label>
+                        <input type="number" step="0.1" id="order_count_weight">
+                    </div>
+                    <div class="form-group">
+                        <label>浏览数权重</label>
+                        <input type="number" step="0.1" id="browse_count_weight">
+                    </div>
+                    <div class="form-group">
+                        <label>评论数权重</label>
+                        <input type="number" step="0.1" id="review_count_weight">
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="saveConfig()">💾 保存配置</button>
+                <button class="btn btn-success" onclick="recalculateProfile()">🔄 重新计算画像</button>
+            </div>
+        </div>
+
+        <div id="users" class="panel">
+            <div class="filter-bar">
+                <select id="filterSegment">
+                    <option value="">全部用户群</option>
+                    <option value="高价值用户">高价值用户</option>
+                    <option value="成长用户">成长用户</option>
+                    <option value="沉睡用户">沉睡用户</option>
+                    <option value="流失用户">流失用户</option>
+                </select>
+                <input type="number" id="minActivity" placeholder="最低活跃度">
+                <input type="number" id="minSpend" placeholder="最低消费金额">
+                <button class="btn btn-primary" onclick="searchUsers()">🔍 筛选</button>
+                <button class="btn btn-success" onclick="exportUsers()">📥 导出CSV</button>
+            </div>
+
+            <div class="loading" id="usersLoading">
+                <div class="spinner"></div>
+                <div>加载中...</div>
+            </div>
+
+            <table id="usersTable">
+                <thead>
+                    <tr>
+                        <th>用户ID</th>
+                        <th>用户群</th>
+                        <th>总消费</th>
+                        <th>订单数</th>
+                        <th>活跃度</th>
+                        <th>最近活跃(天)</th>
+                        <th>偏好品类</th>
+                        <th>价格敏感度</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        let pageSize = 20;
+        let config = null;
+        let segmentPieChart = null;
+        let featureBarChart = null;
+        let trendLineChart = null;
+        let stackedAreaChart = null;
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+
+            if (tabName === 'overview') loadOverview();
+            if (tabName === 'trends') loadTrends();
+            if (tabName === 'config') loadConfig();
+            if (tabName === 'users') searchUsers();
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+            setTimeout(() => msg.className = 'message', 3000);
+        }
+
+        async function loadOverview() {
+            try {
+                const res = await fetch('/api/overview');
+                const data = await res.json();
+                if (data.success) {
+                    updateStats(data.stats);
+                    updatePieChart(data.stats);
+                    updateFeatureChart(data.stats);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function updateStats(stats) {
+            const segmentMap = {
+                '高价值用户': 'highValueCount',
+                '成长用户': 'growthCount',
+                '沉睡用户': 'sleepCount',
+                '流失用户': 'churnCount'
+            };
+            stats.forEach(s => {
+                const el = document.getElementById(segmentMap[s.segment]);
+                if (el) el.textContent = s.user_count;
+            });
+        }
+
+        function updatePieChart(stats) {
+            const ctx = document.getElementById('segmentPieChart').getContext('2d');
+            if (segmentPieChart) segmentPieChart.destroy();
+            
+            const colors = ['#f5576c', '#4facfe', '#43e97b', '#fa709a'];
+            segmentPieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: stats.map(s => s.segment),
+                    datasets: [{
+                        data: stats.map(s => s.user_count),
+                        backgroundColor: colors,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', font: { size: 14 } }
+                    }
+                }
+            });
+        }
+
+        function updateFeatureChart(stats) {
+            const ctx = document.getElementById('featureBarChart').getContext('2d');
+            if (featureBarChart) featureBarChart.destroy();
+            
+            featureBarChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: stats.map(s => s.segment),
+                    datasets: [
+                        {
+                            label: '平均消费金额',
+                            data: stats.map(s => s.avg_total_spend),
+                            backgroundColor: '#667eea'
+                        },
+                        {
+                            label: '平均订单数',
+                            data: stats.map(s => s.avg_order_count),
+                            backgroundColor: '#764ba2'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        async function loadTrends() {
+            try {
+                const res = await fetch('/api/trends');
+                const data = await res.json();
+                if (data.success) {
+                    updateTrendChart(data.trends, data.business_events);
+                    updateStackedChart(data.trends);
+                    updateEventsTable(data.business_events);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function updateTrendChart(trends, events) {
+            const ctx = document.getElementById('trendLineChart').getContext('2d');
+            if (trendLineChart) trendLineChart.destroy();
+
+            const segments = ['高价值用户', '成长用户', '沉睡用户', '流失用户'];
+            const colors = ['#f5576c', '#4facfe', '#43e97b', '#fa709a'];
+            
+            const datasets = segments.map((seg, i) => ({
+                label: seg,
+                data: trends.map(t => t[seg] || 0),
+                borderColor: colors[i],
+                backgroundColor: colors[i] + '20',
+                fill: false,
+                tension: 0.4,
+                borderWidth: 3,
+                pointRadius: 5
+            }));
+
+            const eventAnnotations = {};
+            events.forEach((ev, i) => {
+                const idx = trends.findIndex(t => t.month === ev.date);
+                if (idx >= 0) {
+                    eventAnnotations['event' + i] = {
+                        type: 'line',
+                        xMin: idx,
+                        xMax: idx,
+                        borderColor: '#ff6b6b',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        label: {
+                            display: true,
+                            content: ev.name,
+                            position: 'start',
+                            backgroundColor: '#ff6b6b'
+                        }
+                    };
+                }
+            });
+
+            trendLineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: trends.map(t => t.month),
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { intersect: false, mode: 'index' },
+                    plugins: {
+                        legend: { position: 'top' },
+                        annotation: { annotations: eventAnnotations }
+                    }
+                }
+            });
+        }
+
+        function updateStackedChart(trends) {
+            const ctx = document.getElementById('stackedAreaChart').getContext('2d');
+            if (stackedAreaChart) stackedAreaChart.destroy();
+
+            const segments = ['高价值用户', '成长用户', '沉睡用户', '流失用户'];
+            const colors = ['#f5576c', '#4facfe', '#43e97b', '#fa709a'];
+            
+            const datasets = segments.map((seg, i) => ({
+                label: seg,
+                data: trends.map(t => t[seg] || 0),
+                borderColor: colors[i],
+                backgroundColor: colors[i] + '60',
+                fill: true,
+                stack: 'stack1'
+            }));
+
+            stackedAreaChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: trends.map(t => t.month),
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { stacked: true, beginAtZero: true } },
+                    plugins: { legend: { position: 'top' } }
+                }
+            });
+        }
+
+        function updateEventsTable(events) {
+            const tbody = document.getElementById('eventsTable');
+            tbody.innerHTML = events.map(ev => `
+                <tr>
+                    <td>${ev.date}</td>
+                    <td>${ev.name}</td>
+                    <td><span style="color: ${ev.impact === '高' ? '#f5576c' : '#4facfe'}">${ev.impact}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadConfig() {
+            try {
+                const res = await fetch('/api/config');
+                config = await res.json();
+                renderConfig(config);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderConfig(config) {
+            document.getElementById('analysis_date').value = config.analysis_config.analysis_date;
+            document.getElementById('preference_days').value = config.analysis_config.preference_days;
+            document.getElementById('num_partitions').value = config.analysis_config.num_partitions;
+            
+            document.getElementById('order_count_weight').value = config.weights.order_count_weight;
+            document.getElementById('browse_count_weight').value = config.weights.browse_count_weight;
+            document.getElementById('review_count_weight').value = config.weights.review_count_weight;
+
+            const segmentsHtml = config.segments.map((seg, i) => `
+                <div class="segment-config">
+                    <h4>${seg.name} (优先级: ${seg.priority})</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>最近活跃天数 ≤</label>
+                            <input type="number" data-segment="${i}" data-field="recency_max" value="${seg.conditions.recency_max || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>最近活跃天数 ≥</label>
+                            <input type="number" data-segment="${i}" data-field="recency_min" value="${seg.conditions.recency_min || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>消费能力 ≥</label>
+                            <input type="number" step="0.1" data-segment="${i}" data-field="consumption_min" value="${seg.conditions.consumption_min || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>活跃度 ≥</label>
+                            <input type="number" step="0.1" data-segment="${i}" data-field="activity_min" value="${seg.conditions.activity_min || ''}">
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('segmentsConfig').innerHTML = segmentsHtml;
+        }
+
+        async function saveConfig() {
+            if (!config) return;
+
+            config.analysis_config.analysis_date = document.getElementById('analysis_date').value;
+            config.analysis_config.preference_days = parseInt(document.getElementById('preference_days').value);
+            config.analysis_config.num_partitions = parseInt(document.getElementById('num_partitions').value);
+            
+            config.weights.order_count_weight = parseFloat(document.getElementById('order_count_weight').value);
+            config.weights.browse_count_weight = parseFloat(document.getElementById('browse_count_weight').value);
+            config.weights.review_count_weight = parseFloat(document.getElementById('review_count_weight').value);
+
+            document.querySelectorAll('#segmentsConfig input').forEach(input => {
+                const segIdx = parseInt(input.dataset.segment);
+                const field = input.dataset.field;
+                const val = input.value;
+                if (val !== '') {
+                    config.segments[segIdx].conditions[field] = parseFloat(val);
+                }
+            });
+
+            try {
+                const res = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                const data = await res.json();
+                showMessage(data.message, data.success ? 'success' : 'error');
+            } catch (e) {
+                showMessage('保存失败: ' + e.message, 'error');
+            }
+        }
+
+        async function recalculateProfile() {
+            showMessage('正在重新计算用户画像，请稍候...', 'success');
+            try {
+                const res = await fetch('/api/recalculate', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showMessage(`计算完成！共处理 ${data.total_users} 个用户`, 'success');
+                    loadOverview();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (e) {
+                showMessage('计算失败: ' + e.message, 'error');
+            }
+        }
+
+        async function searchUsers(page = 1) {
+            currentPage = page;
+            const segment = document.getElementById('filterSegment').value;
+            const minActivity = document.getElementById('minActivity').value;
+            const minSpend = document.getElementById('minSpend').value;
+
+            document.getElementById('usersLoading').classList.add('show');
+            document.getElementById('usersTable').querySelector('tbody').innerHTML = '';
+
+            try {
+                const params = new URLSearchParams({
+                    page: currentPage,
+                    page_size: pageSize,
+                    segment: segment,
+                    min_activity: minActivity,
+                    min_spend: minSpend
+                });
+                const res = await fetch('/api/users?' + params);
+                const data = await res.json();
+                
+                if (data.success) {
+                    renderUsersTable(data.users);
+                    renderPagination(data.total);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            
+            document.getElementById('usersLoading').classList.remove('show');
+        }
+
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('usersTable').querySelector('tbody');
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td>${u.user_id}</td>
+                    <td>${u.segment}</td>
+                    <td>¥${u.total_spend?.toFixed(2) || 0}</td>
+                    <td>${u.order_count || 0}</td>
+                    <td>${u.activity_score?.toFixed(2) || 0}</td>
+                    <td>${u.recency_score || 0}</td>
+                    <td>${u.preferred_category || '-'}</td>
+                    <td>${u.price_sensitivity || 0}/5</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderPagination(total) {
+            const totalPages = Math.ceil(total / pageSize);
+            const pagination = document.getElementById('pagination');
+            let html = '';
+            
+            for (let i = 1; i <= Math.min(totalPages, 10); i++) {
+                html += `<button class="${i === currentPage ? 'active' : ''}" onclick="searchUsers(${i})">${i}</button>`;
+            }
+            
+            pagination.innerHTML = html;
+        }
+
+        function exportUsers() {
+            const segment = document.getElementById('filterSegment').value;
+            const minActivity = document.getElementById('minActivity').value;
+            const minSpend = document.getElementById('minSpend').value;
+
+            const params = new URLSearchParams({
+                segment: segment,
+                min_activity: minActivity,
+                min_spend: minSpend
+            });
+            
+            window.open('/api/export?' + params, '_blank');
+            showMessage('导出已开始，文件将自动下载', 'success');
+        }
+
+        loadOverview();
+        loadConfig();
+    </script>
+</body>
+</html>

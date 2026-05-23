@@ -1,0 +1,53 @@
+# 自动化数据备份工具配置文件
+
+# 全局配置
+global:
+  log_level: INFO
+  log_file: backup.log
+  temp_dir: ./temp
+
+# 邮件通知配置
+email:
+  enabled: true
+  smtp_server: smtp.example.com
+  smtp_port: 587
+  smtp_username: your_email@example.com
+  smtp_password: your_password
+  use_tls: true
+  sender: your_email@example.com
+  recipients:
+    - admin@example.com
+
+# SFTP服务器配置
+sftp:
+  host: sftp.example.com
+  port: 22
+  username: backup_user
+  password: your_sftp_password
+  remote_base_dir: /backups
+
+# 备份任务配置 - 可以定义多个任务
+backup_tasks:
+  - name: documents_backup
+    enabled: true
+    source_dir: /path/to/documents
+    backup_type: incremental  # full 或 incremental
+    cron: "0 2 * * *"  # 每天凌晨2点执行
+    compression: true
+    retention_days: 30
+    exclude_patterns:
+      - "*.tmp"
+      - "*.log"
+      - "__pycache__"
+
+  - name: projects_backup
+    enabled: true
+    source_dir: /path/to/projects
+    backup_type: full
+    cron: "0 3 * * 0"  # 每周日凌晨3点执行
+    compression: true
+    retention_days: 30
+    exclude_patterns:
+      - "node_modules"
+      - ".git"
+      - "*.pyc"

@@ -1,0 +1,7 @@
+metrics.reporters: prom
+metrics.reporter.prom.class: org.apache.flink.metrics.prometheus.PrometheusReporter
+metrics.reporter.prom.port: 9250-9260
+
+metrics.latency.interval: 1000
+
+metrics.system.resource.interval: 10000

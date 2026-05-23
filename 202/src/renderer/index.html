@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FileSync Client - 文件同步客户端</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>FileSync</span>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="dashboard">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <span>概览</span>
+        </button>
+        <button class="nav-item" data-view="folders">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>文件夹</span>
+        </button>
+        <button class="nav-item" data-view="history">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>历史记录</span>
+        </button>
+        <button class="nav-item" data-view="settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>设置</span>
+        </button>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="status-indicator" id="statusIndicator">
+          <span class="status-dot" id="statusDot"></span>
+          <span class="status-text" id="statusText">未运行</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-header">
+        <h2 id="pageTitle">概览</h2>
+        <div class="header-actions">
+          <button class="btn btn-secondary" id="hideWindowBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+            </svg>
+            最小化
+          </button>
+        </div>
+      </header>
+
+      <section class="view-section active" id="dashboardView">
+        <div class="setup-card" id="setupCard">
+          <h2>开始同步</h2>
+          <p class="setup-description">选择本地文件夹并配置云端连接</p>
+          
+          <div class="form-group">
+            <label for="folderPath">同步文件夹</label>
+            <div class="folder-selector">
+              <input type="text" id="folderPath" placeholder="选择要同步的文件夹..." readonly>
+              <button class="btn btn-secondary" id="selectFolderBtn">浏览</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="apiUrl">云端API地址</label>
+            <input type="text" id="apiUrl" placeholder="https://api.example.com">
+          </div>
+
+          <div class="form-group">
+            <label for="apiKey">API密钥</label>
+            <input type="password" id="apiKey" placeholder="输入API密钥">
+          </div>
+
+          <div class="button-group">
+            <button class="btn btn-secondary" id="testConnBtn">测试连接</button>
+            <button class="btn btn-primary" id="startSyncBtn" disabled>开始同步</button>
+          </div>
+        </div>
+
+        <div class="sync-dashboard" id="syncDashboard" style="display: none;">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon upload">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value" id="uploadCount">0</div>
+                <div class="stat-label">已上传</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon download">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value" id="downloadCount">0</div>
+                <div class="stat-label">已下载</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon delete">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value" id="deleteCount">0</div>
+                <div class="stat-label">已删除</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon folder">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value" id="folderCount">0</div>
+                <div class="stat-label">同步文件夹</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sync-info">
+            <div class="info-card">
+              <label>同步文件夹</label>
+              <div class="info-value folder-path" id="currentFolder">
+                <span id="folderDisplay"></span>
+                <button class="btn-icon" id="openFolderBtn" title="打开文件夹">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <label>上次同步</label>
+              <div class="info-value" id="lastSyncTime">--</div>
+            </div>
+          </div>
+
+          <div class="sync-controls">
+            <button class="btn btn-warning" id="pauseSyncBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="6" y="4" width="4" height="16"></rect>
+                <rect x="14" y="4" width="4" height="16"></rect>
+              </svg>
+              暂停
+            </button>
+            <button class="btn btn-primary" id="syncNowBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+              </svg>
+              立即同步
+            </button>
+            <button class="btn btn-danger" id="stopSyncBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="6" y="6" width="12" height="12"></rect>
+              </svg>
+              停止同步
+            </button>
+          </div>
+
+          <div class="progress-section" id="progressSection" style="display: none;">
+            <div class="progress-header">
+              <span class="progress-title" id="progressTitle">正在同步...</span>
+              <span class="progress-percent" id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-detail" id="progressDetail"></div>
+          </div>
+
+          <div class="recent-activity">
+            <h3>最近活动</h3>
+            <div class="empty-state" id="activityEmpty">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <p>暂无同步活动</p>
+            </div>
+            <div class="activity-list" id="activityList"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view-section" id="foldersView">
+        <div class="view-header">
+          <h3>文件夹选择</h3>
+          <p class="view-description">勾选需要同步的子文件夹，未勾选的将在本地保留但不与云端同步</p>
+        </div>
+        
+        <div class="folder-toolbar">
+          <button class="btn btn-secondary" id="refreshFoldersBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            刷新
+          </button>
+          <button class="btn btn-secondary" id="selectAllFoldersBtn">全选</button>
+          <button class="btn btn-secondary" id="deselectAllFoldersBtn">取消全选</button>
+          <button class="btn btn-primary" id="saveFoldersBtn">保存</button>
+        </div>
+        
+        <div class="folder-tree" id="folderTree">
+          <div class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <p>请先启动同步</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="view-section" id="historyView">
+        <div class="view-header">
+          <h3>同步历史</h3>
+          <p class="view-description">查看最近30天的文件变更记录</p>
+        </div>
+        
+        <div class="history-filters">
+          <div class="filter-group">
+            <input type="text" class="filter-input" id="historySearch" placeholder="搜索文件名...">
+          </div>
+          <div class="filter-group">
+            <select class="filter-select" id="historyTypeFilter">
+              <option value="all">全部类型</option>
+              <option value="upload">上传</option>
+              <option value="download">下载</option>
+              <option value="delete">删除</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <select class="filter-select" id="historyDaysFilter">
+              <option value="1">今天</option>
+              <option value="7">最近7天</option>
+              <option value="30" selected>最近30天</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="history-stats">
+          <div class="history-stat">
+            <span class="stat-num" id="historyTotal">0</span>
+            <span class="stat-text">总数</span>
+          </div>
+          <div class="history-stat">
+            <span class="stat-num upload" id="historyUploads">0</span>
+            <span class="stat-text">上传</span>
+          </div>
+          <div class="history-stat">
+            <span class="stat-num download" id="historyDownloads">0</span>
+            <span class="stat-text">下载</span>
+          </div>
+          <div class="history-stat">
+            <span class="stat-num delete" id="historyDeletes">0</span>
+            <span class="stat-text">删除</span>
+          </div>
+        </div>
+        
+        <div class="empty-state" id="historyEmpty">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <p>暂无同步历史</p>
+        </div>
+        <div class="history-list" id="historyList"></div>
+      </section>
+
+      <section class="view-section" id="settingsView">
+        <div class="view-header">
+          <h3>设置</h3>
+          <p class="view-description">配置应用程序和同步选项</p>
+        </div>
+        
+        <div class="settings-group">
+          <h4>常规设置</h4>
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>后台运行</label>
+              <p class="setting-desc">关闭窗口时最小化到系统托盘</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="bgRunSetting" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>显示通知</label>
+              <p class="setting-desc">同步完成和冲突时显示桌面通知</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="notifySetting" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h4>历史记录</h4>
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>保留历史天数</label>
+              <p class="setting-desc">同步历史记录的保存时间</p>
+            </div>
+            <select class="setting-select" id="historyDaysSetting">
+              <option value="7">7天</option>
+              <option value="30" selected>30天</option>
+              <option value="90">90天</option>
+              <option value="365">1年</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h4>关于</h4>
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>版本</label>
+              <p class="setting-desc">FileSync Client</p>
+            </div>
+            <span class="setting-value">1.0.0</span>
+          </div>
+        </div>
+
+        <div class="settings-actions">
+          <button class="btn btn-primary" id="saveSettingsBtn">保存设置</button>
+          <button class="btn btn-danger" id="quitAppBtn">退出应用</button>
+        </div>
+      </section>
+    </main>
+
+    <div class="notification" id="notification">
+      <div class="notification-content">
+        <span class="notification-icon" id="notificationIcon"></span>
+        <span class="notification-message" id="notificationMessage"></span>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

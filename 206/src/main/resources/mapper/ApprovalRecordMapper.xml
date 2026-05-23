@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.meeting.booking.mapper.ApprovalRecordMapper">
+
+    <resultMap id="BaseResultMap" type="com.meeting.booking.entity.ApprovalRecord">
+        <id column="id" property="id"/>
+        <result column="booking_id" property="bookingId"/>
+        <result column="approver_id" property="approverId"/>
+        <result column="status" property="status"/>
+        <result column="remark" property="remark"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <association property="approver" javaType="com.meeting.booking.entity.User">
+            <id column="approver_id" property="id"/>
+            <result column="approver_name" property="name"/>
+        </association>
+        <association property="booking" javaType="com.meeting.booking.entity.Booking">
+            <id column="booking_id" property="id"/>
+            <result column="booking_title" property="title"/>
+            <result column="start_time" property="startTime"/>
+            <result column="end_time" property="endTime"/>
+        </association>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        ar.id, ar.booking_id, ar.approver_id, ar.status, ar.remark, ar.create_time, ar.update_time
+    </sql>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM approval_record ar
+        WHERE ar.id = #{id}
+    </select>
+
+    <select id="selectByBookingId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>, u.name as approver_name
+        FROM approval_record ar
+        LEFT JOIN user u ON ar.approver_id = u.id
+        WHERE ar.booking_id = #{bookingId}
+        ORDER BY ar.create_time DESC
+    </select>
+
+    <select id="selectByApproverId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>, b.title as booking_title, b.start_time, b.end_time
+        FROM approval_record ar
+        LEFT JOIN booking b ON ar.booking_id = b.id
+        WHERE ar.approver_id = #{approverId}
+        <if test="status != null">
+            AND ar.status = #{status}
+        </if>
+        ORDER BY ar.create_time DESC
+    </select>
+
+    <select id="selectPendingApprovals" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>, b.title as booking_title, b.start_time, b.end_time,
+               u.name as approver_name
+        FROM approval_record ar
+        LEFT JOIN booking b ON ar.booking_id = b.id
+        LEFT JOIN user u ON ar.approver_id = u.id
+        WHERE ar.status = 0
+        ORDER BY ar.create_time ASC
+    </select>
+
+    <insert id="insert" parameterType="com.meeting.booking.entity.ApprovalRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO approval_record (booking_id, approver_id, status, remark)
+        VALUES (#{bookingId}, #{approverId}, #{status}, #{remark})
+    </insert>
+
+    <update id="update" parameterType="com.meeting.booking.entity.ApprovalRecord">
+        UPDATE approval_record
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE approval_record
+        SET status = #{status}, approver_id = #{approverId}, remark = #{remark}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

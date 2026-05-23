@@ -1,0 +1,114 @@
+{
+  "analysis_config": {
+    "analysis_date": "2025-01-01",
+    "preference_days": 30,
+    "num_partitions": 200
+  },
+  "segments": [
+    {
+      "name": "高价值用户",
+      "conditions": {
+        "recency_max": 30,
+        "consumption_min": 3.5,
+        "activity_min": 3.0
+      },
+      "priority": 1
+    },
+    {
+      "name": "成长用户",
+      "conditions": {
+        "recency_max": 60,
+        "consumption_min": 1.5,
+        "activity_min": 0
+      },
+      "priority": 2
+    },
+    {
+      "name": "沉睡用户",
+      "conditions": {
+        "recency_min": 60,
+        "recency_max": 180,
+        "consumption_min": 0,
+        "activity_min": 0
+      },
+      "priority": 3
+    },
+    {
+      "name": "流失用户",
+      "conditions": {
+        "recency_min": 180,
+        "recency_max": 9999,
+        "consumption_min": 0,
+        "activity_min": 0
+      },
+      "priority": 4
+    }
+  ],
+  "ab_test": {
+    "enabled": true,
+    "test_name": "分类规则v2_vs_v1",
+    "control_group": {
+      "name": "v1规则",
+      "segments": [
+        {
+          "name": "高价值用户",
+          "conditions": {
+            "recency_max": 30,
+            "consumption_min": 4.0,
+            "activity_min": 3.5
+          },
+          "priority": 1
+        },
+        {
+          "name": "成长用户",
+          "conditions": {
+            "recency_max": 90,
+            "consumption_min": 2.0,
+            "activity_min": 0
+          },
+          "priority": 2
+        },
+        {
+          "name": "沉睡用户",
+          "conditions": {
+            "recency_min": 90,
+            "recency_max": 180,
+            "consumption_min": 0,
+            "activity_min": 0
+          },
+          "priority": 3
+        },
+        {
+          "name": "流失用户",
+          "conditions": {
+            "recency_min": 180,
+            "recency_max": 9999,
+            "consumption_min": 0,
+            "activity_min": 0
+          },
+          "priority": 4
+        }
+      ]
+    },
+    "experimental_group": {
+      "name": "v2规则",
+      "use_main_config": true
+    }
+  },
+  "weights": {
+    "order_count_weight": 10,
+    "browse_count_weight": 0.5,
+    "review_count_weight": 5,
+    "recency_order_weight": 0.6,
+    "recency_browse_weight": 0.4
+  },
+  "price_sensitivity": {
+    "levels": [
+      {"max_ratio": 0.7, "score": 5, "label": "极其敏感"},
+      {"max_ratio": 0.85, "score": 4, "label": "比较敏感"},
+      {"max_ratio": 1.15, "score": 3, "label": "中度敏感"},
+      {"max_ratio": 1.3, "score": 2, "label": "不太敏感"},
+      {"max_ratio": 999, "score": 1, "label": "不敏感"}
+    ]
+  }
+}

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.meeting.booking.mapper.BookingMapper">
+
+    <resultMap id="BaseResultMap" type="com.meeting.booking.entity.Booking">
+        <id column="id" property="id"/>
+        <result column="room_id" property="roomId"/>
+        <result column="user_id" property="userId"/>
+        <result column="title" property="title"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="attendees" property="attendees"/>
+        <result column="description" property="description"/>
+        <result column="status" property="status"/>
+        <result column="need_approval" property="needApproval"/>
+        <result column="approval_status" property="approvalStatus"/>
+        <result column="is_recurring" property="isRecurring"/>
+        <result column="recurring_rule" property="recurringRule"/>
+        <result column="recurring_days" property="recurringDays"/>
+        <result column="recurring_end_date" property="recurringEndDate"/>
+        <result column="recurring_parent_id" property="recurringParentId"/>
+        <result column="version" property="version"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <association property="room" javaType="com.meeting.booking.entity.MeetingRoom">
+            <id column="room_id" property="id"/>
+            <result column="room_name" property="name"/>
+            <result column="room_location" property="location"/>
+        </association>
+        <association property="user" javaType="com.meeting.booking.entity.User">
+            <id column="user_id" property="id"/>
+            <result column="user_name" property="name"/>
+            <result column="user_department" property="department"/>
+        </association>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        b.id, b.room_id, b.user_id, b.title, b.start_time, b.end_time, b.attendees, 
+        b.description, b.status, b.need_approval, b.approval_status, b.is_recurring, 
+        b.recurring_rule, b.recurring_days, b.recurring_end_date, b.recurring_parent_id, 
+        b.version, b.create_time, b.update_time
+    </sql>
+
+    <sql id="Room_Column_List">
+        mr.name as room_name, mr.location as room_location
+    </sql>
+
+    <sql id="User_Column_List">
+        u.name as user_name, u.department as user_department
+    </sql>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>, <include refid="Room_Column_List"/>, <include refid="User_Column_List"/>
+        FROM booking b
+        LEFT JOIN meeting_room mr ON b.room_id = mr.id
+        LEFT JOIN user u ON b.user_id = u.id
+        WHERE b.id = #{id}
+    </select>
+
+    <select id="selectList" parameterType="com.meeting.booking.dto.BookingQueryDTO" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>, <include refid="Room_Column_List"/>, <include refid="User_Column_List"/>
+        FROM booking b
+        LEFT JOIN meeting_room mr ON b.room_id = mr.id
+        LEFT JOIN user u ON b.user_id = u.id
+        <where>
+            <if test="userId != null">
+                AND b.user_id = #{userId}
+            </if>
+            <if test="roomId != null">
+                AND b.room_id = #{roomId}
+            </if>
+            <if test="status != null">
+                AND b.status = #{status}
+            </if>
+            <if test="startTime != null">
+                AND b.start_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND b.end_time &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY b.start_time DESC
+        LIMIT #{pageSize} OFFSET ${(pageNum - 1) * pageSize}
+    </select>
+
+    <select id="selectConflictBookings" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM booking b
+        WHERE b.room_id = #{roomId}
+        AND b.status IN (1, 2)
+        AND b.start_time &lt; #{endTime}
+        AND b.end_time &gt; #{startTime}
+        <if test="excludeBookingId != null">
+            AND b.id != #{excludeBookingId}
+        </if>
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>, <include refid="Room_Column_List"/>
+        FROM booking b
+        LEFT JOIN meeting_room mr ON b.room_id = mr.id
+        WHERE b.user_id = #{userId}
+        ORDER BY b.start_time DESC
+    </select>
+
+    <select id="selectByRecurringParentId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM booking b
+        WHERE b.recurring_parent_id = #{recurringParentId}
+        AND b.status IN (1, 2)
+        ORDER BY b.start_time ASC
+    </select>
+
+    <insert id="insert" parameterType="com.meeting.booking.entity.Booking" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO booking (room_id, user_id, title, start_time, end_time, attendees, description, status,
+                            need_approval, approval_status, is_recurring, recurring_rule, recurring_days, 
+                            recurring_end_date, recurring_parent_id, version)
+        VALUES (#{roomId}, #{userId}, #{title}, #{startTime}, #{endTime}, #{attendees}, #{description}, #{status},
+                #{needApproval}, #{approvalStatus}, #{isRecurring}, #{recurringRule}, #{recurringDays}, 
+                #{recurringEndDate}, #{recurringParentId}, 0)
+    </insert>
+
+    <insert id="batchInsert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO booking (room_id, user_id, title, start_time, end_time, attendees, description, status,
+                            need_approval, approval_status, is_recurring, recurring_rule, recurring_days, 
+                            recurring_end_date, recurring_parent_id, version)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.roomId}, #{item.userId}, #{item.title}, #{item.startTime}, #{item.endTime}, #{item.attendees}, 
+             #{item.description}, #{item.status}, #{item.needApproval}, #{item.approvalStatus},
+             #{item.isRecurring}, #{item.recurringRule}, #{item.recurringDays},
+             #{item.recurringEndDate}, #{item.recurringParentId}, 0)
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="com.meeting.booking.entity.Booking">
+        UPDATE booking
+        <set>
+            version = version + 1,
+            <if test="title != null">title = #{title},</if>
+            <if test="attendees != null">attendees = #{attendees},</if>
+            <if test="description != null">description = #{description},</if>
+        </set>
+        WHERE id = #{id} AND version = #{version}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE booking
+        SET status = #{status}, version = version + 1
+        WHERE id = #{id} AND version = #{version}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM booking WHERE id = #{id}
+    </delete>
+
+    <select id="countByUserId" resultType="int">
+        SELECT COUNT(*) FROM booking WHERE user_id = #{userId}
+    </select>
+
+    <select id="countList" parameterType="com.meeting.booking.dto.BookingQueryDTO" resultType="long">
+        SELECT COUNT(*)
+        FROM booking b
+        <where>
+            <if test="userId != null">
+                AND b.user_id = #{userId}
+            </if>
+            <if test="roomId != null">
+                AND b.room_id = #{roomId}
+            </if>
+            <if test="status != null">
+                AND b.status = #{status}
+            </if>
+            <if test="startTime != null">
+                AND b.start_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND b.end_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+</mapper>

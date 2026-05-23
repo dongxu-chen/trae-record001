@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.meeting.booking.mapper.MeetingRoomMapper">
+
+    <resultMap id="BaseResultMap" type="com.meeting.booking.entity.MeetingRoom">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="location" property="location"/>
+        <result column="capacity" property="capacity"/>
+        <result column="description" property="description"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <collection property="equipments" ofType="com.meeting.booking.entity.Equipment">
+            <id column="eq_id" property="id"/>
+            <result column="eq_name" property="name"/>
+            <result column="eq_code" property="code"/>
+            <result column="eq_type" property="type"/>
+            <result column="eq_description" property="description"/>
+        </collection>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        mr.id, mr.name, mr.location, mr.capacity, mr.description, mr.status, mr.create_time, mr.update_time
+    </sql>
+
+    <sql id="Equipment_Column_List">
+        e.id as eq_id, e.name as eq_name, e.code as eq_code, e.type as eq_type, e.description as eq_description
+    </sql>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>, <include refid="Equipment_Column_List"/>
+        FROM meeting_room mr
+        LEFT JOIN meeting_room_equipment mre ON mr.id = mre.room_id
+        LEFT JOIN equipment e ON mre.equipment_id = e.id
+        WHERE mr.id = #{id}
+    </select>
+
+    <select id="selectList" parameterType="com.meeting.booking.dto.RoomQueryDTO" resultMap="BaseResultMap">
+        SELECT DISTINCT <include refid="Base_Column_List"/>
+        FROM meeting_room mr
+        <where>
+            <if test="status != null">
+                AND mr.status = #{status}
+            </if>
+            <if test="minCapacity != null">
+                AND mr.capacity &gt;= #{minCapacity}
+            </if>
+            <if test="maxCapacity != null">
+                AND mr.capacity &lt;= #{maxCapacity}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (mr.name LIKE CONCAT('%', #{keyword}, '%') OR mr.location LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="equipmentTypes != null and equipmentTypes.size() > 0">
+                AND mr.id IN (
+                    SELECT mre.room_id
+                    FROM meeting_room_equipment mre
+                    INNER JOIN equipment e ON mre.equipment_id = e.id
+                    WHERE e.type IN
+                    <foreach collection="equipmentTypes" item="type" open="(" separator="," close=")">
+                        #{type}
+                    </foreach>
+                    GROUP BY mre.room_id
+                    HAVING COUNT(DISTINCT e.type) = #{equipmentTypes.size}
+                )
+            </if>
+        </where>
+        ORDER BY mr.capacity DESC
+    </select>
+
+    <select id="selectAvailableRooms" resultMap="BaseResultMap">
+        SELECT DISTINCT <include refid="Base_Column_List"/>, <include refid="Equipment_Column_List"/>
+        FROM meeting_room mr
+        LEFT JOIN meeting_room_equipment mre ON mr.id = mre.room_id
+        LEFT JOIN equipment e ON mre.equipment_id = e.id
+        WHERE mr.status = 1
+        <if test="minCapacity != null">
+            AND mr.capacity &gt;= #{minCapacity}
+        </if>
+        <if test="equipmentTypes != null and equipmentTypes.size() > 0">
+            AND mr.id IN (
+                SELECT mre.room_id
+                FROM meeting_room_equipment mre
+                INNER JOIN equipment e ON mre.equipment_id = e.id
+                WHERE e.type IN
+                <foreach collection="equipmentTypes" item="type" open="(" separator="," close=")">
+                    #{type}
+                </foreach>
+                GROUP BY mre.room_id
+                HAVING COUNT(DISTINCT e.type) = #{equipmentTypes.size}
+            )
+        </if>
+        AND mr.id NOT IN (
+            SELECT DISTINCT b.room_id
+            FROM booking b
+            WHERE b.status IN (1, 2)
+            AND b.start_time &lt; #{endTime}
+            AND b.end_time &gt; #{startTime}
+            <if test="excludeBookingId != null">
+                AND b.id != #{excludeBookingId}
+            </if>
+        )
+        ORDER BY mr.capacity DESC
+    </select>
+
+    <insert id="insert" parameterType="com.meeting.booking.entity.MeetingRoom" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO meeting_room (name, location, capacity, description, status)
+        VALUES (#{name}, #{location}, #{capacity}, #{description}, #{status})
+    </insert>
+
+    <update id="update" parameterType="com.meeting.booking.entity.MeetingRoom">
+        UPDATE meeting_room
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="location != null">location = #{location},</if>
+            <if test="capacity != null">capacity = #{capacity},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM meeting_room WHERE id = #{id}
+    </delete>
+
+</mapper>
