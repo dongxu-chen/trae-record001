@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据库死锁检测分析工具</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">
+                <i class="bi bi-shield-exclamation"></i> 数据库死锁检测分析工具
+            </span>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-light btn-sm" onclick="loadSample('mysql')">
+                    <i class="bi bi-database"></i> MySQL示例
+                </button>
+                <button class="btn btn-outline-light btn-sm" onclick="loadSample('postgresql')">
+                    <i class="bi bi-database"></i> PostgreSQL示例
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-lg-5">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-upload"></i> 死锁日志输入</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="analysisForm">
+                            <div class="mb-3">
+                                <label class="form-label">数据库类型</label>
+                                <select class="form-select" id="dbType" name="db_type">
+                                    <option value="mysql">MySQL</option>
+                                    <option value="postgresql">PostgreSQL</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">死锁日志内容</label>
+                                <textarea class="form-control" id="logContent" name="log_content" rows="10"
+                                    placeholder="请粘贴死锁日志内容..."></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">或上传日志文件</label>
+                                <input type="file" class="form-control" id="logFile" name="log_file" accept=".log,.txt">
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary" id="analyzeBtn">
+                                    <i class="bi bi-search"></i> 开始分析
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="clearAll()">
+                                    <i class="bi bi-x-circle"></i> 清空
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-info-circle"></i> 使用说明</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6><strong>MySQL获取死锁日志：</strong></h6>
+                        <code class="d-block bg-light p-2 mb-3">SHOW ENGINE INNODB STATUS\G</code>
+
+                        <h6><strong>PostgreSQL开启死锁日志：</strong></h6>
+                        <code class="d-block bg-light p-2 mb-3">
+                            SET log_error_verbosity = 'verbose';
+                            <br>SET log_min_messages = 'debug1';
+                        </code>
+
+                        <h6><strong>功能说明：</strong></h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-check-circle text-success"></i> 解析死锁事务详情</li>
+                            <li><i class="bi bi-check-circle text-success"></i> 提取涉及的SQL语句</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Tarjan算法检测循环依赖</li>
+                            <li><i class="bi bi-check-circle text-success"></i> EXPLAIN分析推荐索引</li>
+                            <li><i class="bi bi-check-circle text-success"></i> 实时监控提前预警</li>
+                            <li><i class="bi bi-check-circle text-success"></i> 死锁回放模拟验证</li>
+                            <li><i class="bi bi-check-circle text-success"></i> APM调用链关联</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="bi bi-clock-history"></i> 实时监控</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">状态</small>
+                                <div id="monitorStatus" class="fw-bold text-secondary">未启动</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">检查次数</small>
+                                <div id="monitorChecks" class="fw-bold">0</div>
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2 mb-3">
+                            <button class="btn btn-success" onclick="startMonitor()" id="startMonitorBtn">
+                                <i class="bi bi-play-circle"></i> 启动监控
+                            </button>
+                            <button class="btn btn-danger" onclick="stopMonitor()" id="stopMonitorBtn" disabled>
+                                <i class="bi bi-stop-circle"></i> 停止监控
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="checkMonitorNow()">
+                                <i class="bi bi-arrow-repeat"></i> 立即检查
+                            </button>
+                        </div>
+                        <div class="small">
+                            <div class="mb-2">
+                                <i class="bi bi-info-circle"></i> 每5秒自动检测锁等待关系
+                            </div>
+                            <div id="monitorAlerts" class="mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="bi bi-diagram-3-fill"></i> APM配置</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label small">APM系统</label>
+                            <select class="form-select form-select-sm" id="apmType">
+                                <option value="mock">Mock（测试）</option>
+                                <option value="skywalking">SkyWalking</option>
+                                <option value="pinpoint">Pinpoint</option>
+                                <option value="jaeger">Jaeger</option>
+                                <option value="datadog">Datadog</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">服务地址</label>
+                            <input type="text" class="form-control form-control-sm" id="apmUrl" placeholder="http://localhost:8080">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">服务名称</label>
+                            <input type="text" class="form-control form-control-sm" id="apmService" placeholder="my-service">
+                        </div>
+                        <button class="btn btn-dark btn-sm" onclick="configureAPM()">
+                            <i class="bi bi-gear"></i> 配置APM
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="card mb-4" id="summaryCard" style="display: none;">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-bar-chart"></i> 分析概览</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-2">
+                                <div class="display-6 text-primary" id="totalDeadlocks">0</div>
+                                <div class="text-muted small">死锁总数</div>
+                            </div>
+                            <div class="col-2">
+                                <div class="display-6 text-danger" id="totalTxns">0</div>
+                                <div class="text-muted small">涉及事务</div>
+                            </div>
+                            <div class="col-2">
+                                <div class="display-6 text-warning" id="totalTables">0</div>
+                                <div class="text-muted small">涉及表</div>
+                            </div>
+                            <div class="col-2">
+                                <div class="display-6 text-info" id="avgWaitTime">0s</div>
+                                <div class="text-muted small">平均等待</div>
+                            </div>
+                            <div class="col-2">
+                                <div class="display-6 text-success" id="indexCount">0</div>
+                                <div class="text-muted small">索引建议</div>
+                            </div>
+                            <div class="col-2">
+                                <div class="display-6 text-secondary" id="detectedVersion">-</div>
+                                <div class="text-muted small">检测版本</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="nav nav-tabs mb-3" id="resultTabs" style="display: none;">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#deadlocksTab">
+                            <i class="bi bi-list-ul"></i> 死锁列表
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#graphTab">
+                            <i class="bi bi-diagram-3"></i> 等待关系图
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#statsTab">
+                            <i class="bi bi-bar-chart-line"></i> 统计分析
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#indexTab">
+                            <i class="bi bi-search"></i> 索引建议
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#simulationTab">
+                            <i class="bi bi-play"></i> 死锁回放
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#apmTab">
+                            <i class="bi bi-link-45deg"></i> APM关联
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#suggestionsTab">
+                            <i class="bi bi-lightbulb"></i> 优化建议
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="deadlocksTab">
+                        <div class="card">
+                            <div class="card-body" id="deadlocksContent">
+                                <p class="text-muted text-center">暂无分析结果</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="graphTab">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">事务等待关系图 (Tarjan算法检测循环)</h6>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="fitGraph()">
+                                            <i class="bi bi-fullscreen"></i> 自适应
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="exportGraph()">
+                                            <i class="bi bi-download"></i> 导出
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <div class="small">
+                                            <span class="badge bg-danger">●</span> 死锁
+                                            <span class="badge bg-primary ms-2">●</span> 事务
+                                            <span class="badge bg-success ms-2">●</span> 锁
+                                            <span class="badge bg-warning ms-2">●</span> 被选中牺牲
+                                        </div>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        <select class="form-select form-select-sm d-inline-block w-auto" id="deadlockSelector" onchange="viewSingleDeadlock()">
+                                            <option value="-1">查看全部死锁</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="cyGraph" style="height: 500px; border: 1px solid #ddd; border-radius: 5px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="statsTab">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">按表统计死锁</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="tableChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">时间段分布</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="timeChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">锁模式分布</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="lockChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">热点表 TOP 10</h6>
+                                    </div>
+                                    <div class="card-body" id="topTables">
+                                        <p class="text-muted">暂无数据</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="indexTab">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0"><i class="bi bi-search"></i> EXPLAIN分析 - 索引建议</h6>
+                            </div>
+                            <div class="card-body" id="indexContent">
+                                <p class="text-muted text-center">暂无索引建议</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="simulationTab">
+                        <div class="card mb-3">
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="mb-0"><i class="bi bi-play"></i> 死锁回放模拟</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">选择死锁</label>
+                                    <select class="form-select" id="simDeadlockSelect" onchange="runSimulation()">
+                                        <option value="">请先解析死锁日志</option>
+                                    </select>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-warning" onclick="runSimulation()">
+                                        <i class="bi bi-play"></i> 运行模拟
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="simulationResults" style="display: none;">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header bg-danger text-white">
+                                            <h6 class="mb-0">原始执行顺序</h6>
+                                        </div>
+                                        <div class="card-body small" id="originalSteps">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header bg-success text-white">
+                                            <h6 class="mb-0">优化执行顺序</h6>
+                                        </div>
+                                        <div class="card-body small" id="optimizedSteps">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">多种事务顺序测试结果</h6>
+                                </div>
+                                <div class="card-body" id="orderTests">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="apmTab">
+                        <div class="card mb-3">
+                            <div class="card-header bg-dark text-white">
+                                <h6 class="mb-0"><i class="bi bi-link-45deg"></i> APM调用链关联</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">选择死锁</label>
+                                    <select class="form-select" id="apmDeadlockSelect" onchange="correlateAPM()">
+                                        <option value="">请先解析死锁日志</option>
+                                    </select>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small">前向窗口（秒）</label>
+                                        <input type="number" class="form-control form-control-sm" id="beforeWindow" value="60">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small">后向窗口（秒）</label>
+                                        <input type="number" class="form-control form-control-sm" id="afterWindow" value="10">
+                                    </div>
+                                </div>
+                                <div class="d-grid">
+                                    <button class="btn btn-dark" onclick="correlateAPM()">
+                                        <i class="bi bi-search"></i> 关联调用链
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="apmResults" style="display: none;">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">关联的调用链</h6>
+                                </div>
+                                <div class="card-body" id="apmContent">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="suggestionsTab">
+                        <div class="card">
+                            <div class="card-body" id="suggestionsContent">
+                                <p class="text-muted text-center">暂无优化建议</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deadlockDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">死锁详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="deadlockDetailContent">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+        <div id="alertToast" class="toast bg-danger text-white" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-danger text-white">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong class="me-auto">死锁预警</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="alertToastBody">
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
