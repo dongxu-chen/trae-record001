@@ -1,0 +1,53 @@
+2024-01-15 10:23:45.123 CST [12345] ERROR:  deadlock detected
+2024-01-15 10:23:45.123 CST [12345] DETAIL:  Process 12345 waits for ShareLock on transaction 10001; blocked by process 12346.
+	Process 12346 waits for ShareLock on transaction 10002; blocked by process 12345.
+	Process 12345: UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+	Process 12346: UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+2024-01-15 10:23:45.123 CST [12345] HINT:  See server log for query details.
+2024-01-15 10:23:45.123 CST [12345] CONTEXT:  while updating tuple (0,10) in relation "accounts"
+2024-01-15 10:23:45.123 CST [12345] STATEMENT:  UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+
+2024-01-15 10:23:45.124 CST [12346] ERROR:  deadlock detected
+2024-01-15 10:23:45.124 CST [12346] DETAIL:  Process 12346 waits for ShareLock on transaction 10002; blocked by process 12345.
+	Process 12345 waits for ShareLock on transaction 10001; blocked by process 12346.
+	Process 12346: UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+	Process 12345: UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+2024-01-15 10:23:45.124 CST [12346] HINT:  See server log for query details.
+2024-01-15 10:23:45.124 CST [12346] CONTEXT:  while updating tuple (0,11) in relation "accounts"
+2024-01-15 10:23:45.124 CST [12346] STATEMENT:  UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+
+2024-01-15 10:45:12.456 CST [12400] ERROR:  deadlock detected
+2024-01-15 10:45:12.456 CST [12400] DETAIL:  Process 12400 waits for ExclusiveLock on tuple (1,25) of relation 20000 of database 10000; blocked by process 12401.
+	Process 12401 waits for ShareLock on transaction 10010; blocked by process 12400.
+	Process 12400: INSERT INTO order_items (order_id, product_id, quantity) VALUES (1001, 500, 2);
+	Process 12401: UPDATE products SET stock = stock - 2 WHERE id = 500;
+2024-01-15 10:45:12.456 CST [12400] HINT:  See server log for query details.
+2024-01-15 10:45:12.456 CST [12400] CONTEXT:  while inserting index tuple (1,30) in relation "order_items"
+2024-01-15 10:45:12.456 CST [12400] STATEMENT:  INSERT INTO order_items (order_id, product_id, quantity) VALUES (1001, 500, 2);
+
+2024-01-15 10:45:12.457 CST [12401] ERROR:  deadlock detected
+2024-01-15 10:45:12.457 CST [12401] DETAIL:  Process 12401 waits for ShareLock on transaction 10010; blocked by process 12400.
+	Process 12400 waits for ExclusiveLock on tuple (1,25) of relation 20000 of database 10000; blocked by process 12401.
+	Process 12401 holds lock on relation 20000 (products)
+	Process 12401: UPDATE products SET stock = stock - 2 WHERE id = 500;
+	Process 12400: INSERT INTO order_items (order_id, product_id, quantity) VALUES (1001, 500, 2);
+2024-01-15 10:45:12.457 CST [12401] HINT:  See server log for query details.
+2024-01-15 10:45:12.457 CST [12401] STATEMENT:  UPDATE products SET stock = stock - 2 WHERE id = 500;
+
+2024-01-15 14:30:00.789 CST [12500] ERROR:  deadlock detected
+2024-01-15 14:30:00.789 CST [12500] DETAIL:  Process 12500 waits for RowExclusiveLock on relation 30000 of database 10000; blocked by process 12501.
+	Process 12501 waits for RowExclusiveLock on relation 30001 of database 10000; blocked by process 12500.
+	Process 12500: BEGIN; UPDATE orders SET status = 'PAID' WHERE id = 2001; UPDATE payments SET status = 'COMPLETED' WHERE order_id = 2001; COMMIT;
+	Process 12501: BEGIN; UPDATE payments SET status = 'COMPLETED' WHERE order_id = 2002; UPDATE orders SET status = 'PAID' WHERE id = 2002; COMMIT;
+2024-01-15 14:30:00.789 CST [12500] HINT:  See server log for query details.
+2024-01-15 14:30:00.789 CST [12500] STATEMENT:  UPDATE orders SET status = 'PAID' WHERE id = 2001;
+
+2024-01-15 14:30:00.790 CST [12501] ERROR:  deadlock detected
+2024-01-15 14:30:00.790 CST [12501] DETAIL:  Process 12501 waits for RowExclusiveLock on relation 30001 of database 10000; blocked by process 12500.
+	Process 12500 waits for RowExclusiveLock on relation 30000 of database 10000; blocked by process 12501.
+	Process 12501 holds AccessExclusiveLock on relation 30001 (payments)
+	Process 12500 holds AccessExclusiveLock on relation 30000 (orders)
+	Process 12501: BEGIN; UPDATE payments SET status = 'COMPLETED' WHERE order_id = 2002; UPDATE orders SET status = 'PAID' WHERE id = 2002; COMMIT;
+	Process 12500: BEGIN; UPDATE orders SET status = 'PAID' WHERE id = 2001; UPDATE payments SET status = 'COMPLETED' WHERE order_id = 2001; COMMIT;
+2024-01-15 14:30:00.790 CST [12501] HINT:  See server log for query details.
+2024-01-15 14:30:00.790 CST [12501] STATEMENT:  UPDATE payments SET status = 'COMPLETED' WHERE order_id = 2002;
