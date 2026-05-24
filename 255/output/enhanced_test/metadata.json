@@ -1,0 +1,13 @@
+{
+  "job_id": "enhanced_test",
+  "sequence": "MKWVTFISLLFLFSSAYSRGVFRRDAHMKSTIVFGRCIGISMRWPTVQGLD",
+  "sequence_length": 51,
+  "model_name": "AlphaFold2_Lite_v1_Chunked",
+  "inference_time": 11.261874437332153,
+  "num_recycles": 3,
+  "mean_plddt": 54.64219665527344,
+  "overall_quality": "Moderate",
+  "msa_depth": 25,
+  "ptm_score": 0.49902188777923584,
+  "iptm_score": 0.49921751022338867
+}

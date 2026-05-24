@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.homestay.mapper.HouseCalendarMapper">
+
+    <select id="selectByHouseIdAndDateRange" resultType="com.homestay.entity.HouseCalendar">
+        SELECT * FROM house_calendar
+        WHERE house_id = #{houseId}
+        AND date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY date ASC
+    </select>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO house_calendar (house_id, date, price, stock, status, create_time, update_time)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.houseId}, #{item.date}, #{item.price}, #{item.stock}, #{item.status}, NOW(), NOW())
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        price = VALUES(price),
+        stock = VALUES(stock),
+        status = VALUES(status),
+        update_time = NOW()
+    </insert>
+
+    <update id="batchUpdateStock">
+        UPDATE house_calendar
+        SET stock = stock + #{stock},
+            update_time = NOW()
+        WHERE house_id = #{houseId}
+        AND date BETWEEN #{startDate} AND #{endDate}
+    </update>
+
+</mapper>

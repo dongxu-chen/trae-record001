@@ -1,0 +1,3010 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>思维导图工具</title>
+  <script src="https://unpkg.com/vue@3.2.47/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/konva@8.4.3/konva.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      overflow: hidden;
+    }
+    #app {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      height: 60px;
+      background: #fff;
+      border-bottom: 1px solid #e8e8e8;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      z-index: 100;
+    }
+    .header.dark {
+      background: #1e1e1e;
+      border-bottom-color: #333;
+    }
+    .title-input {
+      font-size: 18px;
+      font-weight: 600;
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: 8px 12px;
+      border-radius: 6px;
+      min-width: 200px;
+    }
+    .title-input:focus {
+      background: #f5f5f5;
+    }
+    .dark .title-input {
+      color: #fff;
+    }
+    .dark .title-input:focus {
+      background: #333;
+    }
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+    .btn {
+      padding: 8px 16px;
+      border: 1px solid #d9d9d9;
+      background: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover {
+      background: #f5f5f5;
+      border-color: #409eff;
+      color: #409eff;
+    }
+    .btn.primary {
+      background: #409eff;
+      color: #fff;
+      border-color: #409eff;
+    }
+    .btn.primary:hover {
+      background: #66b1ff;
+    }
+    .dark .btn {
+      background: #333;
+      border-color: #444;
+      color: #ccc;
+    }
+    .dark .btn:hover {
+      background: #444;
+      border-color: #409eff;
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    .sidebar {
+      width: 280px;
+      background: #fafafa;
+      border-right: 1px solid #e8e8e8;
+      display: flex;
+      flex-direction: column;
+      transition: width 0.3s;
+    }
+    .sidebar.collapsed {
+      width: 0;
+      overflow: hidden;
+    }
+    .dark .sidebar {
+      background: #252525;
+      border-right-color: #333;
+    }
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid #e8e8e8;
+    }
+    .dark .sidebar-header {
+      border-bottom-color: #333;
+    }
+    .search-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+    }
+    .search-input:focus {
+      border-color: #409eff;
+    }
+    .dark .search-input {
+      background: #333;
+      border-color: #444;
+      color: #fff;
+    }
+    .file-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+    .file-item {
+      padding: 10px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .file-item:hover {
+      background: #f0f0f0;
+    }
+    .file-item.active {
+      background: #e6f7ff;
+      color: #409eff;
+    }
+    .dark .file-item:hover {
+      background: #333;
+    }
+    .dark .file-item.active {
+      background: #1a3a5c;
+    }
+    .file-delete {
+      opacity: 0;
+      color: #ff4d4f;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .file-item:hover .file-delete {
+      opacity: 1;
+    }
+    .file-delete:hover {
+      background: rgba(255,77,79,0.1);
+    }
+    .canvas-container {
+      flex: 1;
+      position: relative;
+      background: #f0f2f5;
+    }
+    .dark .canvas-container {
+      background: #1a1a1a;
+    }
+    #konva-container {
+      width: 100%;
+      height: 100%;
+    }
+    .node-editor {
+      position: fixed;
+      background: #fff;
+      border: 2px solid #409eff;
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      z-index: 1000;
+      min-width: 280px;
+    }
+    .dark .node-editor {
+      background: #333;
+      color: #fff;
+    }
+    .editor-content {
+      min-height: 80px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      padding: 8px;
+      font-size: 14px;
+      outline: none;
+      margin-bottom: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+      word-wrap: break-word;
+    }
+    .editor-content:focus {
+      border-color: #409eff;
+    }
+    .dark .editor-content {
+      background: #444;
+      border-color: #555;
+      color: #fff;
+    }
+    .editor-toolbar {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .editor-btn {
+      padding: 4px 8px;
+      border: 1px solid #d9d9d9;
+      background: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      min-width: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .editor-btn:hover {
+      background: #f5f5f5;
+    }
+    .editor-btn.active {
+      background: #409eff;
+      color: #fff;
+      border-color: #409eff;
+    }
+    .dark .editor-btn {
+      background: #444;
+      border-color: #555;
+      color: #ccc;
+    }
+    .dark .editor-btn:hover {
+      background: #555;
+    }
+    .dark .editor-btn.active {
+      background: #409eff;
+      color: #fff;
+    }
+    .editor-select {
+      padding: 4px 6px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      font-size: 12px;
+      background: #fff;
+    }
+    .dark .editor-select {
+      background: #444;
+      border-color: #555;
+      color: #fff;
+    }
+    .editor-color-input {
+      width: 28px;
+      height: 24px;
+      padding: 0;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      cursor: pointer;
+      background: transparent;
+    }
+    .editor-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .zoom-controls {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 10;
+    }
+    .zoom-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .zoom-btn:hover {
+      background: #f5f5f5;
+    }
+    .dark .zoom-btn {
+      background: #333;
+      color: #fff;
+    }
+    .search-results {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 8px;
+    }
+    .search-result-item {
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 4px;
+      background: #fff;
+      border: 1px solid #e8e8e8;
+    }
+    .search-result-item:hover {
+      background: #e6f7ff;
+    }
+    .dark .search-result-item {
+      background: #333;
+      border-color: #444;
+    }
+    .highlight {
+      background: #fff59d;
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+    .node-info {
+      padding: 16px;
+      border-top: 1px solid #e8e8e8;
+    }
+    .dark .node-info {
+      border-top-color: #333;
+    }
+    .info-label {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 4px;
+    }
+    .info-value {
+      font-size: 14px;
+      margin-bottom: 12px;
+      word-break: break-all;
+    }
+    .dark .info-value {
+      color: #ccc;
+    }
+    .color-picker {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .color-option {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+    .color-option:hover {
+      transform: scale(1.1);
+    }
+    .color-option.selected {
+      border-color: #333;
+    }
+    .dark .color-option.selected {
+      border-color: #fff;
+    }
+    .shortcut-hint {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      z-index: 10;
+    }
+    .context-menu {
+      position: fixed;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      padding: 8px 0;
+      z-index: 2000;
+      min-width: 160px;
+    }
+    .dark .context-menu {
+      background: #333;
+    }
+    .context-menu-item {
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .context-menu-item:hover {
+      background: #f5f5f5;
+    }
+    .dark .context-menu-item:hover {
+      background: #444;
+      color: #fff;
+    }
+    .context-menu-item.danger {
+      color: #ff4d4f;
+    }
+    .context-menu-divider {
+      height: 1px;
+      background: #e8e8e8;
+      margin: 4px 0;
+    }
+    .dark .context-menu-divider {
+      background: #444;
+    }
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .dark .modal {
+      background: #333;
+      color: #fff;
+    }
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-content {
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .diff-item {
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      border-left: 4px solid;
+    }
+    .diff-item.local {
+      background: #e6f7ff;
+      border-color: #409eff;
+    }
+    .diff-item.remote {
+      background: #f6ffed;
+      border-color: #67c23a;
+    }
+    .dark .diff-item.local {
+      background: #1a3a5c;
+    }
+    .dark .diff-item.remote {
+      background: #2a4a1a;
+    }
+    .diff-label {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+    .btn.danger {
+      background: #ff4d4f;
+      color: #fff;
+      border-color: #ff4d4f;
+    }
+    .btn.danger:hover {
+      background: #ff7875;
+    }
+    .btn.success {
+      background: #67c23a;
+      color: #fff;
+      border-color: #67c23a;
+    }
+    .btn.success:hover {
+      background: #85ce61;
+    }
+    .sync-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: #f0f0f0;
+    }
+    .sync-indicator.synced {
+      color: #67c23a;
+      background: #f6ffed;
+    }
+    .sync-indicator.syncing {
+      color: #e6a23c;
+      background: #fffbe6;
+      animation: pulse 1s infinite;
+    }
+    .sync-indicator.conflict {
+      color: #ff4d4f;
+      background: #fff1f0;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .user-cursor {
+      position: absolute;
+      pointer-events: none;
+      z-index: 2000;
+      transition: all 0.1s ease;
+    }
+    .user-cursor-label {
+      position: absolute;
+      top: 20px;
+      left: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #fff;
+      white-space: nowrap;
+    }
+    .user-list {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .dark .user-avatar {
+      border-color: #333;
+    }
+    .presentation-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 4000;
+      display: flex;
+      flex-direction: column;
+    }
+    .presentation-header {
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #fff;
+    }
+    .presentation-title {
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .presentation-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .presentation-btn {
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .presentation-btn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    .presentation-btn.primary {
+      background: #409eff;
+      border-color: #409eff;
+    }
+    .presentation-btn.primary:hover {
+      background: #66b1ff;
+    }
+    .presentation-canvas {
+      flex: 1;
+      position: relative;
+      background: #1a1a1a;
+      overflow: hidden;
+    }
+    .presentation-node {
+      position: absolute;
+      padding: 20px 40px;
+      background: #409eff;
+      color: #fff;
+      border-radius: 12px;
+      font-size: 28px;
+      font-weight: 600;
+      text-align: center;
+      max-width: 600px;
+      box-shadow: 0 10px 40px rgba(64,158,255,0.4);
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .presentation-node.children {
+      background: #67c23a;
+      box-shadow: 0 10px 40px rgba(103,194,58,0.4);
+    }
+    .presentation-progress {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+    }
+    .presentation-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .presentation-dot.active {
+      background: #409eff;
+      transform: scale(1.3);
+    }
+    .ai-layout-modal {
+      max-width: 600px;
+    }
+    .layout-option {
+      padding: 16px;
+      border: 2px solid #e8e8e8;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+    .layout-option:hover {
+      border-color: #409eff;
+      background: #f0f9ff;
+    }
+    .dark .layout-option:hover {
+      background: #1a3a5c;
+    }
+    .layout-option.selected {
+      border-color: #409eff;
+      background: #e6f7ff;
+    }
+    .dark .layout-option.selected {
+      background: #1a3a5c;
+    }
+    .layout-option-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .layout-option-desc {
+      font-size: 12px;
+      color: #999;
+    }
+    .collab-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      background: #f0f0f0;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+    .dark .collab-status {
+      background: #333;
+      color: #ccc;
+    }
+    .collab-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #67c23a;
+      animation: pulse 2s infinite;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="header" :class="{dark: theme === 'dark'}">
+      <input 
+        class="title-input" 
+        v-model="currentMap.title" 
+        @change="saveCurrentMap"
+        placeholder="思维导图标题"
+      />
+      <span class="sync-indicator" :class="syncStatus">
+        <span v-if="syncStatus === 'synced'">✓ 已同步</span>
+        <span v-else-if="syncStatus === 'syncing'">⟳ 同步中</span>
+        <span v-else-if="syncStatus === 'conflict'">⚠ 冲突</span>
+      </span>
+      <span class="collab-status">
+        <span class="collab-dot"></span>
+        <span>协作中 ({{ onlineUsers.length }})</span>
+      </span>
+      <div class="user-list" v-if="onlineUsers.length > 0">
+        <div 
+          v-for="user in onlineUsers" 
+          :key="user.id"
+          class="user-avatar"
+          :style="{background: user.color}"
+          :title="user.name"
+        >
+          {{ user.name.charAt(0) }}
+        </div>
+      </div>
+      <div class="toolbar">
+        <button class="btn" @click="createNewMap">➕ 新建</button>
+        <button class="btn" @click="showAILayoutModal = true">🤖 AI布局</button>
+        <button class="btn" @click="autoLayout">🔄 自动布局</button>
+        <button class="btn" @click="startPresentation">🎤 演讲模式</button>
+        <button class="btn" @click="toggleTheme">🎨 {{ theme === 'dark' ? '亮色' : '暗色' }}</button>
+        <button class="btn" @click="exportJSON">📄 JSON</button>
+        <button class="btn" @click="exportImage">🖼️ 图片</button>
+        <button class="btn" @click="exportMarkdown">📝 Markdown</button>
+        <button class="btn primary" @click="addChildNode">➕ 添加子节点</button>
+      </div>
+    </div>
+    <div class="main">
+      <div class="sidebar" :class="{collapsed: sidebarCollapsed}">
+        <div class="sidebar-header">
+          <input 
+            class="search-input" 
+            v-model="searchQuery" 
+            placeholder="搜索节点..."
+            @input="handleSearch"
+          />
+          <div class="search-results" v-if="searchResults.length > 0">
+            <div 
+              v-for="result in searchResults" 
+              :key="result.id"
+              class="search-result-item"
+              @click="focusNode(result.id)"
+            >
+              <span v-html="highlightText(result.text, searchQuery)"></span>
+            </div>
+          </div>
+        </div>
+        <div class="file-list">
+          <div 
+            v-for="map in mindMaps" 
+            :key="map.id"
+            class="file-item"
+            :class="{active: map.id === currentMapId}"
+            @click="loadMap(map.id)"
+          >
+            <span>{{ map.title || '未命名' }}</span>
+            <span class="file-delete" @click.stop="deleteMap(map.id)">×</span>
+          </div>
+        </div>
+        <div class="node-info" v-if="selectedNode">
+          <div class="info-label">节点文本</div>
+          <div class="info-value">{{ getPlainText(selectedNode.html || selectedNode.text) }}</div>
+          <div class="info-label">节点颜色</div>
+          <div class="color-picker">
+            <div 
+              v-for="color in nodeColors" 
+              :key="color"
+              class="color-option"
+              :class="{selected: selectedNode.color === color}"
+              :style="{background: color}"
+              @click="changeNodeColor(color)"
+            ></div>
+          </div>
+        </div>
+      </div>
+      <div class="canvas-container" :class="{dark: theme === 'dark'}">
+        <button class="zoom-btn" style="position: absolute; left: 20px; top: 20px; z-index: 10;" @click="toggleSidebar">
+          {{ sidebarCollapsed ? '◀' : '▶' }}
+        </button>
+        <div id="konva-container"></div>
+        <div class="zoom-controls">
+          <button class="zoom-btn" @click="zoomIn">+</button>
+          <button class="zoom-btn" @click="zoomOut">-</button>
+          <button class="zoom-btn" @click="resetView">⟲</button>
+        </div>
+        <div class="shortcut-hint">
+          Tab: 添加子节点 | Enter: 添加同级 | Delete: 删除 | 双击: 编辑
+        </div>
+      </div>
+    </div>
+    
+    <div class="node-editor" v-if="editingNode" :style="{left: editorPosition.left + 'px', top: editorPosition.top + 'px'}">
+      <div class="editor-toolbar">
+        <button class="editor-btn" :class="{active: editorState.bold}" @click="execCommand('bold')" title="粗体">B</button>
+        <button class="editor-btn" :class="{active: editorState.italic}" @click="execCommand('italic')" title="斜体">I</button>
+        <button class="editor-btn" :class="{active: editorState.underline}" @click="execCommand('underline')" title="下划线">U</button>
+        <button class="editor-btn" @click="execCommand('strikeThrough')" title="删除线">S</button>
+        <div class="editor-btn" style="width: 1px; height: 20px; background: #ddd; padding: 0; cursor: default;"></div>
+        <select class="editor-select" v-model="editorState.fontSize" @change="changeFontSize" title="字体大小">
+          <option value="12">12px</option>
+          <option value="14">14px</option>
+          <option value="16">16px</option>
+          <option value="18">18px</option>
+          <option value="20">20px</option>
+          <option value="24">24px</option>
+          <option value="28">28px</option>
+          <option value="32">32px</option>
+        </select>
+        <div class="editor-btn" style="width: 1px; height: 20px; background: #ddd; padding: 0; cursor: default;"></div>
+        <button class="editor-btn" @click="execCommand('justifyLeft')" title="左对齐">⬅</button>
+        <button class="editor-btn" @click="execCommand('justifyCenter')" title="居中">⬌</button>
+        <button class="editor-btn" @click="execCommand('justifyRight')" title="右对齐">➡</button>
+        <div class="editor-btn" style="width: 1px; height: 20px; background: #ddd; padding: 0; cursor: default;"></div>
+        <input type="color" class="editor-color-input" v-model="editorState.fontColor" @change="changeFontColor" title="文字颜色" />
+        <input type="color" class="editor-color-input" v-model="editorState.bgColor" @change="changeBgColor" title="背景颜色" value="#ffffff" />
+      </div>
+      <div 
+        ref="editorContent"
+        class="editor-content"
+        contenteditable="true"
+        @input="handleEditorInput"
+        @keydown.esc="cancelEdit"
+        @keydown.ctrl.enter.prevent="saveEdit"
+        @mouseup="updateEditorState"
+        @keyup="updateEditorState"
+      ></div>
+      <div class="editor-actions">
+        <button class="btn" @click="cancelEdit">取消</button>
+        <button class="btn primary" @click="saveEdit">确定</button>
+      </div>
+    </div>
+    
+    <div class="context-menu" v-if="contextMenu.visible" :style="{left: contextMenu.x + 'px', top: contextMenu.y + 'px'}">
+      <div class="context-menu-item" @click="addChildFromContext">➕ 添加子节点</div>
+      <div class="context-menu-item" @click="addSiblingFromContext">➕ 添加同级节点</div>
+      <div class="context-menu-item" @click="editFromContext">✏️ 编辑节点</div>
+      <div class="context-menu-divider"></div>
+      <div class="context-menu-item danger" @click="deleteFromContext">🗑️ 删除节点</div>
+    </div>
+    
+    <div 
+      v-for="user in onlineUsers.filter(u => u.id !== currentUserId)" 
+      :key="user.id"
+      class="user-cursor"
+      :style="{left: user.cursorX + 'px', top: user.cursorY + 'px'}"
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5.5 3L14 12.5L10 13.5L8 21L5.5 3Z" :fill="user.color" stroke="white" stroke-width="1"/>
+      </svg>
+      <div class="user-cursor-label" :style="{background: user.color}">
+        {{ user.name }}
+      </div>
+    </div>
+    
+    <div class="modal-overlay" v-if="showAILayoutModal">
+      <div class="modal ai-layout-modal">
+        <div class="modal-title">
+          🤖 AI智能布局
+        </div>
+        <div class="modal-content">
+          <p>选择布局模式，AI将自动整理您的思维导图：</p>
+          <div style="margin-top: 16px;">
+            <div 
+              class="layout-option"
+              :class="{selected: selectedLayoutType === 'balanced'}"
+              @click="selectedLayoutType = 'balanced'"
+            >
+              <div class="layout-option-title">⚖️ 平衡布局</div>
+              <div class="layout-option-desc">左右对称分布，适合结构清晰的思维导图</div>
+            </div>
+            <div 
+              class="layout-option"
+              :class="{selected: selectedLayoutType === 'right'}"
+              @click="selectedLayoutType = 'right'"
+            >
+              <div class="layout-option-title">➡️ 右向布局</div>
+              <div class="layout-option-desc">所有节点向右展开，适合列表式内容</div>
+            </div>
+            <div 
+              class="layout-option"
+              :class="{selected: selectedLayoutType === 'left'}"
+              @click="selectedLayoutType = 'left'"
+            >
+              <div class="layout-option-title">⬅️ 左向布局</div>
+              <div class="layout-option-desc">所有节点向左展开</div>
+            </div>
+            <div 
+              class="layout-option"
+              :class="{selected: selectedLayoutType === 'radial'}"
+              @click="selectedLayoutType = 'radial'"
+            >
+              <div class="layout-option-title">🌟 辐射布局</div>
+              <div class="layout-option-desc">中心向外辐射，适合头脑风暴</div>
+            </div>
+            <div 
+              class="layout-option"
+              :class="{selected: selectedLayoutType === 'tidy'}"
+              @click="selectedLayoutType = 'tidy'"
+            >
+              <div class="layout-option-title">📐 整理模式</div>
+              <div class="layout-option-desc">智能检测凌乱节点，自动对齐和调整间距</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn" @click="showAILayoutModal = false">取消</button>
+          <button class="btn primary" @click="applyAILayout">应用布局</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="presentation-overlay" v-if="isPresentationMode">
+      <div class="presentation-header">
+        <div class="presentation-title">{{ currentMap.title }}</div>
+        <div class="presentation-controls">
+          <span>{{ presentationCurrentIndex + 1 }} / {{ presentationNodes.length }}</span>
+          <button class="presentation-btn" @click="prevPresentationNode" :disabled="presentationCurrentIndex === 0">◀ 上一个</button>
+          <button class="presentation-btn" @click="toggleAutoPlay">
+            {{ isAutoPlaying ? '⏸ 暂停' : '▶ 自动播放' }}
+          </button>
+          <button class="presentation-btn" @click="nextPresentationNode" :disabled="presentationCurrentIndex === presentationNodes.length - 1">下一个 ▶</button>
+          <button class="presentation-btn primary" @click="exitPresentation">退出</button>
+        </div>
+      </div>
+      <div class="presentation-canvas">
+        <div 
+          v-if="currentPresentationNode"
+          class="presentation-node"
+          :class="{children: !currentPresentationNode.isRoot}"
+          :style="presentationNodeStyle"
+        >
+          {{ getPlainText(currentPresentationNode.html || currentPresentationNode.text) }}
+          <div style="font-size: 16px; margin-top: 12px; opacity: 0.8;">
+            {{ getPresentationNodeInfo() }}
+          </div>
+        </div>
+        <div class="presentation-progress">
+          <div 
+            v-for="(node, index) in presentationNodes" 
+            :key="node.id"
+            class="presentation-dot"
+            :class="{active: index === presentationCurrentIndex}"
+            @click="jumpToPresentationNode(index)"
+          ></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-overlay" v-if="conflictModal.visible">
+      <div class="modal">
+        <div class="modal-title">
+          ⚠️ 检测到版本冲突
+        </div>
+        <div class="modal-content">
+          <p>当前思维导图在其他地方被修改过，请选择如何处理：</p>
+          <div style="margin-top: 16px;">
+            <div class="diff-item local">
+              <div class="diff-label">本地版本 ({{ formatTime(conflictModal.localVersion.updatedAt) }})</div>
+              <div>{{ conflictModal.localVersion.title }} - {{ conflictModal.localVersion.nodes.length }} 个节点</div>
+            </div>
+            <div class="diff-item remote">
+              <div class="diff-label">存储版本 ({{ formatTime(conflictModal.remoteVersion.updatedAt) }})</div>
+              <div>{{ conflictModal.remoteVersion.title }} - {{ conflictModal.remoteVersion.nodes.length }} 个节点</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn" @click="keepLocal">保留本地</button>
+          <button class="btn" @click="useRemote">使用存储版本</button>
+          <button class="btn success" @click="mergeVersions">合并版本</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, reactive, computed, onMounted, watch, nextTick } = Vue;
+    
+    const DB_NAME = 'MindMapDB';
+    const DB_VERSION = 2;
+    const STORE_NAME = 'mindmaps';
+    const APP_VERSION = '2.0.0';
+    
+    const themes = {
+      light: {
+        bg: '#f0f2f5',
+        nodeBg: '#fff',
+        nodeBorder: '#d9d9d9',
+        nodeText: '#333',
+        lineColor: '#999',
+        rootBg: '#409eff',
+        rootText: '#fff'
+      },
+      dark: {
+        bg: '#1a1a1a',
+        nodeBg: '#333',
+        nodeBorder: '#444',
+        nodeText: '#fff',
+        lineColor: '#666',
+        rootBg: '#409eff',
+        rootText: '#fff'
+      }
+    };
+    
+    const nodeColors = ['#409eff', '#67c23a', '#e6a23c', '#f56c6c', '#909399', '#722ed1', '#13c2c2', '#eb2f96'];
+    
+    createApp({
+      setup() {
+        let db = null;
+        let stage = null;
+        let layer = null;
+        let savedSelection = null;
+        
+        const theme = ref('light');
+        const sidebarCollapsed = ref(false);
+        const searchQuery = ref('');
+        const searchResults = ref([]);
+        const selectedNodeId = ref(null);
+        const editingNode = ref(null);
+        const editorContent = ref(null);
+        const editorPosition = reactive({ left: 0, top: 0 });
+        const editorState = reactive({
+          bold: false,
+          italic: false,
+          underline: false,
+          fontSize: '14',
+          fontColor: '#333333',
+          bgColor: '#ffffff'
+        });
+        const contextMenu = reactive({
+          visible: false,
+          x: 0,
+          y: 0,
+          nodeId: null
+        });
+        const syncStatus = ref('synced');
+        const conflictModal = reactive({
+          visible: false,
+          localVersion: null,
+          remoteVersion: null,
+          mapId: null
+        });
+        
+        const showAILayoutModal = ref(false);
+        const selectedLayoutType = ref('balanced');
+        
+        const isPresentationMode = ref(false);
+        const presentationNodes = ref([]);
+        const presentationCurrentIndex = ref(0);
+        const isAutoPlaying = ref(false);
+        let autoPlayInterval = null;
+        
+        const currentUserId = ref('user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9));
+        const currentUserName = ref('用户' + Math.floor(Math.random() * 1000));
+        const onlineUsers = ref([]);
+        let broadcastChannel = null;
+        let lastMouseMoveTime = 0;
+        
+        const mindMaps = ref([]);
+        const currentMapId = ref(null);
+        const currentMap = ref({
+          id: null,
+          title: '我的思维导图',
+          nodes: [],
+          connections: [],
+          version: 1,
+          appVersion: APP_VERSION,
+          createdAt: null,
+          updatedAt: null
+        });
+        
+        const selectedNode = computed(() => {
+          if (!selectedNodeId.value) return null;
+          return currentMap.value.nodes.find(n => n.id === selectedNodeId.value);
+        });
+        
+        const currentPresentationNode = computed(() => {
+          if (presentationNodes.value.length === 0) return null;
+          return presentationNodes.value[presentationCurrentIndex.value];
+        });
+        
+        const presentationNodeStyle = computed(() => {
+          if (!currentPresentationNode.value) return {};
+          return {
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%) scale(1)',
+            opacity: 1
+          };
+        });
+        
+        function getPresentationNodeInfo() {
+          if (!currentPresentationNode.value) return '';
+          const node = currentPresentationNode.value;
+          const children = currentMap.value.nodes.filter(n => n.parentId === node.id);
+          return `子节点: ${children.length}个`;
+        }
+        
+        function getPlainText(html) {
+          const div = document.createElement('div');
+          div.innerHTML = html;
+          return div.textContent || div.innerText || '';
+        }
+        
+        function formatTime(timestamp) {
+          if (!timestamp) return '未知时间';
+          return new Date(timestamp).toLocaleString();
+        }
+        
+        function initDB() {
+          return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => {
+              db = request.result;
+              db.onversionchange = () => {
+                db.close();
+                alert('数据库版本已更新，请刷新页面');
+              };
+              resolve();
+            };
+            request.onupgradeneeded = (event) => {
+              const db = event.target.result;
+              const oldVersion = event.oldVersion || 0;
+              
+              if (!db.objectStoreNames.contains(STORE_NAME)) {
+                const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                store.createIndex('updatedAt', 'updatedAt', { unique: false });
+                store.createIndex('version', 'version', { unique: false });
+              } else if (oldVersion < 2) {
+                const store = event.target.transaction.objectStore(STORE_NAME);
+                if (!store.indexNames.contains('version')) {
+                  store.createIndex('version', 'version', { unique: false });
+                }
+              }
+            };
+          });
+        }
+        
+        function initCollaboration() {
+          try {
+            broadcastChannel = new BroadcastChannel('mindmap_collaboration');
+            
+            broadcastChannel.onmessage = (event) => {
+              const data = event.data;
+              
+              switch (data.type) {
+                case 'user_join':
+                  if (data.userId !== currentUserId.value) {
+                    const existingUser = onlineUsers.value.find(u => u.id === data.userId);
+                    if (!existingUser) {
+                      onlineUsers.value.push({
+                        id: data.userId,
+                        name: data.userName,
+                        color: data.color,
+                        cursorX: 0,
+                        cursorY: 0
+                      });
+                    }
+                    broadcastChannel.postMessage({
+                      type: 'user_presence',
+                      userId: currentUserId.value,
+                      userName: currentUserName.value,
+                      color: getUserColor(currentUserId.value)
+                    });
+                  }
+                  break;
+                  
+                case 'user_presence':
+                  if (data.userId !== currentUserId.value) {
+                    const existingUser = onlineUsers.value.find(u => u.id === data.userId);
+                    if (!existingUser) {
+                      onlineUsers.value.push({
+                        id: data.userId,
+                        name: data.userName,
+                        color: data.color,
+                        cursorX: 0,
+                        cursorY: 0
+                      });
+                    }
+                  }
+                  break;
+                  
+                case 'user_leave':
+                  onlineUsers.value = onlineUsers.value.filter(u => u.id !== data.userId);
+                  break;
+                  
+                case 'cursor_move':
+                  if (data.userId !== currentUserId.value) {
+                    const user = onlineUsers.value.find(u => u.id === data.userId);
+                    if (user) {
+                      user.cursorX = data.x;
+                      user.cursorY = data.y;
+                    }
+                  }
+                  break;
+                  
+                case 'node_update':
+                  if (data.userId !== currentUserId.value && data.mapId === currentMapId.value) {
+                    const node = currentMap.value.nodes.find(n => n.id === data.nodeId);
+                    if (node) {
+                      Object.assign(node, data.changes);
+                      node.updatedAt = Date.now();
+                      renderCanvas();
+                    }
+                  }
+                  break;
+                  
+                case 'node_add':
+                  if (data.userId !== currentUserId.value && data.mapId === currentMapId.value) {
+                    currentMap.value.nodes.push(data.node);
+                    if (data.connection) {
+                      currentMap.value.connections.push(data.connection);
+                    }
+                    renderCanvas();
+                  }
+                  break;
+                  
+                case 'node_delete':
+                  if (data.userId !== currentUserId.value && data.mapId === currentMapId.value) {
+                    currentMap.value.nodes = currentMap.value.nodes.filter(n => !data.nodeIds.includes(n.id));
+                    currentMap.value.connections = currentMap.value.connections.filter(
+                      c => !data.nodeIds.includes(c.from) && !data.nodeIds.includes(c.to)
+                    );
+                    renderCanvas();
+                  }
+                  break;
+                  
+                case 'map_update':
+                  if (data.userId !== currentUserId.value && data.mapId === currentMapId.value) {
+                    if (data.title !== undefined) {
+                      currentMap.value.title = data.title;
+                    }
+                  }
+                  break;
+              }
+            };
+            
+            broadcastChannel.postMessage({
+              type: 'user_join',
+              userId: currentUserId.value,
+              userName: currentUserName.value,
+              color: getUserColor(currentUserId.value)
+            });
+            
+            window.addEventListener('beforeunload', () => {
+              broadcastChannel.postMessage({
+                type: 'user_leave',
+                userId: currentUserId.value
+              });
+            });
+            
+            document.addEventListener('mousemove', handleMouseMove);
+            
+          } catch (e) {
+            console.log('BroadcastChannel not supported, collaboration disabled');
+          }
+        }
+        
+        function getUserColor(userId) {
+          const colors = ['#f56c6c', '#e6a23c', '#67c23a', '#409eff', '#722ed1', '#13c2c2', '#eb2f96', '#909399'];
+          let hash = 0;
+          for (let i = 0; i < userId.length; i++) {
+            hash = ((hash << 5) - hash) + userId.charCodeAt(i);
+            hash |= 0;
+          }
+          return colors[Math.abs(hash) % colors.length];
+        }
+        
+        function handleMouseMove(e) {
+          const now = Date.now();
+          if (now - lastMouseMoveTime < 50) return;
+          lastMouseMoveTime = now;
+          
+          if (broadcastChannel) {
+            broadcastChannel.postMessage({
+              type: 'cursor_move',
+              userId: currentUserId.value,
+              x: e.clientX,
+              y: e.clientY
+            });
+          }
+        }
+        
+        function broadcastNodeUpdate(nodeId, changes) {
+          if (broadcastChannel) {
+            broadcastChannel.postMessage({
+              type: 'node_update',
+              userId: currentUserId.value,
+              mapId: currentMapId.value,
+              nodeId,
+              changes
+            });
+          }
+        }
+        
+        function broadcastNodeAdd(node, connection) {
+          if (broadcastChannel) {
+            broadcastChannel.postMessage({
+              type: 'node_add',
+              userId: currentUserId.value,
+              mapId: currentMapId.value,
+              node,
+              connection
+            });
+          }
+        }
+        
+        function broadcastNodeDelete(nodeIds) {
+          if (broadcastChannel) {
+            broadcastChannel.postMessage({
+              type: 'node_delete',
+              userId: currentUserId.value,
+              mapId: currentMapId.value,
+              nodeIds
+            });
+          }
+        }
+        
+        function checkVersionConflict(map) {
+          return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.get(map.id);
+            request.onsuccess = () => {
+              const stored = request.result;
+              if (stored && stored.version > map.version) {
+                resolve({ hasConflict: true, stored });
+              } else {
+                resolve({ hasConflict: false, stored });
+              }
+            };
+            request.onerror = () => reject(request.error);
+          });
+        }
+        
+        async function saveMap(map) {
+          syncStatus.value = 'syncing';
+          
+          try {
+            const { hasConflict, stored } = await checkVersionConflict(map);
+            
+            if (hasConflict) {
+              syncStatus.value = 'conflict';
+              conflictModal.visible = true;
+              conflictModal.localVersion = map;
+              conflictModal.remoteVersion = stored;
+              conflictModal.mapId = map.id;
+              return;
+            }
+            
+            map.version = (stored?.version || 0) + 1;
+            map.appVersion = APP_VERSION;
+            map.updatedAt = Date.now();
+            
+            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.put(map);
+            
+            return new Promise((resolve, reject) => {
+              request.onsuccess = () => {
+                syncStatus.value = 'synced';
+                resolve();
+              };
+              request.onerror = () => {
+                syncStatus.value = 'conflict';
+                reject(request.error);
+              };
+            });
+          } catch (e) {
+            syncStatus.value = 'conflict';
+            throw e;
+          }
+        }
+        
+        function keepLocal() {
+          const map = conflictModal.localVersion;
+          map.version = conflictModal.remoteVersion.version + 1;
+          map.updatedAt = Date.now();
+          
+          const transaction = db.transaction(STORE_NAME, 'readwrite');
+          const store = transaction.objectStore(STORE_NAME);
+          store.put(map);
+          
+          conflictModal.visible = false;
+          syncStatus.value = 'synced';
+          loadAllMaps();
+        }
+        
+        function useRemote() {
+          loadMap(conflictModal.mapId);
+          conflictModal.visible = false;
+          syncStatus.value = 'synced';
+        }
+        
+        function mergeVersions() {
+          const local = conflictModal.localVersion;
+          const remote = conflictModal.remoteVersion;
+          
+          const merged = JSON.parse(JSON.stringify(remote));
+          merged.title = local.title;
+          merged.version = Math.max(local.version, remote.version) + 1;
+          merged.updatedAt = Date.now();
+          
+          const localNodeIds = new Set(local.nodes.map(n => n.id));
+          const remoteNodeIds = new Set(remote.nodes.map(n => n.id));
+          
+          local.nodes.forEach(node => {
+            if (!remoteNodeIds.has(node.id)) {
+              merged.nodes.push(node);
+            }
+          });
+          
+          local.connections.forEach(conn => {
+            const exists = remote.connections.some(c => c.id === conn.id);
+            if (!exists) {
+              merged.connections.push(conn);
+            }
+          });
+          
+          const transaction = db.transaction(STORE_NAME, 'readwrite');
+          const store = transaction.objectStore(STORE_NAME);
+          store.put(merged);
+          
+          currentMap.value = merged;
+          conflictModal.visible = false;
+          syncStatus.value = 'synced';
+          renderCanvas();
+          loadAllMaps();
+        }
+        
+        function loadAllMaps() {
+          return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.getAll();
+            request.onsuccess = () => {
+              mindMaps.value = request.result.sort((a, b) => b.updatedAt - a.updatedAt);
+              resolve(request.result);
+            };
+            request.onerror = () => reject(request.error);
+          });
+        }
+        
+        function deleteMapFromDB(id) {
+          return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.delete(id);
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+          });
+        }
+        
+        function generateId() {
+          return 'node_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        
+        function createNewMap() {
+          const id = generateId();
+          const rootId = generateId();
+          const now = Date.now();
+          const newMap = {
+            id,
+            title: '新思维导图',
+            nodes: [{
+              id: rootId,
+              text: '中心主题',
+              html: '中心主题',
+              x: window.innerWidth / 2 - 140,
+              y: window.innerHeight / 2 - 100,
+              width: 140,
+              height: 50,
+              color: '#409eff',
+              isRoot: true,
+              parentId: null,
+              style: {
+                fontSize: 18,
+                bold: true,
+                italic: false,
+                underline: false,
+                fontColor: '#ffffff'
+              },
+              createdAt: now,
+              updatedAt: now
+            }],
+            connections: [],
+            version: 1,
+            appVersion: APP_VERSION,
+            createdAt: now,
+            updatedAt: now
+          };
+          saveMap(newMap).then(() => {
+            loadAllMaps().then(() => {
+              loadMap(id);
+            });
+          });
+        }
+        
+        function loadMap(id) {
+          const transaction = db.transaction(STORE_NAME, 'readonly');
+          const store = transaction.objectStore(STORE_NAME);
+          const request = store.get(id);
+          request.onsuccess = () => {
+            currentMap.value = request.result;
+            currentMapId.value = id;
+            selectedNodeId.value = null;
+            syncStatus.value = 'synced';
+            renderCanvas();
+          };
+        }
+        
+        function saveCurrentMap() {
+          if (currentMap.value.id) {
+            saveMap(currentMap.value);
+          }
+        }
+        
+        function deleteMap(id) {
+          if (!confirm('确定要删除这个思维导图吗？')) return;
+          deleteMapFromDB(id).then(() => {
+            loadAllMaps().then(() => {
+              if (currentMapId.value === id) {
+                if (mindMaps.value.length > 0) {
+                  loadMap(mindMaps.value[0].id);
+                } else {
+                  createNewMap();
+                }
+              }
+            });
+          });
+        }
+        
+        function addChildNode() {
+          if (!selectedNodeId.value) {
+            alert('请先选择一个节点');
+            return;
+          }
+          const parent = currentMap.value.nodes.find(n => n.id === selectedNodeId.value);
+          const childId = generateId();
+          const now = Date.now();
+          const newNode = {
+            id: childId,
+            text: '新节点',
+            html: '新节点',
+            x: parent.x + 200,
+            y: parent.y,
+            width: 120,
+            height: 40,
+            color: nodeColors[Math.floor(Math.random() * nodeColors.length)],
+            isRoot: false,
+            parentId: parent.id,
+            style: {
+              fontSize: 14,
+              bold: false,
+              italic: false,
+              underline: false,
+              fontColor: '#333333'
+            },
+            createdAt: now,
+            updatedAt: now
+          };
+          currentMap.value.nodes.push(newNode);
+          const connection = {
+            id: generateId(),
+            from: parent.id,
+            to: childId
+          };
+          currentMap.value.connections.push(connection);
+          broadcastNodeAdd(newNode, connection);
+          saveCurrentMap();
+          renderCanvas();
+          selectedNodeId.value = childId;
+        }
+        
+        function addSiblingNode() {
+          if (!selectedNodeId.value) {
+            alert('请先选择一个节点');
+            return;
+          }
+          const node = currentMap.value.nodes.find(n => n.id === selectedNodeId.value);
+          if (node.isRoot) {
+            alert('根节点不能添加同级节点');
+            return;
+          }
+          const parent = currentMap.value.nodes.find(n => n.id === node.parentId);
+          const siblingId = generateId();
+          const now = Date.now();
+          const newNode = {
+            id: siblingId,
+            text: '新节点',
+            html: '新节点',
+            x: node.x,
+            y: node.y + 60,
+            width: 120,
+            height: 40,
+            color: nodeColors[Math.floor(Math.random() * nodeColors.length)],
+            isRoot: false,
+            parentId: parent.id,
+            style: {
+              fontSize: 14,
+              bold: false,
+              italic: false,
+              underline: false,
+              fontColor: '#333333'
+            },
+            createdAt: now,
+            updatedAt: now
+          };
+          currentMap.value.nodes.push(newNode);
+          const connection = {
+            id: generateId(),
+            from: parent.id,
+            to: siblingId
+          };
+          currentMap.value.connections.push(connection);
+          broadcastNodeAdd(newNode, connection);
+          saveCurrentMap();
+          renderCanvas();
+          selectedNodeId.value = siblingId;
+        }
+        
+        function deleteNode() {
+          if (!selectedNodeId.value) return;
+          const node = currentMap.value.nodes.find(n => n.id === selectedNodeId.value);
+          if (node.isRoot) {
+            alert('不能删除根节点');
+            return;
+          }
+          if (!confirm('确定要删除这个节点及其所有子节点吗？')) return;
+          
+          const nodesToDelete = new Set();
+          function collectChildren(nodeId) {
+            nodesToDelete.add(nodeId);
+            currentMap.value.nodes.forEach(n => {
+              if (n.parentId === nodeId) {
+                collectChildren(n.id);
+              }
+            });
+          }
+          collectChildren(selectedNodeId.value);
+          
+          currentMap.value.nodes = currentMap.value.nodes.filter(n => !nodesToDelete.has(n.id));
+          currentMap.value.connections = currentMap.value.connections.filter(
+            c => !nodesToDelete.has(c.from) && !nodesToDelete.has(c.to)
+          );
+          
+          broadcastNodeDelete(Array.from(nodesToDelete));
+          selectedNodeId.value = null;
+          saveCurrentMap();
+          renderCanvas();
+        }
+        
+        function saveSelection() {
+          const sel = window.getSelection();
+          if (sel.rangeCount > 0) {
+            savedSelection = sel.getRangeAt(0).cloneRange();
+          }
+        }
+        
+        function restoreSelection() {
+          if (savedSelection && editorContent.value) {
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            try {
+              sel.addRange(savedSelection);
+            } catch (e) {
+              editorContent.value.focus();
+            }
+          }
+        }
+        
+        function editNode(nodeId) {
+          const node = currentMap.value.nodes.find(n => n.id === nodeId);
+          if (!node) return;
+          
+          const container = document.getElementById('konva-container');
+          const rect = container.getBoundingClientRect();
+          
+          editingNode.value = node;
+          
+          nextTick(() => {
+            if (editorContent.value) {
+              editorContent.value.innerHTML = node.html || node.text;
+              
+              const stageScale = stage.scaleX();
+              const stagePos = stage.position();
+              const nodeScreenX = node.x * stageScale + stagePos.x + rect.left;
+              const nodeScreenY = node.y * stageScale + stagePos.y + rect.top;
+              
+              editorPosition.left = Math.min(nodeScreenX + 50, window.innerWidth - 320);
+              editorPosition.top = Math.max(nodeScreenY - 150, 80);
+              
+              editorState.fontSize = node.style.fontSize?.toString() || '14';
+              editorState.fontColor = node.style.fontColor || '#333333';
+              editorState.bold = node.style.bold || false;
+              editorState.italic = node.style.italic || false;
+              editorState.underline = node.style.underline || false;
+              
+              editorContent.value.focus();
+              
+              const range = document.createRange();
+              range.selectNodeContents(editorContent.value);
+              range.collapse(false);
+              const sel = window.getSelection();
+              sel.removeAllRanges();
+              sel.addRange(range);
+            }
+          });
+        }
+        
+        function updateEditorState() {
+          if (!editorContent.value || !document.activeElement || !editorContent.value.contains(document.activeElement)) return;
+          
+          try {
+            editorState.bold = document.queryCommandState('bold');
+            editorState.italic = document.queryCommandState('italic');
+            editorState.underline = document.queryCommandState('underline');
+          } catch (e) {}
+        }
+        
+        function execCommand(cmd, value = null) {
+          if (!editorContent.value) return;
+          
+          editorContent.value.focus();
+          restoreSelection();
+          
+          try {
+            document.execCommand(cmd, false, value);
+            updateEditorState();
+          } catch (e) {
+            console.error('Command failed:', cmd, e);
+          }
+          
+          saveSelection();
+        }
+        
+        function changeFontSize() {
+          if (!editorContent.value) return;
+          editorContent.value.focus();
+          restoreSelection();
+          
+          const size = editorState.fontSize;
+          const sel = window.getSelection();
+          
+          if (sel.rangeCount > 0) {
+            const range = sel.getRangeAt(0);
+            if (!range.collapsed) {
+              const span = document.createElement('span');
+              span.style.fontSize = size + 'px';
+              try {
+                range.surroundContents(span);
+              } catch (e) {
+                document.execCommand('fontSize', false, '7');
+                const fontElements = editorContent.value.querySelectorAll('font[size="7"]');
+                fontElements.forEach(el => {
+                  el.removeAttribute('size');
+                  el.style.fontSize = size + 'px';
+                });
+              }
+            }
+          }
+          
+          updateEditorState();
+          saveSelection();
+        }
+        
+        function changeFontColor() {
+          if (!editorContent.value) return;
+          editorContent.value.focus();
+          restoreSelection();
+          document.execCommand('foreColor', false, editorState.fontColor);
+          saveSelection();
+        }
+        
+        function changeBgColor() {
+          if (!editorContent.value) return;
+          editorContent.value.focus();
+          restoreSelection();
+          document.execCommand('hiliteColor', false, editorState.bgColor);
+          saveSelection();
+        }
+        
+        function handleEditorInput() {
+          if (editorContent.value) {
+            saveSelection();
+          }
+        }
+        
+        function saveEdit() {
+          if (!editingNode.value || !editorContent.value) return;
+          
+          const nodeId = editingNode.value.id;
+          const html = editorContent.value.innerHTML;
+          const changes = {
+            html: html,
+            text: getPlainText(html),
+            style: {
+              fontSize: parseInt(editorState.fontSize),
+              bold: editorState.bold,
+              italic: editorState.italic,
+              underline: editorState.underline,
+              fontColor: editorState.fontColor
+            },
+            updatedAt: Date.now()
+          };
+          
+          Object.assign(editingNode.value, changes);
+          broadcastNodeUpdate(nodeId, changes);
+          
+          editingNode.value = null;
+          savedSelection = null;
+          saveCurrentMap();
+          renderCanvas();
+        }
+        
+        function cancelEdit() {
+          editingNode.value = null;
+          savedSelection = null;
+        }
+        
+        function changeNodeColor(color) {
+          if (!selectedNode.value) return;
+          const changes = { color, updatedAt: Date.now() };
+          Object.assign(selectedNode.value, changes);
+          broadcastNodeUpdate(selectedNode.value.id, changes);
+          saveCurrentMap();
+          renderCanvas();
+        }
+        
+        function measureText(text, style) {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          let font = '';
+          if (style.bold) font += 'bold ';
+          if (style.italic) font += 'italic ';
+          font += `${style.fontSize || 14}px Arial, sans-serif`;
+          ctx.font = font;
+          
+          const lines = text.split('\n');
+          let maxWidth = 0;
+          lines.forEach(line => {
+            const width = ctx.measureText(line).width;
+            if (width > maxWidth) maxWidth = width;
+          });
+          
+          return {
+            width: Math.max(maxWidth + 40, 80),
+            height: Math.max(lines.length * (style.fontSize || 14) * 1.4 + 20, 40)
+          };
+        }
+        
+        function autoLayout() {
+          const root = currentMap.value.nodes.find(n => n.isRoot);
+          if (!root) return;
+          
+          const container = document.getElementById('konva-container');
+          const centerX = container.offsetWidth / 2;
+          const centerY = container.offsetHeight / 2;
+          
+          currentMap.value.nodes.forEach(node => {
+            const text = node.text || getPlainText(node.html || '');
+            const dimensions = measureText(text, node.style || {});
+            node.width = dimensions.width;
+            node.height = dimensions.height;
+          });
+          
+          root.x = centerX - root.width / 2;
+          root.y = centerY - root.height / 2;
+          
+          function getChildren(nodeId) {
+            return currentMap.value.nodes.filter(n => n.parentId === nodeId);
+          }
+          
+          function calculateSubtreeHeight(node) {
+            const children = getChildren(node.id);
+            if (children.length === 0) return node.height;
+            
+            const gap = 20;
+            let totalHeight = -gap;
+            children.forEach(child => {
+              totalHeight += calculateSubtreeHeight(child) + gap;
+            });
+            return Math.max(node.height, totalHeight);
+          }
+          
+          function layoutSubtreeFlex(parent, startY, direction, flexGrow = 1) {
+            const children = getChildren(parent.id);
+            if (children.length === 0) return startY;
+            
+            const levelGap = Math.max(180, parent.width + 60);
+            const nodeGap = 20;
+            
+            const subtreeHeights = children.map(child => calculateSubtreeHeight(child));
+            const totalSubtreeHeight = subtreeHeights.reduce((a, b) => a + b, 0) + (children.length - 1) * nodeGap;
+            
+            const availableSpace = totalSubtreeHeight;
+            const flexTotal = children.reduce((sum, _, i) => sum + (children.length - i), 0);
+            
+            let currentY = startY + (parent.height - totalSubtreeHeight) / 2;
+            
+            children.forEach((child, index) => {
+              const childFlex = (children.length - index) / flexTotal;
+              const childSpace = availableSpace * childFlex;
+              const offsetY = (childSpace - subtreeHeights[index]) / 2;
+              
+              child.x = parent.x + direction * levelGap;
+              child.y = currentY + offsetY;
+              
+              const childrenOfChild = getChildren(child.id);
+              if (childrenOfChild.length > 0) {
+                layoutSubtreeFlex(child, child.y, direction, childFlex);
+              }
+              
+              currentY += subtreeHeights[index] + nodeGap;
+            });
+            
+            const firstChild = children[0];
+            const lastChild = children[children.length - 1];
+            const subtreeHeight = lastChild.y + lastChild.height - firstChild.y;
+            parent.y = firstChild.y + subtreeHeight / 2 - parent.height / 2;
+            
+            return firstChild.y + subtreeHeight + nodeGap;
+          }
+          
+          const children = getChildren(root.id);
+          
+          if (children.length > 0) {
+            const midIndex = Math.ceil(children.length / 2);
+            const rightChildren = children.slice(0, midIndex);
+            const leftChildren = children.slice(midIndex);
+            
+            let rightY = root.y - 50;
+            rightChildren.forEach(child => {
+              child.x = root.x + Math.max(180, root.width + 60);
+              child.y = rightY;
+              rightY = layoutSubtreeFlex(child, rightY, 1) + 30;
+            });
+            
+            let leftY = root.y - 50;
+            leftChildren.forEach(child => {
+              child.x = root.x - Math.max(180, root.width + 60) - child.width;
+              child.y = leftY;
+              leftY = layoutSubtreeFlex(child, leftY, -1) + 30;
+            });
+            
+            const allChildren = [...rightChildren, ...leftChildren];
+            if (allChildren.length > 0) {
+              const minY = Math.min(...allChildren.map(c => c.y));
+              const maxY = Math.max(...allChildren.map(c => c.y + c.height));
+              const totalHeight = maxY - minY;
+              root.y = minY + totalHeight / 2 - root.height / 2;
+            }
+          }
+          
+          resolveOverlaps();
+          
+          saveCurrentMap();
+          renderCanvas();
+        }
+        
+        function resolveOverlaps() {
+          function getChildren(nodeId) {
+            return currentMap.value.nodes.filter(n => n.parentId === nodeId);
+          }
+          
+          function checkOverlap(node1, node2) {
+            const margin = 15;
+            return !(node1.x + node1.width + margin < node2.x ||
+                     node2.x + node2.width + margin < node1.x ||
+                     node1.y + node1.height + margin < node2.y ||
+                     node2.y + node2.height + margin < node1.y);
+          }
+          
+          function getSiblings(nodeId) {
+            const node = currentMap.value.nodes.find(n => n.id === nodeId);
+            if (!node || node.isRoot) return [];
+            return getChildren(node.parentId).filter(n => n.id !== nodeId);
+          }
+          
+          let hasOverlap = true;
+          let iterations = 0;
+          const maxIterations = 50;
+          
+          while (hasOverlap && iterations < maxIterations) {
+            hasOverlap = false;
+            iterations++;
+            
+            const nodesByLevel = {};
+            currentMap.value.nodes.forEach(node => {
+              let level = 0;
+              let n = node;
+              while (!n.isRoot && n.parentId) {
+                level++;
+                n = currentMap.value.nodes.find(p => p.id === n.parentId) || n;
+              }
+              if (!nodesByLevel[level]) nodesByLevel[level] = [];
+              nodesByLevel[level].push(node);
+            });
+            
+            Object.keys(nodesByLevel).forEach(level => {
+              const nodes = nodesByLevel[level].sort((a, b) => a.y - b.y);
+              
+              for (let i = 1; i < nodes.length; i++) {
+                const node = nodes[i];
+                const prevNode = nodes[i - 1];
+                
+                if (checkOverlap(node, prevNode)) {
+                  hasOverlap = true;
+                  const overlap = (prevNode.y + prevNode.height) - node.y + 15;
+                  
+                  function pushDown(nodeId, amount) {
+                    const n = currentMap.value.nodes.find(x => x.id === nodeId);
+                    if (n) {
+                      n.y += amount;
+                      getChildren(nodeId).forEach(child => pushDown(child.id, amount));
+                    }
+                  }
+                  
+                  pushDown(node.id, overlap);
+                }
+              }
+            });
+            
+            currentMap.value.nodes.forEach(node => {
+              if (node.isRoot) return;
+              const siblings = getSiblings(node.id);
+              siblings.forEach(sibling => {
+                if (checkOverlap(node, sibling)) {
+                  hasOverlap = true;
+                  const overlap = (sibling.y + sibling.height) - node.y + 15;
+                  if (node.y > sibling.y) {
+                    function pushDown(nodeId, amount) {
+                      const n = currentMap.value.nodes.find(x => x.id === nodeId);
+                      if (n) {
+                        n.y += amount;
+                        getChildren(nodeId).forEach(child => pushDown(child.id, amount));
+                      }
+                    }
+                    pushDown(node.id, overlap);
+                  }
+                }
+              });
+            });
+          }
+        }
+        
+        function applyAILayout() {
+          showAILayoutModal.value = false;
+          
+          const root = currentMap.value.nodes.find(n => n.isRoot);
+          if (!root) return;
+          
+          const container = document.getElementById('konva-container');
+          const centerX = container.offsetWidth / 2;
+          const centerY = container.offsetHeight / 2;
+          
+          currentMap.value.nodes.forEach(node => {
+            const text = node.text || getPlainText(node.html || '');
+            const dimensions = measureText(text, node.style || {});
+            node.width = dimensions.width;
+            node.height = dimensions.height;
+          });
+          
+          function getChildren(nodeId) {
+            return currentMap.value.nodes.filter(n => n.parentId === nodeId);
+          }
+          
+          function calculateSubtreeSize(node) {
+            const children = getChildren(node.id);
+            if (children.length === 0) {
+              return { width: node.width, height: node.height };
+            }
+            
+            const gap = 20;
+            let totalWidth = node.width;
+            let totalHeight = node.height;
+            let childrenWidth = 0;
+            let childrenHeight = -gap;
+            
+            children.forEach(child => {
+              const size = calculateSubtreeSize(child);
+              childrenWidth = Math.max(childrenWidth, size.width);
+              childrenHeight += size.height + gap;
+            });
+            
+            const levelGap = 180;
+            totalWidth = node.width + levelGap + childrenWidth;
+            totalHeight = Math.max(node.height, childrenHeight);
+            
+            return { width: totalWidth, height: totalHeight };
+          }
+          
+          switch (selectedLayoutType.value) {
+            case 'balanced':
+              autoLayout();
+              break;
+              
+            case 'right':
+              layoutRightDirection(root, centerX - 100, centerY);
+              break;
+              
+            case 'left':
+              layoutLeftDirection(root, centerX + 100, centerY);
+              break;
+              
+            case 'radial':
+              layoutRadial(root, centerX, centerY);
+              break;
+              
+            case 'tidy':
+              tidyUpLayout();
+              break;
+          }
+          
+          saveCurrentMap();
+          renderCanvas();
+        }
+        
+        function layoutRightDirection(root, startX, startY) {
+          function getChildren(nodeId) {
+            return currentMap.value.nodes.filter(n => n.parentId === nodeId);
+          }
+          
+          function layoutSubtree(parent, x, yStart) {
+            const children = getChildren(parent.id);
+            if (children.length === 0) return yStart;
+            
+            const levelGap = 180;
+            const nodeGap = 20;
+            let currentY = yStart;
+            
+            children.forEach(child => {
+              child.x = x + levelGap;
+              child.y = currentY;
+              
+              const childChildren = getChildren(child.id);
+              if (childChildren.length > 0) {
+                currentY = layoutSubtree(child, child.x, currentY);
+              } else {
+                currentY += child.height + nodeGap;
+              }
+            });
+            
+            const firstChild = children[0];
+            const lastChild = children[children.length - 1];
+            const subtreeHeight = lastChild.y + lastChild.height - firstChild.y;
+            parent.y = firstChild.y + subtreeHeight / 2 - parent.height / 2;
+            
+            return firstChild.y + subtreeHeight + nodeGap;
+          }
+          
+          root.x = startX;
+          root.y = startY - root.height / 2;
+          
+          const children = getChildren(root.id);
+          let totalHeight = -20;
+          children.forEach(child => {
+            totalHeight += child.height + 20;
+          });
+          
+          let startY = root.y + root.height / 2 - totalHeight / 2;
+          children.forEach(child => {
+            child.x = root.x + 180;
+            child.y = startY;
+            
+            const childChildren = getChildren(child.id);
+            if (childChildren.length > 0) {
+              startY = layoutSubtree(child, child.x, startY);
+            } else {
+              startY += child.height + 20;
+            }
+          });
+          
+          resolveOverlaps();
+        }
+        
+        function layoutLeftDirection(root, startX, startY) {
+          function getChildren(nodeId) {
+            return currentMap.value.nodes.filter(n => n.parentId === nodeId);
+          }
+          
+          function layoutSubtree(parent, x, yStart) {
+            const children = getChildren(parent.id);
+            if (children.length === 0) return yStart;
+            
+            const levelGap = 180;
+            const nodeGap = 20;
+            let currentY = yStart;
+            
+            children.forEach(child => {
+              child.x = x - levelGap - child.width;
+              child.y = currentY;
+              
+              const childChildren = getChildren(child.id);
+              if (childChildren.length > 0) {
+                currentY = layoutSubtree(child, child.x + child.width, currentY);
+              } else {
+                currentY += child.height + nodeGap;
+              }
+            });
+            
+            const firstChild = children[0];
+            const lastChild = children[children.length - 1];
+            const subtreeHeight = lastChild.y + lastChild.height - firstChild.y;
+            parent.y = firstChild.y + subtreeHeight / 2 - parent.height / 2;
+            
+            return firstChild.y + subtreeHeight + nodeGap;
+          }
+          
+          root.x = startX - root.width;
+          root.y = startY - root.height / 2;
+          
+          const children = getChildren(root.id);
+          let totalHeight = -20;
+          children.forEach(child => {
+            totalHeight += child.height + 20;
+          });
+          
+          let startY = root.y + root.height / 2 - totalHeight / 2;
+          children.forEach(child => {
+            child.x = root.x - 180 - child.width;
+            child.y = startY;
+            
+            const childChildren = getChildren(child.id);
+            if (childChildren.length > 0) {
+              startY = layoutSubtree(child, child.x + child.width, startY);
+            } else {
+              startY += child.height + 20;
+            }
+          });
+          
+          resolveOverlaps();
+        }
+        
+        function layoutRadial(root, centerX, centerY) {
+          function getChildren(nodeId) {
+            return currentMap.value.nodes.filter(n => n.parentId === nodeId);
+          }
+          
+          root.x = centerX - root.width / 2;
+          root.y = centerY - root.height / 2;
+          
+          const children = getChildren(root.id);
+          const radius = 250;
+          
+          children.forEach((child, index) => {
+            const angle = (index / children.length) * Math.PI * 2 - Math.PI / 2;
+            const x = centerX + Math.cos(angle) * radius;
+            const y = centerY + Math.sin(angle) * radius;
+            
+            child.x = x - child.width / 2;
+            child.y = y - child.height / 2;
+            
+            const grandChildren = getChildren(child.id);
+            const childRadius = 150;
+            const startAngle = angle - Math.PI / 4;
+            const angleStep = Math.PI / 2 / Math.max(grandChildren.length, 1);
+            
+            grandChildren.forEach((gc, gcIndex) => {
+              const gcAngle = startAngle + gcIndex * angleStep;
+              const gcx = x + Math.cos(gcAngle) * childRadius;
+              const gcy = y + Math.sin(gcAngle) * childRadius;
+              gc.x = gcx - gc.width / 2;
+              gc.y = gcy - gc.height / 2;
+            });
+          });
+          
+          resolveOverlaps();
+        }
+        
+        function tidyUpLayout() {
+          function getChildren(nodeId) {
+            return currentMap.value.nodes.filter(n => n.parentId === nodeId);
+          }
+          
+          function getNodeLevel(nodeId) {
+            let level = 0;
+            let node = currentMap.value.nodes.find(n => n.id === nodeId);
+            while (node && !node.isRoot) {
+              level++;
+              node = currentMap.value.nodes.find(n => n.id === node.parentId);
+            }
+            return level;
+          }
+          
+          const nodesByLevel = {};
+          currentMap.value.nodes.forEach(node => {
+            const level = getNodeLevel(node.id);
+            if (!nodesByLevel[level]) nodesByLevel[level] = [];
+            nodesByLevel[level].push(node);
+          });
+          
+          const root = currentMap.value.nodes.find(n => n.isRoot);
+          const container = document.getElementById('konva-container');
+          const centerX = container.offsetWidth / 2;
+          const centerY = container.offsetHeight / 2;
+          
+          if (root) {
+            root.x = centerX - root.width / 2;
+            root.y = centerY - root.height / 2;
+          }
+          
+          const levelGap = 200;
+          const nodeGap = 20;
+          
+          Object.keys(nodesByLevel).sort((a, b) => a - b).forEach(level => {
+            if (parseInt(level) === 0) return;
+            
+            const nodes = nodesByLevel[level].sort((a, b) => {
+              const parentA = currentMap.value.nodes.find(n => n.id === a.parentId);
+              const parentB = currentMap.value.nodes.find(n => n.id === b.parentId);
+              return (parentA?.y || 0) - (parentB?.y || 0);
+            });
+            
+            const totalHeight = nodes.reduce((sum, n) => sum + n.height, 0) + (nodes.length - 1) * nodeGap;
+            let startY = centerY - totalHeight / 2;
+            
+            nodes.forEach((node, index) => {
+              const parent = currentMap.value.nodes.find(n => n.id === node.parentId);
+              const direction = parent && parent.x < centerX ? 1 : -1;
+              
+              if (parent) {
+                node.x = parent.x + direction * levelGap;
+                if (node.x < 0) node.x = 0;
+              }
+              
+              node.y = startY;
+              startY += node.height + nodeGap;
+            });
+          });
+          
+          Object.keys(nodesByLevel).sort((a, b) => b - a).forEach(level => {
+            if (parseInt(level) === 0) return;
+            
+            const nodes = nodesByLevel[level];
+            const parentGroups = {};
+            
+            nodes.forEach(node => {
+              if (!parentGroups[node.parentId]) {
+                parentGroups[node.parentId] = [];
+              }
+              parentGroups[node.parentId].push(node);
+            });
+            
+            Object.keys(parentGroups).forEach(parentId => {
+              const siblings = parentGroups[parentId].sort((a, b) => a.y - b.y);
+              const parent = currentMap.value.nodes.find(n => n.id === parentId);
+              
+              if (siblings.length > 0 && parent) {
+                const firstY = siblings[0].y;
+                const lastY = siblings[siblings.length - 1].y + siblings[siblings.length - 1].height;
+                const centerY = (firstY + lastY) / 2;
+                parent.y = centerY - parent.height / 2;
+              }
+            });
+          });
+          
+          resolveOverlaps();
+        }
+        
+        function startPresentation() {
+          if (currentMap.value.nodes.length === 0) {
+            alert('没有节点可以展示');
+            return;
+          }
+          
+          function getChildren(nodeId) {
+            return currentMap.value.nodes.filter(n => n.parentId === nodeId);
+          }
+          
+          function collectNodes(node, result = []) {
+            result.push(node);
+            const children = getChildren(node.id);
+            children.forEach(child => collectNodes(child, result));
+            return result;
+          }
+          
+          const root = currentMap.value.nodes.find(n => n.isRoot);
+          if (root) {
+            presentationNodes.value = collectNodes(root);
+          } else {
+            presentationNodes.value = [...currentMap.value.nodes];
+          }
+          
+          presentationCurrentIndex.value = 0;
+          isPresentationMode.value = true;
+        }
+        
+        function exitPresentation() {
+          isPresentationMode.value = false;
+          stopAutoPlay();
+        }
+        
+        function nextPresentationNode() {
+          if (presentationCurrentIndex.value < presentationNodes.value.length - 1) {
+            presentationCurrentIndex.value++;
+          }
+        }
+        
+        function prevPresentationNode() {
+          if (presentationCurrentIndex.value > 0) {
+            presentationCurrentIndex.value--;
+          }
+        }
+        
+        function jumpToPresentationNode(index) {
+          presentationCurrentIndex.value = index;
+        }
+        
+        function toggleAutoPlay() {
+          if (isAutoPlaying.value) {
+            stopAutoPlay();
+          } else {
+            startAutoPlay();
+          }
+        }
+        
+        function startAutoPlay() {
+          isAutoPlaying.value = true;
+          autoPlayInterval = setInterval(() => {
+            if (presentationCurrentIndex.value < presentationNodes.value.length - 1) {
+              presentationCurrentIndex.value++;
+            } else {
+              stopAutoPlay();
+            }
+          }, 3000);
+        }
+        
+        function stopAutoPlay() {
+          isAutoPlaying.value = false;
+          if (autoPlayInterval) {
+            clearInterval(autoPlayInterval);
+            autoPlayInterval = null;
+          }
+        }
+        
+        function handleSearch() {
+          if (!searchQuery.value.trim()) {
+            searchResults.value = [];
+            return;
+          }
+          const query = searchQuery.value.toLowerCase();
+          searchResults.value = currentMap.value.nodes
+            .filter(n => {
+              const text = n.text || getPlainText(n.html || '');
+              return text.toLowerCase().includes(query);
+            })
+            .slice(0, 10);
+        }
+        
+        function highlightText(text, query) {
+          if (!query) return text;
+          const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+          return text.replace(regex, '<span class="highlight">$1</span>');
+        }
+        
+        function focusNode(nodeId) {
+          const node = currentMap.value.nodes.find(n => n.id === nodeId);
+          if (!node) return;
+          
+          const container = document.getElementById('konva-container');
+          const scale = stage.scaleX();
+          const pos = stage.position();
+          
+          const targetX = container.offsetWidth / 2 - node.x * scale - node.width * scale / 2;
+          const targetY = container.offsetHeight / 2 - node.y * scale - node.height * scale / 2;
+          
+          stage.to({
+            x: targetX,
+            y: targetY,
+            duration: 0.5
+          });
+          
+          selectedNodeId.value = nodeId;
+          searchQuery.value = '';
+          searchResults.value = [];
+          renderCanvas();
+        }
+        
+        function toggleTheme() {
+          theme.value = theme.value === 'light' ? 'dark' : 'light';
+          renderCanvas();
+        }
+        
+        function toggleSidebar() {
+          sidebarCollapsed.value = !sidebarCollapsed.value;
+          setTimeout(() => {
+            if (stage) {
+              stage.width(document.querySelector('.canvas-container').offsetWidth);
+              stage.height(document.querySelector('.canvas-container').offsetHeight);
+              stage.draw();
+            }
+          }, 300);
+        }
+        
+        function zoomIn() {
+          const scale = stage.scaleX();
+          stage.scale({ x: scale * 1.2, y: scale * 1.2 });
+          stage.draw();
+        }
+        
+        function zoomOut() {
+          const scale = stage.scaleX();
+          stage.scale({ x: scale / 1.2, y: scale / 1.2 });
+          stage.draw();
+        }
+        
+        function resetView() {
+          stage.scale({ x: 1, y: 1 });
+          stage.position({ x: 0, y: 0 });
+          stage.draw();
+        }
+        
+        function exportJSON() {
+          const dataStr = JSON.stringify(currentMap.value, null, 2);
+          const blob = new Blob([dataStr], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = (currentMap.value.title || 'mindmap') + '.json';
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+        
+        function exportImage() {
+          const dataURL = stage.toDataURL({ pixelRatio: 2 });
+          const a = document.createElement('a');
+          a.href = dataURL;
+          a.download = (currentMap.value.title || 'mindmap') + '.png';
+          a.click();
+        }
+        
+        function exportMarkdown() {
+          const root = currentMap.value.nodes.find(n => n.isRoot);
+          if (!root) return;
+          
+          function getChildren(nodeId) {
+            return currentMap.value.nodes.filter(n => n.parentId === nodeId);
+          }
+          
+          function buildMarkdown(node, level) {
+            const text = node.text || getPlainText(node.html || '');
+            let md = '#'.repeat(Math.min(level, 6)) + ' ' + text + '\n\n';
+            const children = getChildren(node.id);
+            children.forEach(child => {
+              md += buildMarkdown(child, level + 1);
+            });
+            return md;
+          }
+          
+          const md = buildMarkdown(root, 1);
+          const blob = new Blob([md], { type: 'text/markdown' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = (currentMap.value.title || 'mindmap') + '.md';
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+        
+        function addChildFromContext() {
+          selectedNodeId.value = contextMenu.nodeId;
+          contextMenu.visible = false;
+          addChildNode();
+        }
+        
+        function addSiblingFromContext() {
+          selectedNodeId.value = contextMenu.nodeId;
+          contextMenu.visible = false;
+          addSiblingNode();
+        }
+        
+        function editFromContext() {
+          contextMenu.visible = false;
+          editNode(contextMenu.nodeId);
+        }
+        
+        function deleteFromContext() {
+          selectedNodeId.value = contextMenu.nodeId;
+          contextMenu.visible = false;
+          deleteNode();
+        }
+        
+        function initStage() {
+          const container = document.getElementById('konva-container');
+          stage = new Konva.Stage({
+            container: 'konva-container',
+            width: container.offsetWidth,
+            height: container.offsetHeight
+          });
+          
+          layer = new Konva.Layer();
+          stage.add(layer);
+          
+          stage.on('wheel', (e) => {
+            e.evt.preventDefault();
+            const oldScale = stage.scaleX();
+            const pointer = stage.getPointerPosition();
+            if (!pointer) return;
+            
+            const mousePointTo = {
+              x: (pointer.x - stage.x()) / oldScale,
+              y: (pointer.y - stage.y()) / oldScale
+            };
+            const newScale = e.evt.deltaY > 0 ? oldScale * 0.9 : oldScale * 1.1;
+            stage.scale({ x: newScale, y: newScale });
+            const newPos = {
+              x: pointer.x - mousePointTo.x * newScale,
+              y: pointer.y - mousePointTo.y * newScale
+            };
+            stage.position(newPos);
+            stage.batchDraw();
+          });
+          
+          let isDragging = false;
+          let lastPos = { x: 0, y: 0 };
+          
+          stage.on('mousedown', (e) => {
+            if (e.target === stage) {
+              isDragging = true;
+              lastPos = stage.getPointerPosition() || { x: 0, y: 0 };
+              document.body.style.cursor = 'grabbing';
+            }
+          });
+          
+          stage.on('mousemove', () => {
+            if (isDragging) {
+              const pos = stage.getPointerPosition() || { x: 0, y: 0 };
+              const dx = pos.x - lastPos.x;
+              const dy = pos.y - lastPos.y;
+              stage.position({
+                x: stage.x() + dx,
+                y: stage.y() + dy
+              });
+              lastPos = pos;
+              stage.batchDraw();
+            }
+          });
+          
+          stage.on('mouseup', () => {
+            isDragging = false;
+            document.body.style.cursor = 'default';
+          });
+          
+          stage.on('click', (e) => {
+            if (e.target === stage || e.target.getClassName() === 'Line') {
+              selectedNodeId.value = null;
+              renderCanvas();
+            }
+          });
+          
+          stage.on('contextmenu', (e) => {
+            e.evt.preventDefault();
+          });
+          
+          window.addEventListener('resize', () => {
+            const container = document.getElementById('konva-container');
+            stage.width(container.offsetWidth);
+            stage.height(container.offsetHeight);
+            stage.draw();
+          });
+        }
+        
+        function renderCanvas() {
+          if (!stage) return;
+          layer.destroyChildren();
+          
+          const t = themes[theme.value];
+          
+          currentMap.value.connections.forEach(conn => {
+            const fromNode = currentMap.value.nodes.find(n => n.id === conn.from);
+            const toNode = currentMap.value.nodes.find(n => n.id === conn.to);
+            if (!fromNode || !toNode) return;
+            
+            let fromX, fromY, toX, toY;
+            
+            if (toNode.x > fromNode.x) {
+              fromX = fromNode.x + fromNode.width;
+              toX = toNode.x;
+            } else {
+              fromX = fromNode.x;
+              toX = toNode.x + toNode.width;
+            }
+            
+            fromY = fromNode.y + fromNode.height / 2;
+            toY = toNode.y + toNode.height / 2;
+            
+            const midX = (fromX + toX) / 2;
+            
+            const line = new Konva.Line({
+              points: [fromX, fromY, midX, fromY, midX, toY, toX, toY],
+              stroke: t.lineColor,
+              strokeWidth: 2,
+              tension: 0.3,
+              lineCap: 'round',
+              lineJoin: 'round'
+            });
+            layer.add(line);
+          });
+          
+          currentMap.value.nodes.forEach(node => {
+            const group = new Konva.Group({
+              x: node.x,
+              y: node.y,
+              draggable: true,
+              id: node.id
+            });
+            
+            const isSelected = selectedNodeId.value === node.id;
+            const isRoot = node.isRoot;
+            
+            const bgColor = isRoot ? t.rootBg : node.color;
+            const textColor = isRoot ? t.rootText : (node.style?.fontColor || t.nodeText);
+            
+            const rect = new Konva.Rect({
+              width: node.width,
+              height: node.height,
+              fill: bgColor,
+              cornerRadius: 8,
+              stroke: isSelected ? '#ff4d4f' : (isRoot ? t.rootBg : node.color),
+              strokeWidth: isSelected ? 3 : 1,
+              shadowColor: 'rgba(0,0,0,0.2)',
+              shadowBlur: isSelected ? 15 : 5,
+              shadowOffset: { x: 2, y: 2 },
+              shadowOpacity: 0.3
+            });
+            group.add(rect);
+            
+            const plainText = node.text || getPlainText(node.html || '');
+            
+            let fontStyle = '';
+            if (node.style?.bold) fontStyle += 'bold ';
+            if (node.style?.italic) fontStyle += 'italic ';
+            
+            const text = new Konva.Text({
+              text: plainText,
+              x: 10,
+              y: 10,
+              width: node.width - 20,
+              height: node.height - 20,
+              fontSize: node.style?.fontSize || 14,
+              fontFamily: 'Arial, sans-serif',
+              fill: textColor,
+              fontStyle: fontStyle.trim(),
+              textDecoration: node.style?.underline ? 'underline' : '',
+              align: 'center',
+              verticalAlign: 'middle'
+            });
+            group.add(text);
+            
+            group.on('click', () => {
+              selectedNodeId.value = node.id;
+              renderCanvas();
+            });
+            
+            group.on('dblclick', () => {
+              editNode(node.id);
+            });
+            
+            group.on('contextmenu', (e) => {
+              e.evt.preventDefault();
+              selectedNodeId.value = node.id;
+              contextMenu.visible = true;
+              contextMenu.x = e.evt.clientX;
+              contextMenu.y = e.evt.clientY;
+              contextMenu.nodeId = node.id;
+              renderCanvas();
+            });
+            
+            group.on('dragstart', () => {
+              selectedNodeId.value = node.id;
+            });
+            
+            group.on('dragend', () => {
+              const changes = {
+                x: group.x(),
+                y: group.y(),
+                updatedAt: Date.now()
+              };
+              Object.assign(node, changes);
+              broadcastNodeUpdate(node.id, changes);
+              saveCurrentMap();
+              renderCanvas();
+            });
+            
+            group.on('mouseenter', () => {
+              document.body.style.cursor = 'move';
+            });
+            
+            group.on('mouseleave', () => {
+              document.body.style.cursor = 'default';
+            });
+            
+            layer.add(group);
+          });
+          
+          layer.draw();
+        }
+        
+        function handleKeydown(e) {
+          if (isPresentationMode.value) {
+            switch (e.key) {
+              case 'ArrowRight':
+              case ' ':
+                e.preventDefault();
+                nextPresentationNode();
+                break;
+              case 'ArrowLeft':
+                e.preventDefault();
+                prevPresentationNode();
+                break;
+              case 'Escape':
+                e.preventDefault();
+                exitPresentation();
+                break;
+              case 'p':
+              case 'P':
+                e.preventDefault();
+                toggleAutoPlay();
+                break;
+            }
+            return;
+          }
+          
+          if (editingNode.value) return;
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+          
+          switch (e.key) {
+            case 'Tab':
+              e.preventDefault();
+              addChildNode();
+              break;
+            case 'Enter':
+              e.preventDefault();
+              addSiblingNode();
+              break;
+            case 'Delete':
+            case 'Backspace':
+              if (selectedNodeId.value) {
+                e.preventDefault();
+                deleteNode();
+              }
+              break;
+            case 'F2':
+              if (selectedNodeId.value) {
+                e.preventDefault();
+                editNode(selectedNodeId.value);
+              }
+              break;
+            case 'F5':
+              e.preventDefault();
+              startPresentation();
+              break;
+            case 's':
+              if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                saveCurrentMap();
+              }
+              break;
+          }
+        }
+        
+        function handleClickOutside(e) {
+          if (contextMenu.visible) {
+            const menu = document.querySelector('.context-menu');
+            if (menu && !menu.contains(e.target)) {
+              contextMenu.visible = false;
+            }
+          }
+        }
+        
+        onMounted(async () => {
+          await initDB();
+          await loadAllMaps();
+          
+          if (mindMaps.value.length > 0) {
+            loadMap(mindMaps.value[0].id);
+          } else {
+            createNewMap();
+          }
+          
+          initStage();
+          initCollaboration();
+          
+          document.addEventListener('keydown', handleKeydown);
+          document.addEventListener('click', handleClickOutside);
+        });
+        
+        return {
+          theme,
+          sidebarCollapsed,
+          searchQuery,
+          searchResults,
+          selectedNode,
+          editingNode,
+          editorContent,
+          editorPosition,
+          editorState,
+          contextMenu,
+          syncStatus,
+          conflictModal,
+          showAILayoutModal,
+          selectedLayoutType,
+          isPresentationMode,
+          presentationNodes,
+          presentationCurrentIndex,
+          currentPresentationNode,
+          presentationNodeStyle,
+          isAutoPlaying,
+          currentUserId,
+          currentUserName,
+          onlineUsers,
+          mindMaps,
+          currentMap,
+          currentMapId,
+          nodeColors,
+          getPlainText,
+          formatTime,
+          getPresentationNodeInfo,
+          createNewMap,
+          loadMap,
+          deleteMap,
+          addChildNode,
+          addSiblingNode,
+          deleteNode,
+          editNode,
+          saveEdit,
+          cancelEdit,
+          updateEditorState,
+          execCommand,
+          changeFontSize,
+          changeFontColor,
+          changeBgColor,
+          changeNodeColor,
+          autoLayout,
+          applyAILayout,
+          startPresentation,
+          exitPresentation,
+          nextPresentationNode,
+          prevPresentationNode,
+          jumpToPresentationNode,
+          toggleAutoPlay,
+          handleSearch,
+          highlightText,
+          focusNode,
+          toggleTheme,
+          toggleSidebar,
+          zoomIn,
+          zoomOut,
+          resetView,
+          exportJSON,
+          exportImage,
+          exportMarkdown,
+          addChildFromContext,
+          addSiblingFromContext,
+          editFromContext,
+          deleteFromContext,
+          saveCurrentMap,
+          keepLocal,
+          useRemote,
+          mergeVersions
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

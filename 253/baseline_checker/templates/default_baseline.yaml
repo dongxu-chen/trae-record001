@@ -1,0 +1,291 @@
+name: Linux服务器安全配置基线
+version: "2.0"
+description: 优化后的默认Linux服务器安全配置基线，支持SSH配置解析和内核参数单位标准化
+
+checks:
+  ssh:
+    - id: SSH-001
+      name: 禁止root用户直接登录
+      description: 确保SSH不允许root用户直接登录
+      severity: high
+      check_type: ssh_config
+      sshd_key: PermitRootLogin
+      expected_value: "no"
+      fix_command: sed -i 's/^PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config && systemctl restart sshd
+
+    - id: SSH-002
+      name: 禁用空密码登录
+      description: 确保SSH不允许空密码登录
+      severity: high
+      check_type: ssh_config
+      sshd_key: PermitEmptyPasswords
+      expected_value: "no"
+      fix_command: sed -i 's/^PermitEmptyPasswords.*/PermitEmptyPasswords no/' /etc/ssh/sshd_config && systemctl restart sshd
+
+    - id: SSH-003
+      name: 禁用密码认证（推荐使用密钥）
+      description: 确保SSH禁用密码认证，使用密钥认证
+      severity: medium
+      check_type: ssh_config
+      sshd_key: PasswordAuthentication
+      expected_value: "no"
+      fix_command: sed -i 's/^PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config && systemctl restart sshd
+
+    - id: SSH-004
+      name: 设置SSH空闲超时时间
+      description: 确保SSH设置空闲超时自动断开（5分钟）
+      severity: medium
+      check_type: ssh_config
+      sshd_key: ClientAliveInterval
+      expected_value: "300"
+      unit: seconds
+      compare: ge
+      fix_command: echo -e 'ClientAliveInterval 300\nClientAliveCountMax 0' >> /etc/ssh/sshd_config && systemctl restart sshd
+
+    - id: SSH-005
+      name: 禁用X11转发
+      description: 确保SSH禁用X11转发
+      severity: low
+      check_type: ssh_config
+      sshd_key: X11Forwarding
+      expected_value: "no"
+      fix_command: sed -i 's/^X11Forwarding.*/X11Forwarding no/' /etc/ssh/sshd_config && systemctl restart sshd
+
+    - id: SSH-006
+      name: SSH端口监听检查
+      description: 确保SSH服务在配置的端口上正常监听
+      severity: high
+      check_type: port_listening
+      expected_status: listening
+      fix_command: systemctl restart sshd
+
+    - id: SSH-007
+      name: 限制最大认证尝试次数
+      description: 限制SSH最大认证尝试次数防止暴力破解
+      severity: medium
+      check_type: ssh_config
+      sshd_key: MaxAuthTries
+      expected_value: "4"
+      unit: count
+      compare: le
+      fix_command: sed -i 's/^MaxAuthTries.*/MaxAuthTries 4/' /etc/ssh/sshd_config && systemctl restart sshd
+
+    - id: SSH-008
+      name: 禁用用户环境变量
+      description: 禁用SSH用户环境变量读取
+      severity: low
+      check_type: ssh_config
+      sshd_key: PermitUserEnvironment
+      expected_value: "no"
+      fix_command: sed -i 's/^PermitUserEnvironment.*/PermitUserEnvironment no/' /etc/ssh/sshd_config && systemctl restart sshd
+
+  firewall:
+    - id: FIREWALL-001
+      name: 防火墙已启用
+      description: 确保firewalld或iptables服务已启用
+      severity: high
+      check_type: service_status
+      service_name: firewalld
+      expected_status: active
+      alt_service_name: iptables
+      fix_command: systemctl enable firewalld && systemctl start firewalld
+
+    - id: FIREWALL-002
+      name: 默认拒绝策略
+      description: 确保防火墙默认策略为拒绝
+      severity: high
+      check_type: command
+      command: iptables -L INPUT --line-numbers | head -1
+      expected_output: "policy DROP"
+      match_type: contains
+      fix_command: iptables -P INPUT DROP && iptables -P FORWARD DROP && iptables -P OUTPUT ACCEPT
+
+    - id: FIREWALL-003
+      name: 限制SSH连接频率
+      description: 确保SSH连接有频率限制防止暴力破解
+      severity: medium
+      check_type: command
+      command: iptables -S INPUT | grep -E 'dport 22.*limit' || true
+      expected_output: limit
+      match_type: contains
+      fix_command: iptables -I INPUT -p tcp --dport 22 -m state --state NEW -m limit --limit 5/minute --limit-burst 10 -j ACCEPT
+
+  kernel:
+    - id: KERNEL-001
+      name: 禁用IP转发
+      description: 确保服务器不作为路由器转发IP包
+      severity: high
+      check_type: sysctl
+      parameter: net.ipv4.ip_forward
+      expected_value: "0"
+      fix_command: echo 'net.ipv4.ip_forward = 0' >> /etc/sysctl.conf && sysctl -p
+
+    - id: KERNEL-002
+      name: 启用SYN洪水保护
+      description: 启用TCP SYN cookies防范SYN洪水攻击
+      severity: high
+      check_type: sysctl
+      parameter: net.ipv4.tcp_syncookies
+      expected_value: "1"
+      fix_command: echo 'net.ipv4.tcp_syncookies = 1' >> /etc/sysctl.conf && sysctl -p
+
+    - id: KERNEL-003
+      name: 禁用ICMP重定向接受
+      description: 禁用ICMP重定向防止中间人攻击
+      severity: medium
+      check_type: sysctl
+      parameter: net.ipv4.conf.all.accept_redirects
+      expected_value: "0"
+      fix_command: echo 'net.ipv4.conf.all.accept_redirects = 0' >> /etc/sysctl.conf && sysctl -p
+
+    - id: KERNEL-004
+      name: 禁用源路由接受
+      description: 禁用IP源路由接受
+      severity: medium
+      check_type: sysctl
+      parameter: net.ipv4.conf.all.accept_source_route
+      expected_value: "0"
+      fix_command: echo 'net.ipv4.conf.all.accept_source_route = 0' >> /etc/sysctl.conf && sysctl -p
+
+    - id: KERNEL-005
+      name: 启用地址空间随机化
+      description: 启用ASLR地址空间布局随机化
+      severity: medium
+      check_type: sysctl
+      parameter: kernel.randomize_va_space
+      expected_value: "2"
+      fix_command: echo 'kernel.randomize_va_space = 2' >> /etc/sysctl.conf && sysctl -p
+
+    - id: KERNEL-006
+      name: 记录可疑数据包
+      description: 记录异常和伪造的数据包
+      severity: low
+      check_type: sysctl
+      parameter: net.ipv4.conf.all.log_martians
+      expected_value: "1"
+      fix_command: echo 'net.ipv4.conf.all.log_martians = 1' >> /etc/sysctl.conf && sysctl -p
+
+    - id: KERNEL-007
+      name: TCP最大缓冲区大小
+      description: 确保TCP发送缓冲区大小足够
+      severity: low
+      check_type: sysctl
+      parameter: net.ipv4.tcp_wmem
+      expected_value: "4194304"
+      unit: bytes
+      compare: ge
+      fix_command: echo 'net.ipv4.tcp_wmem = 4096 87380 4194304' >> /etc/sysctl.conf && sysctl -p
+
+    - id: KERNEL-008
+      name: 最大文件句柄数
+      description: 确保系统最大文件句柄数足够
+      severity: medium
+      check_type: sysctl
+      parameter: fs.file-max
+      expected_value: "65535"
+      unit: count
+      compare: ge
+      fix_command: echo 'fs.file-max = 65535' >> /etc/sysctl.conf && sysctl -p
+
+  users:
+    - id: USER-001
+      name: 空密码账户检查
+      description: 检查是否存在空密码的用户账户
+      severity: critical
+      check_type: command
+      command: "awk -F: '($2 == \"\") {print $1}' /etc/shadow"
+      match_type: exact
+      fix_command: passwd -l <username>
+
+    - id: USER-002
+      name: UID为0的账户检查
+      description: 检查除root外是否有其他UID为0的账户
+      severity: critical
+      check_type: command
+      command: "awk -F: '($3 == 0 && $1 != \"root\") {print $1}' /etc/passwd"
+      match_type: exact
+      fix_command: userdel -r <username>
+
+    - id: USER-003
+      name: sudoers配置检查
+      description: 检查sudoers文件权限是否正确
+      severity: high
+      check_type: file_permission
+      file_path: /etc/sudoers
+      expected_permission: "440"
+      expected_owner: root
+      expected_group: root
+      fix_command: chmod 440 /etc/sudoers && chown root:root /etc/sudoers
+
+    - id: USER-004
+      name: 检查无主文件
+      description: 查找系统中无属主或属组的文件
+      severity: medium
+      check_type: command
+      command: find / -xdev -nouser -o -nogroup 2>/dev/null | head -20
+      match_type: exact
+      fix_command: find / -xdev -nouser -o -nogroup -exec chown root:root {} \;
+
+  files:
+    - id: FILE-001
+      name: /etc/passwd权限检查
+      description: 确保/etc/passwd文件权限正确
+      severity: high
+      check_type: file_permission
+      file_path: /etc/passwd
+      expected_permission: "644"
+      expected_owner: root
+      expected_group: root
+      fix_command: chmod 644 /etc/passwd && chown root:root /etc/passwd
+
+    - id: FILE-002
+      name: /etc/shadow权限检查
+      description: 确保/etc/shadow文件权限正确
+      severity: critical
+      check_type: file_permission
+      file_path: /etc/shadow
+      expected_permission: "000"
+      expected_owner: root
+      expected_group: root
+      fix_command: chmod 000 /etc/shadow && chown root:root /etc/shadow
+
+    - id: FILE-003
+      name: /etc/gshadow权限检查
+      description: 确保/etc/gshadow文件权限正确
+      severity: high
+      check_type: file_permission
+      file_path: /etc/gshadow
+      expected_permission: "000"
+      expected_owner: root
+      expected_group: root
+      fix_command: chmod 000 /etc/gshadow && chown root:root /etc/gshadow
+
+    - id: FILE-004
+      name: /etc/group权限检查
+      description: 确保/etc/group文件权限正确
+      severity: medium
+      check_type: file_permission
+      file_path: /etc/group
+      expected_permission: "644"
+      expected_owner: root
+      expected_group: root
+      fix_command: chmod 644 /etc/group && chown root:root /etc/group
+
+    - id: FILE-005
+      name: 世界可写文件检查
+      description: 查找系统中世界可写的文件（排除临时目录）
+      severity: medium
+      check_type: command
+      command: find / -xdev -type f -perm -0002 -not -path '/proc/*' -not -path '/sys/*' -not -path '/tmp/*' -not -path '/var/tmp/*' 2>/dev/null | head -20
+      match_type: exact
+      fix_command: chmod o-w <filename>
+
+    - id: FILE-006
+      name: SUID/SGID文件检查
+      description: 检查系统中的SUID和SGID文件
+      severity: low
+      check_type: command
+      command: find / -xdev -type f \( -perm -4000 -o -perm -2000 \) 2>/dev/null | head -20
+      match_type: exists
+      warn_only: true
+      fix_command: "# 审核SUID/SGID文件，移除不必要的特殊权限"

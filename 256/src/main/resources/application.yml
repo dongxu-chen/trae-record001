@@ -1,0 +1,57 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: abtest-platform
+
+  datasource:
+    url: jdbc:h2:mem:abtestdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      database: 0
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+
+clickhouse:
+  url: jdbc:clickhouse://localhost:8123/abtest
+  username: default
+  password:
+  database: abtest
+
+abtest:
+  scheduler:
+    mab-interval-minutes: 30
+    autostop-interval-minutes: 60
+
+logging:
+  level:
+    com.abtest: INFO
+    org.springframework.web: INFO
+    com.clickhouse: WARN

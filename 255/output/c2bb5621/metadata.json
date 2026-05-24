@@ -1,0 +1,13 @@
+{
+  "job_id": "c2bb5621",
+  "sequence": "MTYKLILNGKTLKGETTTEAVDAATAEKVFKQYANDNGVDGEWTYDDATKTFTVTE",
+  "sequence_length": 56,
+  "model_name": "AlphaFold2_Lite_v1",
+  "inference_time": 26.023770093917847,
+  "num_recycles": 3,
+  "mean_plddt": 53.10955767546381,
+  "overall_quality": "Moderate",
+  "msa_depth": 28,
+  "ptm_score": 0.5251048803329468,
+  "iptm_score": 0.5200839042663574
+}

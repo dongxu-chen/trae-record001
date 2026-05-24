@@ -1,0 +1,108 @@
+name: 自定义基线模板示例
+version: "2.0"
+description: 展示如何使用新的简化YAML语法创建自定义基线检查模板
+
+checks:
+  custom:
+    - id: CUSTOM-001
+      name: 检查Nginx是否安装
+      description: 确认Nginx软件包已安装
+      severity: medium
+      check_type: command
+      command: which nginx || echo "not_found"
+      expected_output: nginx
+      match_type: contains
+      fix_command: yum install -y nginx  # 或 apt install -y nginx
+
+    - id: CUSTOM-002
+      name: Nginx配置文件权限
+      description: 确保nginx.conf文件权限正确
+      severity: high
+      check_type: file_permission
+      file_path: /etc/nginx/nginx.conf
+      expected_permission: "644"
+      expected_owner: root
+      expected_group: root
+      fix_command: chmod 644 /etc/nginx/nginx.conf && chown root:root /etc/nginx/nginx.conf
+
+    - id: CUSTOM-003
+      name: 检查Docker服务状态
+      description: 确保Docker服务正在运行
+      severity: high
+      check_type: service_status
+      service_name: docker
+      expected_status: active
+      fix_command: systemctl start docker && systemctl enable docker
+
+    - id: CUSTOM-004
+      name: 内核参数 - 文件句柄限制
+      description: 检查最大文件句柄数设置（支持单位）
+      severity: medium
+      check_type: sysctl
+      parameter: fs.file-max
+      expected_value: "65535"
+      unit: count
+      compare: ge
+      fix_command: echo 'fs.file-max = 65535' >> /etc/sysctl.conf && sysctl -p
+
+    - id: CUSTOM-005
+      name: TCP缓冲区大小
+      description: 检查TCP发送缓冲区大小（支持字节单位）
+      severity: low
+      check_type: sysctl
+      parameter: net.ipv4.tcp_wmem
+      expected_value: "4194304"
+      unit: bytes
+      compare: ge
+      fix_command: echo 'net.ipv4.tcp_wmem = 4096 87380 4194304' >> /etc/sysctl.conf && sysctl -p
+
+    - id: CUSTOM-006
+      name: SSH最大认证尝试次数
+      description: 检查SSH MaxAuthTries配置
+      severity: medium
+      check_type: ssh_config
+      sshd_key: MaxAuthTries
+      expected_value: "4"
+      unit: count
+      compare: le
+      fix_command: sed -i 's/^MaxAuthTries.*/MaxAuthTries 4/' /etc/ssh/sshd_config && systemctl restart sshd
+
+    - id: CUSTOM-007
+      name: SSH空闲超时
+      description: 检查SSH空闲超时设置（支持秒单位）
+      severity: medium
+      check_type: ssh_config
+      sshd_key: ClientAliveInterval
+      expected_value: "300"
+      unit: seconds
+      compare: le
+      fix_command: echo -e 'ClientAliveInterval 300\nClientAliveCountMax 0' >> /etc/ssh/sshd_config && systemctl restart sshd
+
+    - id: CUSTOM-008
+      name: SSH端口监听
+      description: 确保SSH在配置的端口上监听
+      severity: high
+      check_type: port_listening
+      expected_status: listening
+      fix_command: systemctl restart sshd
+
+    - id: CUSTOM-009
+      name: 禁用Nginx版本信息
+      description: 使用正则匹配检查配置
+      severity: medium
+      check_type: regex_match
+      file_path: /etc/nginx/nginx.conf
+      pattern: server_tokens\s+off
+      match_type: matches
+      fix_command: sed -i '/http {/a\\    server_tokens off;' /etc/nginx/nginx.conf && nginx -s reload
+
+    - id: CUSTOM-010
+      name: 系统版本检查
+      description: 使用命令输出匹配
+      severity: low
+      check_type: command
+      command: cat /etc/redhat-release 2>/dev/null || cat /etc/os-release | grep '^VERSION='
+      expected_output: "7"
+      match_type: contains
+      warn_only: true
+      fix_command: "# 请手动确认系统版本"

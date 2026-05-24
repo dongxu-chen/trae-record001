@@ -1,0 +1,91 @@
+name: 最小化安全基线
+version: "2.0"
+description: 仅包含最关键的安全检查项，适合快速扫描
+
+checks:
+  ssh:
+    - id: SSH-001
+      name: 禁止root用户直接登录
+      severity: high
+      check_type: ssh_config
+      sshd_key: PermitRootLogin
+      expected_value: "no"
+      fix_command: sed -i 's/^PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config && systemctl restart sshd
+
+    - id: SSH-002
+      name: 禁用空密码登录
+      severity: high
+      check_type: ssh_config
+      sshd_key: PermitEmptyPasswords
+      expected_value: "no"
+      fix_command: sed -i 's/^PermitEmptyPasswords.*/PermitEmptyPasswords no/' /etc/ssh/sshd_config && systemctl restart sshd
+
+    - id: SSH-003
+      name: SSH端口监听检查
+      severity: high
+      check_type: port_listening
+      expected_status: listening
+      fix_command: systemctl restart sshd
+
+  kernel:
+    - id: KERNEL-001
+      name: 禁用IP转发
+      severity: high
+      check_type: sysctl
+      parameter: net.ipv4.ip_forward
+      expected_value: "0"
+      fix_command: echo 'net.ipv4.ip_forward = 0' >> /etc/sysctl.conf && sysctl -p
+
+    - id: KERNEL-002
+      name: 启用SYN洪水保护
+      severity: high
+      check_type: sysctl
+      parameter: net.ipv4.tcp_syncookies
+      expected_value: "1"
+      fix_command: echo 'net.ipv4.tcp_syncookies = 1' >> /etc/sysctl.conf && sysctl -p
+
+    - id: KERNEL-003
+      name: 启用地址空间随机化
+      severity: medium
+      check_type: sysctl
+      parameter: kernel.randomize_va_space
+      expected_value: "2"
+      fix_command: echo 'kernel.randomize_va_space = 2' >> /etc/sysctl.conf && sysctl -p
+
+  users:
+    - id: USER-001
+      name: 空密码账户检查
+      severity: critical
+      check_type: command
+      command: "awk -F: '($2 == \"\") {print $1}' /etc/shadow"
+      match_type: exact
+      fix_command: passwd -l <username>
+
+    - id: USER-002
+      name: UID为0的账户检查
+      severity: critical
+      check_type: command
+      command: "awk -F: '($3 == 0 && $1 != \"root\") {print $1}' /etc/passwd"
+      match_type: exact
+      fix_command: userdel -r <username>
+
+  files:
+    - id: FILE-001
+      name: /etc/shadow权限检查
+      severity: critical
+      check_type: file_permission
+      file_path: /etc/shadow
+      expected_permission: "000"
+      expected_owner: root
+      expected_group: root
+      fix_command: chmod 000 /etc/shadow && chown root:root /etc/shadow
+
+    - id: FILE-002
+      name: /etc/passwd权限检查
+      severity: high
+      check_type: file_permission
+      file_path: /etc/passwd
+      expected_permission: "644"
+      expected_owner: root
+      expected_group: root
+      fix_command: chmod 644 /etc/passwd && chown root:root /etc/passwd

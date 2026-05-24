@@ -1,0 +1,151 @@
+================================================================================
+PROTEIN STRUCTURE CONFIDENCE REPORT
+================================================================================
+
+OVERALL METRICS
+----------------------------------------
+Overall Quality: Low
+Mean pLDDT:     49.87
+Median pLDDT:   49.90
+Min pLDDT:      42.08
+Max pLDDT:      65.26
+
+pLDDT DISTRIBUTION
+----------------------------------------
+  very_high   :     0 residues (  0.00%)
+  high        :     0 residues (  0.00%)
+  moderate    :    26 residues ( 46.43%)
+  low         :    30 residues ( 53.57%)
+
+pTM Score:      0.5251
+ipTM Score:     0.5201
+
+QUALITY REGIONS
+----------------------------------------
+  Region  1: residues    0-   0 (length    1), quality=low       , mean_pLDDT=45.97
+  Region  2: residues    1-   5 (length    5), quality=moderate  , mean_pLDDT=53.46
+  Region  3: residues    6-   6 (length    1), quality=low       , mean_pLDDT=48.08
+  Region  4: residues    7-   9 (length    3), quality=moderate  , mean_pLDDT=52.60
+  Region  5: residues   10-  10 (length    1), quality=low       , mean_pLDDT=42.08
+  Region  6: residues   11-  12 (length    2), quality=moderate  , mean_pLDDT=51.52
+  Region  7: residues   13-  13 (length    1), quality=low       , mean_pLDDT=48.78
+  Region  8: residues   14-  14 (length    1), quality=moderate  , mean_pLDDT=58.93
+  Region  9: residues   15-  19 (length    5), quality=low       , mean_pLDDT=46.30
+  Region 10: residues   20-  21 (length    2), quality=moderate  , mean_pLDDT=51.33
+  Region 11: residues   22-  23 (length    2), quality=low       , mean_pLDDT=46.24
+  Region 12: residues   24-  24 (length    1), quality=moderate  , mean_pLDDT=51.82
+  Region 13: residues   25-  26 (length    2), quality=low       , mean_pLDDT=48.41
+  Region 14: residues   27-  27 (length    1), quality=moderate  , mean_pLDDT=55.03
+  Region 15: residues   28-  28 (length    1), quality=low       , mean_pLDDT=48.94
+  Region 16: residues   29-  30 (length    2), quality=moderate  , mean_pLDDT=52.28
+  Region 17: residues   31-  31 (length    1), quality=low       , mean_pLDDT=47.37
+  Region 18: residues   32-  32 (length    1), quality=moderate  , mean_pLDDT=65.26
+  Region 19: residues   33-  33 (length    1), quality=low       , mean_pLDDT=44.73
+  Region 20: residues   34-  34 (length    1), quality=moderate  , mean_pLDDT=55.85
+  Region 21: residues   35-  35 (length    1), quality=low       , mean_pLDDT=49.27
+  Region 22: residues   36-  36 (length    1), quality=moderate  , mean_pLDDT=54.04
+  Region 23: residues   37-  38 (length    2), quality=low       , mean_pLDDT=47.97
+  Region 24: residues   39-  40 (length    2), quality=moderate  , mean_pLDDT=51.49
+  Region 25: residues   41-  41 (length    1), quality=low       , mean_pLDDT=48.34
+  Region 26: residues   42-  42 (length    1), quality=moderate  , mean_pLDDT=51.83
+  Region 27: residues   43-  44 (length    2), quality=low       , mean_pLDDT=47.00
+  Region 28: residues   45-  45 (length    1), quality=moderate  , mean_pLDDT=50.72
+  Region 29: residues   46-  48 (length    3), quality=low       , mean_pLDDT=47.82
+  Region 30: residues   49-  49 (length    1), quality=moderate  , mean_pLDDT=53.17
+  Region 31: residues   50-  50 (length    1), quality=low       , mean_pLDDT=43.04
+  Region 32: residues   51-  51 (length    1), quality=moderate  , mean_pLDDT=52.02
+  Region 33: residues   52-  55 (length    4), quality=low       , mean_pLDDT=46.24
+
+PAE STATISTICS
+----------------------------------------
+  mean           : 14.2469
+  median         : 13.4799
+  min            : 1.9178
+  max            : 30.0000
+  std            : 7.8476
+  diag_mean      : 30.0000
+  off_diag_mean  : 13.9604
+
+RESIDUE-LEVEL CONFIDENCE
+--------------------------------------------------------------------------------
+================================================================================
+  Idx  AA    pLDDT      Quality    Local PAE
+--------------------------------------------------------------------------------
+    0   M    45.97          low        30.00
+    1   T    50.14     moderate        30.00
+    2   Y    56.44     moderate        30.00
+    3   K    50.22     moderate        30.00
+    4   L    52.17     moderate        30.00
+    5   I    58.35     moderate        30.00
+    6   L    48.08          low        30.00
+    7   N    55.80     moderate        30.00
+    8   G    50.99     moderate        30.00
+    9   K    51.02     moderate        30.00
+   10   T    42.08          low        30.00
+   11   L    51.34     moderate        30.00
+   12   K    51.70     moderate        30.00
+   13   G    48.78          low        30.00
+   14   E    58.93     moderate        30.00
+   15   T    44.35          low        30.00
+   16   T    49.96          low        30.00
+   17   T    42.43          low        30.00
+   18   E    49.24          low        30.00
+   19   A    45.52          low        30.00
+   20   V    50.51     moderate        30.00
+   21   D    52.15     moderate        30.00
+   22   A    44.22          low        30.00
+   23   A    48.26          low        30.00
+   24   T    51.82     moderate        30.00
+   25   A    48.01          low        30.00
+   26   E    48.81          low        30.00
+   27   K    55.03     moderate        30.00
+   28   V    48.94          low        30.00
+   29   F    50.17     moderate        30.00
+   30   K    54.40     moderate        30.00
+   31   Q    47.37          low        30.00
+   32   Y    65.26     moderate        30.00
+   33   A    44.73          low        30.00
+   34   N    55.85     moderate        30.00
+   35   D    49.27          low        30.00
+   36   N    54.04     moderate        30.00
+   37   G    49.71          low        30.00
+   38   V    46.23          low        30.00
+   39   D    51.11     moderate        30.00
+   40   G    51.87     moderate        30.00
+   41   E    48.34          low        30.00
+   42   W    51.83     moderate        30.00
+   43   T    45.59          low        30.00
+   44   Y    48.42          low        30.00
+   45   D    50.72     moderate        30.00
+   46   D    49.96          low        30.00
+   47   A    47.46          low        30.00
+   48   T    46.04          low        30.00
+   49   K    53.17     moderate        30.00
+================================================================================
+... (showing first 50 of 56 residues)
+
+LOW CONFIDENCE RESIDUES (<70 pLDDT): 56 total
+----------------------------------------
+  M   1: pLDDT=45.97
+  T   2: pLDDT=50.14
+  Y   3: pLDDT=56.44
+  K   4: pLDDT=50.22
+  L   5: pLDDT=52.17
+  I   6: pLDDT=58.35
+  L   7: pLDDT=48.08
+  N   8: pLDDT=55.80
+  G   9: pLDDT=50.99
+  K  10: pLDDT=51.02
+  T  11: pLDDT=42.08
+  L  12: pLDDT=51.34
+  K  13: pLDDT=51.70
+  G  14: pLDDT=48.78
+  E  15: pLDDT=58.93
+  T  16: pLDDT=44.35
+  T  17: pLDDT=49.96
+  T  18: pLDDT=42.43
+  E  19: pLDDT=49.24
+  A  20: pLDDT=45.52
+  ... and 36 more
+
+================================================================================

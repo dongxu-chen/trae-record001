@@ -1,0 +1,50 @@
+{
+  "f2a34fe03193519977697e341b9aa3b3": {
+    "sequence": "MKWVTFISLLFLFSSAYSRGVFRRDAHMKSTIVFGRCIGISMRWPTVQGLD",
+    "sequence_hash": "f2a34fe03193519977697e341b9aa3b3",
+    "created_at": 1779249518.9368618,
+    "accessed_at": 1779249518.936862,
+    "access_count": 1,
+    "file_size": 12471,
+    "metadata": {
+      "depth": 25,
+      "length": 51
+    }
+  },
+  "d4b4e57b8610603a977f11499873aaf9": {
+    "sequence": "MKWVTFISLLFLFSSAYSRGVFRR",
+    "sequence_hash": "d4b4e57b8610603a977f11499873aaf9",
+    "created_at": 1779249543.7753208,
+    "accessed_at": 1779249544.353454,
+    "access_count": 2,
+    "file_size": 5784,
+    "metadata": {
+      "depth": 16,
+      "length": 24
+    }
+  },
+  "7e859d82171047700fd3e9632f7a47ea": {
+    "sequence": "MTYKLILNGKTLKGETTTEAVDAATAEKVFKQYANDNGVDGEWTYDDATKTFTVTE",
+    "sequence_hash": "7e859d82171047700fd3e9632f7a47ea",
+    "created_at": 1779251565.9139602,
+    "accessed_at": 1779252088.1798074,
+    "access_count": 16,
+    "file_size": 13984,
+    "metadata": {
+      "depth": 28,
+      "length": 56
+    }
+  },
+  "233b4b0b8c4616095bc3249f9375fc34": {
+    "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG",
+    "sequence_hash": "233b4b0b8c4616095bc3249f9375fc34",
+    "created_at": 1779251994.9351537,
+    "accessed_at": 1779251994.9351542,
+    "access_count": 1,
+    "file_size": 20304,
+    "metadata": {
+      "depth": 38,
+      "length": 76
+    }
+  }
+}

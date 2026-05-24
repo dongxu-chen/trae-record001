@@ -1,0 +1,127 @@
+name: Web服务器安全基线
+version: "1.0"
+description: 适用于Nginx/Apache等Web服务器的安全配置基线
+
+checks:
+  web:
+    - id: WEB-001
+      name: Nginx服务运行状态
+      description: 确保Nginx服务正常运行
+      severity: high
+      check_type: service_status
+      service_name: nginx
+      expected_status: active
+      alt_service_name: httpd
+      fix_command: systemctl start nginx && systemctl enable nginx
+
+    - id: WEB-002
+      name: Nginx配置文件权限
+      description: 确保nginx.conf文件权限安全
+      severity: high
+      check_type: file_permission
+      file_path: /etc/nginx/nginx.conf
+      expected_permission: "644"
+      expected_owner: root
+      expected_group: root
+      fix_command: chmod 644 /etc/nginx/nginx.conf && chown root:root /etc/nginx/nginx.conf
+
+    - id: WEB-003
+      name: 禁用Nginx版本信息
+      description: 确保Nginx不暴露版本信息
+      severity: medium
+      check_type: regex_match
+      file_path: /etc/nginx/nginx.conf
+      pattern: server_tokens\s+off
+      match_type: matches
+      fix_command: sed -i '/http {/a\\    server_tokens off;' /etc/nginx/nginx.conf && nginx -s reload
+
+    - id: WEB-004
+      name: 网站根目录权限
+      description: 确保网站根目录权限安全
+      severity: high
+      check_type: file_permission
+      file_path: /usr/share/nginx/html
+      expected_permission: "755"
+      expected_owner: nginx
+      expected_group: nginx
+      fix_command: chown -R nginx:nginx /usr/share/nginx/html && chmod -R 755 /usr/share/nginx/html
+
+    - id: WEB-005
+      name: 检查敏感文件访问限制
+      description: 确保.htaccess等敏感文件被正确限制
+      severity: medium
+      check_type: command
+      command: grep -r "\.htaccess" /etc/nginx/ 2>/dev/null || echo "not_found"
+      expected_output: "deny"
+      match_type: contains
+      fix_command: |
+        cat >> /etc/nginx/conf.d/security.conf << 'EOF'
+        location ~ /\.ht {
+            deny all;
+        }
+        EOF
+        nginx -s reload
+
+    - id: WEB-006
+      name: SSL/TLS配置检查
+      description: 确保SSL配置使用安全协议
+      severity: high
+      check_type: regex_match
+      file_path: /etc/nginx/nginx.conf
+      pattern: ssl_protocols\s+TLSv1.2
+      match_type: matches
+      fix_command: |
+        # 在SSL配置中添加: ssl_protocols TLSv1.2 TLSv1.3;
+        # 移除: SSLv3, TLSv1, TLSv1.1
+
+    - id: WEB-007
+      name: 启用HSTS
+      description: 确保启用HTTP严格传输安全
+      severity: medium
+      check_type: regex_match
+      file_path: /etc/nginx/nginx.conf
+      pattern: Strict-Transport-Security
+      match_type: contains
+      fix_command: |
+        # 添加到HTTPS server块:
+        # add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    - id: WEB-008
+      name: 限制请求大小
+      description: 限制客户端最大请求体大小
+      severity: medium
+      check_type: regex_match
+      file_path: /etc/nginx/nginx.conf
+      pattern: client_max_body_size
+      match_type: matches
+      fix_command: |
+        # 添加到http块: client_max_body_size 10M;
+
+  ssh:
+    - id: SSH-001
+      name: 禁止root用户直接登录
+      severity: high
+      check_type: ssh_config
+      sshd_key: PermitRootLogin
+      expected_value: "no"
+      fix_command: sed -i 's/^PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config && systemctl restart sshd
+
+  kernel:
+    - id: KERNEL-001
+      name: 启用SYN洪水保护
+      severity: high
+      check_type: sysctl
+      parameter: net.ipv4.tcp_syncookies
+      expected_value: "1"
+      fix_command: echo 'net.ipv4.tcp_syncookies = 1' >> /etc/sysctl.conf && sysctl -p
+
+    - id: KERNEL-002
+      name: TCP连接队列大小
+      description: 确保TCP连接队列足够大
+      severity: medium
+      check_type: sysctl
+      parameter: net.core.somaxconn
+      expected_value: "1024"
+      unit: count
+      compare: ge
+      fix_command: echo 'net.core.somaxconn = 1024' >> /etc/sysctl.conf && sysctl -p

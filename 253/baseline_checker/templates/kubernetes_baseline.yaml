@@ -1,0 +1,137 @@
+name: Kubernetes节点安全基线
+version: "1.0"
+description: 适用于Kubernetes工作节点和控制平面节点的安全基线
+
+checks:
+  kubernetes:
+    - id: K8S-001
+      name: kubelet服务运行状态
+      description: 确保kubelet服务正常运行
+      severity: high
+      check_type: service_status
+      service_name: kubelet
+      expected_status: active
+      fix_command: systemctl start kubelet && systemctl enable kubelet
+
+    - id: K8S-002
+      name: kubelet配置文件权限
+      description: 确保kubelet配置文件权限安全
+      severity: high
+      check_type: file_permission
+      file_path: /var/lib/kubelet/config.yaml
+      expected_permission: "600"
+      expected_owner: root
+      expected_group: root
+      fix_command: chmod 600 /var/lib/kubelet/config.yaml && chown root:root /var/lib/kubelet/config.yaml
+
+    - id: K8S-003
+      name: 禁用匿名认证
+      description: 确保kubelet禁用匿名认证
+      severity: high
+      check_type: regex_match
+      file_path: /var/lib/kubelet/config.yaml
+      pattern: anonymous\s*:\s*enabled\s*:\s*false
+      match_type: matches
+      fix_command: |
+        # 在kubelet配置中设置:
+        # authentication:
+        #   anonymous:
+        #     enabled: false
+
+    - id: K8S-004
+      name: 保护kubeconfig文件
+      description: 确保kubeconfig文件权限安全
+      severity: critical
+      check_type: file_permission
+      file_path: /etc/kubernetes/kubelet.conf
+      expected_permission: "600"
+      expected_owner: root
+      expected_group: root
+      fix_command: chmod 600 /etc/kubernetes/kubelet.conf && chown root:root /etc/kubernetes/kubelet.conf
+
+    - id: K8S-005
+      name: 保护CA证书文件
+      description: 确保CA证书文件权限安全
+      severity: high
+      check_type: file_permission
+      file_path: /etc/kubernetes/pki/ca.crt
+      expected_permission: "644"
+      expected_owner: root
+      expected_group: root
+      fix_command: chmod 644 /etc/kubernetes/pki/ca.crt && chown root:root /etc/kubernetes/pki/ca.crt
+
+    - id: K8S-006
+      name: 保护CA私钥文件
+      description: 确保CA私钥文件权限安全
+      severity: critical
+      check_type: file_permission
+      file_path: /etc/kubernetes/pki/ca.key
+      expected_permission: "600"
+      expected_owner: root
+      expected_group: root
+      fix_command: chmod 600 /etc/kubernetes/pki/ca.key && chown root:root /etc/kubernetes/pki/ca.key
+
+    - id: K8S-007
+      name: 启用kubelet Webhook认证
+      description: 确保kubelet使用Webhook认证
+      severity: high
+      check_type: regex_match
+      file_path: /var/lib/kubelet/config.yaml
+      pattern: mode\s*:\s*Webhook
+      match_type: matches
+      fix_command: |
+        # 在kubelet配置中设置:
+        # authentication:
+        #   webhook:
+        #     enabled: true
+        # authorization:
+        #   mode: Webhook
+
+    - id: K8S-008
+      name: 禁用ReadOnly端口
+      description: 确保kubelet ReadOnly端口已禁用
+      severity: high
+      check_type: regex_match
+      file_path: /var/lib/kubelet/config.yaml
+      pattern: readOnlyPort\s*:\s*0
+      match_type: matches
+      fix_command: |
+        # 在kubelet配置中设置: readOnlyPort: 0
+
+  ssh:
+    - id: SSH-001
+      name: 禁止root用户直接登录
+      severity: high
+      check_type: ssh_config
+      sshd_key: PermitRootLogin
+      expected_value: "no"
+      fix_command: sed -i 's/^PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config && systemctl restart sshd
+
+  kernel:
+    - id: KERNEL-001
+      name: 禁用IPv6（如不需要）
+      severity: low
+      check_type: sysctl
+      parameter: net.ipv6.conf.all.disable_ipv6
+      expected_value: "1"
+      fix_command: echo 'net.ipv6.conf.all.disable_ipv6 = 1' >> /etc/sysctl.conf && sysctl -p
+
+    - id: KERNEL-002
+      name: 最大文件句柄数
+      severity: high
+      check_type: sysctl
+      parameter: fs.file-max
+      expected_value: "2097152"
+      unit: count
+      compare: ge
+      fix_command: echo 'fs.file-max = 2097152' >> /etc/sysctl.conf && sysctl -p
+
+    - id: KERNEL-003
+      name: 最大进程数
+      severity: high
+      check_type: sysctl
+      parameter: kernel.pid_max
+      expected_value: "4194303"
+      unit: count
+      compare: ge
+      fix_command: echo 'kernel.pid_max = 4194303' >> /etc/sysctl.conf && sysctl -p

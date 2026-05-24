@@ -1,0 +1,13 @@
+{
+  "job_id": "test_full",
+  "sequence": "MKWVTFISLLFLFSSAYSRGVFRR",
+  "sequence_length": 24,
+  "model_name": "AlphaFold2_Lite_v1",
+  "inference_time": 2.574866533279419,
+  "num_recycles": 3,
+  "mean_plddt": 55.039085586865745,
+  "overall_quality": "Moderate",
+  "msa_depth": 16,
+  "ptm_score": 0.30334752798080444,
+  "iptm_score": 0.342678040266037
+}
