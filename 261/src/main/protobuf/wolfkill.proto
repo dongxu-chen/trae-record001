@@ -1,0 +1,547 @@
+syntax = "proto3";
+
+package com.wolfkill.protocol;
+
+option java_package = "com.wolfkill.protocol";
+option java_outer_classname = "WolfKillProtocol";
+option java_multiple_files = true;
+
+enum MessageType {
+    UNKNOWN = 0;
+    HEARTBEAT_REQ = 1;
+    HEARTBEAT_RES = 2;
+    LOGIN_REQ = 3;
+    LOGIN_RES = 4;
+    CREATE_ROOM_REQ = 5;
+    CREATE_ROOM_RES = 6;
+    JOIN_ROOM_REQ = 7;
+    JOIN_ROOM_RES = 8;
+    LEAVE_ROOM_REQ = 9;
+    LEAVE_ROOM_RES = 10;
+    START_GAME_REQ = 11;
+    START_GAME_RES = 12;
+    ROOM_LIST_REQ = 13;
+    ROOM_LIST_RES = 14;
+    ROOM_INFO_NOTIFY = 15;
+    GAME_START_NOTIFY = 16;
+    ROLE_ASSIGN_NOTIFY = 17;
+    NIGHT_START_NOTIFY = 18;
+    WOLF_KILL_REQ = 19;
+    WOLF_KILL_RES = 20;
+    SEER_CHECK_REQ = 21;
+    SEER_CHECK_RES = 22;
+    WITCH_ACTION_REQ = 23;
+    WITCH_ACTION_RES = 24;
+    HUNTER_SHOT_NOTIFY = 25;
+    HUNTER_SHOT_REQ = 26;
+    HUNTER_SHOT_RES = 27;
+    DAY_START_NOTIFY = 28;
+    SPEECH_START_NOTIFY = 29;
+    SPEECH_END_NOTIFY = 30;
+    VOTE_REQ = 31;
+    VOTE_RES = 32;
+    VOTE_RESULT_NOTIFY = 33;
+    PLAYER_DEATH_NOTIFY = 34;
+    GAME_END_NOTIFY = 35;
+    RECONNECT_REQ = 36;
+    RECONNECT_RES = 37;
+    RECORD_LIST_REQ = 38;
+    RECORD_LIST_RES = 39;
+    RECORD_PLAYBACK_REQ = 40;
+    RECORD_PLAYBACK_RES = 41;
+    CHAT_REQ = 42;
+    CHAT_NOTIFY = 43;
+    AI_FILL_REQ = 44;
+    AI_FILL_RES = 45;
+    VOICE_JOIN_REQ = 46;
+    VOICE_JOIN_RES = 47;
+    VOICE_LEAVE_REQ = 48;
+    VOICE_LEAVE_RES = 49;
+    VOICE_USER_STATE_NOTIFY = 50;
+    VOICE_WOLF_ROOM_CREATE_NOTIFY = 51;
+    RANK_MATCH_REQ = 52;
+    RANK_MATCH_RES = 53;
+    RANK_MATCH_FOUND_NOTIFY = 54;
+    RANK_LEADERBOARD_REQ = 55;
+    RANK_LEADERBOARD_RES = 56;
+    RANK_SEASON_INFO_REQ = 57;
+    RANK_SEASON_INFO_RES = 58;
+    RANK_MATCH_CANCEL_REQ = 59;
+    RANK_MATCH_CANCEL_RES = 60;
+}
+
+enum Role {
+    ROLE_UNKNOWN = 0;
+    ROLE_VILLAGER = 1;
+    ROLE_WEREWOLF = 2;
+    ROLE_SEER = 3;
+    ROLE_WITCH = 4;
+    ROLE_HUNTER = 5;
+    ROLE_GUARD = 6;
+    ROLE_CUPID = 7;
+}
+
+enum GamePhase {
+    PHASE_WAITING = 0;
+    PHASE_NIGHT = 1;
+    PHASE_DAY = 2;
+    PHASE_SPEECH = 3;
+    PHASE_VOTE = 4;
+    PHASE_ENDED = 5;
+}
+
+enum PlayerStatus {
+    STATUS_ALIVE = 0;
+    STATUS_DEAD = 1;
+    STATUS_OFFLINE = 2;
+    STATUS_DISCONNECTED = 3;
+}
+
+enum GameResult {
+    RESULT_NONE = 0;
+    RESULT_WEREWOLF_WIN = 1;
+    RESULT_VILLAGER_WIN = 2;
+}
+
+message Header {
+    int32 code = 1;
+    string message = 2;
+    int64 timestamp = 3;
+}
+
+message PlayerInfo {
+    int64 playerId = 1;
+    string nickname = 2;
+    int32 seat = 3;
+    Role role = 4;
+    PlayerStatus status = 5;
+    bool isHost = 6;
+    bool isOnline = 7;
+}
+
+message RoomInfo {
+    int64 roomId = 1;
+    string roomName = 2;
+    int32 maxPlayers = 3;
+    int32 currentPlayers = 4;
+    GamePhase phase = 5;
+    repeated PlayerInfo players = 6;
+    int64 hostId = 7;
+    bool hasPassword = 8;
+}
+
+message VoteInfo {
+    int64 voterId = 1;
+    int64 targetId = 2;
+    int32 voteCount = 3;
+}
+
+message RecordFrame {
+    int64 timestamp = 1;
+    int32 dayNumber = 2;
+    GamePhase phase = 3;
+    string eventType = 4;
+    string eventData = 5;
+    repeated PlayerInfo playerStates = 6;
+}
+
+message GameRecord {
+    int64 recordId = 1;
+    int64 roomId = 2;
+    int64 startTime = 3;
+    int64 endTime = 4;
+    GameResult result = 5;
+    int32 totalDays = 6;
+    repeated PlayerInfo players = 7;
+}
+
+message HeartbeatReq {
+    int64 playerId = 1;
+    int64 roomId = 2;
+}
+
+message HeartbeatRes {
+    Header header = 1;
+    int64 serverTime = 2;
+}
+
+message LoginReq {
+    string nickname = 1;
+    string token = 2;
+}
+
+message LoginRes {
+    Header header = 1;
+    int64 playerId = 2;
+    string nickname = 3;
+    string sessionId = 4;
+}
+
+message CreateRoomReq {
+    int64 playerId = 1;
+    string roomName = 2;
+    int32 maxPlayers = 3;
+    string password = 4;
+}
+
+message CreateRoomRes {
+    Header header = 1;
+    RoomInfo room = 2;
+}
+
+message JoinRoomReq {
+    int64 playerId = 1;
+    int64 roomId = 2;
+    string password = 3;
+}
+
+message JoinRoomRes {
+    Header header = 1;
+    RoomInfo room = 2;
+}
+
+message LeaveRoomReq {
+    int64 playerId = 1;
+    int64 roomId = 2;
+}
+
+message LeaveRoomRes {
+    Header header = 1;
+}
+
+message StartGameReq {
+    int64 playerId = 1;
+    int64 roomId = 2;
+}
+
+message StartGameRes {
+    Header header = 1;
+}
+
+message RoomListReq {
+    int32 page = 1;
+    int32 size = 2;
+}
+
+message RoomListRes {
+    Header header = 1;
+    repeated RoomInfo rooms = 2;
+    int32 total = 3;
+}
+
+message RoomInfoNotify {
+    RoomInfo room = 1;
+}
+
+message GameStartNotify {
+    int64 roomId = 1;
+    repeated PlayerInfo players = 2;
+}
+
+message RoleAssignNotify {
+    int64 playerId = 1;
+    Role role = 2;
+    repeated int64 teammateIds = 3;
+}
+
+message NightStartNotify {
+    int64 roomId = 1;
+    int32 dayNumber = 2;
+}
+
+message WolfKillReq {
+    int64 playerId = 1;
+    int64 roomId = 2;
+    int64 targetId = 3;
+}
+
+message WolfKillRes {
+    Header header = 1;
+}
+
+message SeerCheckReq {
+    int64 playerId = 1;
+    int64 roomId = 2;
+    int64 targetId = 3;
+}
+
+message SeerCheckRes {
+    Header header = 1;
+    int64 targetId = 2;
+    bool isWerewolf = 3;
+}
+
+message WitchActionReq {
+    int64 playerId = 1;
+    int64 roomId = 2;
+    bool useAntidote = 3;
+    bool usePoison = 4;
+    int64 poisonTargetId = 5;
+}
+
+message WitchActionRes {
+    Header header = 1;
+    bool antidoteUsed = 2;
+    bool poisonUsed = 3;
+}
+
+message HunterShotNotify {
+    int64 roomId = 1;
+    int64 hunterId = 2;
+}
+
+message HunterShotReq {
+    int64 playerId = 1;
+    int64 roomId = 2;
+    int64 targetId = 3;
+}
+
+message HunterShotRes {
+    Header header = 1;
+}
+
+message DayStartNotify {
+    int64 roomId = 1;
+    int32 dayNumber = 2;
+    repeated int64 deadPlayerIds = 3;
+}
+
+message SpeechStartNotify {
+    int64 roomId = 1;
+    int64 speakerId = 2;
+    int32 speechTime = 3;
+}
+
+message SpeechEndNotify {
+    int64 roomId = 1;
+    int64 speakerId = 2;
+}
+
+message VoteReq {
+    int64 playerId = 1;
+    int64 roomId = 2;
+    int64 targetId = 3;
+}
+
+message VoteRes {
+    Header header = 1;
+}
+
+message VoteResultNotify {
+    int64 roomId = 1;
+    int32 dayNumber = 2;
+    repeated VoteInfo votes = 3;
+    int64 eliminatedId = 4;
+}
+
+message PlayerDeathNotify {
+    int64 roomId = 1;
+    int64 playerId = 2;
+    string deathReason = 3;
+    int32 dayNumber = 4;
+}
+
+message GameEndNotify {
+    int64 roomId = 1;
+    GameResult result = 2;
+    repeated PlayerInfo finalStates = 3;
+    int64 recordId = 4;
+}
+
+message ReconnectReq {
+    int64 playerId = 1;
+    string sessionId = 2;
+}
+
+message GameStateSnapshot {
+    int64 roomId = 1;
+    GamePhase phase = 2;
+    int32 dayNumber = 3;
+    repeated PlayerInfo players = 4;
+    Role myRole = 5;
+    repeated int64 teammateIds = 6;
+    repeated int64 deadPlayerIds = 7;
+    int64 phaseStartTime = 8;
+    int64 phaseEndTime = 9;
+    bool witchAntidoteUsed = 10;
+    bool witchPoisonUsed = 11;
+    repeated int64 wolfVoteTargets = 12;
+    int64 currentSpeakerId = 13;
+    repeated VoteInfo currentVotes = 14;
+    bool hunterPendingShot = 15;
+}
+
+message ReconnectRes {
+    Header header = 1;
+    RoomInfo room = 2;
+    Role role = 3;
+    repeated RecordFrame missedFrames = 4;
+    GameStateSnapshot stateSnapshot = 5;
+}
+
+message RecordListReq {
+    int64 playerId = 1;
+    int32 page = 2;
+    int32 size = 3;
+}
+
+message RecordListRes {
+    Header header = 1;
+    repeated GameRecord records = 2;
+    int32 total = 3;
+}
+
+message RecordPlaybackReq {
+    int64 recordId = 1;
+    int32 frameIndex = 2;
+}
+
+message RecordPlaybackRes {
+    Header header = 1;
+    RecordFrame frame = 2;
+    int32 totalFrames = 3;
+}
+
+message ChatReq {
+    int64 playerId = 1;
+    int64 roomId = 2;
+    string content = 3;
+}
+
+message ChatNotify {
+    int64 roomId = 1;
+    int64 playerId = 2;
+    string nickname = 3;
+    string content = 4;
+    int64 timestamp = 5;
+}
+
+message AiFillReq {
+    int64 playerId = 1;
+    int64 roomId = 2;
+    int32 aiCount = 3;
+    int32 aiDifficulty = 4;
+}
+
+message AiFillRes {
+    Header header = 1;
+    int32 filledCount = 2;
+    repeated PlayerInfo aiPlayers = 3;
+}
+
+message VoiceJoinReq {
+    int64 playerId = 1;
+    int64 roomId = 2;
+    bool isWolfRoom = 3;
+}
+
+message VoiceJoinRes {
+    Header header = 1;
+    string roomToken = 2;
+    string voiceServer = 3;
+    int32 voicePort = 4;
+}
+
+message VoiceLeaveReq {
+    int64 playerId = 1;
+    int64 roomId = 2;
+}
+
+message VoiceLeaveRes {
+    Header header = 1;
+}
+
+message VoiceUserState {
+    int64 playerId = 1;
+    string nickname = 2;
+    bool isSpeaking = 3;
+    bool isMuted = 4;
+    bool isDeafened = 5;
+}
+
+message VoiceUserStateNotify {
+    int64 roomId = 1;
+    repeated VoiceUserState users = 2;
+}
+
+message VoiceWolfRoomCreateNotify {
+    int64 roomId = 1;
+    string wolfRoomToken = 2;
+    repeated int64 wolfPlayerIds = 3;
+    int64 expireTime = 4;
+}
+
+message RankMatchReq {
+    int64 playerId = 1;
+    string gameMode = 2;
+}
+
+message RankMatchRes {
+    Header header = 1;
+    int64 matchId = 2;
+    int32 expectedWaitTime = 3;
+}
+
+message RankMatchFoundNotify {
+    int64 matchId = 1;
+    int64 roomId = 2;
+    int32 countdown = 3;
+    repeated PlayerInfo team1 = 4;
+    repeated PlayerInfo team2 = 5;
+}
+
+message RankMatchCancelReq {
+    int64 playerId = 1;
+    int64 matchId = 2;
+}
+
+message RankMatchCancelRes {
+    Header header = 1;
+}
+
+message RankPlayerInfo {
+    int64 playerId = 1;
+    string nickname = 2;
+    int32 rank = 3;
+    string rankName = 4;
+    int32 elo = 5;
+    int32 wins = 6;
+    int32 losses = 7;
+    int32 winStreak = 8;
+    string avatar = 9;
+}
+
+message RankLeaderboardReq {
+    int64 playerId = 1;
+    string seasonId = 2;
+    int32 page = 3;
+    int32 size = 4;
+    string region = 5;
+}
+
+message RankLeaderboardRes {
+    Header header = 1;
+    repeated RankPlayerInfo players = 2;
+    RankPlayerInfo myRank = 3;
+    int32 total = 4;
+    string seasonId = 5;
+}
+
+message RankSeasonInfoReq {
+    int64 playerId = 1;
+}
+
+message RankSeasonInfoRes {
+    Header header = 1;
+    string currentSeasonId = 2;
+    string seasonName = 3;
+    int64 startTime = 4;
+    int64 endTime = 5;
+    int32 totalPlayers = 6;
+    RankPlayerInfo myStats = 7;
+}
+
+message MessageWrapper {
+    MessageType type = 1;
+    bytes payload = 2;
+}
