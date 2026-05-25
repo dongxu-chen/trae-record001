@@ -1,0 +1,297 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "type": "stat",
+      "title": "QPS",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["mean"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "rate(db_bench_operations_total{service=\"db-benchmark\"}[1m])",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "TPS (Writes)",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["mean"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "rate(db_bench_write_operations_total{service=\"db-benchmark\"}[1m])",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Error Rate",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["mean"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "units": "percent"
+      },
+      "targets": [
+        {
+          "expr": "db_bench_error_rate{service=\"db-benchmark\"} * 100",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Active Workers",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "sum(db_bench_operations_total{service=\"db-benchmark\"})",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Throughput - QPS / TPS",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "expr": "rate(db_bench_operations_total{service=\"db-benchmark\"}[1m])",
+          "legendFormat": "QPS",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(db_bench_write_operations_total{service=\"db-benchmark\"}[1m])",
+          "legendFormat": "TPS",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Latency Percentiles (ms)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "expr": "db_bench_latency_p50_ms{service=\"db-benchmark\"}",
+          "legendFormat": "P50",
+          "refId": "A"
+        },
+        {
+          "expr": "db_bench_latency_p99_ms{service=\"db-benchmark\"}",
+          "legendFormat": "P99",
+          "refId": "B"
+        },
+        {
+          "expr": "db_bench_latency_p999_ms{service=\"db-benchmark\"}",
+          "legendFormat": "P999",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Read Latency Percentiles (ms)",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "expr": "db_bench_read_latency_p50_ms{service=\"db-benchmark\"}",
+          "legendFormat": "Read P50",
+          "refId": "A"
+        },
+        {
+          "expr": "db_bench_read_latency_p99_ms{service=\"db-benchmark\"}",
+          "legendFormat": "Read P99",
+          "refId": "B"
+        },
+        {
+          "expr": "db_bench_read_latency_p999_ms{service=\"db-benchmark\"}",
+          "legendFormat": "Read P999",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Write Latency Percentiles (ms)",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "expr": "db_bench_write_latency_p50_ms{service=\"db-benchmark\"}",
+          "legendFormat": "Write P50",
+          "refId": "A"
+        },
+        {
+          "expr": "db_bench_write_latency_p99_ms{service=\"db-benchmark\"}",
+          "legendFormat": "Write P99",
+          "refId": "B"
+        },
+        {
+          "expr": "db_bench_write_latency_p999_ms{service=\"db-benchmark\"}",
+          "legendFormat": "Write P999",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Hotspot Latency Percentiles (ms)",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "expr": "db_bench_hotspot_latency_p50_ms{service=\"db-benchmark\"}",
+          "legendFormat": "Hotspot P50",
+          "refId": "A"
+        },
+        {
+          "expr": "db_bench_hotspot_latency_p99_ms{service=\"db-benchmark\"}",
+          "legendFormat": "Hotspot P99",
+          "refId": "B"
+        },
+        {
+          "expr": "db_bench_hotspot_latency_p999_ms{service=\"db-benchmark\"}",
+          "legendFormat": "Hotspot P999",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Error Rate (%)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "expr": "db_bench_error_rate{service=\"db-benchmark\"} * 100",
+          "legendFormat": "Error Rate",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "histogram",
+      "title": "Latency Distribution",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(rate(db_bench_latency_ms_bucket{service=\"db-benchmark\"}[1m])) by (le)",
+          "format": "heatmap",
+          "legendFormat": "{{le}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "1s",
+  "schemaVersion": 39,
+  "tags": ["database", "benchmark", "performance"],
+  "templating": { "list": [] },
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Database Benchmark Overview",
+  "uid": "db-bench-overview",
+  "version": 1,
+  "weekStart": ""
+}

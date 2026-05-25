@@ -1,0 +1,21 @@
+FROM maven:3.8.6-openjdk-11-slim AS builder
+
+WORKDIR /app
+
+COPY pom.xml .
+COPY tracking-common ./tracking-common
+COPY tracking-collector ./tracking-collector
+
+RUN mvn clean package -pl tracking-collector -am -DskipTests
+
+FROM openjdk:11-jre-slim
+
+WORKDIR /app
+
+COPY --from=builder /app/tracking-collector/target/tracking-collector-1.0.0.jar app.jar
+
+EXPOSE 8080
+
+ENV JAVA_OPTS="-Xms512m -Xmx1024m"
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

@@ -1,0 +1,17 @@
+README.md
+setup.py
+k8s_resource_recommender/__init__.py
+k8s_resource_recommender/cli.py
+k8s_resource_recommender/cost_estimator.py
+k8s_resource_recommender/data_collector.py
+k8s_resource_recommender/demo_data_generator.py
+k8s_resource_recommender/hpa_recommender.py
+k8s_resource_recommender/prometheus_client.py
+k8s_resource_recommender/statistics_analyzer.py
+k8s_resource_recommender/vpa_recommender.py
+k8s_resource_recommender.egg-info/PKG-INFO
+k8s_resource_recommender.egg-info/SOURCES.txt
+k8s_resource_recommender.egg-info/dependency_links.txt
+k8s_resource_recommender.egg-info/entry_points.txt
+k8s_resource_recommender.egg-info/requires.txt
+k8s_resource_recommender.egg-info/top_level.txt

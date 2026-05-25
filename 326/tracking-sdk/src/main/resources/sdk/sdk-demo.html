@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking SDK Demo</title>
+    <script src="./tracking-web.js"></script>
+</head>
+<body>
+    <h1>Tracking SDK Demo</h1>
+
+    <div>
+        <h3>用户操作</h3>
+        <button onclick="login()">登录</button>
+        <button onclick="logout()">退出</button>
+        <button onclick="trackCustom()">自定义事件</button>
+        <button onclick="flushEvents()">立即发送</button>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <h3>可点击元素测试（自动埋点）</h3>
+        <button data-track-event="button_click"
+                data-track-id="btn001"
+                data-track-name="测试按钮1">
+            测试按钮1
+        </button>
+
+        <button data-track-event="button_click"
+                data-track-id="btn002"
+                data-track-name="测试按钮2"
+                data-track-props='{"color":"red","size":"large"}'>
+            测试按钮2（带属性）
+        </button>
+
+        <a href="#"
+           data-track-event="link_click"
+           data-track-name="测试链接">
+            测试链接
+        </a>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <h3>SDK信息</h3>
+        <p>Anonymous ID: <span id="anonymousId"></span></p>
+        <p>Device ID: <span id="deviceId"></span></p>
+        <p>Session ID: <span id="sessionId"></span></p>
+        <p>User ID: <span id="userId"></span></p>
+        <p>队列大小: <span id="queueSize"></span></p>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <h3>事件日志</h3>
+        <div id="eventLog" style="border: 1px solid #ccc; padding: 10px; max-height: 300px; overflow-y: auto; background: #f5f5f5;"></div>
+    </div>
+
+    <script>
+        var tracker = new Tracking({
+            serverUrl: 'http://localhost:8080/tracking',
+            appId: 'test_app',
+            appVersion: '1.0.0',
+            channel: 'web_demo',
+            debug: true,
+            batchSize: 5,
+            flushInterval: 10000
+        });
+
+        function updateInfo() {
+            document.getElementById('anonymousId').textContent = tracker.anonymousId;
+            document.getElementById('deviceId').textContent = tracker.deviceId;
+            document.getElementById('sessionId').textContent = tracker.getSessionId();
+            document.getElementById('userId').textContent = tracker.userId || '(未登录)';
+            document.getElementById('queueSize').textContent = tracker.queue.length;
+        }
+
+        function logEvent(message) {
+            var logDiv = document.getElementById('eventLog');
+            var time = new Date().toLocaleTimeString();
+            logDiv.innerHTML = '[' + time + '] ' + message + '<br>' + logDiv.innerHTML;
+            updateInfo();
+        }
+
+        function login() {
+            var userId = prompt('请输入用户ID:', 'user_' + Date.now());
+            if (userId) {
+                tracker.login(userId);
+                logEvent('用户登录: ' + userId);
+            }
+        }
+
+        function logout() {
+            tracker.logout();
+            logEvent('用户退出');
+        }
+
+        function trackCustom() {
+            var eventName = prompt('请输入事件名:', 'custom_event');
+            if (eventName) {
+                tracker.track(eventName, {
+                    demo_field: 'demo_value',
+                    timestamp: Date.now(),
+                    random: Math.random()
+                });
+                logEvent('发送自定义事件: ' + eventName);
+            }
+        }
+
+        function flushEvents() {
+            tracker.flush(true, function(success) {
+                logEvent('手动发送' + (success ? '成功' : '失败') + ', 剩余队列: ' + tracker.queue.length);
+            });
+        }
+
+        updateInfo();
+        setInterval(updateInfo, 1000);
+
+        tracker.track('demo_page_view', {
+            page_name: 'sdk_demo',
+            visit_count: parseInt(localStorage.getItem('visit_count') || '0') + 1
+        });
+        localStorage.setItem('visit_count', parseInt(localStorage.getItem('visit_count') || '0') + 1);
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+server:
+  port: 9999
+
+spring:
+  application:
+    name: task-scheduler-executor
+
+task-scheduler:
+  zookeeper:
+    address: 127.0.0.1:2181
+  executor:
+    name: demo-executor
+    app-name: demo-executor
+    port: 9999
+    description: 示例执行器
+
+logging:
+  level:
+    com.taskscheduler: info
+    org.apache.curator: warn
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"

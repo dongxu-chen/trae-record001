@@ -1,0 +1,55 @@
+prometheus:
+  url: "http://localhost:9090"
+  token: null
+  username: null
+  password: null
+  verify_ssl: true
+  timeout: 30
+
+vpa:
+  recommendation_mode: "initial"
+  min_cpu_millicores: 10.0
+  min_memory_bytes: 10485760
+  limit_over_request_ratio: 1.5
+  memory_oom_buffer_percent: 10.0
+  percentile_config:
+    critical:
+      cpu_percentile: 99.0
+      memory_percentile: 99.0
+      safety_margin_factor: 1.5
+    stateful:
+      cpu_percentile: 90.0
+      memory_percentile: 95.0
+      safety_margin_factor: 1.3
+    stateless:
+      cpu_percentile: 80.0
+      memory_percentile: 90.0
+      safety_margin_factor: 1.15
+
+hpa:
+  cpu_target_utilization: 70.0
+  memory_target_utilization: 75.0
+  min_replicas: 1
+  max_replicas: 10
+  scale_down_stabilization_window_minutes: 5
+  scale_up_stabilization_window_minutes: 3
+  tolerance: 0.1
+
+cost:
+  cloud_provider: "aws"
+  cpu_cost_per_core_per_hour: 0.023
+  memory_cost_per_gb_per_hour: 0.003
+  hours_per_month: 730.0
+  cluster_management:
+    enabled: true
+    monthly_fixed_cost: 100.0
+    allocation_method: "by_core_ratio"
+    min_allocation_per_pod: 5.0
+
+analysis:
+  min_data_points: 10
+  fill_method: "linear"
+  default_days: 7
+  default_step: "1m"
+  workload_type: "stateless"
+  risk_tolerance: "medium"

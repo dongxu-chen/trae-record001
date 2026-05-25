@@ -1,0 +1,26 @@
+{
+  "name": "video-conference",
+  "version": "1.0.0",
+  "description": "Web端视频会议组件 - WebRTC + Simple-Peer + React + Node.js",
+  "private": true,
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm:dev --workspace=server\" \"npm:dev --workspace=client\"",
+    "server": "npm run dev --workspace=server",
+    "client": "npm run dev --workspace=client",
+    "build": "npm run build --workspace=client",
+    "start": "npm run start --workspace=server",
+    "install:all": "npm install && npm run install:server && npm run install:client",
+    "install:server": "cd server && npm install",
+    "install:client": "cd client && npm install"
+  },
+  "keywords": ["webrtc", "video-conference", "simple-peer", "react"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

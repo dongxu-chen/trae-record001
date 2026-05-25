@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务调度系统</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        .app-container { display: flex; height: 100vh; }
+        .sidebar { width: 220px; background: #304156; color: #fff; }
+        .logo { height: 60px; line-height: 60px; text-align: center; font-size: 18px; font-weight: bold; background: #2b2f3a; }
+        .menu-item { padding: 15px 20px; cursor: pointer; transition: all 0.3s; }
+        .menu-item:hover, .menu-item.active { background: #409eff; }
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .header { height: 60px; line-height: 60px; padding: 0 20px; background: #fff; box-shadow: 0 1px 4px rgba(0,21,41,.08); display: flex; justify-content: space-between; align-items: center; }
+        .content { flex: 1; padding: 20px; overflow-y: auto; background: #f0f2f5; }
+        .page-container { background: #fff; padding: 20px; border-radius: 4px; }
+        .status-tag { padding: 2px 8px; border-radius: 4px; font-size: 12px; color: #fff; }
+        .status-running { background: #67c23a; }
+        .status-stopped { background: #909399; }
+        .status-success { background: #67c23a; }
+        .status-failed { background: #f56c6c; }
+        .status-pending { background: #e6a23c; }
+        .table-actions button { margin-right: 5px; }
+        .search-bar { margin-bottom: 20px; }
+        .pagination { margin-top: 20px; text-align: right; }
+        .form-item { margin-bottom: 15px; }
+        .form-item label { display: block; margin-bottom: 5px; font-weight: 500; }
+        .form-item input, .form-item select, .form-item textarea {
+            width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;
+        }
+        .form-item textarea { resize: vertical; min-height: 80px; }
+        .form-row { display: flex; gap: 20px; }
+        .form-row .form-item { flex: 1; }
+        .stats-card { display: flex; gap: 20px; margin-bottom: 20px; }
+        .stat-item { flex: 1; background: #fff; padding: 20px; border-radius: 4px; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1); }
+        .stat-item .label { color: #909399; font-size: 14px; margin-bottom: 10px; }
+        .stat-item .value { font-size: 28px; font-weight: bold; color: #303133; }
+        .stat-item .value.success { color: #67c23a; }
+        .stat-item .value.danger { color: #f56c6c; }
+        .stat-item .value.warning { color: #e6a23c; }
+        .dialog-footer { text-align: right; }
+        .log-detail { max-height: 400px; overflow-y: auto; background: #f5f7fa; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 13px; }
+        .gantt-container { overflow-x: auto; }
+        .gantt-timeline { position: relative; min-width: 800px; }
+        .gantt-header { display: flex; border-bottom: 2px solid #ebeef5; background: #f5f7fa; position: sticky; top: 0; z-index: 10; }
+        .gantt-header-cell { padding: 10px; text-align: center; font-weight: bold; border-right: 1px solid #ebeef5; min-width: 80px; }
+        .gantt-header-label { flex: 0 0 300px; padding: 10px; border-right: 2px solid #ebeef5; font-weight: bold; }
+        .gantt-row { display: flex; border-bottom: 1px solid #ebeef5; min-height: 40px; }
+        .gantt-row:hover { background: #f5f7fa; }
+        .gantt-label { flex: 0 0 300px; padding: 8px 10px; border-right: 2px solid #ebeef5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+        .gantt-cells { display: flex; position: relative; flex: 1; }
+        .gantt-cell { border-right: 1px solid #ebeef5; min-width: 80px; }
+        .gantt-bar { position: absolute; height: 28px; top: 6px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; color: #fff; font-size: 12px; cursor: pointer; overflow: hidden; }
+        .gantt-bar.success { background: linear-gradient(90deg, #67c23a, #85ce61); }
+        .gantt-bar.failed { background: linear-gradient(90deg, #f56c6c, #f78989); }
+        .gantt-bar.running { background: linear-gradient(90deg, #409eff, #66b1ff); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        .gantt-now-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #f56c6c; z-index: 5; }
+        .priority-badge { padding: 2px 6px; border-radius: 3px; font-size: 11px; color: #fff; margin-left: 5px; }
+        .priority-1 { background: #f56c6c; }
+        .priority-3 { background: #e6a23c; }
+        .priority-5 { background: #409eff; }
+        .priority-7 { background: #909399; }
+        .priority-10 { background: #c0c4cc; }
+        .prediction-info { background: #ecf5ff; padding: 10px; border-radius: 4px; margin-top: 10px; border-left: 4px solid #409eff; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="logo">任务调度系统</div>
+            <div class="menu-item" :class="{active: currentPage === 'dashboard'}" @click="currentPage = 'dashboard'">
+                📊 仪表盘
+            </div>
+            <div class="menu-item" :class="{active: currentPage === 'task'}" @click="currentPage = 'task'">
+                📋 任务管理
+            </div>
+            <div class="menu-item" :class="{active: currentPage === 'log'}" @click="currentPage = 'log'">
+                📝 执行日志
+            </div>
+            <div class="menu-item" :class="{active: currentPage === 'gantt'}" @click="currentPage = 'gantt'; loadGanttData()">
+                📈 执行甘特图
+            </div>
+            <div class="menu-item" :class="{active: currentPage === 'executor'}" @click="currentPage = 'executor'">
+                🖥️ 执行器管理
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <div>欢迎使用任务调度系统</div>
+                <div>{{ currentTime }}</div>
+            </div>
+            <div class="content">
+                <div v-if="currentPage === 'dashboard'" class="page-container">
+                    <h2>仪表盘</h2>
+                    <div class="stats-card">
+                        <div class="stat-item">
+                            <div class="label">任务总数</div>
+                            <div class="value">{{ stats.taskTotal }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="label">运行中任务</div>
+                            <div class="value success">{{ stats.taskRunning }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="label">执行器总数</div>
+                            <div class="value">{{ stats.executorTotal }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="label">在线执行器</div>
+                            <div class="value success">{{ stats.executorOnline }}</div>
+                        </div>
+                    </div>
+                    <div style="background: #f5f7fa; padding: 20px; border-radius: 4px;">
+                        <h3>系统说明</h3>
+                        <ul style="margin-top: 10px; line-height: 2;">
+                            <li>✅ 支持Cron定时任务和DAG依赖任务</li>
+                            <li>✅ 支持任务失败自动重试</li>
+                            <li>✅ 支持任务超时控制</li>
+                            <li>✅ 支持任务分片，大数据并行处理</li>
+                            <li>✅ 执行器自动注册发现（基于Zookeeper）</li>
+                            <li>✅ 完整的Web管理界面</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div v-if="currentPage === 'task'" class="page-container">
+                    <h2>任务管理</h2>
+                    <div class="search-bar">
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <input v-model="taskQuery.taskName" placeholder="任务名称" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; width: 200px;">
+                            <select v-model="taskQuery.taskType" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; width: 150px;">
+                                <option value="">全部类型</option>
+                                <option value="1">Cron任务</option>
+                                <option value="2">DAG任务</option>
+                            </select>
+                            <select v-model="taskQuery.status" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; width: 150px;">
+                                <option value="">全部状态</option>
+                                <option value="1">运行中</option>
+                                <option value="0">已停止</option>
+                            </select>
+                            <button @click="loadTasks()" style="padding: 8px 16px; background: #409eff; color: #fff; border: none; border-radius: 4px; cursor: pointer;">搜索</button>
+                            <button @click="showTaskDialog()" style="padding: 8px 16px; background: #67c23a; color: #fff; border: none; border-radius: 4px; cursor: pointer;">+ 新增任务</button>
+                        </div>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f5f7fa;">
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">ID</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">任务名称</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">优先级</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">类型</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">Cron</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">处理器</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">预测耗时</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">状态</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">上次执行</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="task in taskList" :key="task.id">
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ task.id }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ task.taskName }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">
+                                    <span class="priority-badge" :class="'priority-' + (task.priority || 5)">{{ getPriorityLabel(task.priority) }}</span>
+                                </td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">
+                                    {{ task.taskType === 1 ? 'Cron任务' : 'DAG任务' }}
+                                </td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ task.cronExpression || '-' }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ task.handler }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ getPredictedDuration(task.id) }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">
+                                    <span class="status-tag" :class="task.status === 1 ? 'status-running' : 'status-stopped'">
+                                        {{ task.status === 1 ? '运行中' : '已停止' }}
+                                    </span>
+                                </td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ task.lastExecuteTime || '-' }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;" class="table-actions">
+                                    <button @click="viewTaskLogs(task.id)" style="padding: 4px 8px; background: #909399; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">日志</button>
+                                    <button @click="triggerTask(task.id)" style="padding: 4px 8px; background: #e6a23c; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">执行</button>
+                                    <button v-if="task.status === 0" @click="startTask(task.id)" style="padding: 4px 8px; background: #67c23a; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">启动</button>
+                                    <button v-else @click="stopTask(task.id)" style="padding: 4px 8px; background: #f56c6c; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">停止</button>
+                                    <button @click="showTaskDialog(task)" style="padding: 4px 8px; background: #409eff; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">编辑</button>
+                                    <button @click="deleteTask(task.id)" style="padding: 4px 8px; background: #f56c6c; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">删除</button>
+                                </td>
+                            </tr>
+                            <tr v-if="taskList.length === 0">
+                                <td colspan="10" style="padding: 40px; text-align: center; color: #909399;">暂无数据</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="pagination">
+                        <span style="margin-right: 10px;">共 {{ taskPage.total }} 条</span>
+                        <button @click="taskQuery.pageNum > 1 && (taskQuery.pageNum--, loadTasks())" style="padding: 5px 10px; margin-right: 5px;">上一页</button>
+                        <span>{{ taskQuery.pageNum }} / {{ Math.ceil(taskPage.total / taskQuery.pageSize) || 1 }}</span>
+                        <button @click="taskQuery.pageNum < Math.ceil(taskPage.total / taskQuery.pageSize) && (taskQuery.pageNum++, loadTasks())" style="padding: 5px 10px; margin-left: 5px;">下一页</button>
+                    </div>
+                </div>
+
+                <div v-if="currentPage === 'log'" class="page-container">
+                    <h2>执行日志</h2>
+                    <div class="search-bar">
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <input v-model="logQuery.taskName" placeholder="任务名称" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; width: 200px;">
+                            <select v-model="logQuery.executeCode" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; width: 150px;">
+                                <option value="">全部结果</option>
+                                <option value="0">成功</option>
+                                <option value="500">失败</option>
+                            </select>
+                            <button @click="loadLogs()" style="padding: 8px 16px; background: #409eff; color: #fff; border: none; border-radius: 4px; cursor: pointer;">搜索</button>
+                            <button @click="clearLogs()" style="padding: 8px 16px; background: #f56c6c; color: #fff; border: none; border-radius: 4px; cursor: pointer;">清理日志</button>
+                        </div>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f5f7fa;">
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">ID</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">任务名称</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">处理器</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">执行器</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">类型</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">调度结果</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">执行结果</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">触发时间</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="log in logList" :key="log.id">
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ log.id }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ log.taskName }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ log.handler }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ log.executorAddress || '-' }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">
+                                    {{ log.executeType === 1 ? '正常' : log.executeType === 2 ? '重试' : '手动' }}
+                                </td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">
+                                    <span class="status-tag" :class="log.triggerCode === 0 ? 'status-success' : 'status-failed'">
+                                        {{ log.triggerCode === 0 ? '成功' : '失败' }}
+                                    </span>
+                                </td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">
+                                    <span v-if="log.executeCode === null" class="status-tag status-pending">执行中</span>
+                                    <span v-else class="status-tag" :class="log.executeCode === 0 ? 'status-success' : 'status-failed'">
+                                        {{ log.executeCode === 0 ? '成功' : '失败' }}
+                                    </span>
+                                </td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ log.triggerTime || '-' }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">
+                                    <button @click="viewLogDetail(log)" style="padding: 4px 8px; background: #409eff; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">详情</button>
+                                </td>
+                            </tr>
+                            <tr v-if="logList.length === 0">
+                                <td colspan="9" style="padding: 40px; text-align: center; color: #909399;">暂无数据</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="pagination">
+                        <span style="margin-right: 10px;">共 {{ logPage.total }} 条</span>
+                        <button @click="logQuery.pageNum > 1 && (logQuery.pageNum--, loadLogs())" style="padding: 5px 10px; margin-right: 5px;">上一页</button>
+                        <span>{{ logQuery.pageNum }} / {{ Math.ceil(logPage.total / logQuery.pageSize) || 1 }}</span>
+                        <button @click="logQuery.pageNum < Math.ceil(logPage.total / logQuery.pageSize) && (logQuery.pageNum++, loadLogs())" style="padding: 5px 10px; margin-left: 5px;">下一页</button>
+                    </div>
+                </div>
+
+                <div v-if="currentPage === 'executor'" class="page-container">
+                    <h2>执行器管理</h2>
+                    <div class="search-bar">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button @click="loadExecutors()" style="padding: 8px 16px; background: #409eff; color: #fff; border: none; border-radius: 4px; cursor: pointer;">刷新</button>
+                            <button @click="refreshExecutorStatus()" style="padding: 8px 16px; background: #e6a23c; color: #fff; border: none; border-radius: 4px; cursor: pointer;">同步状态</button>
+                        </div>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f5f7fa;">
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">ID</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">执行器名称</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">地址</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">应用名</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">状态</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">最后心跳</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">注册时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="executor in executorList" :key="executor.id">
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ executor.id }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ executor.executorName }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ executor.executorAddress }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ executor.appName }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">
+                                    <span class="status-tag" :class="executor.status === 1 ? 'status-running' : 'status-stopped'">
+                                        {{ executor.status === 1 ? '在线' : '离线' }}
+                                    </span>
+                                </td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ executor.heartbeatTime || '-' }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ebeef5;">{{ executor.registerTime || '-' }}</td>
+                            </tr>
+                            <tr v-if="executorList.length === 0">
+                                <td colspan="7" style="padding: 40px; text-align: center; color: #909399;">暂无执行器</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div v-if="currentPage === 'gantt'" class="page-container">
+                    <h2>执行甘特图</h2>
+                    <div class="search-bar">
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <select v-model="ganttQuery.timeRange" @change="changeTimeRange()" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; width: 150px;">
+                                <option value="1">最近1小时</option>
+                                <option value="6">最近6小时</option>
+                                <option value="24">最近24小时</option>
+                                <option value="48">最近48小时</option>
+                                <option value="168">最近7天</option>
+                            </select>
+                            <select v-model="ganttQuery.taskGroup" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; width: 150px;">
+                                <option value="">全部分组</option>
+                                <option v-for="g in taskGroups" :key="g" :value="g">{{ g }}</option>
+                            </select>
+                            <select v-model="ganttQuery.taskId" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; width: 200px;">
+                                <option value="">全部任务</option>
+                                <option v-for="t in taskList" :key="t.id" :value="t.id">{{ t.taskName }}</option>
+                            </select>
+                            <button @click="loadGanttData()" style="padding: 8px 16px; background: #409eff; color: #fff; border: none; border-radius: 4px; cursor: pointer;">刷新</button>
+                        </div>
+                    </div>
+
+                    <div class="stats-card">
+                        <div class="stat-item">
+                            <div class="label">任务总数</div>
+                            <div class="value">{{ ganttStats.totalTasks }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="label">成功</div>
+                            <div class="value success">{{ ganttStats.successCount }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="label">失败</div>
+                            <div class="value danger">{{ ganttStats.failedCount }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="label">执行中</div>
+                            <div class="value warning">{{ ganttStats.runningCount }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="label">成功率</div>
+                            <div class="value">{{ ganttStats.successRate ? ganttStats.successRate.toFixed(1) + '%' : '0%' }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="label">平均耗时</div>
+                            <div class="value">{{ ganttStats.avgDuration ? ganttStats.avgDuration.toFixed(1) + 's' : '-' }}</div>
+                        </div>
+                    </div>
+
+                    <div class="gantt-container">
+                        <div class="gantt-timeline" :style="{ width: ganttTimelineWidth + 'px' }">
+                            <div class="gantt-header">
+                                <div class="gantt-header-label">任务 / 执行器</div>
+                                <div style="display: flex; flex: 1;">
+                                    <div v-for="(slot, idx) in ganttTimeSlots" :key="idx" class="gantt-header-cell"
+                                         :style="{ minWidth: ganttSlotWidth + 'px', width: ganttSlotWidth + 'px' }">
+                                        {{ slot }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-for="(group, taskName) in ganttGroupedData" :key="taskName" class="gantt-row">
+                                <div class="gantt-label" :title="taskName">
+                                    <span class="priority-badge" :class="'priority-' + (group.priority || 5)" style="margin-right: 5px;">P{{ group.priority || 5 }}</span>
+                                    {{ taskName }}
+                                </div>
+                                <div class="gantt-cells" :style="{ width: ganttTimelineWidth - 300 + 'px' }">
+                                    <div v-for="(slot, idx) in ganttTimeSlots" :key="idx" class="gantt-cell"
+                                         :style="{ minWidth: ganttSlotWidth + 'px', width: ganttSlotWidth + 'px' }"></div>
+                                    <div v-for="(item, idx) in group.items" :key="idx"
+                                         class="gantt-bar" :class="item.status"
+                                         :style="getGanttBarStyle(item)"
+                                         :title="getGanttBarTitle(item)">
+                                        {{ item.duration ? item.duration + 's' : '运行中' }}
+                                    </div>
+                                    <div v-if="ganttNowPosition > 0" class="gantt-now-line" :style="{ left: ganttNowPosition + 'px' }"></div>
+                                </div>
+                            </div>
+
+                            <div v-if="Object.keys(ganttGroupedData).length === 0" style="padding: 40px; text-align: center; color: #909399;">
+                                暂无执行数据
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="taskDialogVisible" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+        <div style="background: #fff; border-radius: 8px; padding: 20px; width: 700px; max-height: 90vh; overflow-y: auto;">
+            <h3 style="margin-bottom: 20px;">{{ editTask.id ? '编辑任务' : '新增任务' }}</h3>
+            <div class="form-row">
+                <div class="form-item">
+                    <label>任务名称 *</label>
+                    <input v-model="editTask.taskName" placeholder="请输入任务名称">
+                </div>
+                <div class="form-item">
+                    <label>任务分组</label>
+                    <input v-model="editTask.taskGroup" placeholder="默认DEFAULT">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-item">
+                    <label>任务类型 *</label>
+                    <select v-model="editTask.taskType">
+                        <option value="1">Cron定时任务</option>
+                        <option value="2">DAG依赖任务</option>
+                    </select>
+                </div>
+                <div class="form-item">
+                    <label>Cron表达式</label>
+                    <input v-model="editTask.cronExpression" placeholder="如: 0 0/1 * * * ?">
+                </div>
+            </div>
+            <div class="form-item">
+                <label>任务处理器 *</label>
+                <input v-model="editTask.handler" placeholder="Bean名称或类名">
+            </div>
+            <div class="form-item">
+                <label>任务参数</label>
+                <textarea v-model="editTask.params" placeholder="JSON格式参数"></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-item">
+                    <label>路由策略</label>
+                    <select v-model="editTask.executorRouteStrategy">
+                        <option value="1">轮询</option>
+                        <option value="2">随机</option>
+                        <option value="3">一致性哈希</option>
+                    </select>
+                </div>
+                <div class="form-item">
+                    <label>优先级</label>
+                    <select v-model="editTask.priority">
+                        <option value="1">1 - 最高优先级</option>
+                        <option value="3">3 - 高优先级</option>
+                        <option value="5">5 - 普通优先级</option>
+                        <option value="7">7 - 低优先级</option>
+                        <option value="10">10 - 最低优先级</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-item">
+                    <label>超时时间(秒)</label>
+                    <input type="number" v-model="editTask.taskTimeout" placeholder="默认300">
+                </div>
+                <div class="form-item">
+                    <label>&nbsp;</label>
+                    <div class="prediction-info" v-if="editTask.id">
+                        预测执行耗时: <strong>{{ getPredictedDuration(editTask.id) }}</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-item">
+                    <label>最大重试次数</label>
+                    <input type="number" v-model="editTask.maxRetryCount" placeholder="默认0">
+                </div>
+                <div class="form-item">
+                    <label>重试间隔(秒)</label>
+                    <input type="number" v-model="editTask.retryInterval" placeholder="默认60">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-item">
+                    <label>分片总数</label>
+                    <input type="number" v-model="editTask.shardingTotal" placeholder="默认1">
+                </div>
+                <div class="form-item">
+                    <label>分片参数(JSON)</label>
+                    <input v-model="editTask.shardingParam" placeholder='{"params":["a","b","c"]}'>
+                </div>
+            </div>
+            <div class="form-item">
+                <label>DAG依赖任务ID(逗号分隔)</label>
+                <input v-model="editTask.dagDependencies" placeholder="如: 1,2,3">
+            </div>
+            <div class="form-item">
+                <label>描述</label>
+                <textarea v-model="editTask.description" placeholder="任务描述"></textarea>
+            </div>
+            <div class="dialog-footer">
+                <button @click="taskDialogVisible = false" style="padding: 8px 16px; margin-right: 10px; background: #fff; border: 1px solid #dcdfe6; border-radius: 4px; cursor: pointer;">取消</button>
+                <button @click="saveTask()" style="padding: 8px 16px; background: #409eff; color: #fff; border: none; border-radius: 4px; cursor: pointer;">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="logDialogVisible" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+        <div style="background: #fff; border-radius: 8px; padding: 20px; width: 800px; max-height: 90vh; overflow-y: auto;">
+            <h3 style="margin-bottom: 20px;">日志详情</h3>
+            <div class="form-item">
+                <label>任务名称</label>
+                <div style="padding: 8px 12px; background: #f5f7fa; border-radius: 4px;">{{ currentLog.taskName }}</div>
+            </div>
+            <div class="form-row">
+                <div class="form-item">
+                    <label>调度结果</label>
+                    <div style="padding: 8px 12px; background: #f5f7fa; border-radius: 4px;">
+                        <span class="status-tag" :class="currentLog.triggerCode === 0 ? 'status-success' : 'status-failed'">
+                            {{ currentLog.triggerCode === 0 ? '成功' : '失败' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="form-item">
+                    <label>执行结果</label>
+                    <div style="padding: 8px 12px; background: #f5f7fa; border-radius: 4px;">
+                        <span v-if="currentLog.executeCode === null" class="status-tag status-pending">执行中</span>
+                        <span v-else class="status-tag" :class="currentLog.executeCode === 0 ? 'status-success' : 'status-failed'">
+                            {{ currentLog.executeCode === 0 ? '成功' : '失败' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-item">
+                <label>调度信息</label>
+                <div style="padding: 8px 12px; background: #f5f7fa; border-radius: 4px;">{{ currentLog.triggerMsg || '-' }}</div>
+            </div>
+            <div class="form-item">
+                <label>执行结果</label>
+                <div class="log-detail">{{ currentLog.executeMsg || '暂无执行结果' }}</div>
+            </div>
+            <div class="form-row">
+                <div class="form-item">
+                    <label>触发时间</label>
+                    <div style="padding: 8px 12px; background: #f5f7fa; border-radius: 4px;">{{ currentLog.triggerTime || '-' }}</div>
+                </div>
+                <div class="form-item">
+                    <label>执行时长</label>
+                    <div style="padding: 8px 12px; background: #f5f7fa; border-radius: 4px;">{{ getDuration(currentLog) }}</div>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button @click="logDialogVisible = false" style="padding: 8px 16px; background: #409eff; color: #fff; border: none; border-radius: 4px; cursor: pointer;">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script>
+const { createApp } = Vue;
+
+const app = createApp({
+    data() {
+        return {
+            currentPage: 'dashboard',
+            currentTime: '',
+            stats: {
+                taskTotal: 0,
+                taskRunning: 0,
+                executorTotal: 0,
+                executorOnline: 0
+            },
+            taskQuery: { pageNum: 1, pageSize: 10, taskName: '', taskType: '', status: '' },
+            taskList: [],
+            taskPage: { total: 0 },
+            logQuery: { pageNum: 1, pageSize: 10, taskName: '', executeCode: '' },
+            logList: [],
+            logPage: { total: 0 },
+            executorList: [],
+            taskDialogVisible: false,
+            editTask: {},
+            logDialogVisible: false,
+            currentLog: {},
+            ganttQuery: { timeRange: '24', taskGroup: '', taskId: '' },
+            ganttData: [],
+            ganttGroupedData: {},
+            ganttStats: {},
+            ganttTimeSlots: [],
+            ganttStartTime: null,
+            ganttEndTime: null,
+            ganttSlotWidth: 100,
+            ganttTimelineWidth: 1000,
+            ganttNowPosition: 0,
+            taskGroups: [],
+            predictedDurations: {}
+        }
+    },
+    mounted() {
+        this.updateTime();
+        setInterval(this.updateTime, 1000);
+        this.loadStats();
+        this.loadTasks();
+        this.loadLogs();
+        this.loadExecutors();
+        this.loadTaskGroups();
+        setInterval(() => {
+            if (this.currentPage === 'gantt') {
+                this.loadGanttData();
+            }
+        }, 10000);
+    },
+    methods: {
+        updateTime() {
+            this.currentTime = new Date().toLocaleString('zh-CN');
+        },
+        async request(url, method, data) {
+            const options = {
+                method: method || 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            };
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            const res = await fetch(url, options);
+            return await res.json();
+        },
+        async loadStats() {
+            try {
+                const taskRes = await this.request('/api/task/list', 'POST', { pageNum: 1, pageSize: 1 });
+                if (taskRes.code === 200) {
+                    this.stats.taskTotal = taskRes.data.total;
+                }
+                const taskRunningRes = await this.request('/api/task/list', 'POST', { pageNum: 1, pageSize: 1, status: 1 });
+                if (taskRunningRes.code === 200) {
+                    this.stats.taskRunning = taskRunningRes.data.total;
+                }
+                const execRes = await this.request('/api/executor/stats', 'GET');
+                if (execRes.code === 200) {
+                    this.stats.executorTotal = execRes.data.total;
+                    this.stats.executorOnline = execRes.data.online;
+                }
+            } catch (e) {
+                console.error('Load stats failed', e);
+            }
+        },
+        async loadTasks() {
+            try {
+                const res = await this.request('/api/task/list', 'POST', this.taskQuery);
+                if (res.code === 200) {
+                    this.taskList = res.data.list;
+                    this.taskPage.total = res.data.total;
+                }
+            } catch (e) {
+                console.error('Load tasks failed', e);
+            }
+        },
+        async loadLogs() {
+            try {
+                const res = await this.request('/api/task-log/list', 'POST', this.logQuery);
+                if (res.code === 200) {
+                    this.logList = res.data.list;
+                    this.logPage.total = res.data.total;
+                }
+            } catch (e) {
+                console.error('Load logs failed', e);
+            }
+        },
+        async loadExecutors() {
+            try {
+                const res = await this.request('/api/executor/list?pageNum=1&pageSize=100', 'GET');
+                if (res.code === 200) {
+                    this.executorList = res.data.list;
+                }
+            } catch (e) {
+                console.error('Load executors failed', e);
+            }
+        },
+        showTaskDialog(task) {
+            this.editTask = task ? { ...task } : {
+                taskName: '',
+                taskGroup: 'DEFAULT',
+                taskType: 1,
+                cronExpression: '',
+                handler: '',
+                params: '',
+                executorRouteStrategy: 1,
+                priority: 5,
+                taskTimeout: 300,
+                maxRetryCount: 0,
+                retryInterval: 60,
+                shardingTotal: 1,
+                shardingParam: '',
+                dagDependencies: '',
+                description: ''
+            };
+            this.taskDialogVisible = true;
+        },
+        async saveTask() {
+            try {
+                const url = this.editTask.id ? '/api/task/update' : '/api/task/add';
+                const res = await this.request(url, 'POST', this.editTask);
+                if (res.code === 200) {
+                    alert('保存成功');
+                    this.taskDialogVisible = false;
+                    this.loadTasks();
+                    this.loadStats();
+                } else {
+                    alert('保存失败: ' + res.msg);
+                }
+            } catch (e) {
+                alert('保存失败: ' + e.message);
+            }
+        },
+        async startTask(id) {
+            if (!confirm('确定要启动该任务吗？')) return;
+            try {
+                const res = await this.request('/api/task/start/' + id, 'POST');
+                if (res.code === 200) {
+                    alert('启动成功');
+                    this.loadTasks();
+                    this.loadStats();
+                } else {
+                    alert('启动失败: ' + res.msg);
+                }
+            } catch (e) {
+                alert('启动失败: ' + e.message);
+            }
+        },
+        async stopTask(id) {
+            if (!confirm('确定要停止该任务吗？')) return;
+            try {
+                const res = await this.request('/api/task/stop/' + id, 'POST');
+                if (res.code === 200) {
+                    alert('停止成功');
+                    this.loadTasks();
+                    this.loadStats();
+                } else {
+                    alert('停止失败: ' + res.msg);
+                }
+            } catch (e) {
+                alert('停止失败: ' + e.message);
+            }
+        },
+        async triggerTask(id) {
+            if (!confirm('确定要立即执行该任务吗？')) return;
+            try {
+                const res = await this.request('/api/task/trigger/' + id, 'POST');
+                if (res.code === 200) {
+                    alert('已触发执行');
+                    this.loadLogs();
+                } else {
+                    alert('触发失败: ' + res.msg);
+                }
+            } catch (e) {
+                alert('触发失败: ' + e.message);
+            }
+        },
+        async deleteTask(id) {
+            if (!confirm('确定要删除该任务吗？')) return;
+            try {
+                const res = await this.request('/api/task/delete/' + id, 'POST');
+                if (res.code === 200) {
+                    alert('删除成功');
+                    this.loadTasks();
+                    this.loadStats();
+                } else {
+                    alert('删除失败: ' + res.msg);
+                }
+            } catch (e) {
+                alert('删除失败: ' + e.message);
+            }
+        },
+        viewTaskLogs(taskId) {
+            this.logQuery.taskId = taskId;
+            this.currentPage = 'log';
+            this.loadLogs();
+        },
+        viewLogDetail(log) {
+            this.currentLog = log;
+            this.logDialogVisible = true;
+        },
+        async clearLogs() {
+            if (!confirm('确定要清理30天前的日志吗？')) return;
+            try {
+                const res = await this.request('/api/task-log/clear?days=30', 'POST');
+                if (res.code === 200) {
+                    alert('清理成功');
+                    this.loadLogs();
+                }
+            } catch (e) {
+                alert('清理失败: ' + e.message);
+            }
+        },
+        async refreshExecutorStatus() {
+            try {
+                await this.request('/api/executor/refresh', 'POST');
+                this.loadExecutors();
+                this.loadStats();
+                alert('同步成功');
+            } catch (e) {
+                alert('同步失败: ' + e.message);
+            }
+        },
+        getDuration(log) {
+            if (!log.executeStartTime || !log.executeEndTime) return '-';
+            const start = new Date(log.executeStartTime).getTime();
+            const end = new Date(log.executeEndTime).getTime();
+            return ((end - start) / 1000).toFixed(2) + ' 秒';
+        },
+        getPriorityLabel(priority) {
+            const p = priority || 5;
+            const labels = { 1: '最高', 3: '高', 5: '普通', 7: '低', 10: '最低' };
+            return 'P' + p + ' ' + (labels[p] || '普通');
+        },
+        async loadTaskGroups() {
+            try {
+                const res = await this.request('/api/gantt/task-groups', 'GET');
+                if (res.code === 200) {
+                    this.taskGroups = res.data;
+                }
+            } catch (e) {
+                console.error('Load task groups failed', e);
+            }
+        },
+        changeTimeRange() {
+            this.loadGanttData();
+        },
+        async loadGanttData() {
+            try {
+                const now = new Date();
+                const hours = parseInt(this.ganttQuery.timeRange);
+                const startTime = new Date(now.getTime() - hours * 3600 * 1000);
+                const endTime = new Date(now.getTime() + 3600 * 1000);
+
+                let url = '/api/gantt/data?startTime=' + encodeURIComponent(this.formatDateTime(startTime))
+                        + '&endTime=' + encodeURIComponent(this.formatDateTime(endTime));
+                if (this.ganttQuery.taskGroup) {
+                    url += '&taskGroup=' + encodeURIComponent(this.ganttQuery.taskGroup);
+                }
+                if (this.ganttQuery.taskId) {
+                    url += '&taskId=' + this.ganttQuery.taskId;
+                }
+
+                const res = await this.request(url, 'GET');
+                if (res.code === 200) {
+                    this.ganttData = res.data;
+                    this.ganttStartTime = startTime;
+                    this.ganttEndTime = endTime;
+                    this.processGanttData();
+                    this.loadGanttStats(startTime, now);
+                    this.loadPredictedDurations();
+                }
+            } catch (e) {
+                console.error('Load gantt data failed', e);
+            }
+        },
+        processGanttData() {
+            const totalMs = this.ganttEndTime.getTime() - this.ganttStartTime.getTime();
+            const slotMinutes = Math.max(5, Math.ceil(totalMs / (24 * 60000)));
+            const slotMs = slotMinutes * 60000;
+            const totalSlots = Math.ceil(totalMs / slotMs);
+            this.ganttSlotWidth = Math.max(80, Math.min(150, Math.floor(1200 / totalSlots)));
+            this.ganttTimelineWidth = 300 + totalSlots * this.ganttSlotWidth;
+
+            this.ganttTimeSlots = [];
+            for (let i = 0; i < totalSlots; i++) {
+                const slotTime = new Date(this.ganttStartTime.getTime() + i * slotMs);
+                this.ganttTimeSlots.push(this.formatTime(slotTime));
+            }
+
+            const now = new Date();
+            if (now >= this.ganttStartTime && now <= this.ganttEndTime) {
+                this.ganttNowPosition = ((now.getTime() - this.ganttStartTime.getTime()) / totalMs) * (this.ganttTimelineWidth - 300);
+            } else {
+                this.ganttNowPosition = 0;
+            }
+
+            const grouped = {};
+            for (const item of this.ganttData) {
+                if (!grouped[item.taskName]) {
+                    grouped[item.taskName] = { items: [], priority: 5 };
+                }
+                grouped[item.taskName].items.push(item);
+            }
+
+            const taskMap = {};
+            for (const task of this.taskList) {
+                taskMap[task.id] = task;
+            }
+            for (const item of this.ganttData) {
+                if (taskMap[item.taskId] && grouped[item.taskName]) {
+                    grouped[item.taskName].priority = taskMap[item.taskId].priority || 5;
+                }
+            }
+
+            this.ganttGroupedData = grouped;
+        },
+        getGanttBarStyle(item) {
+            if (!item.startTime) return {};
+            const totalMs = this.ganttEndTime.getTime() - this.ganttStartTime.getTime();
+            const startMs = new Date(item.startTime).getTime() - this.ganttStartTime.getTime();
+            const left = (startMs / totalMs) * (this.ganttTimelineWidth - 300);
+
+            let endMs;
+            if (item.endTime) {
+                endMs = new Date(item.endTime).getTime() - this.ganttStartTime.getTime();
+            } else {
+                endMs = Math.min(new Date().getTime(), this.ganttEndTime.getTime()) - this.ganttStartTime.getTime();
+            }
+            const width = Math.max(20, ((endMs - startMs) / totalMs) * (this.ganttTimelineWidth - 300));
+
+            return {
+                left: Math.max(0, left) + 'px',
+                width: Math.min(width, this.ganttTimelineWidth - 300 - left) + 'px'
+            };
+        },
+        getGanttBarTitle(item) {
+            let title = item.taskName + '\n';
+            if (item.shardingTotal > 1) {
+                title += '分片: ' + (item.shardingIndex + 1) + '/' + item.shardingTotal + '\n';
+            }
+            title += '状态: ' + (item.status === 'success' ? '成功' : item.status === 'failed' ? '失败' : '运行中') + '\n';
+            title += '开始: ' + item.startTime + '\n';
+            if (item.endTime) {
+                title += '结束: ' + item.endTime + '\n';
+                title += '耗时: ' + item.duration + '秒';
+            }
+            if (item.executeMsg && item.status === 'failed') {
+                title += '\n错误: ' + item.executeMsg;
+            }
+            return title;
+        },
+        async loadGanttStats(startTime, endTime) {
+            try {
+                let url = '/api/gantt/stats?startTime=' + encodeURIComponent(this.formatDateTime(startTime))
+                        + '&endTime=' + encodeURIComponent(this.formatDateTime(endTime));
+                const res = await this.request(url, 'GET');
+                if (res.code === 200) {
+                    this.ganttStats = res.data;
+                }
+            } catch (e) {
+                console.error('Load gantt stats failed', e);
+            }
+        },
+        async loadPredictedDurations() {
+            try {
+                const taskIds = this.taskList.map(t => t.id);
+                const predictions = {};
+                for (const taskId of taskIds) {
+                    try {
+                        const res = await this.request('/api/task/prediction/' + taskId, 'GET');
+                        if (res.code === 200 && res.data) {
+                            predictions[taskId] = res.data;
+                        }
+                    } catch (e) {}
+                }
+                this.predictedDurations = predictions;
+            } catch (e) {
+                console.error('Load predicted durations failed', e);
+            }
+        },
+        getPredictedDuration(taskId) {
+            const pred = this.predictedDurations[taskId];
+            if (!pred) return '暂无数据';
+            if (pred.avgSeconds != null) {
+                return pred.avgSeconds.toFixed(1) + '秒';
+            }
+            return '暂无数据';
+        },
+        formatDateTime(date) {
+            const pad = n => n.toString().padStart(2, '0');
+            return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate())
+                    + ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
+        },
+        formatTime(date) {
+            const pad = n => n.toString().padStart(2, '0');
+            return pad(date.getHours()) + ':' + pad(date.getMinutes());
+        }
+    }
+});
+
+app.mount('#app');
+</script>
+</body>
+</html>

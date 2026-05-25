@@ -1,0 +1,2 @@
+[console_scripts]
+k8s-resource-recommender = k8s_resource_recommender.cli:main

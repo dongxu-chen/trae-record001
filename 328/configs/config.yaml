@@ -1,0 +1,52 @@
+database:
+  type: "mysql"
+  host: "localhost"
+  port: 3306
+  user: "root"
+  password: "password"
+  database: "benchmark"
+  max_connections: 100
+  timeout: "10s"
+
+scenario:
+  name: "mixed-workload"
+  duration: "5m"
+  concurrency: 50
+  read_ratio: 0.7
+  write_ratio: 0.3
+  hotspot_percentage: 10.0
+  hotspot_access_ratio: 0.8
+  hotspot_distribution: "zipf"
+  hotspot_skew: 1.2
+  total_records: 10000
+  rate_limit: 0
+  gradual_startup: true
+  gradual_startup_step: 0.1
+  gradual_startup_interval: "5s"
+
+metrics:
+  prometheus_port: 9091
+  prometheus_path: "/metrics"
+
+storage:
+  data_dir: "./data"
+  timeseries_interval: "5s"
+  snapshot_interval: "30s"
+
+resume:
+  enabled: false
+  resume_run_id: ""
+  from_checkpoint: true
+
+auto_tune:
+  enabled: false
+  mode: "latency"
+  target_latency_p99: 100
+  max_concurrency: 1000
+  min_concurrency: 1
+  adjust_interval: "10s"
+  kp: 0.5
+  ki: 0.01
+  kd: 0.1
+  stop_on_inflection: true
+  inflection_window: 3

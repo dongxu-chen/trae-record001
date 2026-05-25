@@ -1,0 +1,29 @@
+database:
+  type: "mongodb"
+  host: "localhost"
+  port: 27017
+  user: "admin"
+  password: "password"
+  database: "benchmark"
+  max_connections: 100
+  timeout: "10s"
+
+scenario:
+  name: "mongodb-mixed"
+  duration: "5m"
+  concurrency: 50
+  read_ratio: 0.7
+  write_ratio: 0.3
+  hotspot_percentage: 10.0
+  hotspot_access_ratio: 0.8
+  hotspot_distribution: "zipf"
+  hotspot_skew: 1.2
+  total_records: 10000
+  rate_limit: 0
+  gradual_startup: true
+  gradual_startup_step: 0.1
+  gradual_startup_interval: "5s"
+
+metrics:
+  prometheus_port: 9091
+  prometheus_path: "/metrics"
