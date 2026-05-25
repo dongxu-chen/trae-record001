@@ -1,0 +1,45 @@
+#!/bin/bash
+# =============================================
+# 安全Shell脚本模板示例
+# 演示如何使用Jinja2过滤器防止命令注入
+# =============================================
+
+# 1. 使用 shell_escape 过滤器转义用户输入
+# 转义后: 'test; rm -rf /' 变成 '''test; rm -rf /'''
+USERNAME={{ username | shell_escape | default('"guest"') }}
+
+# 2. 使用 shell_escape_path 转义文件路径
+LOG_FILE={{ log_path | shell_escape_path | default('"/var/log/app.log"') }}
+
+# 3. 使用 sanitize_filename 清理文件名
+# 移除危险字符如 / \ : * ? " < > | 等
+BACKUP_NAME={{ backup_name | sanitize_filename | default('"backup"') }}
+
+# 4. 使用 escape_double_quotes 在双引号中使用
+CONFIG_OPTS="{{ options | escape_double_quotes }}"
+
+# 5. 使用 escape_single_quotes 在单引号中使用
+EXTRA_ARGS='{{ extra_args | escape_single_quotes }}'
+
+# =============================================
+# 以下是安全的使用方式
+# =============================================
+
+echo "Starting script as user: $USERNAME"
+
+# 安全: 变量在引号中使用
+if [ -f "$LOG_FILE" ]; then
+    echo "Log file exists"
+    tail -n 10 "$LOG_FILE"
+fi
+
+# 安全: 使用双引号包裹变量
+BACKUP_PATH="/tmp/${BACKUP_NAME}.tar.gz"
+echo "Backup will be saved to: $BACKUP_PATH"
+
+# 安全: 在命令中使用转义后的选项
+if [ -n "$CONFIG_OPTS" ]; then
+    echo "Config options: $CONFIG_OPTS"
+fi
+
+echo "Script completed successfully"

@@ -1,0 +1,39 @@
+storage:
+  type: local
+  base_path: ~/.cicache/storage
+
+  # S3/MinIO configuration example
+  # type: s3
+  # endpoint: s3.amazonaws.com
+  # bucket: my-ci-cache
+  # region: us-east-1
+  # access_key: your-access-key
+  # secret_key: your-secret-key
+  # use_ssl: true
+
+cache:
+  max_size: 10GB
+  cache_dir: ~/.cicache/local
+  key_prefix: cicache
+  include_dirs:
+    - node_modules
+    - .venv
+  exclude_dirs:
+    - .git
+    - node_modules/.cache
+
+project:
+  type: auto
+  working_dir: .
+  dep_files:
+    - package.json
+    - package-lock.json
+  cache_dirs:
+    - node_modules
+
+watcher:
+  enabled: false
+  debounce_duration: 2s
+  prewarm: true
+  watch_dirs:
+    - .

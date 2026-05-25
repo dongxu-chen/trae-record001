@@ -1,0 +1,219 @@
+package com.property.repair.rules
+
+import com.property.repair.domain.WorkerCandidate
+import com.property.repair.domain.DispatchRequest
+import java.lang.Math
+
+global Double SKILL_WEIGHT
+global Double WORKLOAD_WEIGHT
+global Double RATING_WEIGHT
+global Double DISTANCE_WEIGHT
+
+rule "Calculate distance"
+    salience 100
+    when
+        $request: DispatchRequest(orderLongitude != null, orderLatitude != null)
+        $candidate: WorkerCandidate(longitude != null, latitude != null, selected == false)
+    then
+        double lat1 = Math.toRadians($request.getOrderLatitude());
+        double lat2 = Math.toRadians($candidate.getLatitude());
+        double lon1 = Math.toRadians($request.getOrderLongitude());
+        double lon2 = Math.toRadians($candidate.getLongitude());
+        
+        double dlon = lon2 - lon1;
+        double dlat = lat2 - lat1;
+        
+        double a = Math.pow(Math.sin(dlat / 2), 2) +
+                   Math.cos(lat1) * Math.cos(lat2) *
+                   Math.pow(Math.sin(dlon / 2), 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = 6371 * c;
+        
+        $candidate.setDistance(distance);
+        System.out.println($candidate.getWorkerName() + " 距离: " + String.format("%.2f", distance) + "km");
+end
+
+rule "Skill match score - 35% weight"
+    salience 90
+    when
+        $request: DispatchRequest()
+        $candidate: WorkerCandidate(
+            skills matches ".*" + $request.repairType + ".*",
+            currentWorkload < $request.maxWorkload,
+            selected == false
+        )
+    then
+        int baseScore = $request.getPriority() >= 2 ? 100 : 85;
+        $candidate.setSkillScore(baseScore);
+        System.out.println($candidate.getWorkerName() + " 技能匹配得分: " + baseScore);
+end
+
+rule "Skill mismatch penalty"
+    salience 90
+    when
+        $request: DispatchRequest()
+        $candidate: WorkerCandidate(
+            skills not matches ".*" + $request.repairType + ".*",
+            selected == false
+        )
+    then
+        $candidate.setSkillScore(30);
+        System.out.println($candidate.getWorkerName() + " 技能不匹配得分: 30");
+end
+
+rule "Workload score - 25% weight - very low"
+    salience 80
+    when
+        $candidate: WorkerCandidate(currentWorkload <= 1, selected == false)
+    then
+        $candidate.setWorkloadScore(100);
+        System.out.println($candidate.getWorkerName() + " 负载得分(极低): 100");
+end
+
+rule "Workload score - 25% weight - low"
+    salience 80
+    when
+        $candidate: WorkerCandidate(currentWorkload > 1 && currentWorkload <= 2, selected == false)
+    then
+        $candidate.setWorkloadScore(80);
+        System.out.println($candidate.getWorkerName() + " 负载得分(低): 80");
+end
+
+rule "Workload score - 25% weight - medium"
+    salience 80
+    when
+        $candidate: WorkerCandidate(currentWorkload > 2 && currentWorkload <= 4, selected == false)
+    then
+        $candidate.setWorkloadScore(60);
+        System.out.println($candidate.getWorkerName() + " 负载得分(中): 60");
+end
+
+rule "Workload score - 25% weight - high"
+    salience 80
+    when
+        $candidate: WorkerCandidate(currentWorkload > 4, selected == false)
+    then
+        $candidate.setWorkloadScore(30);
+        System.out.println($candidate.getWorkerName() + " 负载得分(高): 30");
+end
+
+rule "Rating score - 20% weight - excellent"
+    salience 70
+    when
+        $candidate: WorkerCandidate(avgRating != null && avgRating >= 4.5, selected == false)
+    then
+        $candidate.setRatingScore(100);
+        System.out.println($candidate.getWorkerName() + " 好评率得分(优秀): 100");
+end
+
+rule "Rating score - 20% weight - good"
+    salience 70
+    when
+        $candidate: WorkerCandidate(avgRating != null && avgRating >= 4.0 && avgRating < 4.5, selected == false)
+    then
+        $candidate.setRatingScore(85);
+        System.out.println($candidate.getWorkerName() + " 好评率得分(良好): 85");
+end
+
+rule "Rating score - 20% weight - average"
+    salience 70
+    when
+        $candidate: WorkerCandidate(avgRating != null && avgRating >= 3.0 && avgRating < 4.0, selected == false)
+    then
+        $candidate.setRatingScore(70);
+        System.out.println($candidate.getWorkerName() + " 好评率得分(一般): 70");
+end
+
+rule "Rating score - 20% weight - low or no rating"
+    salience 70
+    when
+        $candidate: WorkerCandidate(avgRating == null || avgRating < 3.0, selected == false)
+    then
+        $candidate.setRatingScore(50);
+        System.out.println($candidate.getWorkerName() + " 好评率得分(较低): 50");
+end
+
+rule "Distance score - 20% weight - very close (<1km)"
+    salience 60
+    when
+        $candidate: WorkerCandidate(distance != null && distance <= 1.0, selected == false)
+    then
+        $candidate.setDistanceScore(100);
+        System.out.println($candidate.getWorkerName() + " 距离得分(极近): 100");
+end
+
+rule "Distance score - 20% weight - close (1-3km)"
+    salience 60
+    when
+        $candidate: WorkerCandidate(distance != null && distance > 1.0 && distance <= 3.0, selected == false)
+    then
+        $candidate.setDistanceScore(85);
+        System.out.println($candidate.getWorkerName() + " 距离得分(近): 85");
+end
+
+rule "Distance score - 20% weight - medium (3-5km)"
+    salience 60
+    when
+        $candidate: WorkerCandidate(distance != null && distance > 3.0 && distance <= 5.0, selected == false)
+    then
+        $candidate.setDistanceScore(70);
+        System.out.println($candidate.getWorkerName() + " 距离得分(中): 70");
+end
+
+rule "Distance score - 20% weight - far (5-10km)"
+    salience 60
+    when
+        $candidate: WorkerCandidate(distance != null && distance > 5.0 && distance <= 10.0, selected == false)
+    then
+        $candidate.setDistanceScore(50);
+        System.out.println($candidate.getWorkerName() + " 距离得分(远): 50");
+end
+
+rule "Distance score - 20% weight - very far or no data"
+    salience 60
+    when
+        $candidate: WorkerCandidate(distance == null || distance > 10.0, selected == false)
+    then
+        $candidate.setDistanceScore(30);
+        System.out.println($candidate.getWorkerName() + " 距离得分(极远或无数据): 30");
+end
+
+rule "Calculate weighted total score"
+    salience -50
+    when
+        $candidate: WorkerCandidate(selected == false)
+    then
+        double skillWeight = 0.35;
+        double workloadWeight = 0.25;
+        double ratingWeight = 0.20;
+        double distanceWeight = 0.20;
+        
+        int totalScore = (int)($candidate.getSkillScore() * skillWeight +
+                               $candidate.getWorkloadScore() * workloadWeight +
+                               $candidate.getRatingScore() * ratingWeight +
+                               $candidate.getDistanceScore() * distanceWeight);
+        
+        $candidate.setTotalScore(totalScore);
+        System.out.println($candidate.getWorkerName() + " 综合得分: " + totalScore + 
+                          " (技能:" + $candidate.getSkillScore() + "*35% + " +
+                          "负载:" + $candidate.getWorkloadScore() + "*25% + " +
+                          "好评:" + $candidate.getRatingScore() + "*20% + " +
+                          "距离:" + $candidate.getDistanceScore() + "*20%)");
+end
+
+rule "Select best worker by weighted score"
+    salience -100
+    when
+        $request: DispatchRequest()
+        $candidate: WorkerCandidate(selected == false, currentWorkload < $request.maxWorkload)
+        not WorkerCandidate(selected == false, currentWorkload < $request.maxWorkload, totalScore > $candidate.totalScore)
+    then
+        $candidate.setSelected(true);
+        $request.setSelectedWorker($candidate);
+        System.out.println("=== 自动派单结果 ===");
+        System.out.println("选中维修工: " + $candidate.getWorkerName());
+        System.out.println("综合得分: " + $candidate.getTotalScore());
+        System.out.println("当前负载: " + $candidate.getCurrentWorkload());
+        System.out.println("好评率: " + $candidate.getAvgRating());
+        System.out.println("距离: " + ($candidate.getDistance() != null ? String.format("%.2fkm", $candidate.getDistance()) : "未知"));
+end

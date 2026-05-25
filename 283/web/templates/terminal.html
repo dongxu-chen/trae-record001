@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Terminal - 服务器配置管理工具</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; }
+        .header { background: #16213e; padding: 15px 20px; border-bottom: 2px solid #0f3460; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 20px; }
+        .nav a { color: #eee; text-decoration: none; padding: 6px 12px; background: #0f3460; border-radius: 4px; margin-left: 8px; font-size: 14px; }
+        .nav a:hover { background: #e94560; }
+        .toolbar { background: #16213e; padding: 12px 20px; display: flex; gap: 12px; align-items: center; border-bottom: 1px solid #0f3460; }
+        .toolbar label { font-size: 14px; }
+        .toolbar select, .toolbar button { padding: 8px 12px; border-radius: 4px; border: none; font-size: 14px; }
+        .toolbar select { background: #0f3460; color: #eee; min-width: 150px; }
+        .toolbar button { background: #e94560; color: #fff; cursor: pointer; }
+        .toolbar button:hover { background: #ff6b6b; }
+        .toolbar button:disabled { background: #666; cursor: not-allowed; }
+        .status { margin-left: auto; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #666; }
+        .status-dot.connected { background: #4ade80; }
+        .status-dot.connecting { background: #fbbf24; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .terminal-container { height: calc(100vh - 120px); background: #000; }
+        #terminal { width: 100%; height: 100%; padding: 10px; }
+        .diff-panel { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 900px; max-height: 80vh; background: #16213e; border-radius: 8px; padding: 20px; z-index: 1000; overflow: auto; }
+        .diff-panel h3 { margin-bottom: 16px; color: #e94560; }
+        .diff-close { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+        .diff-container { font-family: 'Courier New', monospace; font-size: 13px; }
+        .diff-table { width: 100%; border-collapse: collapse; }
+        .diff-table td { padding: 2px 8px; white-space: pre; }
+        .diff-table .line-num { width: 40px; text-align: right; color: #666; background: #0f3460; }
+        .diff-added { background: rgba(74, 222, 128, 0.2); }
+        .diff-removed { background: rgba(248, 113, 113, 0.2); }
+        .diff-unchanged { background: transparent; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 999; }
+        .diff-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .diff-inputs textarea { width: 100%; height: 150px; padding: 10px; background: #0f3460; border: 1px solid #1a1a2e; color: #fff; border-radius: 4px; font-family: monospace; font-size: 12px; resize: vertical; }
+        .diff-actions { display: flex; gap: 10px; margin-bottom: 16px; }
+        .diff-actions button { padding: 8px 16px; background: #e94560; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🖥️ Web Terminal</h1>
+        <nav class="nav">
+            <a href="/">返回首页</a>
+        </nav>
+    </div>
+
+    <div class="toolbar">
+        <label>主机：</label>
+        <select id="host-select">
+            <option value="">选择主机...</option>
+            {% for host in hosts %}
+            <option value="{{ host.hostname }}">{{ host.hostname }} ({{ host.ip }})</option>
+            {% endfor %}
+        </select>
+        <button id="connect-btn">连接</button>
+        <button id="disconnect-btn" disabled>断开</button>
+        <button id="diff-btn">Diff对比</button>
+        <div class="status">
+            <span class="status-dot" id="status-dot"></span>
+            <span id="status-text">未连接</span>
+        </div>
+    </div>
+
+    <div class="terminal-container">
+        <div id="terminal"></div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    <div class="diff-panel" id="diff-panel">
+        <button class="diff-close" id="diff-close">&times;</button>
+        <h3>📊 配置差异对比</h3>
+        <div class="diff-inputs">
+            <div>
+                <label>变更前：</label>
+                <textarea id="diff-old" placeholder="粘贴原始配置内容..."></textarea>
+            </div>
+            <div>
+                <label>变更后：</label>
+                <textarea id="diff-new" placeholder="粘贴新配置内容..."></textarea>
+            </div>
+        </div>
+        <div class="diff-actions">
+            <button id="compare-btn">对比差异</button>
+            <button id="clear-diff-btn">清空</button>
+        </div>
+        <div class="diff-container" id="diff-result"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        const term = new Terminal({
+            cursorBlink: true,
+            fontSize: 14,
+            fontFamily: 'Consolas, "Courier New", monospace',
+            theme: {
+                background: '#000000',
+                foreground: '#ffffff',
+                cursor: '#ffffff'
+            }
+        });
+        const fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+        term.open(document.getElementById('terminal'));
+        fitAddon.fit();
+
+        let socket = io();
+        let sessionId = null;
+        let isConnected = false;
+
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const connectBtn = document.getElementById('connect-btn');
+        const disconnectBtn = document.getElementById('disconnect-btn');
+        const hostSelect = document.getElementById('host-select');
+
+        function updateStatus(status) {
+            statusDot.className = 'status-dot ' + status;
+            switch(status) {
+                case 'connected':
+                    statusText.textContent = '已连接';
+                    connectBtn.disabled = true;
+                    disconnectBtn.disabled = false;
+                    hostSelect.disabled = true;
+                    break;
+                case 'connecting':
+                    statusText.textContent = '连接中...';
+                    connectBtn.disabled = true;
+                    break;
+                default:
+                    statusText.textContent = '未连接';
+                    connectBtn.disabled = false;
+                    disconnectBtn.disabled = true;
+                    hostSelect.disabled = false;
+            }
+        }
+
+        connectBtn.addEventListener('click', () => {
+            const hostname = hostSelect.value;
+            if (!hostname) {
+                alert('请选择主机');
+                return;
+            }
+            
+            updateStatus('connecting');
+            term.clear();
+            term.writeln('连接中...');
+            
+            socket.emit('ssh_connect', {
+                hostname: hostname,
+                cols: term.cols,
+                rows: term.rows
+            });
+        });
+
+        disconnectBtn.addEventListener('click', () => {
+            if (sessionId) {
+                socket.emit('ssh_disconnect', { session_id: sessionId });
+            }
+            isConnected = false;
+            sessionId = null;
+            updateStatus('');
+            term.writeln('\r\n已断开连接');
+        });
+
+        socket.on('ssh_connected', (data) => {
+            sessionId = data.session_id;
+            isConnected = true;
+            updateStatus('connected');
+        });
+
+        socket.on('ssh_output', (data) => {
+            term.write(data.data);
+        });
+
+        socket.on('ssh_error', (data) => {
+            term.writeln('\r\n\x1b[31m错误: ' + data.error + '\x1b[0m\r\n');
+            isConnected = false;
+            sessionId = null;
+            updateStatus('');
+        });
+
+        term.onData((data) => {
+            if (isConnected && sessionId) {
+                socket.emit('ssh_input', {
+                    session_id: sessionId,
+                    data: data
+                });
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            fitAddon.fit();
+            if (isConnected && sessionId) {
+                socket.emit('ssh_resize', {
+                    session_id: sessionId,
+                    cols: term.cols,
+                    rows: term.rows
+                });
+            }
+        });
+
+        const diffPanel = document.getElementById('diff-panel');
+        const overlay = document.getElementById('overlay');
+        const diffBtn = document.getElementById('diff-btn');
+        const diffClose = document.getElementById('diff-close');
+        const compareBtn = document.getElementById('compare-btn');
+        const clearDiffBtn = document.getElementById('clear-diff-btn');
+        const diffResult = document.getElementById('diff-result');
+
+        diffBtn.addEventListener('click', () => {
+            diffPanel.style.display = 'block';
+            overlay.style.display = 'block';
+        });
+
+        diffClose.addEventListener('click', () => {
+            diffPanel.style.display = 'none';
+            overlay.style.display = 'none';
+        });
+
+        overlay.addEventListener('click', () => {
+            diffPanel.style.display = 'none';
+            overlay.style.display = 'none';
+        });
+
+        compareBtn.addEventListener('click', () => {
+            const oldText = document.getElementById('diff-old').value;
+            const newText = document.getElementById('diff-new').value;
+            
+            fetch('/api/diff', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ old: oldText, new: newText })
+            })
+            .then(r => r.json())
+            .then(data => {
+                diffResult.innerHTML = data.output;
+            });
+        });
+
+        clearDiffBtn.addEventListener('click', () => {
+            document.getElementById('diff-old').value = '';
+            document.getElementById('diff-new').value = '';
+            diffResult.innerHTML = '';
+        });
+
+        term.focus();
+    </script>
+</body>
+</html>

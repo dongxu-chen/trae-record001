@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>城市公交车到站时间预测系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚌 城市公交车到站时间预测系统</h1>
+            <div class="connection-status" id="connectionStatus">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">连接中...</span>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <div class="route-selector">
+                    <h3>线路选择</h3>
+                    <div id="routeList" class="route-list"></div>
+                </div>
+                
+                <div class="delay-warnings">
+                    <h3>⚠️ 晚点预警</h3>
+                    <div id="delayWarnings" class="warning-list">
+                        <div class="empty-state">暂无预警</div>
+                    </div>
+                </div>
+                
+                <div class="dispatch-suggestions">
+                    <h3>🚦 调度建议</h3>
+                    <div id="dispatchSuggestions" class="suggestion-list">
+                        <div class="empty-state">暂无建议</div>
+                    </div>
+                </div>
+                
+                <div class="voice-control">
+                    <h3>🔊 语音报站</h3>
+                    <div class="voice-controls">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="voiceEnabled" checked>
+                            <span class="slider"></span>
+                        </label>
+                        <span class="voice-label">启用语音播报</span>
+                    </div>
+                    <div class="voice-volume">
+                        <label>音量:</label>
+                        <input type="range" id="voiceVolume" min="0" max="1" step="0.1" value="0.8">
+                    </div>
+                    <div id="latestAnnouncement" class="announcement-text">
+                        暂无播报
+                    </div>
+                </div>
+            </aside>
+
+            <main class="content">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="real-time">实时到站</button>
+                    <button class="tab-btn" data-tab="punctuality">准点率分析</button>
+                    <button class="tab-btn" data-tab="traffic">路况信息</button>
+                </div>
+
+                <div class="tab-content">
+                    <div id="real-time" class="tab-panel active">
+                        <div class="route-stations" id="routeStations">
+                            <div class="empty-state">请选择线路查看实时到站信息</div>
+                        </div>
+                        
+                        <div class="bus-list" id="busList">
+                            <div class="empty-state">暂无车辆数据</div>
+                        </div>
+                    </div>
+
+                    <div id="punctuality" class="tab-panel">
+                        <div class="stats-overview">
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalTrips">0</div>
+                                <div class="stat-label">总班次</div>
+                            </div>
+                            <div class="stat-card on-time">
+                                <div class="stat-value" id="onTimeRate">0%</div>
+                                <div class="stat-label">准点率</div>
+                            </div>
+                            <div class="stat-card delayed">
+                                <div class="stat-value" id="delayedCount">0</div>
+                                <div class="stat-label">晚点班次</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="avgDelay">0s</div>
+                                <div class="stat-label">平均延误</div>
+                            </div>
+                        </div>
+                        
+                        <div class="high-risk-segments">
+                            <h3>⚠️ 延误高发区间 Top 5</h3>
+                            <div id="highRiskSegments" class="risk-list">
+                                <div class="empty-state">暂无数据</div>
+                            </div>
+                        </div>
+                        
+                        <div class="punctuality-chart">
+                            <h3>各路段准点率分析</h3>
+                            <div id="segmentPunctualityBars" class="chart-bars segment-chart">
+                                <div class="empty-state">请选择线路查看路段分析</div>
+                            </div>
+                        </div>
+                        
+                        <div class="punctuality-chart">
+                            <h3>各线路准点率对比</h3>
+                            <div id="punctualityBars" class="chart-bars"></div>
+                        </div>
+                    </div>
+
+                    <div id="traffic" class="tab-panel">
+                        <div class="traffic-map" id="trafficMap">
+                            <div class="empty-state">请选择线路查看路况信息</div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <footer>
+            <p>基于 XGBoost + Kalman滤波 的智能预测系统 | 数据更新时间: <span id="lastUpdate">-</span></p>
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
