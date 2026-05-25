@@ -1,0 +1,75 @@
+kafka:
+  bootstrap_servers: "localhost:9092"
+  topics:
+    user_events: "user_events_topic"
+    risk_scores: "risk_scores_topic"
+    notifications: "notifications_topic"
+  group_id: "churn_prediction_group"
+  num_partitions: 3
+  replication_factor: 1
+
+redis:
+  host: "localhost"
+  port: 6379
+  db: 0
+  password: null
+  max_connections: 50
+  ttl:
+    user_profile: 86400
+    risk_score: 3600
+    feature_cache: 7200
+
+flink:
+  job_manager: "localhost:8081"
+  parallelism: 2
+  checkpoint_interval: 60000
+  state_backend: "filesystem"
+  state_backend_path: "./data/flink_state"
+
+spark:
+  master: "local[*]"
+  app_name: "ChurnPredictionFeatureEngineering"
+  executor_memory: "2g"
+  driver_memory: "1g"
+  feature_output_path: "./data/features"
+  batch_interval_hours: 24
+
+model:
+  type: "cox_ph"
+  model_path: "./models/cox_model.pkl"
+  scaler_path: "./models/scaler.pkl"
+  retrain_interval_days: 7
+  prediction_window_days: 30
+  high_risk_threshold: 0.7
+  medium_risk_threshold: 0.4
+  survival_time_quantiles: [0.25, 0.5, 0.75]
+
+features:
+  time_window_days: [1, 7, 14, 30]
+  event_types: ["login", "purchase", "view", "click", "logout", "error"]
+  aggregations: ["count", "sum", "avg", "max", "min"]
+  categorical_features: ["user_level", "region", "channel"]
+  numerical_features: ["total_spend", "days_since_last_login", "avg_session_duration"]
+
+strategy:
+  notification_channels: ["push", "email", "sms", "in_app"]
+  default_channel: "push"
+  high_risk_actions: ["premium_offer", "personal_discount", "support_reach_out"]
+  medium_risk_actions: ["newsletter", "feature_highlight", "loyalty_points"]
+  low_risk_actions: ["general_announcement", "new_feature_notify"]
+  action_cooldown_hours: 48
+
+ab_testing:
+  experiments_path: "./data/ab_experiments.json"
+  results_path: "./data/ab_results"
+  traffic_split: 0.5
+  min_sample_size: 100
+  confidence_level: 0.95
+  metrics: ["churn_rate", "conversion_rate", "engagement_rate"]
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_path: "./logs/churn_system.log"
+  max_bytes: 10485760
+  backup_count: 5

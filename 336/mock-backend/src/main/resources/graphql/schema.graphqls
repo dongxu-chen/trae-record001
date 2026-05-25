@@ -1,0 +1,64 @@
+type User {
+    id: ID!
+    name: String!
+    email: String!
+    age: Int
+    createdAt: String
+    updatedAt: String
+}
+
+type OrderItem {
+    productId: String!
+    productName: String!
+    quantity: Int!
+    price: Float!
+}
+
+type Order {
+    orderId: ID!
+    userId: ID!
+    items: [OrderItem!]!
+    totalAmount: Float!
+    status: String!
+    address: String
+    createdAt: String
+    updatedAt: String
+}
+
+input UserInput {
+    name: String!
+    email: String!
+    age: Int
+}
+
+input OrderItemInput {
+    productId: String!
+    productName: String!
+    quantity: Int!
+    price: Float!
+}
+
+input OrderInput {
+    userId: ID!
+    items: [OrderItemInput!]!
+    address: String
+}
+
+type Query {
+    user(id: ID!): User
+    users(page: Int = 1, size: Int = 10): [User!]!
+    userCount: Long!
+
+    order(orderId: ID!): Order
+    orders(userId: ID, page: Int = 1, size: Int = 10): [Order!]!
+    orderCount(userId: ID): Long!
+}
+
+type Mutation {
+    createUser(input: UserInput!): User!
+    updateUser(id: ID!, input: UserInput!): User!
+    deleteUser(id: ID!): Boolean!
+
+    createOrder(input: OrderInput!): Order!
+    updateOrderStatus(orderId: ID!, status: String!): Order!
+}

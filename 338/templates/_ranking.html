@@ -1,0 +1,37 @@
+<table class="table table-sm table-bordered bg-white">
+    <thead><tr>
+        <th>#</th>
+        <th>命名空间</th>
+        <th>操作</th>
+        <th>次数</th>
+        <th>总耗时(ms)</th>
+        <th>平均(ms)</th>
+        <th>最大(ms)</th>
+        <th>docsExamined</th>
+        <th>执行计划</th>
+        <th>查询模式</th>
+    </tr></thead>
+    <tbody>
+    {% for item in items %}
+    <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ item.ns }}</td>
+        <td>{{ item.op }}</td>
+        <td>{{ item.count }}</td>
+        <td>{{ item.total_ms }}</td>
+        <td>{{ item.avg_ms }}</td>
+        <td>{{ item.max_ms }}</td>
+        <td>{{ item.docsExamined }}</td>
+        <td>{{ item.plans|join(', ') }}</td>
+        <td>
+            <details>
+                <summary>展开</summary>
+                <pre class="pattern-code mt-2 mb-0">{{ item.pattern }}</pre>
+            </details>
+        </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="10" class="text-center text-muted">无数据</td></tr>
+    {% endfor %}
+    </tbody>
+</table>

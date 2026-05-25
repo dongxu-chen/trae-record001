@@ -1,0 +1,1330 @@
+2026-05-25 21:25:07,140 - ChurnPredictionSystem - INFO - Initializing Churn Prediction System...
+2026-05-25 21:25:07,150 - RedisCacheManager - INFO - Using in-memory cache
+2026-05-25 21:25:07,232 - ChurnPredictionSystem - INFO - System initialized successfully
+2026-05-25 21:25:07,233 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 21:25:07,234 - ChurnPredictionSystem - INFO - RUNNING CHURN PREDICTION SYSTEM DEMO
+2026-05-25 21:25:07,234 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 21:25:07,235 - ChurnPredictionSystem - INFO - 
+[Step 1] Generating synthetic training data...
+2026-05-25 21:25:07,247 - SparkFeatureEngineering - INFO - Generating synthetic data for 100 users...
+2026-05-25 21:25:07,272 - SparkFeatureEngineering - INFO - Generated 100 users and 1364 events
+2026-05-25 21:25:07,305 - SparkFeatureEngineering - INFO - Saved data to ./data/users.jsonl and ./data/events.jsonl
+2026-05-25 21:25:07,306 - ChurnPredictionSystem - INFO - Generated 100 users and 1364 events
+2026-05-25 21:25:07,306 - ChurnPredictionSystem - INFO - 
+[Step 2] Extracting features...
+2026-05-25 21:25:07,306 - SparkFeatureEngineering - INFO - Extracting features using pandas fallback...
+2026-05-25 21:25:07,316 - SparkFeatureEngineering - INFO - Extracted features for 100 users
+2026-05-25 21:25:07,316 - SparkFeatureEngineering - INFO - Preprocessing features...
+2026-05-25 21:25:07,881 - SparkFeatureEngineering - INFO - Preprocessed 100 samples with 59 features
+2026-05-25 21:25:07,914 - SparkFeatureEngineering - INFO - Saved features to ./data/features_latest.csv
+2026-05-25 21:25:07,914 - ChurnPredictionSystem - INFO - Extracted 59 features per user
+2026-05-25 21:25:07,915 - ChurnPredictionSystem - INFO - 
+[Step 3] Training Cox PH model...
+2026-05-25 21:25:07,915 - CoxModel - INFO - Starting model training pipeline...
+2026-05-25 21:25:07,915 - CoxModel - INFO - Starting Cox PH model training...
+2026-05-25 21:25:07,929 - CoxModel - INFO - Prepared dataframe: 100 samples, 59 features
+2026-05-25 21:25:07,934 - CoxModel - INFO - Train: 84, Test: 16
+2026-05-25 21:25:08,221 - CoxModel - ERROR - Error fitting model: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model
+2026-05-25 21:25:08,551 - CoxModel - INFO - Model training complete. C-index: 0.0135
+2026-05-25 21:25:08,559 - CoxModel - INFO - Prepared dataframe: 100 samples, 59 features
+2026-05-25 21:25:08,773 - CoxModel - ERROR - Cross-validation error: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model
+2026-05-25 21:25:08,779 - CoxModel - INFO - Model saved to ./models/cox_model.pkl
+2026-05-25 21:25:08,780 - CoxModel - INFO - Training complete. C-index: 0.0135
+2026-05-25 21:25:08,780 - ChurnPredictionSystem - INFO - Model C-index: 0.0135
+2026-05-25 21:25:08,781 - ChurnPredictionSystem - ERROR - System error: 'mean_c_index'
+Traceback (most recent call last):
+  File "D:\Project\trae\project\record001\339\src\main.py", line 386, in main
+    system.run_demo(num_users=args.num_users, num_events=args.num_events)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Project\trae\project\record001\339\src\main.py", line 214, in run_demo
+    logger.info(f"Cross-validation mean C-index: {metrics['cross_validation']['mean_c_index']:.4f}")
+                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+KeyError: 'mean_c_index'
+2026-05-25 21:25:08,784 - ChurnPredictionSystem - INFO - System stopped successfully
+2026-05-25 21:39:48,736 - ChurnPredictionSystem - INFO - Initializing Churn Prediction System...
+2026-05-25 21:39:48,740 - RedisCacheManager - INFO - Using in-memory cache
+2026-05-25 21:39:48,791 - ChurnPredictionSystem - INFO - System initialized successfully
+2026-05-25 21:39:48,792 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 21:39:48,792 - ChurnPredictionSystem - INFO - RUNNING CHURN PREDICTION SYSTEM DEMO
+2026-05-25 21:39:48,792 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 21:39:48,792 - ChurnPredictionSystem - INFO - 
+[Step 1] Generating synthetic training data...
+2026-05-25 21:39:48,802 - SparkFeatureEngineering - INFO - Generating synthetic data for 200 users...
+2026-05-25 21:39:48,820 - SparkFeatureEngineering - INFO - Generated 200 users and 2858 events
+2026-05-25 21:39:48,840 - SparkFeatureEngineering - INFO - Saved data to ./data/users.jsonl and ./data/events.jsonl
+2026-05-25 21:39:48,840 - ChurnPredictionSystem - INFO - Generated 200 users and 2858 events
+2026-05-25 21:39:48,840 - ChurnPredictionSystem - INFO - 
+[Step 2] Extracting features...
+2026-05-25 21:39:48,840 - SparkFeatureEngineering - INFO - Extracting features using pandas fallback...
+2026-05-25 21:39:48,845 - SparkFeatureEngineering - INFO - Extracted features for 200 users
+2026-05-25 21:39:48,845 - SparkFeatureEngineering - INFO - Preprocessing features...
+2026-05-25 21:39:49,013 - SparkFeatureEngineering - INFO - Preprocessed 200 samples with 59 features
+2026-05-25 21:39:49,031 - SparkFeatureEngineering - INFO - Saved features to ./data/features_latest.csv
+2026-05-25 21:39:49,031 - ChurnPredictionSystem - INFO - Extracted 59 features per user
+2026-05-25 21:39:49,032 - ChurnPredictionSystem - INFO - 
+[Step 3] Training Cox PH model...
+2026-05-25 21:39:49,032 - CoxModel - INFO - Starting model training pipeline...
+2026-05-25 21:39:49,032 - CoxModel - INFO - Starting Cox PH model training...
+2026-05-25 21:39:49,037 - CoxModel - INFO - Prepared dataframe: 200 samples, 59 features
+2026-05-25 21:39:49,038 - CoxModel - INFO - Train: 148, Test: 52
+2026-05-25 21:39:49,431 - CoxModel - INFO - Model training complete. C-index: 0.0220
+2026-05-25 21:39:49,437 - CoxModel - INFO - Prepared dataframe: 200 samples, 59 features
+2026-05-25 21:39:50,154 - CoxModel - INFO - Model saved to ./models/cox_model.pkl
+2026-05-25 21:39:50,154 - CoxModel - INFO - Training complete. C-index: 0.0220
+2026-05-25 21:39:50,155 - ChurnPredictionSystem - INFO - Model C-index: 0.0220
+2026-05-25 21:39:50,155 - ChurnPredictionSystem - INFO - Cross-validation mean C-index: 0.9726
+2026-05-25 21:39:50,155 - ChurnPredictionSystem - INFO - 
+[Step 4] Simulating real-time predictions...
+2026-05-25 21:39:50,155 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,156 - ChurnPredictionSystem - INFO -   User user_000001: prob=45.00%, risk=medium, expected_days=14.0, actual_churned=True
+2026-05-25 21:39:50,156 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,156 - ChurnPredictionSystem - INFO -   User user_000002: prob=45.00%, risk=medium, expected_days=14.0, actual_churned=True
+2026-05-25 21:39:50,156 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,157 - ChurnPredictionSystem - INFO -   User user_000005: prob=45.00%, risk=medium, expected_days=14.0, actual_churned=True
+2026-05-25 21:39:50,157 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,157 - ChurnPredictionSystem - INFO -   User user_000008: prob=45.00%, risk=medium, expected_days=14.0, actual_churned=True
+2026-05-25 21:39:50,157 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,157 - ChurnPredictionSystem - INFO -   User user_000009: prob=45.00%, risk=medium, expected_days=14.0, actual_churned=True
+2026-05-25 21:39:50,158 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,158 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,158 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,159 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,159 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,159 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,160 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,160 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,160 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,161 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,161 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,161 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,162 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,162 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,163 - CoxModel - WARNING - Model not trained. Using heuristic predictions.
+2026-05-25 21:39:50,164 - ChurnPredictionSystem - INFO - 
+Tagged 0 high risk users
+2026-05-25 21:39:50,164 - ChurnPredictionSystem - INFO - 
+[Step 5] Running recommendation engine...
+2026-05-25 21:39:50,171 - ChurnPredictionSystem - ERROR - System error: name 'time' is not defined
+Traceback (most recent call last):
+  File "D:\Project\trae\project\record001\339\src\main.py", line 386, in main
+    system.run_demo(num_users=args.num_users, num_events=args.num_events)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Project\trae\project\record001\339\src\main.py", line 260, in run_demo
+    exp = ab_manager.create_experiment(
+        name="Churn Prevention Strategy Test",
+        variants=variants,
+        target_metrics=["conversion_rate", "churn_rate"]
+    )
+  File "D:\Project\trae\project\record001\339\src\ab_testing\ab_test_manager.py", line 167, in create_experiment
+    exp_id = f"exp_{int(time.time())}_{uuid.uuid4().hex[:8]}"
+                        ^^^^
+NameError: name 'time' is not defined. Did you forget to import 'time'?
+2026-05-25 21:39:50,173 - ChurnPredictionSystem - INFO - System stopped successfully
+2026-05-25 21:42:59,464 - ChurnPredictionSystem - INFO - Initializing Churn Prediction System...
+2026-05-25 21:42:59,475 - RedisCacheManager - INFO - Using in-memory cache
+2026-05-25 21:42:59,532 - ChurnPredictionSystem - INFO - System initialized successfully
+2026-05-25 21:42:59,532 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 21:42:59,533 - ChurnPredictionSystem - INFO - RUNNING CHURN PREDICTION SYSTEM DEMO
+2026-05-25 21:42:59,533 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 21:42:59,533 - ChurnPredictionSystem - INFO - 
+[Step 1] Generating synthetic training data...
+2026-05-25 21:42:59,540 - SparkFeatureEngineering - INFO - Generating synthetic data for 200 users...
+2026-05-25 21:42:59,571 - SparkFeatureEngineering - INFO - Generated 200 users and 2703 events
+2026-05-25 21:42:59,613 - SparkFeatureEngineering - INFO - Saved data to ./data/users.jsonl and ./data/events.jsonl
+2026-05-25 21:42:59,614 - ChurnPredictionSystem - INFO - Generated 200 users and 2703 events
+2026-05-25 21:42:59,614 - ChurnPredictionSystem - INFO - 
+[Step 2] Extracting features...
+2026-05-25 21:42:59,614 - SparkFeatureEngineering - INFO - Extracting features using pandas fallback...
+2026-05-25 21:42:59,625 - SparkFeatureEngineering - INFO - Extracted features for 200 users
+2026-05-25 21:42:59,626 - SparkFeatureEngineering - INFO - Preprocessing features...
+2026-05-25 21:42:59,948 - SparkFeatureEngineering - INFO - Preprocessed 200 samples with 59 features
+2026-05-25 21:42:59,989 - SparkFeatureEngineering - INFO - Saved features to ./data/features_latest.csv
+2026-05-25 21:42:59,990 - ChurnPredictionSystem - INFO - Extracted 59 features per user
+2026-05-25 21:42:59,990 - ChurnPredictionSystem - INFO - 
+[Step 3] Training Cox PH model...
+2026-05-25 21:42:59,990 - CoxModel - INFO - Starting model training pipeline...
+2026-05-25 21:42:59,990 - CoxModel - INFO - Starting Cox PH model training...
+2026-05-25 21:43:00,004 - CoxModel - INFO - Prepared dataframe: 200 samples, 59 features
+2026-05-25 21:43:00,006 - CoxModel - INFO - Train: 156, Test: 44
+2026-05-25 21:43:00,599 - CoxModel - INFO - Model training complete. C-index: 0.0186
+2026-05-25 21:43:00,605 - CoxModel - INFO - Prepared dataframe: 200 samples, 59 features
+2026-05-25 21:43:00,805 - CoxModel - ERROR - Cross-validation error: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model
+2026-05-25 21:43:00,809 - CoxModel - INFO - Model saved to ./models/cox_model.pkl
+2026-05-25 21:43:00,810 - CoxModel - INFO - Training complete. C-index: 0.0186
+2026-05-25 21:43:00,810 - ChurnPredictionSystem - INFO - Model C-index: 0.0186
+2026-05-25 21:43:00,811 - ChurnPredictionSystem - INFO - Cross-validation mean C-index: 0.0000
+2026-05-25 21:43:00,811 - ChurnPredictionSystem - INFO - 
+[Step 4] Simulating real-time predictions...
+2026-05-25 21:43:00,823 - ChurnPredictionSystem - INFO -   User user_000005: prob=0.90%, risk=low, expected_days=178.9, actual_churned=True
+2026-05-25 21:43:00,837 - ChurnPredictionSystem - INFO -   User user_000009: prob=3.33%, risk=low, expected_days=113.4, actual_churned=True
+2026-05-25 21:43:00,850 - ChurnPredictionSystem - INFO -   User user_000022: prob=33.75%, risk=low, expected_days=30.2, actual_churned=True
+2026-05-25 21:43:00,862 - ChurnPredictionSystem - INFO -   User user_000024: prob=9.32%, risk=low, expected_days=68.9, actual_churned=True
+2026-05-25 21:43:00,878 - ChurnPredictionSystem - INFO -   User user_000026: prob=41.20%, risk=medium, expected_days=25.5, actual_churned=True
+2026-05-25 21:43:00,893 - RedisCacheManager - INFO - Tagged high risk user: user_000041, probability: 0.9346
+2026-05-25 21:43:01,058 - ChurnPredictionSystem - INFO - 
+Tagged 1 high risk users
+2026-05-25 21:43:01,059 - ChurnPredictionSystem - INFO - 
+[Step 5] Running recommendation engine...
+2026-05-25 21:43:01,078 - ABTestManager - INFO - Saved 1 experiments
+2026-05-25 21:43:01,078 - ABTestManager - INFO - Created experiment: Churn Prevention Strategy Test (exp_1779716581_881b9bb8) with 2 variants
+2026-05-25 21:43:01,083 - ABTestManager - INFO - Saved 1 experiments
+2026-05-25 21:43:01,083 - ABTestManager - INFO - Started experiment: Churn Prevention Strategy Test (exp_1779716581_881b9bb8)
+2026-05-25 21:43:01,084 - ChurnPredictionSystem - INFO - Created A/B experiment: Churn Prevention Strategy Test (exp_1779716581_881b9bb8)
+2026-05-25 21:43:01,084 - ChurnPredictionSystem - INFO - Processing top 50 high risk users...
+2026-05-25 21:43:01,085 - RedisCacheManager - INFO - Recorded action: premium_offer for user user_000041 via email
+2026-05-25 21:43:01,086 - RecommendationEngine - INFO - Executed recommendation for user user_000041: action=premium_offer, channel=email, action_id=act_1779716581085_user_000, notification_id=notif_1779716581086_user_000
+2026-05-25 21:43:01,086 - RecommendationEngine - INFO - Processed 1 high risk users, executed 1 recommendations
+2026-05-25 21:43:01,087 - ChurnPredictionSystem - INFO - Executed 1 interventions
+2026-05-25 21:43:01,087 - ChurnPredictionSystem - INFO - Executed 1 recommendation actions
+2026-05-25 21:43:01,087 - ChurnPredictionSystem - INFO - 
+[Step 6] Simulating conversions...
+2026-05-25 21:43:01,088 - ChurnPredictionSystem - INFO - Tracked conversion for user user_000041
+2026-05-25 21:43:01,088 - ChurnPredictionSystem - INFO - 
+[Step 7] Analyzing A/B test results...
+2026-05-25 21:43:01,088 - ChurnPredictionSystem - INFO -   Control: users=0, conversions=0, rate=0.00%
+2026-05-25 21:43:01,089 - ChurnPredictionSystem - INFO -   Aggressive Intervention: users=0, conversions=0, rate=0.00%
+2026-05-25 21:43:01,089 - ChurnPredictionSystem - INFO - No clear winner yet: Continue experiment
+2026-05-25 21:43:01,090 - ChurnPredictionSystem - INFO - 
+[Step 8] System statistics...
+2026-05-25 21:43:01,094 - ChurnPredictionSystem - INFO -   Total users: 20
+2026-05-25 21:43:01,095 - ChurnPredictionSystem - INFO -   High risk users: 1
+2026-05-25 21:43:01,095 - ChurnPredictionSystem - INFO -   Risk distribution: {'high': 0, 'medium': 0, 'low': 0}
+2026-05-25 21:43:01,096 - ChurnPredictionSystem - INFO - 
+============================================================
+2026-05-25 21:43:01,096 - ChurnPredictionSystem - INFO - DEMO COMPLETED SUCCESSFULLY
+2026-05-25 21:43:01,097 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 21:43:01,099 - ChurnPredictionSystem - INFO - System stopped successfully
+2026-05-25 22:03:36,124 - ChurnPredictionSystem - INFO - Initializing Churn Prediction System...
+2026-05-25 22:03:36,124 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 22:03:36,124 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 22:03:36,129 - RedisCacheManager - INFO - Using in-memory cache
+2026-05-25 22:03:36,156 - BanditEngine - INFO - BanditEngine initialized with strategy: thompson_sampling
+2026-05-25 22:03:36,166 - ABTestManager - INFO - Loaded 1 experiments
+2026-05-25 22:03:36,178 - FeatureWindowAligner - INFO - SlidingWindowFeatureExtractor initialized with windows: [1, 7, 14, 30]
+2026-05-25 22:03:36,179 - FeatureWindowAligner - INFO - FeatureWindowAligner initialized. Prediction window: 30d, Feature windows: [1, 7, 14, 30]
+2026-05-25 22:03:36,179 - ChurnPredictionSystem - INFO - System initialized successfully
+2026-05-25 22:03:36,179 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 22:03:36,180 - ChurnPredictionSystem - INFO - RUNNING CHURN PREDICTION SYSTEM DEMO v2.0
+2026-05-25 22:03:36,180 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 22:03:36,180 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 22:03:36,180 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 22:03:36,180 - ChurnPredictionSystem - INFO - 
+[Step 1] Generating synthetic training data...
+2026-05-25 22:03:36,190 - SparkFeatureEngineering - INFO - Generating synthetic data for 200 users...
+2026-05-25 22:03:36,223 - SparkFeatureEngineering - INFO - Generated 200 users and 2713 events
+2026-05-25 22:03:36,259 - SparkFeatureEngineering - INFO - Saved data to ./data/users.jsonl and ./data/events.jsonl
+2026-05-25 22:03:36,260 - ChurnPredictionSystem - INFO - Generated 200 users and 2713 events
+2026-05-25 22:03:36,260 - ChurnPredictionSystem - INFO - 
+[Step 2] Extracting features with sliding windows...
+2026-05-25 22:03:36,260 - SparkFeatureEngineering - INFO - Extracting features using pandas fallback...
+2026-05-25 22:03:36,273 - SparkFeatureEngineering - INFO - Extracted features for 200 users
+2026-05-25 22:03:36,273 - SparkFeatureEngineering - INFO - Preprocessing features...
+2026-05-25 22:03:36,667 - SparkFeatureEngineering - INFO - Preprocessed 200 samples with 59 features
+2026-05-25 22:03:36,719 - SparkFeatureEngineering - INFO - Saved features to ./data/features_latest.csv
+2026-05-25 22:03:36,720 - ChurnPredictionSystem - INFO - Extracted 59 features per user
+2026-05-25 22:03:36,720 - ChurnPredictionSystem - INFO - 
+[Step 3] Training model...
+2026-05-25 22:03:36,721 - ChurnPredictionSystem - INFO - Using STRATIFIED Cox PH model...
+2026-05-25 22:03:36,721 - StratifiedCoxModel - INFO - Starting stratified model training pipeline...
+2026-05-25 22:03:36,722 - StratifiedCoxModel - INFO - Starting stratified Cox PH model training...
+2026-05-25 22:03:36,734 - StratifiedCoxModel - INFO - Prepared dataframe: 200 samples
+2026-05-25 22:03:36,817 - StratifiedCoxModel - INFO - Strata distribution: {'high_value': 41, 'low_value': 32, 'new_users': 45, 'premium': 38, 'mid_value': 44}
+2026-05-25 22:03:36,819 - StratifiedCoxModel - INFO - Training stratum: high_value (41 samples, 15 events)
+2026-05-25 22:03:37,066 - StratifiedCoxModel - WARNING - Stratum high_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:03:37,261 - StratifiedCoxModel - INFO - Training stratum: low_value (32 samples, 5 events)
+2026-05-25 22:03:37,459 - StratifiedCoxModel - WARNING - Stratum low_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:03:37,607 - StratifiedCoxModel - INFO - Training stratum: new_users (45 samples, 8 events)
+2026-05-25 22:03:37,767 - StratifiedCoxModel - WARNING - Stratum new_users first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:03:37,889 - StratifiedCoxModel - INFO - Training stratum: premium (38 samples, 10 events)
+2026-05-25 22:03:38,059 - StratifiedCoxModel - WARNING - Stratum premium first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:03:38,162 - StratifiedCoxModel - INFO - Training stratum: mid_value (44 samples, 18 events)
+2026-05-25 22:03:38,329 - StratifiedCoxModel - WARNING - Stratum mid_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:03:38,457 - StratifiedCoxModel - INFO - Stratified training complete. 5 strata, weighted C-index: 0.0978
+2026-05-25 22:03:38,458 - StratifiedCoxModel - INFO - Running 5-fold cross-validation for stratified model...
+2026-05-25 22:03:38,467 - StratifiedCoxModel - INFO - Prepared dataframe: 200 samples
+2026-05-25 22:03:38,708 - StratifiedCoxModel - INFO - Stratified model saved to ./models/cox_model_stratified_stratified.pkl
+2026-05-25 22:03:38,708 - StratifiedCoxModel - INFO - Stratified training complete. Weighted C-index: 0.0978
+2026-05-25 22:03:38,711 - FeatureWindowAligner - INFO - Saved training feature config to ./models/cox_model_feature_config.json
+2026-05-25 22:03:38,712 - FeatureWindowAligner - INFO - Updated training metadata for 0 features
+2026-05-25 22:03:38,712 - ChurnPredictionSystem - INFO - Strata trained: 5
+2026-05-25 22:03:38,712 - ChurnPredictionSystem - INFO -   high_value: samples=33, events=13, C-index=0.0000
+2026-05-25 22:03:38,713 - ChurnPredictionSystem - INFO -   low_value: samples=24, events=5, C-index=0.0147
+2026-05-25 22:03:38,713 - ChurnPredictionSystem - INFO -   new_users: samples=36, events=6, C-index=0.4000
+2026-05-25 22:03:38,713 - ChurnPredictionSystem - INFO -   premium: samples=32, events=9, C-index=0.0000
+2026-05-25 22:03:38,714 - ChurnPredictionSystem - INFO -   mid_value: samples=37, events=15, C-index=0.0000
+2026-05-25 22:03:38,714 - ChurnPredictionSystem - INFO - Model C-index: 0.0978
+2026-05-25 22:03:38,714 - ChurnPredictionSystem - INFO - Cross-validation mean C-index: 0.0000
+2026-05-25 22:03:38,715 - ChurnPredictionSystem - INFO - 
+[Step 4] Checking feature window alignment...
+2026-05-25 22:03:38,715 - ChurnPredictionSystem - INFO -   Window alignment: WARNING
+2026-05-25 22:03:38,715 - ChurnPredictionSystem - ERROR - System error: 'str' object has no attribute 'get'
+Traceback (most recent call last):
+  File "D:\Project\trae\project\record001\339\src\main.py", line 490, in main
+    system.run_demo(num_users=args.num_users, num_events=args.num_events)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Project\trae\project\record001\339\src\main.py", line 294, in run_demo
+    logger.warning(f"  {w.get('message', w)}")
+                        ^^^^^
+AttributeError: 'str' object has no attribute 'get'
+2026-05-25 22:03:38,717 - ChurnPredictionSystem - INFO - System stopped successfully
+2026-05-25 22:10:00,306 - ChurnPredictionSystem - INFO - Initializing Churn Prediction System...
+2026-05-25 22:10:00,307 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 22:10:00,307 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 22:10:00,315 - RedisCacheManager - INFO - Using in-memory cache
+2026-05-25 22:10:00,337 - BanditEngine - INFO - BanditEngine initialized with strategy: thompson_sampling
+2026-05-25 22:10:00,343 - ABTestManager - INFO - Loaded 1 experiments
+2026-05-25 22:10:00,350 - FeatureWindowAligner - INFO - SlidingWindowFeatureExtractor initialized with windows: [1, 7, 14, 30]
+2026-05-25 22:10:00,350 - FeatureWindowAligner - INFO - Loaded training feature config from ./models/cox_model_feature_config.json
+2026-05-25 22:10:00,351 - FeatureWindowAligner - INFO - FeatureWindowAligner initialized. Prediction window: 30d, Feature windows: [1, 7, 14, 30]
+2026-05-25 22:10:00,351 - ChurnPredictionSystem - INFO - System initialized successfully
+2026-05-25 22:10:00,351 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 22:10:00,351 - ChurnPredictionSystem - INFO - RUNNING CHURN PREDICTION SYSTEM DEMO v2.0
+2026-05-25 22:10:00,351 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 22:10:00,351 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 22:10:00,352 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 22:10:00,352 - ChurnPredictionSystem - INFO - 
+[Step 1] Generating synthetic training data...
+2026-05-25 22:10:00,357 - SparkFeatureEngineering - INFO - Generating synthetic data for 200 users...
+2026-05-25 22:10:00,379 - SparkFeatureEngineering - INFO - Generated 200 users and 2771 events
+2026-05-25 22:10:00,407 - SparkFeatureEngineering - INFO - Saved data to ./data/users.jsonl and ./data/events.jsonl
+2026-05-25 22:10:00,407 - ChurnPredictionSystem - INFO - Generated 200 users and 2771 events
+2026-05-25 22:10:00,407 - ChurnPredictionSystem - INFO - 
+[Step 2] Extracting features with sliding windows...
+2026-05-25 22:10:00,407 - SparkFeatureEngineering - INFO - Extracting features using pandas fallback...
+2026-05-25 22:10:00,417 - SparkFeatureEngineering - INFO - Extracted features for 200 users
+2026-05-25 22:10:00,417 - SparkFeatureEngineering - INFO - Preprocessing features...
+2026-05-25 22:10:00,642 - SparkFeatureEngineering - INFO - Preprocessed 200 samples with 59 features
+2026-05-25 22:10:00,666 - SparkFeatureEngineering - INFO - Saved features to ./data/features_latest.csv
+2026-05-25 22:10:00,667 - ChurnPredictionSystem - INFO - Extracted 59 features per user
+2026-05-25 22:10:00,667 - ChurnPredictionSystem - INFO - 
+[Step 3] Training model...
+2026-05-25 22:10:00,667 - ChurnPredictionSystem - INFO - Using STRATIFIED Cox PH model...
+2026-05-25 22:10:00,667 - StratifiedCoxModel - INFO - Starting stratified model training pipeline...
+2026-05-25 22:10:00,668 - StratifiedCoxModel - INFO - Starting stratified Cox PH model training...
+2026-05-25 22:10:00,674 - StratifiedCoxModel - INFO - Prepared dataframe: 200 samples
+2026-05-25 22:10:00,706 - StratifiedCoxModel - INFO - Strata distribution: {'new_users': 35, 'mid_value': 50, 'premium': 42, 'high_value': 45, 'low_value': 28}
+2026-05-25 22:10:00,708 - StratifiedCoxModel - INFO - Training stratum: new_users (35 samples, 18 events)
+2026-05-25 22:10:00,844 - StratifiedCoxModel - WARNING - Stratum new_users first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:10:00,933 - StratifiedCoxModel - INFO - Training stratum: mid_value (50 samples, 13 events)
+2026-05-25 22:10:01,057 - StratifiedCoxModel - WARNING - Stratum mid_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:10:01,167 - StratifiedCoxModel - INFO - Training stratum: premium (42 samples, 14 events)
+2026-05-25 22:10:01,317 - StratifiedCoxModel - WARNING - Stratum premium first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:10:01,499 - StratifiedCoxModel - INFO - Training stratum: high_value (45 samples, 16 events)
+2026-05-25 22:10:01,656 - StratifiedCoxModel - WARNING - Stratum high_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:10:01,772 - StratifiedCoxModel - INFO - Training stratum: low_value (28 samples, 8 events)
+2026-05-25 22:10:01,918 - StratifiedCoxModel - WARNING - Stratum low_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:10:02,011 - StratifiedCoxModel - INFO - Stratified training complete. 5 strata, weighted C-index: 0.0143
+2026-05-25 22:10:02,012 - StratifiedCoxModel - INFO - Running 5-fold cross-validation for stratified model...
+2026-05-25 22:10:02,018 - StratifiedCoxModel - INFO - Prepared dataframe: 200 samples
+2026-05-25 22:10:02,313 - StratifiedCoxModel - INFO - Stratified model saved to ./models/cox_model_stratified_stratified.pkl
+2026-05-25 22:10:02,314 - StratifiedCoxModel - INFO - Stratified training complete. Weighted C-index: 0.0143
+2026-05-25 22:10:02,315 - FeatureWindowAligner - INFO - Saved training feature config to ./models/cox_model_feature_config.json
+2026-05-25 22:10:02,316 - FeatureWindowAligner - INFO - Updated training metadata for 0 features
+2026-05-25 22:10:02,316 - ChurnPredictionSystem - INFO - Strata trained: 5
+2026-05-25 22:10:02,316 - ChurnPredictionSystem - INFO -   new_users: samples=28, events=16, C-index=0.0000
+2026-05-25 22:10:02,316 - ChurnPredictionSystem - INFO -   mid_value: samples=39, events=11, C-index=0.0000
+2026-05-25 22:10:02,317 - ChurnPredictionSystem - INFO -   premium: samples=33, events=13, C-index=0.0000
+2026-05-25 22:10:02,317 - ChurnPredictionSystem - INFO -   high_value: samples=37, events=13, C-index=0.0714
+2026-05-25 22:10:02,317 - ChurnPredictionSystem - INFO -   low_value: samples=23, events=7, C-index=0.0000
+2026-05-25 22:10:02,317 - ChurnPredictionSystem - INFO - Model C-index: 0.0143
+2026-05-25 22:10:02,317 - ChurnPredictionSystem - INFO - Cross-validation mean C-index: 0.0000
+2026-05-25 22:10:02,317 - ChurnPredictionSystem - INFO - 
+[Step 4] Checking feature window alignment...
+2026-05-25 22:10:02,317 - ChurnPredictionSystem - INFO -   Window alignment: OK
+2026-05-25 22:10:02,317 - ChurnPredictionSystem - WARNING -   These features were not in training data
+2026-05-25 22:10:02,317 - ChurnPredictionSystem - INFO - 
+[Step 5] Simulating real-time predictions...
+2026-05-25 22:10:02,325 - StratifiedCoxModel - WARNING - Stratum premium predict error: 'model', using heuristic
+2026-05-25 22:10:02,325 - ChurnPredictionSystem - ERROR - System error: 'model'
+Traceback (most recent call last):
+  File "D:\Project\trae\project\record001\339\src\model\stratified_cox.py", line 163, in predict
+    risk_level = get_risk_level(churn_probability, self.config)
+  File "D:\Project\trae\project\record001\339\src\common\utils.py", line 94, in get_risk_level
+    high_threshold = config["model"]["high_risk_threshold"]
+                     ~~~~~~^^^^^^^^^
+KeyError: 'model'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Project\trae\project\record001\339\src\main.py", line 490, in main
+    system.run_demo(num_users=args.num_users, num_events=args.num_events)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Project\trae\project\record001\339\src\main.py", line 308, in run_demo
+    prediction = self.model.predict(user_features)
+  File "D:\Project\trae\project\record001\339\src\model\stratified_cox.py", line 388, in predict
+    return self.strata_models[stratum].predict(features)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "D:\Project\trae\project\record001\339\src\model\stratified_cox.py", line 178, in predict
+    return self._predict_heuristic(features)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "D:\Project\trae\project\record001\339\src\model\stratified_cox.py", line 207, in _predict_heuristic
+    "risk_level": get_risk_level(churn_probability, self.config),
+                  ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Project\trae\project\record001\339\src\common\utils.py", line 94, in get_risk_level
+    high_threshold = config["model"]["high_risk_threshold"]
+                     ~~~~~~^^^^^^^^^
+KeyError: 'model'
+2026-05-25 22:10:02,331 - ChurnPredictionSystem - INFO - System stopped successfully
+2026-05-25 22:15:58,880 - ChurnPredictionSystem - INFO - Initializing Churn Prediction System...
+2026-05-25 22:15:58,881 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 22:15:58,881 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 22:15:58,898 - RedisCacheManager - INFO - Using in-memory cache
+2026-05-25 22:15:58,950 - BanditEngine - INFO - BanditEngine initialized with strategy: thompson_sampling
+2026-05-25 22:15:58,968 - ABTestManager - INFO - Loaded 1 experiments
+2026-05-25 22:15:58,995 - FeatureWindowAligner - INFO - SlidingWindowFeatureExtractor initialized with windows: [1, 7, 14, 30]
+2026-05-25 22:15:58,998 - FeatureWindowAligner - INFO - Loaded training feature config from ./models/cox_model_feature_config.json
+2026-05-25 22:15:58,999 - FeatureWindowAligner - INFO - FeatureWindowAligner initialized. Prediction window: 30d, Feature windows: [1, 7, 14, 30]
+2026-05-25 22:15:59,001 - ChurnPredictionSystem - INFO - System initialized successfully
+2026-05-25 22:15:59,004 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 22:15:59,005 - ChurnPredictionSystem - INFO - RUNNING CHURN PREDICTION SYSTEM DEMO v2.0
+2026-05-25 22:15:59,006 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 22:15:59,007 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 22:15:59,007 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 22:15:59,008 - ChurnPredictionSystem - INFO - 
+[Step 1] Generating synthetic training data...
+2026-05-25 22:15:59,071 - SparkFeatureEngineering - INFO - Generating synthetic data for 200 users...
+2026-05-25 22:15:59,204 - SparkFeatureEngineering - INFO - Generated 200 users and 2737 events
+2026-05-25 22:15:59,288 - SparkFeatureEngineering - INFO - Saved data to ./data/users.jsonl and ./data/events.jsonl
+2026-05-25 22:15:59,289 - ChurnPredictionSystem - INFO - Generated 200 users and 2737 events
+2026-05-25 22:15:59,290 - ChurnPredictionSystem - INFO - 
+[Step 2] Extracting features with sliding windows...
+2026-05-25 22:15:59,290 - SparkFeatureEngineering - INFO - Extracting features using pandas fallback...
+2026-05-25 22:15:59,310 - SparkFeatureEngineering - INFO - Extracted features for 200 users
+2026-05-25 22:15:59,311 - SparkFeatureEngineering - INFO - Preprocessing features...
+2026-05-25 22:16:00,360 - SparkFeatureEngineering - INFO - Preprocessed 200 samples with 59 features
+2026-05-25 22:16:00,806 - SparkFeatureEngineering - INFO - Saved features to ./data/features_latest.csv
+2026-05-25 22:16:00,808 - ChurnPredictionSystem - INFO - Extracted 59 features per user
+2026-05-25 22:16:00,810 - ChurnPredictionSystem - INFO - 
+[Step 3] Training model...
+2026-05-25 22:16:00,811 - ChurnPredictionSystem - INFO - Using STRATIFIED Cox PH model...
+2026-05-25 22:16:00,812 - StratifiedCoxModel - INFO - Starting stratified model training pipeline...
+2026-05-25 22:16:00,813 - StratifiedCoxModel - INFO - Starting stratified Cox PH model training...
+2026-05-25 22:16:00,855 - StratifiedCoxModel - INFO - Prepared dataframe: 200 samples
+2026-05-25 22:16:01,151 - StratifiedCoxModel - INFO - Strata distribution: {'new_users': 34, 'premium': 39, 'low_value': 35, 'mid_value': 44, 'high_value': 48}
+2026-05-25 22:16:01,156 - StratifiedCoxModel - INFO - Training stratum: new_users (34 samples, 7 events)
+2026-05-25 22:16:01,765 - StratifiedCoxModel - WARNING - Stratum new_users first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:16:02,014 - StratifiedCoxModel - INFO - Training stratum: premium (39 samples, 17 events)
+2026-05-25 22:16:02,355 - StratifiedCoxModel - WARNING - Stratum premium first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:16:02,547 - StratifiedCoxModel - INFO - Training stratum: low_value (35 samples, 11 events)
+2026-05-25 22:16:02,761 - StratifiedCoxModel - WARNING - Stratum low_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:16:02,935 - StratifiedCoxModel - INFO - Training stratum: mid_value (44 samples, 10 events)
+2026-05-25 22:16:03,376 - StratifiedCoxModel - WARNING - Stratum mid_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:16:03,711 - StratifiedCoxModel - INFO - Training stratum: high_value (48 samples, 13 events)
+2026-05-25 22:16:04,113 - StratifiedCoxModel - WARNING - Stratum high_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:16:04,338 - StratifiedCoxModel - INFO - Stratified training complete. 5 strata, weighted C-index: 0.0392
+2026-05-25 22:16:04,339 - StratifiedCoxModel - INFO - Running 5-fold cross-validation for stratified model...
+2026-05-25 22:16:04,350 - StratifiedCoxModel - INFO - Prepared dataframe: 200 samples
+2026-05-25 22:16:04,775 - StratifiedCoxModel - INFO - Stratified model saved to ./models/cox_model_stratified_stratified.pkl
+2026-05-25 22:16:04,775 - StratifiedCoxModel - INFO - Stratified training complete. Weighted C-index: 0.0392
+2026-05-25 22:16:04,778 - FeatureWindowAligner - INFO - Saved training feature config to ./models/cox_model_feature_config.json
+2026-05-25 22:16:04,778 - FeatureWindowAligner - INFO - Updated training metadata for 0 features
+2026-05-25 22:16:04,778 - ChurnPredictionSystem - INFO - Strata trained: 5
+2026-05-25 22:16:04,779 - ChurnPredictionSystem - INFO -   new_users: samples=28, events=6, C-index=0.0000
+2026-05-25 22:16:04,779 - ChurnPredictionSystem - INFO -   premium: samples=30, events=11, C-index=0.1071
+2026-05-25 22:16:04,780 - ChurnPredictionSystem - INFO -   low_value: samples=22, events=8, C-index=0.0645
+2026-05-25 22:16:04,780 - ChurnPredictionSystem - INFO -   mid_value: samples=34, events=8, C-index=0.0000
+2026-05-25 22:16:04,780 - ChurnPredictionSystem - INFO -   high_value: samples=40, events=11, C-index=0.0000
+2026-05-25 22:16:04,780 - ChurnPredictionSystem - INFO - Model C-index: 0.0392
+2026-05-25 22:16:04,780 - ChurnPredictionSystem - INFO - Cross-validation mean C-index: 0.0000
+2026-05-25 22:16:04,781 - ChurnPredictionSystem - INFO - 
+[Step 4] Checking feature window alignment...
+2026-05-25 22:16:04,781 - ChurnPredictionSystem - INFO -   Window alignment: OK
+2026-05-25 22:16:04,781 - ChurnPredictionSystem - WARNING -   These features were not in training data
+2026-05-25 22:16:04,782 - ChurnPredictionSystem - INFO - 
+[Step 5] Simulating real-time predictions...
+2026-05-25 22:16:04,811 - ChurnPredictionSystem - INFO -   User user_000001: prob=11.30%, risk=low, days=121.4, stratum=premium, actual=True
+2026-05-25 22:16:04,842 - ChurnPredictionSystem - INFO -   User user_000003: prob=8.66%, risk=low, days=74.8, stratum=low_value, actual=True
+2026-05-25 22:16:04,877 - ChurnPredictionSystem - INFO -   User user_000006: prob=9.87%, risk=low, days=176.1, stratum=mid_value, actual=True
+2026-05-25 22:16:04,911 - ChurnPredictionSystem - INFO -   User user_000007: prob=28.19%, risk=low, days=52.3, stratum=premium, actual=True
+2026-05-25 22:16:04,948 - ChurnPredictionSystem - INFO -   User user_000008: prob=68.14%, risk=medium, days=11.6, stratum=premium, actual=True
+2026-05-25 22:16:04,979 - ChurnPredictionSystem - INFO -   User user_000010: prob=20.54%, risk=low, days=114.0, stratum=high_value, actual=True
+2026-05-25 22:16:05,012 - ChurnPredictionSystem - INFO -   User user_000011: prob=5.99%, risk=low, days=175.4, stratum=premium, actual=True
+2026-05-25 22:16:05,047 - ChurnPredictionSystem - INFO -   User user_000015: prob=30.42%, risk=low, days=75.4, stratum=high_value, actual=True
+2026-05-25 22:16:05,604 - ChurnPredictionSystem - INFO - 
+Tagged 0 high risk users
+2026-05-25 22:16:05,604 - ChurnPredictionSystem - INFO - 
+[Step 6] Running bandit recommendation engine...
+2026-05-25 22:16:05,605 - ChurnPredictionSystem - INFO - Using Multi-Armed Bandit (Thompson Sampling)...
+2026-05-25 22:16:05,606 - BanditEngine - INFO - Processed 0 high risk users with bandit, executed 0 recommendations
+2026-05-25 22:16:05,606 - ChurnPredictionSystem - INFO - Bandit executed 0 recommendations
+2026-05-25 22:16:05,607 - ChurnPredictionSystem - INFO - Bandit Summary:
+2026-05-25 22:16:05,607 - ChurnPredictionSystem - INFO -   Strategy: thompson_sampling
+2026-05-25 22:16:05,608 - ChurnPredictionSystem - INFO -   Total Arms: 48
+2026-05-25 22:16:05,608 - ChurnPredictionSystem - INFO -   Impressions: 0
+2026-05-25 22:16:05,608 - ChurnPredictionSystem - INFO -   Conversions: 0
+2026-05-25 22:16:05,609 - ChurnPredictionSystem - INFO - Executed 0 recommendation actions
+2026-05-25 22:16:05,609 - ChurnPredictionSystem - INFO - 
+[Step 7] Simulating conversions...
+2026-05-25 22:16:05,610 - ChurnPredictionSystem - INFO - Simulated 0 conversions from 0 users
+2026-05-25 22:16:05,610 - ChurnPredictionSystem - INFO - 
+[Step 8] System statistics...
+2026-05-25 22:16:05,612 - ChurnPredictionSystem - INFO -   Total users: 25
+2026-05-25 22:16:05,613 - ChurnPredictionSystem - INFO -   High risk users: 0
+2026-05-25 22:16:05,613 - ChurnPredictionSystem - INFO -   Risk distribution: {'high': 0, 'medium': 0, 'low': 0}
+2026-05-25 22:16:05,614 - ChurnPredictionSystem - INFO -   Bandit arms trained: 0/48
+2026-05-25 22:16:05,614 - ChurnPredictionSystem - INFO -   Bandit conversion rate: 0.00%
+2026-05-25 22:16:05,614 - ChurnPredictionSystem - INFO - 
+============================================================
+2026-05-25 22:16:05,615 - ChurnPredictionSystem - INFO - DEMO COMPLETED SUCCESSFULLY
+2026-05-25 22:16:05,615 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 22:16:05,618 - ChurnPredictionSystem - INFO - System stopped successfully
+2026-05-25 22:52:10,608 - ChurnPredictionSystem - INFO - Initializing Churn Prediction System...
+2026-05-25 22:52:10,608 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 22:52:10,608 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 22:52:10,613 - RedisCacheManager - INFO - Using in-memory cache
+2026-05-25 22:52:10,640 - BanditEngine - INFO - BanditEngine initialized with strategy: thompson_sampling
+2026-05-25 22:52:10,647 - ABTestManager - INFO - Loaded 1 experiments
+2026-05-25 22:52:10,653 - FeatureWindowAligner - INFO - SlidingWindowFeatureExtractor initialized with windows: [1, 7, 14, 30]
+2026-05-25 22:52:10,654 - FeatureWindowAligner - INFO - Loaded training feature config from ./models/cox_model_feature_config.json
+2026-05-25 22:52:10,654 - FeatureWindowAligner - INFO - FeatureWindowAligner initialized. Prediction window: 30d, Feature windows: [1, 7, 14, 30]
+2026-05-25 22:52:10,660 - SurvivalAnalysis - INFO - SurvivalCurveComparator initialized
+2026-05-25 22:52:10,667 - AttributionAnalyzer - INFO - TouchpointAttributionAnalyzer initialized
+2026-05-25 22:52:10,673 - ChurnReasonAnalyzer - INFO - ChurnReasonAnalyzer initialized
+2026-05-25 22:52:10,673 - ChurnPredictionSystem - INFO - System initialized successfully
+2026-05-25 22:52:10,674 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 22:52:10,674 - ChurnPredictionSystem - INFO - RUNNING CHURN PREDICTION SYSTEM DEMO v3.0
+2026-05-25 22:52:10,674 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 22:52:10,674 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 22:52:10,674 - ChurnPredictionSystem - INFO -   Survival Analysis: True
+2026-05-25 22:52:10,674 - ChurnPredictionSystem - INFO -   Attribution Analysis: True
+2026-05-25 22:52:10,675 - ChurnPredictionSystem - INFO -   Churn Reason Analysis: True
+2026-05-25 22:52:10,675 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 22:52:10,675 - ChurnPredictionSystem - INFO - 
+[Step 1] Generating synthetic training data...
+2026-05-25 22:52:10,681 - SparkFeatureEngineering - INFO - Generating synthetic data for 300 users...
+2026-05-25 22:52:10,769 - SparkFeatureEngineering - INFO - Generated 300 users and 3921 events
+2026-05-25 22:52:10,832 - SparkFeatureEngineering - INFO - Saved data to ./data/users.jsonl and ./data/events.jsonl
+2026-05-25 22:52:10,832 - ChurnPredictionSystem - INFO - Generated 300 users and 3921 events
+2026-05-25 22:52:10,832 - ChurnPredictionSystem - INFO - 
+[Step 2] Extracting features with sliding windows...
+2026-05-25 22:52:10,833 - SparkFeatureEngineering - INFO - Extracting features using pandas fallback...
+2026-05-25 22:52:10,851 - SparkFeatureEngineering - INFO - Extracted features for 300 users
+2026-05-25 22:52:10,851 - SparkFeatureEngineering - INFO - Preprocessing features...
+2026-05-25 22:52:11,151 - SparkFeatureEngineering - INFO - Preprocessed 300 samples with 59 features
+2026-05-25 22:52:11,194 - SparkFeatureEngineering - INFO - Saved features to ./data/features_latest.csv
+2026-05-25 22:52:11,194 - ChurnPredictionSystem - INFO - Extracted 59 features per user
+2026-05-25 22:52:11,194 - ChurnPredictionSystem - INFO - 
+[Step 3] Training model...
+2026-05-25 22:52:11,195 - ChurnPredictionSystem - INFO - Using STRATIFIED Cox PH model...
+2026-05-25 22:52:11,195 - StratifiedCoxModel - INFO - Starting stratified model training pipeline...
+2026-05-25 22:52:11,195 - StratifiedCoxModel - INFO - Starting stratified Cox PH model training...
+2026-05-25 22:52:11,249 - StratifiedCoxModel - INFO - Prepared dataframe: 300 samples
+2026-05-25 22:52:11,592 - StratifiedCoxModel - INFO - Strata distribution: {'high_value': 57, 'premium': 54, 'low_value': 62, 'new_users': 76, 'mid_value': 51}
+2026-05-25 22:52:11,595 - StratifiedCoxModel - INFO - Training stratum: high_value (57 samples, 24 events)
+2026-05-25 22:52:12,376 - StratifiedCoxModel - WARNING - Stratum high_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:52:12,619 - StratifiedCoxModel - INFO - Training stratum: premium (54 samples, 18 events)
+2026-05-25 22:52:13,258 - StratifiedCoxModel - WARNING - Stratum premium first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:52:13,577 - StratifiedCoxModel - INFO - Training stratum: low_value (62 samples, 22 events)
+2026-05-25 22:52:13,904 - StratifiedCoxModel - WARNING - Stratum low_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:52:14,114 - StratifiedCoxModel - INFO - Training stratum: new_users (76 samples, 23 events)
+2026-05-25 22:52:14,402 - StratifiedCoxModel - WARNING - Stratum new_users first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:52:14,592 - StratifiedCoxModel - INFO - Training stratum: mid_value (51 samples, 21 events)
+2026-05-25 22:52:14,807 - StratifiedCoxModel - WARNING - Stratum mid_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:52:14,935 - StratifiedCoxModel - INFO - Stratified training complete. 5 strata, weighted C-index: 0.0173
+2026-05-25 22:52:14,936 - StratifiedCoxModel - INFO - Running 5-fold cross-validation for stratified model...
+2026-05-25 22:52:14,952 - StratifiedCoxModel - INFO - Prepared dataframe: 300 samples
+2026-05-25 22:52:21,408 - StratifiedCoxModel - INFO - Stratified model saved to ./models/cox_model_stratified_stratified.pkl
+2026-05-25 22:52:21,409 - StratifiedCoxModel - INFO - Stratified training complete. Weighted C-index: 0.0173
+2026-05-25 22:52:21,411 - FeatureWindowAligner - INFO - Saved training feature config to ./models/cox_model_feature_config.json
+2026-05-25 22:52:21,411 - FeatureWindowAligner - INFO - Updated training metadata for 0 features
+2026-05-25 22:52:21,411 - ChurnPredictionSystem - INFO - Strata trained: 5
+2026-05-25 22:52:21,412 - ChurnPredictionSystem - INFO -   high_value: samples=43, events=21, C-index=0.0000
+2026-05-25 22:52:21,412 - ChurnPredictionSystem - INFO -   premium: samples=42, events=14, C-index=0.0000
+2026-05-25 22:52:21,412 - ChurnPredictionSystem - INFO -   low_value: samples=53, events=18, C-index=0.0526
+2026-05-25 22:52:21,412 - ChurnPredictionSystem - INFO -   new_users: samples=67, events=21, C-index=0.0000
+2026-05-25 22:52:21,413 - ChurnPredictionSystem - INFO -   mid_value: samples=40, events=18, C-index=0.0435
+2026-05-25 22:52:21,413 - ChurnPredictionSystem - INFO - Model C-index: 0.0173
+2026-05-25 22:52:21,414 - ChurnPredictionSystem - INFO - Cross-validation mean C-index: 0.9842
+2026-05-25 22:52:21,414 - ChurnPredictionSystem - INFO - 
+[Step 4] Checking feature window alignment...
+2026-05-25 22:52:21,414 - ChurnPredictionSystem - INFO -   Window alignment: OK
+2026-05-25 22:52:21,415 - ChurnPredictionSystem - WARNING -   These features were not in training data
+2026-05-25 22:52:21,415 - ChurnPredictionSystem - INFO - 
+[Step 5] Simulating real-time predictions...
+2026-05-25 22:52:21,437 - ChurnPredictionSystem - INFO -   User user_000005: prob=13.84%, risk=low, days=116.9, stratum=new_users, actual=True
+2026-05-25 22:52:21,466 - ChurnPredictionSystem - INFO -   User user_000007: prob=4.90%, risk=low, days=160.5, stratum=high_value, actual=True
+2026-05-25 22:52:21,491 - ChurnPredictionSystem - INFO -   User user_000009: prob=14.25%, risk=low, days=82.4, stratum=high_value, actual=True
+2026-05-25 22:52:21,515 - ChurnPredictionSystem - INFO -   User user_000012: prob=5.98%, risk=low, days=147.1, stratum=mid_value, actual=True
+2026-05-25 22:52:21,539 - ChurnPredictionSystem - INFO -   User user_000016: prob=9.76%, risk=low, days=105.2, stratum=high_value, actual=True
+2026-05-25 22:52:21,561 - ChurnPredictionSystem - INFO -   User user_000021: prob=3.41%, risk=low, days=224.9, stratum=low_value, actual=True
+2026-05-25 22:52:21,586 - ChurnPredictionSystem - INFO -   User user_000024: prob=12.55%, risk=low, days=98.6, stratum=low_value, actual=True
+2026-05-25 22:52:21,617 - ChurnPredictionSystem - INFO -   User user_000025: prob=41.39%, risk=medium, days=37.1, stratum=low_value, actual=True
+2026-05-25 22:52:21,960 - ChurnPredictionSystem - INFO - 
+Tagged 0 high risk users
+2026-05-25 22:52:21,960 - ChurnPredictionSystem - INFO - 
+[Step 6] Running bandit recommendation engine...
+2026-05-25 22:52:21,960 - ChurnPredictionSystem - INFO - Using Multi-Armed Bandit (Thompson Sampling)...
+2026-05-25 22:52:21,961 - BanditEngine - INFO - Processed 0 high risk users with bandit, executed 0 recommendations
+2026-05-25 22:52:21,961 - ChurnPredictionSystem - INFO - Bandit executed 0 recommendations
+2026-05-25 22:52:21,962 - ChurnPredictionSystem - INFO - Bandit Summary:
+2026-05-25 22:52:21,962 - ChurnPredictionSystem - INFO -   Strategy: thompson_sampling
+2026-05-25 22:52:21,962 - ChurnPredictionSystem - INFO -   Total Arms: 48
+2026-05-25 22:52:21,963 - ChurnPredictionSystem - INFO -   Impressions: 0
+2026-05-25 22:52:21,963 - ChurnPredictionSystem - INFO -   Conversions: 0
+2026-05-25 22:52:21,964 - ChurnPredictionSystem - INFO - Executed 0 recommendation actions
+2026-05-25 22:52:21,964 - ChurnPredictionSystem - INFO - 
+[Step 7] Simulating conversions...
+2026-05-25 22:52:21,965 - ChurnPredictionSystem - INFO - Simulated 0 conversions from 0 users
+2026-05-25 22:52:21,966 - ChurnPredictionSystem - INFO - 
+[Step 8] System statistics...
+2026-05-25 22:52:21,967 - ChurnPredictionSystem - INFO -   Total users: 25
+2026-05-25 22:52:21,968 - ChurnPredictionSystem - INFO -   High risk users: 0
+2026-05-25 22:52:21,968 - ChurnPredictionSystem - INFO -   Risk distribution: {'high': 0, 'medium': 0, 'low': 0}
+2026-05-25 22:52:21,968 - ChurnPredictionSystem - INFO -   Bandit arms trained: 0/48
+2026-05-25 22:52:21,968 - ChurnPredictionSystem - INFO -   Bandit conversion rate: 0.00%
+2026-05-25 22:52:21,969 - ChurnPredictionSystem - INFO - 
+[Step 9] Running survival curve comparison...
+2026-05-25 22:52:21,978 - SurvivalAnalysis - INFO - Fitting survival curves by user_level: 5 groups
+2026-05-25 22:52:22,431 - ChurnPredictionSystem - INFO -   Fitted survival curves for 5 user level groups
+2026-05-25 22:52:22,432 - ChurnPredictionSystem - INFO -     0: median=356d, 30d_survival=92%, samples=76
+2026-05-25 22:52:22,432 - ChurnPredictionSystem - INFO -     1: median=364d, 30d_survival=95%, samples=62
+2026-05-25 22:52:22,433 - ChurnPredictionSystem - INFO -     2: median=354d, 30d_survival=90%, samples=51
+2026-05-25 22:52:22,433 - ChurnPredictionSystem - INFO -     3: median=296d, 30d_survival=93%, samples=57
+2026-05-25 22:52:22,433 - ChurnPredictionSystem - INFO -     4: median=355d, 30d_survival=91%, samples=54
+2026-05-25 22:52:22,434 - ChurnPredictionSystem - INFO -   Insight: Best group '1' has 23.0% longer median survival than worst group '3' (364.0 vs 296.0 days)
+2026-05-25 22:52:22,435 - ChurnPredictionSystem - INFO - 
+[Step 10] Generating synthetic feedback and tickets for churn reason analysis...
+2026-05-25 22:52:22,557 - ChurnPredictionSystem - WARNING - Feedback/ticket generation skipped: Random.choice() got an unexpected keyword argument 'weights'
+2026-05-25 22:52:22,557 - ChurnPredictionSystem - INFO - 
+[Step 11] Analyzing churn reasons...
+2026-05-25 22:52:22,560 - ChurnPredictionSystem - INFO -   Identified 6 distinct churn reasons
+2026-05-25 22:52:22,561 - ChurnPredictionSystem - INFO -     [PRODUCT] Feature Request: 64 users, churn=52%, risk=+43%, severity=Low
+2026-05-25 22:52:22,561 - ChurnPredictionSystem - INFO -     [PRODUCT] Ux Problems: 43 users, churn=58%, risk=+61%, severity=Low
+2026-05-25 22:52:22,561 - ChurnPredictionSystem - INFO -     [SERVICE] Onboarding: 26 users, churn=54%, risk=+50%, severity=Low
+2026-05-25 22:52:22,562 - ChurnPredictionSystem - INFO -     [BUSINESS] Pricing: 47 users, churn=30%, risk=+-17%, severity=Low
+2026-05-25 22:52:22,562 - ChurnPredictionSystem - INFO -     [BUSINESS] Competition: 19 users, churn=37%, risk=+2%, severity=Low
+2026-05-25 22:52:22,562 - ChurnPredictionSystem - INFO - 
+  Trending topics:
+2026-05-25 22:52:22,562 - ChurnPredictionSystem - INFO -     onboarding: 8 mentions (growth: 300%)
+2026-05-25 22:52:22,563 - ChurnPredictionSystem - INFO -     ux_problems: 10 mentions (growth: 100%)
+2026-05-25 22:52:22,564 - ChurnPredictionSystem - INFO - 
+  Key insights:
+2026-05-25 22:52:22,564 - ChurnPredictionSystem - INFO -     - Identified 1 high-impact churn drivers with >50% elevated churn risk
+2026-05-25 22:52:22,565 - ChurnPredictionSystem - INFO -     - 'Ux Problems' affects 43 users with 58% churn rate (1.6x baseline)
+2026-05-25 22:52:22,565 - ChurnPredictionSystem - INFO - 
+  Recommendations:
+2026-05-25 22:52:22,565 - ChurnPredictionSystem - INFO -     [MEDIUM] Feature Request: Evaluate top feature requests and add to roadmap
+2026-05-25 22:52:22,566 - ChurnPredictionSystem - INFO -     [MEDIUM] Ux Problems: Conduct UX research and redesign problematic flows
+2026-05-25 22:52:22,566 - ChurnPredictionSystem - INFO -     [MEDIUM] Onboarding: Improve onboarding flow with tutorials and in-app guidance
+2026-05-25 22:52:22,566 - ChurnPredictionSystem - INFO - 
+[Step 12] Running touchpoint attribution analysis...
+2026-05-25 22:52:22,572 - ChurnPredictionSystem - WARNING - Attribution analysis skipped: module 'numpy' has no attribute 'math'
+2026-05-25 22:52:22,572 - ChurnPredictionSystem - INFO - 
+============================================================
+2026-05-25 22:52:22,573 - ChurnPredictionSystem - INFO - DEMO COMPLETED SUCCESSFULLY (v3.0 with Advanced Analytics)
+2026-05-25 22:52:22,573 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 22:52:22,574 - ChurnPredictionSystem - INFO - System stopped successfully
+2026-05-25 22:59:31,809 - ChurnPredictionSystem - INFO - Initializing Churn Prediction System...
+2026-05-25 22:59:31,809 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 22:59:31,809 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 22:59:31,818 - RedisCacheManager - INFO - Using in-memory cache
+2026-05-25 22:59:31,876 - BanditEngine - INFO - BanditEngine initialized with strategy: thompson_sampling
+2026-05-25 22:59:31,891 - ABTestManager - INFO - Loaded 1 experiments
+2026-05-25 22:59:31,909 - FeatureWindowAligner - INFO - SlidingWindowFeatureExtractor initialized with windows: [1, 7, 14, 30]
+2026-05-25 22:59:31,910 - FeatureWindowAligner - INFO - Loaded training feature config from ./models/cox_model_feature_config.json
+2026-05-25 22:59:31,911 - FeatureWindowAligner - INFO - FeatureWindowAligner initialized. Prediction window: 30d, Feature windows: [1, 7, 14, 30]
+2026-05-25 22:59:31,927 - SurvivalAnalysis - INFO - SurvivalCurveComparator initialized
+2026-05-25 22:59:31,943 - AttributionAnalyzer - INFO - TouchpointAttributionAnalyzer initialized
+2026-05-25 22:59:31,964 - ChurnReasonAnalyzer - INFO - ChurnReasonAnalyzer initialized
+2026-05-25 22:59:31,965 - ChurnPredictionSystem - INFO - System initialized successfully
+2026-05-25 22:59:31,965 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 22:59:31,965 - ChurnPredictionSystem - INFO - RUNNING CHURN PREDICTION SYSTEM DEMO v3.0
+2026-05-25 22:59:31,966 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 22:59:31,966 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 22:59:31,966 - ChurnPredictionSystem - INFO -   Survival Analysis: True
+2026-05-25 22:59:31,966 - ChurnPredictionSystem - INFO -   Attribution Analysis: True
+2026-05-25 22:59:31,967 - ChurnPredictionSystem - INFO -   Churn Reason Analysis: True
+2026-05-25 22:59:31,967 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 22:59:31,967 - ChurnPredictionSystem - INFO - 
+[Step 1] Generating synthetic training data...
+2026-05-25 22:59:31,982 - SparkFeatureEngineering - INFO - Generating synthetic data for 250 users...
+2026-05-25 22:59:32,064 - SparkFeatureEngineering - INFO - Generated 250 users and 3138 events
+2026-05-25 22:59:32,172 - SparkFeatureEngineering - INFO - Saved data to ./data/users.jsonl and ./data/events.jsonl
+2026-05-25 22:59:32,172 - ChurnPredictionSystem - INFO - Generated 250 users and 3138 events
+2026-05-25 22:59:32,173 - ChurnPredictionSystem - INFO - 
+[Step 2] Extracting features with sliding windows...
+2026-05-25 22:59:32,174 - SparkFeatureEngineering - INFO - Extracting features using pandas fallback...
+2026-05-25 22:59:32,227 - SparkFeatureEngineering - INFO - Extracted features for 250 users
+2026-05-25 22:59:32,228 - SparkFeatureEngineering - INFO - Preprocessing features...
+2026-05-25 22:59:33,332 - SparkFeatureEngineering - INFO - Preprocessed 250 samples with 59 features
+2026-05-25 22:59:33,417 - SparkFeatureEngineering - INFO - Saved features to ./data/features_latest.csv
+2026-05-25 22:59:33,417 - ChurnPredictionSystem - INFO - Extracted 59 features per user
+2026-05-25 22:59:33,418 - ChurnPredictionSystem - INFO - 
+[Step 3] Training model...
+2026-05-25 22:59:33,419 - ChurnPredictionSystem - INFO - Using STRATIFIED Cox PH model...
+2026-05-25 22:59:33,419 - StratifiedCoxModel - INFO - Starting stratified model training pipeline...
+2026-05-25 22:59:33,420 - StratifiedCoxModel - INFO - Starting stratified Cox PH model training...
+2026-05-25 22:59:33,444 - StratifiedCoxModel - INFO - Prepared dataframe: 250 samples
+2026-05-25 22:59:33,596 - StratifiedCoxModel - INFO - Strata distribution: {'mid_value': 46, 'new_users': 47, 'low_value': 61, 'premium': 49, 'high_value': 47}
+2026-05-25 22:59:33,599 - StratifiedCoxModel - INFO - Training stratum: mid_value (46 samples, 20 events)
+2026-05-25 22:59:34,017 - StratifiedCoxModel - WARNING - Stratum mid_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:59:34,298 - StratifiedCoxModel - INFO - Training stratum: new_users (47 samples, 11 events)
+2026-05-25 22:59:34,859 - StratifiedCoxModel - WARNING - Stratum new_users first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:59:35,246 - StratifiedCoxModel - INFO - Training stratum: low_value (61 samples, 18 events)
+2026-05-25 22:59:35,676 - StratifiedCoxModel - WARNING - Stratum low_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:59:35,994 - StratifiedCoxModel - INFO - Training stratum: premium (49 samples, 17 events)
+2026-05-25 22:59:36,424 - StratifiedCoxModel - WARNING - Stratum premium first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:59:36,649 - StratifiedCoxModel - INFO - Training stratum: high_value (47 samples, 16 events)
+2026-05-25 22:59:37,181 - StratifiedCoxModel - WARNING - Stratum high_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 22:59:37,492 - StratifiedCoxModel - INFO - Stratified training complete. 5 strata, weighted C-index: 0.0502
+2026-05-25 22:59:37,493 - StratifiedCoxModel - INFO - Running 5-fold cross-validation for stratified model...
+2026-05-25 22:59:37,501 - StratifiedCoxModel - INFO - Prepared dataframe: 250 samples
+2026-05-25 22:59:39,060 - StratifiedCoxModel - INFO - Stratified model saved to ./models/cox_model_stratified_stratified.pkl
+2026-05-25 22:59:39,061 - StratifiedCoxModel - INFO - Stratified training complete. Weighted C-index: 0.0502
+2026-05-25 22:59:39,065 - FeatureWindowAligner - INFO - Saved training feature config to ./models/cox_model_feature_config.json
+2026-05-25 22:59:39,066 - FeatureWindowAligner - INFO - Updated training metadata for 0 features
+2026-05-25 22:59:39,067 - ChurnPredictionSystem - INFO - Strata trained: 5
+2026-05-25 22:59:39,067 - ChurnPredictionSystem - INFO -   mid_value: samples=42, events=19, C-index=0.0000
+2026-05-25 22:59:39,068 - ChurnPredictionSystem - INFO -   new_users: samples=41, events=10, C-index=0.0000
+2026-05-25 22:59:39,069 - ChurnPredictionSystem - INFO -   low_value: samples=49, events=11, C-index=0.1628
+2026-05-25 22:59:39,073 - ChurnPredictionSystem - INFO -   premium: samples=41, events=16, C-index=0.0000
+2026-05-25 22:59:39,074 - ChurnPredictionSystem - INFO -   high_value: samples=33, events=11, C-index=0.0182
+2026-05-25 22:59:39,075 - ChurnPredictionSystem - INFO - Model C-index: 0.0502
+2026-05-25 22:59:39,078 - ChurnPredictionSystem - INFO - Cross-validation mean C-index: 0.0000
+2026-05-25 22:59:39,079 - ChurnPredictionSystem - INFO - 
+[Step 4] Checking feature window alignment...
+2026-05-25 22:59:39,080 - ChurnPredictionSystem - INFO -   Window alignment: OK
+2026-05-25 22:59:39,081 - ChurnPredictionSystem - WARNING -   These features were not in training data
+2026-05-25 22:59:39,081 - ChurnPredictionSystem - INFO - 
+[Step 5] Simulating real-time predictions...
+2026-05-25 22:59:39,114 - ChurnPredictionSystem - INFO -   User user_000000: prob=20.47%, risk=low, days=62.1, stratum=mid_value, actual=True
+2026-05-25 22:59:39,146 - ChurnPredictionSystem - INFO -   User user_000003: prob=21.87%, risk=low, days=100.2, stratum=premium, actual=True
+2026-05-25 22:59:39,194 - ChurnPredictionSystem - INFO -   User user_000008: prob=29.50%, risk=low, days=117.5, stratum=low_value, actual=True
+2026-05-25 22:59:39,235 - ChurnPredictionSystem - INFO -   User user_000010: prob=7.64%, risk=low, days=149.4, stratum=mid_value, actual=True
+2026-05-25 22:59:39,466 - ChurnPredictionSystem - INFO -   User user_000016: prob=5.33%, risk=low, days=231.2, stratum=premium, actual=True
+2026-05-25 22:59:39,549 - ChurnPredictionSystem - INFO -   User user_000017: prob=12.35%, risk=low, days=185.2, stratum=new_users, actual=True
+2026-05-25 22:59:39,629 - ChurnPredictionSystem - INFO -   User user_000027: prob=16.38%, risk=low, days=151.0, stratum=new_users, actual=True
+2026-05-25 22:59:39,680 - ChurnPredictionSystem - INFO -   User user_000029: prob=5.48%, risk=low, days=229.0, stratum=premium, actual=True
+2026-05-25 22:59:41,113 - ChurnPredictionSystem - INFO - 
+Tagged 0 high risk users
+2026-05-25 22:59:41,114 - ChurnPredictionSystem - INFO - 
+[Step 6] Running bandit recommendation engine...
+2026-05-25 22:59:41,115 - ChurnPredictionSystem - INFO - Using Multi-Armed Bandit (Thompson Sampling)...
+2026-05-25 22:59:41,116 - BanditEngine - INFO - Processed 0 high risk users with bandit, executed 0 recommendations
+2026-05-25 22:59:41,116 - ChurnPredictionSystem - INFO - Bandit executed 0 recommendations
+2026-05-25 22:59:41,117 - ChurnPredictionSystem - INFO - Bandit Summary:
+2026-05-25 22:59:41,118 - ChurnPredictionSystem - INFO -   Strategy: thompson_sampling
+2026-05-25 22:59:41,119 - ChurnPredictionSystem - INFO -   Total Arms: 48
+2026-05-25 22:59:41,121 - ChurnPredictionSystem - INFO -   Impressions: 0
+2026-05-25 22:59:41,121 - ChurnPredictionSystem - INFO -   Conversions: 0
+2026-05-25 22:59:41,122 - ChurnPredictionSystem - INFO - Executed 0 recommendation actions
+2026-05-25 22:59:41,123 - ChurnPredictionSystem - INFO - 
+[Step 7] Simulating conversions...
+2026-05-25 22:59:41,124 - ChurnPredictionSystem - INFO - Simulated 0 conversions from 0 users
+2026-05-25 22:59:41,125 - ChurnPredictionSystem - INFO - 
+[Step 8] System statistics...
+2026-05-25 22:59:41,128 - ChurnPredictionSystem - INFO -   Total users: 25
+2026-05-25 22:59:41,129 - ChurnPredictionSystem - INFO -   High risk users: 0
+2026-05-25 22:59:41,129 - ChurnPredictionSystem - INFO -   Risk distribution: {'high': 0, 'medium': 0, 'low': 0}
+2026-05-25 22:59:41,130 - ChurnPredictionSystem - INFO -   Bandit arms trained: 0/48
+2026-05-25 22:59:41,131 - ChurnPredictionSystem - INFO -   Bandit conversion rate: 0.00%
+2026-05-25 22:59:41,131 - ChurnPredictionSystem - INFO - 
+[Step 9] Running survival curve comparison...
+2026-05-25 22:59:41,149 - SurvivalAnalysis - INFO - Fitting survival curves by user_level: 5 groups
+2026-05-25 22:59:42,630 - ChurnPredictionSystem - INFO -   Fitted survival curves for 5 user level groups
+2026-05-25 22:59:42,631 - ChurnPredictionSystem - INFO -     0: median=364d, 30d_survival=91%, samples=47
+2026-05-25 22:59:42,632 - ChurnPredictionSystem - INFO -     1: median=362d, 30d_survival=92%, samples=61
+2026-05-25 22:59:42,632 - ChurnPredictionSystem - INFO -     2: median=275d, 30d_survival=92%, samples=46
+2026-05-25 22:59:42,633 - ChurnPredictionSystem - INFO -     3: median=362d, 30d_survival=92%, samples=47
+2026-05-25 22:59:42,634 - ChurnPredictionSystem - INFO -     4: median=352d, 30d_survival=92%, samples=49
+2026-05-25 22:59:42,634 - ChurnPredictionSystem - INFO -   Insight: Best group '0' has 32.4% longer median survival than worst group '2' (364.0 vs 275.0 days)
+2026-05-25 22:59:42,635 - ChurnPredictionSystem - INFO - 
+[Step 10] Generating synthetic feedback and tickets for churn reason analysis...
+2026-05-25 22:59:42,875 - ChurnPredictionSystem - INFO -   Generated 200 feedback entries
+2026-05-25 22:59:42,876 - ChurnPredictionSystem - INFO -   Generated 100 support tickets
+2026-05-25 22:59:42,876 - ChurnPredictionSystem - INFO - 
+[Step 11] Analyzing churn reasons...
+2026-05-25 22:59:42,945 - ChurnPredictionSystem - INFO -   Identified 6 distinct churn reasons
+2026-05-25 22:59:42,946 - ChurnPredictionSystem - INFO -     [PRODUCT] Feature Request: 102 users, churn=28%, risk=+-13%, severity=Low
+2026-05-25 22:59:42,947 - ChurnPredictionSystem - INFO -     [PRODUCT] Ux Problems: 59 users, churn=31%, risk=+-7%, severity=Low
+2026-05-25 22:59:42,948 - ChurnPredictionSystem - INFO -     [BUSINESS] Pricing: 57 users, churn=28%, risk=+-14%, severity=Low
+2026-05-25 22:59:42,948 - ChurnPredictionSystem - INFO -     [SERVICE] Customer Service: 38 users, churn=32%, risk=+-4%, severity=Medium
+2026-05-25 22:59:42,949 - ChurnPredictionSystem - INFO -     [SERVICE] Onboarding: 35 users, churn=29%, risk=+-13%, severity=Low
+2026-05-25 22:59:42,950 - ChurnPredictionSystem - INFO - 
+  Trending topics:
+2026-05-25 22:59:42,950 - ChurnPredictionSystem - INFO -     pricing: 7 mentions (growth: 75%)
+2026-05-25 22:59:42,951 - ChurnPredictionSystem - INFO - 
+  Recommendations:
+2026-05-25 22:59:42,951 - ChurnPredictionSystem - INFO -     [MEDIUM] Feature Request: Evaluate top feature requests and add to roadmap
+2026-05-25 22:59:42,952 - ChurnPredictionSystem - INFO -     [MEDIUM] Ux Problems: Conduct UX research and redesign problematic flows
+2026-05-25 22:59:42,953 - ChurnPredictionSystem - INFO -     [MEDIUM] Customer Service: Increase support staffing and implement faster response SLA
+2026-05-25 22:59:42,954 - ChurnPredictionSystem - INFO - 
+[Step 12] Running touchpoint attribution analysis...
+2026-05-25 22:59:43,012 - ChurnPredictionSystem - INFO -   Treatment size: 193, Control size: 57
+2026-05-25 22:59:43,013 - ChurnPredictionSystem - INFO -   Overall uplift: 0.69% (relative: 2.1%)
+2026-05-25 22:59:43,014 - ChurnPredictionSystem - INFO -   Total churn prevented: 1
+2026-05-25 22:59:43,014 - ChurnPredictionSystem - INFO - 
+  Channel performance:
+2026-05-25 22:59:43,015 - ChurnPredictionSystem - INFO - 
+============================================================
+2026-05-25 22:59:43,015 - ChurnPredictionSystem - INFO - DEMO COMPLETED SUCCESSFULLY (v3.0 with Advanced Analytics)
+2026-05-25 22:59:43,016 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 22:59:43,019 - ChurnPredictionSystem - INFO - System stopped successfully
+2026-05-25 23:02:25,514 - ChurnPredictionSystem - INFO - Initializing Churn Prediction System...
+2026-05-25 23:02:25,514 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 23:02:25,515 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 23:02:25,521 - RedisCacheManager - INFO - Using in-memory cache
+2026-05-25 23:02:25,541 - BanditEngine - INFO - BanditEngine initialized with strategy: thompson_sampling
+2026-05-25 23:02:25,547 - ABTestManager - INFO - Loaded 1 experiments
+2026-05-25 23:02:25,553 - FeatureWindowAligner - INFO - SlidingWindowFeatureExtractor initialized with windows: [1, 7, 14, 30]
+2026-05-25 23:02:25,554 - FeatureWindowAligner - INFO - Loaded training feature config from ./models/cox_model_feature_config.json
+2026-05-25 23:02:25,554 - FeatureWindowAligner - INFO - FeatureWindowAligner initialized. Prediction window: 30d, Feature windows: [1, 7, 14, 30]
+2026-05-25 23:02:25,559 - SurvivalAnalysis - INFO - SurvivalCurveComparator initialized
+2026-05-25 23:02:25,563 - AttributionAnalyzer - INFO - TouchpointAttributionAnalyzer initialized
+2026-05-25 23:02:25,568 - ChurnReasonAnalyzer - INFO - ChurnReasonAnalyzer initialized
+2026-05-25 23:02:25,568 - ChurnPredictionSystem - INFO - System initialized successfully
+2026-05-25 23:02:25,568 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 23:02:25,569 - ChurnPredictionSystem - INFO - RUNNING CHURN PREDICTION SYSTEM DEMO v3.0
+2026-05-25 23:02:25,569 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 23:02:25,569 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 23:02:25,569 - ChurnPredictionSystem - INFO -   Survival Analysis: True
+2026-05-25 23:02:25,569 - ChurnPredictionSystem - INFO -   Attribution Analysis: True
+2026-05-25 23:02:25,569 - ChurnPredictionSystem - INFO -   Churn Reason Analysis: True
+2026-05-25 23:02:25,570 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 23:02:25,570 - ChurnPredictionSystem - INFO - 
+[Step 1] Generating synthetic training data...
+2026-05-25 23:02:25,574 - SparkFeatureEngineering - INFO - Generating synthetic data for 250 users...
+2026-05-25 23:02:25,599 - SparkFeatureEngineering - INFO - Generated 250 users and 3417 events
+2026-05-25 23:02:25,629 - SparkFeatureEngineering - INFO - Saved data to ./data/users.jsonl and ./data/events.jsonl
+2026-05-25 23:02:25,629 - ChurnPredictionSystem - INFO - Generated 250 users and 3417 events
+2026-05-25 23:02:25,629 - ChurnPredictionSystem - INFO - 
+[Step 2] Extracting features with sliding windows...
+2026-05-25 23:02:25,629 - SparkFeatureEngineering - INFO - Extracting features using pandas fallback...
+2026-05-25 23:02:25,640 - SparkFeatureEngineering - INFO - Extracted features for 250 users
+2026-05-25 23:02:25,640 - SparkFeatureEngineering - INFO - Preprocessing features...
+2026-05-25 23:02:26,139 - SparkFeatureEngineering - INFO - Preprocessed 250 samples with 59 features
+2026-05-25 23:02:26,214 - SparkFeatureEngineering - INFO - Saved features to ./data/features_latest.csv
+2026-05-25 23:02:26,214 - ChurnPredictionSystem - INFO - Extracted 59 features per user
+2026-05-25 23:02:26,215 - ChurnPredictionSystem - INFO - 
+[Step 3] Training model...
+2026-05-25 23:02:26,215 - ChurnPredictionSystem - INFO - Using STRATIFIED Cox PH model...
+2026-05-25 23:02:26,215 - StratifiedCoxModel - INFO - Starting stratified model training pipeline...
+2026-05-25 23:02:26,216 - StratifiedCoxModel - INFO - Starting stratified Cox PH model training...
+2026-05-25 23:02:26,229 - StratifiedCoxModel - INFO - Prepared dataframe: 250 samples
+2026-05-25 23:02:26,329 - StratifiedCoxModel - INFO - Strata distribution: {'new_users': 46, 'premium': 47, 'mid_value': 57, 'high_value': 50, 'low_value': 50}
+2026-05-25 23:02:26,331 - StratifiedCoxModel - INFO - Training stratum: new_users (46 samples, 14 events)
+2026-05-25 23:02:26,639 - StratifiedCoxModel - WARNING - Stratum new_users first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 23:02:26,795 - StratifiedCoxModel - INFO - Training stratum: premium (47 samples, 16 events)
+2026-05-25 23:02:27,058 - StratifiedCoxModel - WARNING - Stratum premium first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 23:02:27,248 - StratifiedCoxModel - INFO - Training stratum: mid_value (57 samples, 19 events)
+2026-05-25 23:02:27,497 - StratifiedCoxModel - WARNING - Stratum mid_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 23:02:27,724 - StratifiedCoxModel - INFO - Training stratum: high_value (50 samples, 18 events)
+2026-05-25 23:02:27,976 - StratifiedCoxModel - WARNING - Stratum high_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 23:02:28,188 - StratifiedCoxModel - INFO - Training stratum: low_value (50 samples, 18 events)
+2026-05-25 23:02:28,357 - StratifiedCoxModel - WARNING - Stratum low_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 23:02:28,467 - StratifiedCoxModel - INFO - Stratified training complete. 5 strata, weighted C-index: 0.0814
+2026-05-25 23:02:28,468 - StratifiedCoxModel - INFO - Running 5-fold cross-validation for stratified model...
+2026-05-25 23:02:28,475 - StratifiedCoxModel - INFO - Prepared dataframe: 250 samples
+2026-05-25 23:02:32,618 - StratifiedCoxModel - INFO - Stratified model saved to ./models/cox_model_stratified_stratified.pkl
+2026-05-25 23:02:32,619 - StratifiedCoxModel - INFO - Stratified training complete. Weighted C-index: 0.0814
+2026-05-25 23:02:32,623 - FeatureWindowAligner - INFO - Saved training feature config to ./models/cox_model_feature_config.json
+2026-05-25 23:02:32,624 - FeatureWindowAligner - INFO - Updated training metadata for 0 features
+2026-05-25 23:02:32,624 - ChurnPredictionSystem - INFO - Strata trained: 5
+2026-05-25 23:02:32,625 - ChurnPredictionSystem - INFO -   new_users: samples=33, events=10, C-index=0.0000
+2026-05-25 23:02:32,625 - ChurnPredictionSystem - INFO -   premium: samples=32, events=11, C-index=0.1373
+2026-05-25 23:02:32,626 - ChurnPredictionSystem - INFO -   mid_value: samples=47, events=17, C-index=0.1111
+2026-05-25 23:02:32,626 - ChurnPredictionSystem - INFO -   high_value: samples=40, events=14, C-index=0.1071
+2026-05-25 23:02:32,627 - ChurnPredictionSystem - INFO -   low_value: samples=34, events=12, C-index=0.0606
+2026-05-25 23:02:32,627 - ChurnPredictionSystem - INFO - Model C-index: 0.0814
+2026-05-25 23:02:32,627 - ChurnPredictionSystem - INFO - Cross-validation mean C-index: 0.0000
+2026-05-25 23:02:32,628 - ChurnPredictionSystem - INFO - 
+[Step 4] Checking feature window alignment...
+2026-05-25 23:02:32,628 - ChurnPredictionSystem - INFO -   Window alignment: OK
+2026-05-25 23:02:32,629 - ChurnPredictionSystem - WARNING -   These features were not in training data
+2026-05-25 23:02:32,629 - ChurnPredictionSystem - INFO - 
+[Step 5] Simulating real-time predictions...
+2026-05-25 23:02:32,673 - ChurnPredictionSystem - INFO -   User user_000003: prob=26.15%, risk=low, days=80.1, stratum=mid_value, actual=True
+2026-05-25 23:02:32,722 - ChurnPredictionSystem - INFO -   User user_000004: prob=35.31%, risk=low, days=86.6, stratum=high_value, actual=True
+2026-05-25 23:02:32,756 - ChurnPredictionSystem - INFO -   User user_000009: prob=12.49%, risk=low, days=148.8, stratum=new_users, actual=True
+2026-05-25 23:02:32,797 - ChurnPredictionSystem - INFO -   User user_000011: prob=63.05%, risk=medium, days=32.3, stratum=high_value, actual=True
+2026-05-25 23:02:32,832 - ChurnPredictionSystem - INFO -   User user_000012: prob=38.79%, risk=low, days=80.0, stratum=low_value, actual=True
+2026-05-25 23:02:32,865 - ChurnPredictionSystem - INFO -   User user_000013: prob=11.81%, risk=low, days=126.1, stratum=premium, actual=True
+2026-05-25 23:02:32,898 - ChurnPredictionSystem - INFO -   User user_000017: prob=26.00%, risk=low, days=80.7, stratum=mid_value, actual=True
+2026-05-25 23:02:32,975 - ChurnPredictionSystem - INFO -   User user_000021: prob=5.23%, risk=low, days=194.3, stratum=premium, actual=True
+2026-05-25 23:02:33,690 - ChurnPredictionSystem - INFO - 
+Tagged 0 high risk users
+2026-05-25 23:02:33,691 - ChurnPredictionSystem - INFO - 
+[Step 6] Running bandit recommendation engine...
+2026-05-25 23:02:33,692 - ChurnPredictionSystem - INFO - Using Multi-Armed Bandit (Thompson Sampling)...
+2026-05-25 23:02:33,692 - BanditEngine - INFO - Processed 0 high risk users with bandit, executed 0 recommendations
+2026-05-25 23:02:33,692 - ChurnPredictionSystem - INFO - Bandit executed 0 recommendations
+2026-05-25 23:02:33,693 - ChurnPredictionSystem - INFO - Bandit Summary:
+2026-05-25 23:02:33,693 - ChurnPredictionSystem - INFO -   Strategy: thompson_sampling
+2026-05-25 23:02:33,693 - ChurnPredictionSystem - INFO -   Total Arms: 48
+2026-05-25 23:02:33,694 - ChurnPredictionSystem - INFO -   Impressions: 0
+2026-05-25 23:02:33,694 - ChurnPredictionSystem - INFO -   Conversions: 0
+2026-05-25 23:02:33,694 - ChurnPredictionSystem - INFO - Executed 0 recommendation actions
+2026-05-25 23:02:33,695 - ChurnPredictionSystem - INFO - 
+[Step 7] Simulating conversions...
+2026-05-25 23:02:33,695 - ChurnPredictionSystem - INFO - Simulated 0 conversions from 0 users
+2026-05-25 23:02:33,696 - ChurnPredictionSystem - INFO - 
+[Step 8] System statistics...
+2026-05-25 23:02:33,701 - ChurnPredictionSystem - INFO -   Total users: 25
+2026-05-25 23:02:33,702 - ChurnPredictionSystem - INFO -   High risk users: 0
+2026-05-25 23:02:33,703 - ChurnPredictionSystem - INFO -   Risk distribution: {'high': 0, 'medium': 0, 'low': 0}
+2026-05-25 23:02:33,703 - ChurnPredictionSystem - INFO -   Bandit arms trained: 0/48
+2026-05-25 23:02:33,704 - ChurnPredictionSystem - INFO -   Bandit conversion rate: 0.00%
+2026-05-25 23:02:33,704 - ChurnPredictionSystem - INFO - 
+[Step 9] Running survival curve comparison...
+2026-05-25 23:02:33,719 - SurvivalAnalysis - INFO - Fitting survival curves by user_level: 5 groups
+2026-05-25 23:02:34,723 - ChurnPredictionSystem - INFO -   Fitted survival curves for 5 user level groups
+2026-05-25 23:02:34,724 - ChurnPredictionSystem - INFO -     0: median=348d, 30d_survival=91%, samples=46
+2026-05-25 23:02:34,724 - ChurnPredictionSystem - INFO -     1: median=358d, 30d_survival=84%, samples=50
+2026-05-25 23:02:34,725 - ChurnPredictionSystem - INFO -     2: median=358d, 30d_survival=92%, samples=57
+2026-05-25 23:02:34,725 - ChurnPredictionSystem - INFO -     3: median=351d, 30d_survival=86%, samples=50
+2026-05-25 23:02:34,726 - ChurnPredictionSystem - INFO -     4: median=357d, 30d_survival=94%, samples=47
+2026-05-25 23:02:34,726 - ChurnPredictionSystem - INFO -   Insight: Best group '2' has 2.9% longer median survival than worst group '0' (358.0 vs 348.0 days)
+2026-05-25 23:02:34,727 - ChurnPredictionSystem - INFO - 
+[Step 10] Generating synthetic feedback and tickets for churn reason analysis...
+2026-05-25 23:02:35,019 - ChurnPredictionSystem - INFO -   Generated 200 feedback entries
+2026-05-25 23:02:35,020 - ChurnPredictionSystem - INFO -   Generated 100 support tickets
+2026-05-25 23:02:35,021 - ChurnPredictionSystem - INFO - 
+[Step 11] Analyzing churn reasons...
+2026-05-25 23:02:35,117 - ChurnPredictionSystem - INFO -   Identified 6 distinct churn reasons
+2026-05-25 23:02:35,118 - ChurnPredictionSystem - INFO -     [PRODUCT] Feature Request: 114 users, churn=34%, risk=+1%, severity=Low
+2026-05-25 23:02:35,118 - ChurnPredictionSystem - INFO -     [BUSINESS] Pricing: 61 users, churn=33%, risk=+-4%, severity=Low
+2026-05-25 23:02:35,119 - ChurnPredictionSystem - INFO -     [PRODUCT] Ux Problems: 45 users, churn=36%, risk=+5%, severity=Low
+2026-05-25 23:02:35,119 - ChurnPredictionSystem - INFO -     [BUSINESS] Competition: 29 users, churn=41%, risk=+22%, severity=Low
+2026-05-25 23:02:35,120 - ChurnPredictionSystem - INFO -     [SERVICE] Onboarding: 29 users, churn=34%, risk=+1%, severity=Low
+2026-05-25 23:02:35,120 - ChurnPredictionSystem - INFO - 
+  Trending topics:
+2026-05-25 23:02:35,121 - ChurnPredictionSystem - INFO -     pricing: 9 mentions (growth: 29%)
+2026-05-25 23:02:35,122 - ChurnPredictionSystem - INFO - 
+  Recommendations:
+2026-05-25 23:02:35,122 - ChurnPredictionSystem - INFO -     [MEDIUM] Feature Request: Evaluate top feature requests and add to roadmap
+2026-05-25 23:02:35,123 - ChurnPredictionSystem - INFO -     [MEDIUM] Pricing: Review pricing strategy and consider tiered options or discounts
+2026-05-25 23:02:35,123 - ChurnPredictionSystem - INFO -     [MEDIUM] Ux Problems: Conduct UX research and redesign problematic flows
+2026-05-25 23:02:35,124 - ChurnPredictionSystem - INFO - 
+[Step 12] Running touchpoint attribution analysis...
+2026-05-25 23:02:35,155 - ChurnPredictionSystem - INFO -   Treatment size: 193, Control size: 57
+2026-05-25 23:02:35,156 - ChurnPredictionSystem - INFO -   Overall uplift: -7.68% (relative: -27.4%)
+2026-05-25 23:02:35,156 - ChurnPredictionSystem - INFO -   Total churn prevented: -14
+2026-05-25 23:02:35,157 - ChurnPredictionSystem - INFO - 
+  Channel performance:
+2026-05-25 23:02:35,158 - ChurnPredictionSystem - INFO - 
+============================================================
+2026-05-25 23:02:35,158 - ChurnPredictionSystem - INFO - DEMO COMPLETED SUCCESSFULLY (v3.0 with Advanced Analytics)
+2026-05-25 23:02:35,160 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 23:02:35,166 - ChurnPredictionSystem - INFO - System stopped successfully
+2026-05-25 23:06:42,248 - ChurnPredictionSystem - INFO - Initializing Churn Prediction System...
+2026-05-25 23:06:42,249 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 23:06:42,249 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 23:06:42,265 - RedisCacheManager - INFO - Using in-memory cache
+2026-05-25 23:06:42,323 - BanditEngine - INFO - BanditEngine initialized with strategy: thompson_sampling
+2026-05-25 23:06:42,351 - ABTestManager - INFO - Loaded 1 experiments
+2026-05-25 23:06:42,371 - FeatureWindowAligner - INFO - SlidingWindowFeatureExtractor initialized with windows: [1, 7, 14, 30]
+2026-05-25 23:06:42,374 - FeatureWindowAligner - INFO - Loaded training feature config from ./models/cox_model_feature_config.json
+2026-05-25 23:06:42,374 - FeatureWindowAligner - INFO - FeatureWindowAligner initialized. Prediction window: 30d, Feature windows: [1, 7, 14, 30]
+2026-05-25 23:06:42,390 - SurvivalAnalysis - INFO - SurvivalCurveComparator initialized
+2026-05-25 23:06:42,411 - AttributionAnalyzer - INFO - TouchpointAttributionAnalyzer initialized
+2026-05-25 23:06:42,420 - ChurnReasonAnalyzer - INFO - ChurnReasonAnalyzer initialized
+2026-05-25 23:06:42,421 - ChurnPredictionSystem - INFO - System initialized successfully
+2026-05-25 23:06:42,422 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 23:06:42,423 - ChurnPredictionSystem - INFO - RUNNING CHURN PREDICTION SYSTEM DEMO v3.0
+2026-05-25 23:06:42,423 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 23:06:42,424 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 23:06:42,424 - ChurnPredictionSystem - INFO -   Survival Analysis: True
+2026-05-25 23:06:42,429 - ChurnPredictionSystem - INFO -   Attribution Analysis: True
+2026-05-25 23:06:42,430 - ChurnPredictionSystem - INFO -   Churn Reason Analysis: True
+2026-05-25 23:06:42,431 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 23:06:42,432 - ChurnPredictionSystem - INFO - 
+[Step 1] Generating synthetic training data...
+2026-05-25 23:06:42,448 - SparkFeatureEngineering - INFO - Generating synthetic data for 300 users...
+2026-05-25 23:06:42,645 - SparkFeatureEngineering - INFO - Generated 300 users and 4124 events
+2026-05-25 23:06:42,804 - SparkFeatureEngineering - INFO - Saved data to ./data/users.jsonl and ./data/events.jsonl
+2026-05-25 23:06:42,805 - ChurnPredictionSystem - INFO - Generated 300 users and 4124 events
+2026-05-25 23:06:42,806 - ChurnPredictionSystem - INFO - 
+[Step 2] Extracting features with sliding windows...
+2026-05-25 23:06:42,806 - SparkFeatureEngineering - INFO - Extracting features using pandas fallback...
+2026-05-25 23:06:42,852 - SparkFeatureEngineering - INFO - Extracted features for 300 users
+2026-05-25 23:06:42,853 - SparkFeatureEngineering - INFO - Preprocessing features...
+2026-05-25 23:06:43,459 - SparkFeatureEngineering - INFO - Preprocessed 300 samples with 59 features
+2026-05-25 23:06:43,521 - SparkFeatureEngineering - INFO - Saved features to ./data/features_latest.csv
+2026-05-25 23:06:43,522 - ChurnPredictionSystem - INFO - Extracted 59 features per user
+2026-05-25 23:06:43,523 - ChurnPredictionSystem - INFO - 
+[Step 3] Training model...
+2026-05-25 23:06:43,523 - ChurnPredictionSystem - INFO - Using STRATIFIED Cox PH model...
+2026-05-25 23:06:43,523 - StratifiedCoxModel - INFO - Starting stratified model training pipeline...
+2026-05-25 23:06:43,524 - StratifiedCoxModel - INFO - Starting stratified Cox PH model training...
+2026-05-25 23:06:43,534 - StratifiedCoxModel - INFO - Prepared dataframe: 300 samples
+2026-05-25 23:06:43,667 - StratifiedCoxModel - INFO - Strata distribution: {'new_users': 58, 'premium': 64, 'low_value': 49, 'high_value': 64, 'mid_value': 65}
+2026-05-25 23:06:43,669 - StratifiedCoxModel - INFO - Training stratum: new_users (58 samples, 15 events)
+2026-05-25 23:06:44,351 - StratifiedCoxModel - WARNING - Stratum new_users first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 23:06:44,672 - StratifiedCoxModel - INFO - Training stratum: premium (64 samples, 21 events)
+2026-05-25 23:06:45,037 - StratifiedCoxModel - WARNING - Stratum premium first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 23:06:45,332 - StratifiedCoxModel - INFO - Training stratum: low_value (49 samples, 12 events)
+2026-05-25 23:06:46,186 - StratifiedCoxModel - WARNING - Stratum low_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 23:06:46,543 - StratifiedCoxModel - INFO - Training stratum: high_value (64 samples, 20 events)
+2026-05-25 23:06:47,217 - StratifiedCoxModel - WARNING - Stratum high_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 23:06:47,738 - StratifiedCoxModel - INFO - Training stratum: mid_value (65 samples, 13 events)
+2026-05-25 23:06:48,384 - StratifiedCoxModel - WARNING - Stratum mid_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 23:06:48,733 - StratifiedCoxModel - INFO - Stratified training complete. 5 strata, weighted C-index: 0.0639
+2026-05-25 23:06:48,735 - StratifiedCoxModel - INFO - Running 5-fold cross-validation for stratified model...
+2026-05-25 23:06:48,754 - StratifiedCoxModel - INFO - Prepared dataframe: 300 samples
+2026-05-25 23:06:57,940 - StratifiedCoxModel - INFO - Stratified model saved to ./models/cox_model_stratified_stratified.pkl
+2026-05-25 23:06:57,941 - StratifiedCoxModel - INFO - Stratified training complete. Weighted C-index: 0.0639
+2026-05-25 23:06:57,945 - FeatureWindowAligner - INFO - Saved training feature config to ./models/cox_model_feature_config.json
+2026-05-25 23:06:57,946 - FeatureWindowAligner - INFO - Updated training metadata for 0 features
+2026-05-25 23:06:57,946 - ChurnPredictionSystem - INFO - Strata trained: 5
+2026-05-25 23:06:57,946 - ChurnPredictionSystem - INFO -   new_users: samples=43, events=10, C-index=0.1071
+2026-05-25 23:06:57,947 - ChurnPredictionSystem - INFO -   premium: samples=56, events=17, C-index=0.1176
+2026-05-25 23:06:57,947 - ChurnPredictionSystem - INFO -   low_value: samples=44, events=11, C-index=0.0000
+2026-05-25 23:06:57,948 - ChurnPredictionSystem - INFO -   high_value: samples=52, events=16, C-index=0.0000
+2026-05-25 23:06:57,948 - ChurnPredictionSystem - INFO -   mid_value: samples=54, events=9, C-index=0.0645
+2026-05-25 23:06:57,949 - ChurnPredictionSystem - INFO - Model C-index: 0.0639
+2026-05-25 23:06:57,949 - ChurnPredictionSystem - INFO - Cross-validation mean C-index: 0.9576
+2026-05-25 23:06:57,949 - ChurnPredictionSystem - INFO - 
+[Step 4] Checking feature window alignment...
+2026-05-25 23:06:57,950 - ChurnPredictionSystem - INFO -   Window alignment: OK
+2026-05-25 23:06:57,950 - ChurnPredictionSystem - WARNING -   These features were not in training data
+2026-05-25 23:06:57,951 - ChurnPredictionSystem - INFO - 
+[Step 5] Simulating real-time predictions...
+2026-05-25 23:06:57,982 - ChurnPredictionSystem - INFO -   User user_000003: prob=28.94%, risk=low, days=90.3, stratum=low_value, actual=True
+2026-05-25 23:06:58,013 - ChurnPredictionSystem - INFO -   User user_000004: prob=6.70%, risk=low, days=165.9, stratum=high_value, actual=True
+2026-05-25 23:06:58,048 - ChurnPredictionSystem - INFO -   User user_000007: prob=16.43%, risk=low, days=155.4, stratum=low_value, actual=True
+2026-05-25 23:06:58,077 - ChurnPredictionSystem - INFO -   User user_000013: prob=12.54%, risk=low, days=101.6, stratum=high_value, actual=True
+2026-05-25 23:06:58,112 - ChurnPredictionSystem - INFO -   User user_000019: prob=12.44%, risk=low, days=167.0, stratum=mid_value, actual=True
+2026-05-25 23:06:58,150 - ChurnPredictionSystem - INFO -   User user_000021: prob=5.05%, risk=low, days=250.9, stratum=mid_value, actual=True
+2026-05-25 23:06:58,182 - ChurnPredictionSystem - INFO -   User user_000026: prob=12.50%, risk=low, days=101.9, stratum=high_value, actual=True
+2026-05-25 23:06:58,213 - ChurnPredictionSystem - INFO -   User user_000030: prob=27.96%, risk=low, days=153.8, stratum=new_users, actual=True
+2026-05-25 23:06:59,212 - ChurnPredictionSystem - INFO - 
+Tagged 0 high risk users
+2026-05-25 23:06:59,213 - ChurnPredictionSystem - INFO - 
+[Step 6] Running bandit recommendation engine...
+2026-05-25 23:06:59,216 - ChurnPredictionSystem - INFO - Using Multi-Armed Bandit (Thompson Sampling)...
+2026-05-25 23:06:59,217 - BanditEngine - INFO - Processed 0 high risk users with bandit, executed 0 recommendations
+2026-05-25 23:06:59,218 - ChurnPredictionSystem - INFO - Bandit executed 0 recommendations
+2026-05-25 23:06:59,219 - ChurnPredictionSystem - INFO - Bandit Summary:
+2026-05-25 23:06:59,219 - ChurnPredictionSystem - INFO -   Strategy: thompson_sampling
+2026-05-25 23:06:59,220 - ChurnPredictionSystem - INFO -   Total Arms: 48
+2026-05-25 23:06:59,220 - ChurnPredictionSystem - INFO -   Impressions: 0
+2026-05-25 23:06:59,221 - ChurnPredictionSystem - INFO -   Conversions: 0
+2026-05-25 23:06:59,222 - ChurnPredictionSystem - INFO - Executed 0 recommendation actions
+2026-05-25 23:06:59,222 - ChurnPredictionSystem - INFO - 
+[Step 7] Simulating conversions...
+2026-05-25 23:06:59,224 - ChurnPredictionSystem - INFO - Simulated 0 conversions from 0 users
+2026-05-25 23:06:59,227 - ChurnPredictionSystem - INFO - 
+[Step 8] System statistics...
+2026-05-25 23:06:59,231 - ChurnPredictionSystem - INFO -   Total users: 25
+2026-05-25 23:06:59,234 - ChurnPredictionSystem - INFO -   High risk users: 0
+2026-05-25 23:06:59,235 - ChurnPredictionSystem - INFO -   Risk distribution: {'high': 0, 'medium': 0, 'low': 0}
+2026-05-25 23:06:59,236 - ChurnPredictionSystem - INFO -   Bandit arms trained: 0/48
+2026-05-25 23:06:59,237 - ChurnPredictionSystem - INFO -   Bandit conversion rate: 0.00%
+2026-05-25 23:06:59,237 - ChurnPredictionSystem - INFO - 
+[Step 9] Running survival curve comparison...
+2026-05-25 23:06:59,259 - SurvivalAnalysis - INFO - Fitting survival curves by user_level: 5 groups
+2026-05-25 23:07:00,561 - ChurnPredictionSystem - INFO -   Fitted survival curves for 5 user level groups
+2026-05-25 23:07:00,563 - ChurnPredictionSystem - INFO -     0: median=357d, 30d_survival=91%, samples=58
+2026-05-25 23:07:00,564 - ChurnPredictionSystem - INFO -     1: median=346d, 30d_survival=92%, samples=49
+2026-05-25 23:07:00,565 - ChurnPredictionSystem - INFO -     2: median=359d, 30d_survival=95%, samples=65
+2026-05-25 23:07:00,565 - ChurnPredictionSystem - INFO -     3: median=365d, 30d_survival=94%, samples=64
+2026-05-25 23:07:00,571 - ChurnPredictionSystem - INFO -     4: median=364d, 30d_survival=95%, samples=64
+2026-05-25 23:07:00,572 - ChurnPredictionSystem - INFO -   Insight: Best group '3' has 5.5% longer median survival than worst group '1' (365.0 vs 346.0 days)
+2026-05-25 23:07:00,573 - ChurnPredictionSystem - INFO - 
+[Step 10] Generating synthetic feedback and tickets for churn reason analysis...
+2026-05-25 23:07:00,963 - ChurnPredictionSystem - INFO -   Generated 200 feedback entries
+2026-05-25 23:07:00,964 - ChurnPredictionSystem - INFO -   Generated 100 support tickets
+2026-05-25 23:07:00,964 - ChurnPredictionSystem - INFO - 
+[Step 11] Analyzing churn reasons...
+2026-05-25 23:07:01,082 - ChurnPredictionSystem - INFO -   Identified 6 distinct churn reasons
+2026-05-25 23:07:01,083 - ChurnPredictionSystem - INFO -     [PRODUCT] Feature Request: 113 users, churn=22%, risk=+-18%, severity=Low
+2026-05-25 23:07:01,083 - ChurnPredictionSystem - INFO -     [BUSINESS] Pricing: 64 users, churn=33%, risk=+22%, severity=Low
+2026-05-25 23:07:01,084 - ChurnPredictionSystem - INFO -     [BUSINESS] Competition: 27 users, churn=41%, risk=+51%, severity=Low
+2026-05-25 23:07:01,084 - ChurnPredictionSystem - INFO -     [SERVICE] Customer Service: 33 users, churn=30%, risk=+12%, severity=Medium
+2026-05-25 23:07:01,085 - ChurnPredictionSystem - INFO -     [SERVICE] Onboarding: 27 users, churn=30%, risk=+10%, severity=Low
+2026-05-25 23:07:01,086 - ChurnPredictionSystem - INFO - 
+  Trending topics:
+2026-05-25 23:07:01,086 - ChurnPredictionSystem - INFO -     onboarding: 6 mentions (growth: 500%)
+2026-05-25 23:07:01,087 - ChurnPredictionSystem - INFO -     ux_problems: 11 mentions (growth: 450%)
+2026-05-25 23:07:01,087 - ChurnPredictionSystem - INFO -     feature_request: 16 mentions (growth: 220%)
+2026-05-25 23:07:01,088 - ChurnPredictionSystem - INFO - 
+  Key insights:
+2026-05-25 23:07:01,089 - ChurnPredictionSystem - INFO -     - Identified 1 high-impact churn drivers with >50% elevated churn risk
+2026-05-25 23:07:01,089 - ChurnPredictionSystem - INFO -     - 'Competition' affects 27 users with 41% churn rate (1.5x baseline)
+2026-05-25 23:07:01,090 - ChurnPredictionSystem - INFO - 
+  Recommendations:
+2026-05-25 23:07:01,092 - ChurnPredictionSystem - INFO -     [MEDIUM] Feature Request: Evaluate top feature requests and add to roadmap
+2026-05-25 23:07:01,092 - ChurnPredictionSystem - INFO -     [MEDIUM] Pricing: Review pricing strategy and consider tiered options or discounts
+2026-05-25 23:07:01,093 - ChurnPredictionSystem - INFO -     [MEDIUM] Customer Service: Increase support staffing and implement faster response SLA
+2026-05-25 23:07:01,094 - ChurnPredictionSystem - INFO - 
+[Step 12] Running touchpoint attribution analysis...
+2026-05-25 23:07:01,120 - ChurnPredictionSystem - INFO -   Treatment size: 234, Control size: 66
+2026-05-25 23:07:01,120 - ChurnPredictionSystem - INFO -   Overall uplift: 10.06% (relative: 28.9%)
+2026-05-25 23:07:01,121 - ChurnPredictionSystem - INFO -   Total churn prevented: 23
+2026-05-25 23:07:01,121 - ChurnPredictionSystem - INFO - 
+  Channel performance:
+2026-05-25 23:07:01,122 - ChurnPredictionSystem - INFO -       IN_APP  : uplift=+16.90%, ROI=+29900.0%, responses=12/40, churn_prevented=6
+2026-05-25 23:07:01,122 - ChurnPredictionSystem - INFO -       PUSH    : uplift=+10.74%, ROI=+8723.5%, responses=40/136, churn_prevented=12
+2026-05-25 23:07:01,123 - ChurnPredictionSystem - INFO -       EMAIL   : uplift=+10.52%, ROI=+1509.2%, responses=20/87, churn_prevented=7
+2026-05-25 23:07:01,124 - ChurnPredictionSystem - INFO -       SMS     : uplift=+7.19%, ROI=+476.9%, responses=13/52, churn_prevented=3
+2026-05-25 23:07:01,126 - ChurnPredictionSystem - INFO - 
+  Attribution recommendations:
+2026-05-25 23:07:01,127 - ChurnPredictionSystem - INFO -     [HIGH] Increase investment in in_app
+2026-05-25 23:07:01,128 - ChurnPredictionSystem - INFO -     [HIGH] Increase investment in push
+2026-05-25 23:07:01,128 - ChurnPredictionSystem - INFO -     [HIGH] Increase investment in email
+2026-05-25 23:07:01,129 - ChurnPredictionSystem - INFO -     - IN_APP channel delivers 16.9% uplift with 29900% ROI
+2026-05-25 23:07:01,130 - ChurnPredictionSystem - INFO -     - PUSH channel delivers 10.7% uplift with 8724% ROI
+2026-05-25 23:07:01,130 - ChurnPredictionSystem - INFO - 
+============================================================
+2026-05-25 23:07:01,131 - ChurnPredictionSystem - INFO - DEMO COMPLETED SUCCESSFULLY (v3.0 with Advanced Analytics)
+2026-05-25 23:07:01,132 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 23:07:01,137 - ChurnPredictionSystem - INFO - System stopped successfully
+2026-05-25 23:08:11,741 - ChurnPredictionSystem - INFO - Initializing Churn Prediction System...
+2026-05-25 23:08:11,742 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 23:08:11,743 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 23:08:11,752 - RedisCacheManager - INFO - Using in-memory cache
+2026-05-25 23:08:11,782 - BanditEngine - INFO - BanditEngine initialized with strategy: thompson_sampling
+2026-05-25 23:08:11,791 - ABTestManager - INFO - Loaded 1 experiments
+2026-05-25 23:08:11,798 - FeatureWindowAligner - INFO - SlidingWindowFeatureExtractor initialized with windows: [1, 7, 14, 30]
+2026-05-25 23:08:11,799 - FeatureWindowAligner - INFO - Loaded training feature config from ./models/cox_model_feature_config.json
+2026-05-25 23:08:11,799 - FeatureWindowAligner - INFO - FeatureWindowAligner initialized. Prediction window: 30d, Feature windows: [1, 7, 14, 30]
+2026-05-25 23:08:11,807 - SurvivalAnalysis - INFO - SurvivalCurveComparator initialized
+2026-05-25 23:08:11,814 - AttributionAnalyzer - INFO - TouchpointAttributionAnalyzer initialized
+2026-05-25 23:08:11,821 - ChurnReasonAnalyzer - INFO - ChurnReasonAnalyzer initialized
+2026-05-25 23:08:11,821 - ChurnPredictionSystem - INFO - System initialized successfully
+2026-05-25 23:08:11,821 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 23:08:11,821 - ChurnPredictionSystem - INFO - RUNNING CHURN PREDICTION SYSTEM DEMO v3.0
+2026-05-25 23:08:11,822 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 23:08:11,822 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 23:08:11,822 - ChurnPredictionSystem - INFO -   Survival Analysis: True
+2026-05-25 23:08:11,822 - ChurnPredictionSystem - INFO -   Attribution Analysis: True
+2026-05-25 23:08:11,822 - ChurnPredictionSystem - INFO -   Churn Reason Analysis: True
+2026-05-25 23:08:11,822 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 23:08:11,822 - ChurnPredictionSystem - INFO - 
+[Step 1] Generating synthetic training data...
+2026-05-25 23:08:11,830 - SparkFeatureEngineering - INFO - Generating synthetic data for 200 users...
+2026-05-25 23:08:11,855 - SparkFeatureEngineering - INFO - Generated 200 users and 2708 events
+2026-05-25 23:08:11,898 - SparkFeatureEngineering - INFO - Saved data to ./data/users.jsonl and ./data/events.jsonl
+2026-05-25 23:08:11,898 - ChurnPredictionSystem - INFO - Generated 200 users and 2708 events
+2026-05-25 23:08:11,898 - ChurnPredictionSystem - INFO - 
+[Step 2] Extracting features with sliding windows...
+2026-05-25 23:08:11,899 - SparkFeatureEngineering - INFO - Extracting features using pandas fallback...
+2026-05-25 23:08:11,912 - SparkFeatureEngineering - INFO - Extracted features for 200 users
+2026-05-25 23:08:11,913 - SparkFeatureEngineering - INFO - Preprocessing features...
+2026-05-25 23:08:12,467 - SparkFeatureEngineering - INFO - Preprocessed 200 samples with 59 features
+2026-05-25 23:08:12,511 - SparkFeatureEngineering - INFO - Saved features to ./data/features_latest.csv
+2026-05-25 23:08:12,511 - ChurnPredictionSystem - INFO - Extracted 59 features per user
+2026-05-25 23:08:12,511 - ChurnPredictionSystem - INFO - 
+[Step 3] Training model...
+2026-05-25 23:08:12,511 - ChurnPredictionSystem - INFO - Using STRATIFIED Cox PH model...
+2026-05-25 23:08:12,511 - StratifiedCoxModel - INFO - Starting stratified model training pipeline...
+2026-05-25 23:08:12,512 - StratifiedCoxModel - INFO - Starting stratified Cox PH model training...
+2026-05-25 23:08:12,522 - StratifiedCoxModel - INFO - Prepared dataframe: 200 samples
+2026-05-25 23:08:12,596 - StratifiedCoxModel - INFO - Strata distribution: {'mid_value': 40, 'new_users': 50, 'premium': 35, 'high_value': 45, 'low_value': 30}
+2026-05-25 23:08:12,598 - StratifiedCoxModel - INFO - Training stratum: mid_value (40 samples, 10 events)
+2026-05-25 23:08:12,783 - StratifiedCoxModel - WARNING - Stratum mid_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 23:08:12,893 - StratifiedCoxModel - INFO - Training stratum: new_users (50 samples, 18 events)
+2026-05-25 23:08:13,020 - StratifiedCoxModel - WARNING - Stratum new_users first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 23:08:13,124 - StratifiedCoxModel - INFO - Training stratum: premium (35 samples, 9 events)
+2026-05-25 23:08:13,244 - StratifiedCoxModel - WARNING - Stratum premium first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 23:08:13,335 - StratifiedCoxModel - INFO - Training stratum: high_value (45 samples, 15 events)
+2026-05-25 23:08:13,448 - StratifiedCoxModel - WARNING - Stratum high_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 23:08:13,542 - StratifiedCoxModel - INFO - Training stratum: low_value (30 samples, 11 events)
+2026-05-25 23:08:13,644 - StratifiedCoxModel - WARNING - Stratum low_value first fit failed: delta contains nan value(s). Convergence halted. Please see the following tips in the lifelines documentation: https://lifelines.readthedocs.io/en/latest/Examples.html#problems-with-convergence-in-the-cox-proportional-hazard-model. Trying reduced features.
+2026-05-25 23:08:13,716 - StratifiedCoxModel - INFO - Stratified training complete. 5 strata, weighted C-index: 0.0317
+2026-05-25 23:08:13,717 - StratifiedCoxModel - INFO - Running 5-fold cross-validation for stratified model...
+2026-05-25 23:08:13,722 - StratifiedCoxModel - INFO - Prepared dataframe: 200 samples
+2026-05-25 23:08:14,384 - StratifiedCoxModel - INFO - Stratified model saved to ./models/cox_model_stratified_stratified.pkl
+2026-05-25 23:08:14,384 - StratifiedCoxModel - INFO - Stratified training complete. Weighted C-index: 0.0317
+2026-05-25 23:08:14,385 - FeatureWindowAligner - INFO - Saved training feature config to ./models/cox_model_feature_config.json
+2026-05-25 23:08:14,386 - FeatureWindowAligner - INFO - Updated training metadata for 0 features
+2026-05-25 23:08:14,386 - ChurnPredictionSystem - INFO - Strata trained: 5
+2026-05-25 23:08:14,386 - ChurnPredictionSystem - INFO -   mid_value: samples=25, events=7, C-index=0.0000
+2026-05-25 23:08:14,386 - ChurnPredictionSystem - INFO -   new_users: samples=40, events=16, C-index=0.0000
+2026-05-25 23:08:14,386 - ChurnPredictionSystem - INFO -   premium: samples=25, events=6, C-index=0.1429
+2026-05-25 23:08:14,386 - ChurnPredictionSystem - INFO -   high_value: samples=39, events=12, C-index=0.0000
+2026-05-25 23:08:14,386 - ChurnPredictionSystem - INFO -   low_value: samples=26, events=9, C-index=0.0000
+2026-05-25 23:08:14,386 - ChurnPredictionSystem - INFO - Model C-index: 0.0317
+2026-05-25 23:08:14,386 - ChurnPredictionSystem - INFO - Cross-validation mean C-index: 0.9347
+2026-05-25 23:08:14,386 - ChurnPredictionSystem - INFO - 
+[Step 4] Checking feature window alignment...
+2026-05-25 23:08:14,386 - ChurnPredictionSystem - INFO -   Window alignment: OK
+2026-05-25 23:08:14,386 - ChurnPredictionSystem - WARNING -   These features were not in training data
+2026-05-25 23:08:14,386 - ChurnPredictionSystem - INFO - 
+[Step 5] Simulating real-time predictions...
+2026-05-25 23:08:14,402 - ChurnPredictionSystem - INFO -   User user_000004: prob=16.70%, risk=low, days=222.3, stratum=mid_value, actual=True
+2026-05-25 23:08:14,419 - ChurnPredictionSystem - INFO -   User user_000006: prob=20.70%, risk=low, days=108.1, stratum=new_users, actual=True
+2026-05-25 23:08:14,438 - ChurnPredictionSystem - INFO -   User user_000007: prob=51.68%, risk=medium, days=29.5, stratum=high_value, actual=True
+2026-05-25 23:08:14,455 - ChurnPredictionSystem - INFO -   User user_000009: prob=4.01%, risk=low, days=151.8, stratum=low_value, actual=True
+2026-05-25 23:08:14,474 - ChurnPredictionSystem - INFO -   User user_000012: prob=22.86%, risk=low, days=97.9, stratum=new_users, actual=True
+2026-05-25 23:08:14,490 - ChurnPredictionSystem - INFO -   User user_000013: prob=7.90%, risk=low, days=90.7, stratum=low_value, actual=True
+2026-05-25 23:08:14,508 - ChurnPredictionSystem - INFO -   User user_000020: prob=10.62%, risk=low, days=180.5, stratum=new_users, actual=True
+2026-05-25 23:08:14,522 - ChurnPredictionSystem - INFO -   User user_000022: prob=30.13%, risk=low, days=71.7, stratum=new_users, actual=True
+2026-05-25 23:08:14,769 - ChurnPredictionSystem - INFO - 
+Tagged 0 high risk users
+2026-05-25 23:08:14,770 - ChurnPredictionSystem - INFO - 
+[Step 6] Running bandit recommendation engine...
+2026-05-25 23:08:14,770 - ChurnPredictionSystem - INFO - Using Multi-Armed Bandit (Thompson Sampling)...
+2026-05-25 23:08:14,770 - BanditEngine - INFO - Processed 0 high risk users with bandit, executed 0 recommendations
+2026-05-25 23:08:14,770 - ChurnPredictionSystem - INFO - Bandit executed 0 recommendations
+2026-05-25 23:08:14,770 - ChurnPredictionSystem - INFO - Bandit Summary:
+2026-05-25 23:08:14,770 - ChurnPredictionSystem - INFO -   Strategy: thompson_sampling
+2026-05-25 23:08:14,770 - ChurnPredictionSystem - INFO -   Total Arms: 48
+2026-05-25 23:08:14,770 - ChurnPredictionSystem - INFO -   Impressions: 0
+2026-05-25 23:08:14,770 - ChurnPredictionSystem - INFO -   Conversions: 0
+2026-05-25 23:08:14,770 - ChurnPredictionSystem - INFO - Executed 0 recommendation actions
+2026-05-25 23:08:14,770 - ChurnPredictionSystem - INFO - 
+[Step 7] Simulating conversions...
+2026-05-25 23:08:14,770 - ChurnPredictionSystem - INFO - Simulated 0 conversions from 0 users
+2026-05-25 23:08:14,770 - ChurnPredictionSystem - INFO - 
+[Step 8] System statistics...
+2026-05-25 23:08:14,771 - ChurnPredictionSystem - INFO -   Total users: 25
+2026-05-25 23:08:14,771 - ChurnPredictionSystem - INFO -   High risk users: 0
+2026-05-25 23:08:14,772 - ChurnPredictionSystem - INFO -   Risk distribution: {'high': 0, 'medium': 0, 'low': 0}
+2026-05-25 23:08:14,772 - ChurnPredictionSystem - INFO -   Bandit arms trained: 0/48
+2026-05-25 23:08:14,772 - ChurnPredictionSystem - INFO -   Bandit conversion rate: 0.00%
+2026-05-25 23:08:14,772 - ChurnPredictionSystem - INFO - 
+[Step 9] Running survival curve comparison...
+2026-05-25 23:08:14,777 - SurvivalAnalysis - INFO - Fitting survival curves by user_level: 5 groups
+2026-05-25 23:08:15,068 - ChurnPredictionSystem - INFO -   Fitted survival curves for 5 user level groups
+2026-05-25 23:08:15,068 - ChurnPredictionSystem - INFO -     0: median=360d, 30d_survival=90%, samples=50
+2026-05-25 23:08:15,068 - ChurnPredictionSystem - INFO -     1: median=361d, 30d_survival=97%, samples=30
+2026-05-25 23:08:15,068 - ChurnPredictionSystem - INFO -     2: median=362d, 30d_survival=91%, samples=40
+2026-05-25 23:08:15,068 - ChurnPredictionSystem - INFO -     3: median=358d, 30d_survival=93%, samples=45
+2026-05-25 23:08:15,068 - ChurnPredictionSystem - INFO -     4: median=363d, 30d_survival=94%, samples=35
+2026-05-25 23:08:15,068 - ChurnPredictionSystem - INFO -   Insight: Best group '4' has 1.4% longer median survival than worst group '3' (363.0 vs 358.0 days)
+2026-05-25 23:08:15,069 - ChurnPredictionSystem - INFO - 
+[Step 10] Generating synthetic feedback and tickets for churn reason analysis...
+2026-05-25 23:08:15,167 - ChurnPredictionSystem - INFO -   Generated 200 feedback entries
+2026-05-25 23:08:15,168 - ChurnPredictionSystem - INFO -   Generated 100 support tickets
+2026-05-25 23:08:15,168 - ChurnPredictionSystem - INFO - 
+[Step 11] Analyzing churn reasons...
+2026-05-25 23:08:15,215 - ChurnPredictionSystem - INFO -   Identified 6 distinct churn reasons
+2026-05-25 23:08:15,215 - ChurnPredictionSystem - INFO -     [PRODUCT] Feature Request: 95 users, churn=40%, risk=+27%, severity=Low
+2026-05-25 23:08:15,215 - ChurnPredictionSystem - INFO -     [BUSINESS] Pricing: 60 users, churn=35%, risk=+11%, severity=Low
+2026-05-25 23:08:15,215 - ChurnPredictionSystem - INFO -     [PRODUCT] Ux Problems: 53 users, churn=32%, risk=+2%, severity=Low
+2026-05-25 23:08:15,216 - ChurnPredictionSystem - INFO -     [SERVICE] Onboarding: 30 users, churn=43%, risk=+38%, severity=Low
+2026-05-25 23:08:15,216 - ChurnPredictionSystem - INFO -     [BUSINESS] Competition: 30 users, churn=23%, risk=+-26%, severity=Low
+2026-05-25 23:08:15,216 - ChurnPredictionSystem - INFO - 
+  Trending topics:
+2026-05-25 23:08:15,216 - ChurnPredictionSystem - INFO -     pricing: 6 mentions (growth: 200%)
+2026-05-25 23:08:15,216 - ChurnPredictionSystem - INFO -     feature_request: 5 mentions (growth: 25%)
+2026-05-25 23:08:15,216 - ChurnPredictionSystem - INFO - 
+  Recommendations:
+2026-05-25 23:08:15,216 - ChurnPredictionSystem - INFO -     [MEDIUM] Feature Request: Evaluate top feature requests and add to roadmap
+2026-05-25 23:08:15,216 - ChurnPredictionSystem - INFO -     [MEDIUM] Pricing: Review pricing strategy and consider tiered options or discounts
+2026-05-25 23:08:15,216 - ChurnPredictionSystem - INFO -     [MEDIUM] Ux Problems: Conduct UX research and redesign problematic flows
+2026-05-25 23:08:15,216 - ChurnPredictionSystem - INFO - 
+[Step 12] Running touchpoint attribution analysis...
+2026-05-25 23:08:15,226 - ChurnPredictionSystem - INFO -   Treatment size: 154, Control size: 46
+2026-05-25 23:08:15,226 - ChurnPredictionSystem - INFO -   Overall uplift: 4.26% (relative: 12.3%)
+2026-05-25 23:08:15,226 - ChurnPredictionSystem - INFO -   Total churn prevented: 6
+2026-05-25 23:08:15,226 - ChurnPredictionSystem - INFO - 
+  Channel performance:
+2026-05-25 23:08:15,226 - ChurnPredictionSystem - INFO -       EMAIL   : uplift=+11.49%, ROI=+1566.7%, responses=31/96, churn_prevented=8
+2026-05-25 23:08:15,227 - ChurnPredictionSystem - INFO -       IN_APP  : uplift=+9.20%, ROI=+11438.5%, responses=9/52, churn_prevented=3
+2026-05-25 23:08:15,227 - ChurnPredictionSystem - INFO -       SMS     : uplift=+0.74%, ROI=-100.0%, responses=15/52, churn_prevented=0
+2026-05-25 23:08:15,227 - ChurnPredictionSystem - INFO -       PUSH    : uplift=-2.72%, ROI=-1824.1%, responses=35/116, churn_prevented=-2
+2026-05-25 23:08:15,227 - ChurnPredictionSystem - INFO - 
+  Attribution recommendations:
+2026-05-25 23:08:15,227 - ChurnPredictionSystem - INFO -     [HIGH] Increase investment in email
+2026-05-25 23:08:15,227 - ChurnPredictionSystem - INFO -     [MEDIUM] Prioritize personalized_recommendation campaigns
+2026-05-25 23:08:15,227 - ChurnPredictionSystem - INFO -     [MEDIUM] Prioritize discount_offer campaigns
+2026-05-25 23:08:15,227 - ChurnPredictionSystem - INFO -     - EMAIL channel delivers 11.5% uplift with 1567% ROI
+2026-05-25 23:08:15,227 - ChurnPredictionSystem - INFO -     - Best channel 'email' outperforms worst 'push' by 523% in churn reduction
+2026-05-25 23:08:15,227 - ChurnPredictionSystem - INFO - 
+============================================================
+2026-05-25 23:08:15,228 - ChurnPredictionSystem - INFO - DEMO COMPLETED SUCCESSFULLY (v3.0 with Advanced Analytics)
+2026-05-25 23:08:15,228 - ChurnPredictionSystem - INFO - ============================================================
+2026-05-25 23:10:26,239 - ChurnPredictionSystem - INFO - Initializing Churn Prediction System...
+2026-05-25 23:10:26,239 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 23:10:26,239 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 23:10:26,246 - RedisCacheManager - INFO - Using in-memory cache
+2026-05-25 23:10:26,279 - BanditEngine - INFO - BanditEngine initialized with strategy: thompson_sampling
+2026-05-25 23:10:26,285 - ABTestManager - INFO - Loaded 1 experiments
+2026-05-25 23:10:26,299 - FeatureWindowAligner - INFO - SlidingWindowFeatureExtractor initialized with windows: [1, 7, 14, 30]
+2026-05-25 23:10:26,300 - FeatureWindowAligner - INFO - Loaded training feature config from ./models/cox_model_feature_config.json
+2026-05-25 23:10:26,300 - FeatureWindowAligner - INFO - FeatureWindowAligner initialized. Prediction window: 30d, Feature windows: [1, 7, 14, 30]
+2026-05-25 23:10:26,314 - SurvivalAnalysis - INFO - SurvivalCurveComparator initialized
+2026-05-25 23:10:26,328 - AttributionAnalyzer - INFO - TouchpointAttributionAnalyzer initialized
+2026-05-25 23:10:26,341 - ChurnReasonAnalyzer - INFO - ChurnReasonAnalyzer initialized
+2026-05-25 23:10:26,341 - ChurnPredictionSystem - INFO - System initialized successfully
+2026-05-25 23:10:26,353 - SparkFeatureEngineering - INFO - Generating synthetic data for 200 users...
+2026-05-25 23:10:26,402 - SparkFeatureEngineering - INFO - Generated 200 users and 2902 events
+2026-05-25 23:10:26,403 - SparkFeatureEngineering - INFO - Extracting features using pandas fallback...
+2026-05-25 23:10:26,429 - SparkFeatureEngineering - INFO - Extracted features for 200 users
+2026-05-25 23:10:26,429 - SparkFeatureEngineering - INFO - Preprocessing features...
+2026-05-25 23:10:26,968 - SparkFeatureEngineering - INFO - Preprocessed 200 samples with 59 features
+2026-05-25 23:10:27,027 - SurvivalAnalysis - INFO - Fitting survival curves by user_level: 5 groups
+2026-05-25 23:10:28,201 - SurvivalAnalysis - INFO - Fitting survival curves by region: 5 groups
+2026-05-25 23:10:28,752 - SurvivalAnalysis - INFO - Fitting survival curves by channel: 5 groups
+2026-05-25 23:10:29,223 - ChurnPredictionSystem - INFO - System stopped successfully
+2026-05-25 23:10:49,931 - ChurnPredictionSystem - INFO - Initializing Churn Prediction System...
+2026-05-25 23:10:49,932 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 23:10:49,932 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 23:10:49,949 - RedisCacheManager - INFO - Using in-memory cache
+2026-05-25 23:10:50,012 - BanditEngine - INFO - BanditEngine initialized with strategy: thompson_sampling
+2026-05-25 23:10:50,031 - ABTestManager - INFO - Loaded 1 experiments
+2026-05-25 23:10:50,044 - FeatureWindowAligner - INFO - SlidingWindowFeatureExtractor initialized with windows: [1, 7, 14, 30]
+2026-05-25 23:10:50,046 - FeatureWindowAligner - INFO - Loaded training feature config from ./models/cox_model_feature_config.json
+2026-05-25 23:10:50,046 - FeatureWindowAligner - INFO - FeatureWindowAligner initialized. Prediction window: 30d, Feature windows: [1, 7, 14, 30]
+2026-05-25 23:10:50,061 - SurvivalAnalysis - INFO - SurvivalCurveComparator initialized
+2026-05-25 23:10:50,081 - AttributionAnalyzer - INFO - TouchpointAttributionAnalyzer initialized
+2026-05-25 23:10:50,108 - ChurnReasonAnalyzer - INFO - ChurnReasonAnalyzer initialized
+2026-05-25 23:10:50,108 - ChurnPredictionSystem - INFO - System initialized successfully
+2026-05-25 23:10:50,129 - SparkFeatureEngineering - INFO - Generating synthetic data for 150 users...
+2026-05-25 23:10:50,182 - SparkFeatureEngineering - INFO - Generated 150 users and 1896 events
+2026-05-25 23:10:50,183 - SparkFeatureEngineering - INFO - Extracting features using pandas fallback...
+2026-05-25 23:10:50,201 - SparkFeatureEngineering - INFO - Extracted features for 150 users
+2026-05-25 23:10:50,202 - SparkFeatureEngineering - INFO - Preprocessing features...
+2026-05-25 23:10:50,772 - SparkFeatureEngineering - INFO - Preprocessed 150 samples with 59 features
+2026-05-25 23:10:50,781 - SurvivalAnalysis - INFO - Fitting survival curves by user_level: 5 groups
+2026-05-25 23:10:51,367 - SurvivalAnalysis - INFO - Fitting survival curves by region: 5 groups
+2026-05-25 23:10:52,040 - SurvivalAnalysis - INFO - Fitting survival curves by channel: 5 groups
+2026-05-25 23:10:52,582 - ChurnPredictionSystem - INFO - System stopped successfully
+2026-05-25 23:11:14,593 - ChurnPredictionSystem - INFO - Initializing Churn Prediction System...
+2026-05-25 23:11:14,593 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 23:11:14,593 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 23:11:14,599 - RedisCacheManager - INFO - Using in-memory cache
+2026-05-25 23:11:14,622 - BanditEngine - INFO - BanditEngine initialized with strategy: thompson_sampling
+2026-05-25 23:11:14,628 - ABTestManager - INFO - Loaded 1 experiments
+2026-05-25 23:11:14,633 - FeatureWindowAligner - INFO - SlidingWindowFeatureExtractor initialized with windows: [1, 7, 14, 30]
+2026-05-25 23:11:14,634 - FeatureWindowAligner - INFO - Loaded training feature config from ./models/cox_model_feature_config.json
+2026-05-25 23:11:14,635 - FeatureWindowAligner - INFO - FeatureWindowAligner initialized. Prediction window: 30d, Feature windows: [1, 7, 14, 30]
+2026-05-25 23:11:14,645 - SurvivalAnalysis - INFO - SurvivalCurveComparator initialized
+2026-05-25 23:11:14,652 - AttributionAnalyzer - INFO - TouchpointAttributionAnalyzer initialized
+2026-05-25 23:11:14,657 - ChurnReasonAnalyzer - INFO - ChurnReasonAnalyzer initialized
+2026-05-25 23:11:14,657 - ChurnPredictionSystem - INFO - System initialized successfully
+2026-05-25 23:11:14,663 - SparkFeatureEngineering - INFO - Generating synthetic data for 100 users...
+2026-05-25 23:11:14,677 - SparkFeatureEngineering - INFO - Generated 100 users and 1363 events
+2026-05-25 23:11:14,678 - SparkFeatureEngineering - INFO - Extracting features using pandas fallback...
+2026-05-25 23:11:14,682 - SparkFeatureEngineering - INFO - Extracted features for 100 users
+2026-05-25 23:11:14,682 - SparkFeatureEngineering - INFO - Preprocessing features...
+2026-05-25 23:11:14,907 - SparkFeatureEngineering - INFO - Preprocessed 100 samples with 59 features
+2026-05-25 23:11:14,910 - SurvivalAnalysis - INFO - Fitting survival curves by user_level: 5 groups
+2026-05-25 23:11:15,160 - SurvivalAnalysis - INFO - Fitting survival curves by region: 5 groups
+2026-05-25 23:11:15,485 - SurvivalAnalysis - INFO - Fitting survival curves by channel: 5 groups
+2026-05-25 23:11:15,748 - ChurnPredictionSystem - INFO - System stopped successfully
+2026-05-25 23:11:48,111 - ChurnPredictionSystem - INFO - Initializing Churn Prediction System...
+2026-05-25 23:11:48,111 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 23:11:48,111 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 23:11:48,117 - RedisCacheManager - INFO - Using in-memory cache
+2026-05-25 23:11:48,142 - BanditEngine - INFO - BanditEngine initialized with strategy: thompson_sampling
+2026-05-25 23:11:48,149 - ABTestManager - INFO - Loaded 1 experiments
+2026-05-25 23:11:48,157 - FeatureWindowAligner - INFO - SlidingWindowFeatureExtractor initialized with windows: [1, 7, 14, 30]
+2026-05-25 23:11:48,158 - FeatureWindowAligner - INFO - Loaded training feature config from ./models/cox_model_feature_config.json
+2026-05-25 23:11:48,158 - FeatureWindowAligner - INFO - FeatureWindowAligner initialized. Prediction window: 30d, Feature windows: [1, 7, 14, 30]
+2026-05-25 23:11:48,164 - SurvivalAnalysis - INFO - SurvivalCurveComparator initialized
+2026-05-25 23:11:48,170 - AttributionAnalyzer - INFO - TouchpointAttributionAnalyzer initialized
+2026-05-25 23:11:48,176 - ChurnReasonAnalyzer - INFO - ChurnReasonAnalyzer initialized
+2026-05-25 23:11:48,176 - ChurnPredictionSystem - INFO - System initialized successfully
+2026-05-25 23:11:48,182 - SparkFeatureEngineering - INFO - Generating synthetic data for 150 users...
+2026-05-25 23:11:48,200 - SparkFeatureEngineering - INFO - Generated 150 users and 2076 events
+2026-05-25 23:11:48,211 - ChurnPredictionSystem - INFO - System stopped successfully
+2026-05-25 23:12:23,185 - ChurnPredictionSystem - INFO - Initializing Churn Prediction System...
+2026-05-25 23:12:23,186 - ChurnPredictionSystem - INFO -   Stratified Model: True
+2026-05-25 23:12:23,186 - ChurnPredictionSystem - INFO -   Bandit Engine: True
+2026-05-25 23:12:23,192 - RedisCacheManager - INFO - Using in-memory cache
+2026-05-25 23:12:23,213 - BanditEngine - INFO - BanditEngine initialized with strategy: thompson_sampling
+2026-05-25 23:12:23,220 - ABTestManager - INFO - Loaded 1 experiments
+2026-05-25 23:12:23,226 - FeatureWindowAligner - INFO - SlidingWindowFeatureExtractor initialized with windows: [1, 7, 14, 30]
+2026-05-25 23:12:23,226 - FeatureWindowAligner - INFO - Loaded training feature config from ./models/cox_model_feature_config.json
+2026-05-25 23:12:23,227 - FeatureWindowAligner - INFO - FeatureWindowAligner initialized. Prediction window: 30d, Feature windows: [1, 7, 14, 30]
+2026-05-25 23:12:23,232 - SurvivalAnalysis - INFO - SurvivalCurveComparator initialized
+2026-05-25 23:12:23,237 - AttributionAnalyzer - INFO - TouchpointAttributionAnalyzer initialized
+2026-05-25 23:12:23,243 - ChurnReasonAnalyzer - INFO - ChurnReasonAnalyzer initialized
+2026-05-25 23:12:23,243 - ChurnPredictionSystem - INFO - System initialized successfully
+2026-05-25 23:12:23,249 - SparkFeatureEngineering - INFO - Generating synthetic data for 200 users...
+2026-05-25 23:12:23,272 - SparkFeatureEngineering - INFO - Generated 200 users and 2706 events
+2026-05-25 23:12:23,465 - ChurnPredictionSystem - INFO - System stopped successfully

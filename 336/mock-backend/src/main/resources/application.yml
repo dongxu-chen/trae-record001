@@ -1,0 +1,33 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: mock-backend
+
+grpc:
+  server:
+    port: 9090
+
+mock:
+  delay:
+    enabled: false
+    min-ms: 100
+    max-ms: 500
+  error:
+    enabled: false
+    rate: 0.1
+    message: "模拟服务错误"
+
+graphql:
+  servlet:
+    mapping: /graphql
+    enabled: true
+  graphiql:
+    enabled: true
+    path: /graphiql
+
+logging:
+  level:
+    com.apigateway.mock: DEBUG
+    io.grpc: INFO

@@ -1,0 +1,27 @@
+{
+  "training_timestamp": "2026-05-25T23:08:14.385215",
+  "prediction_window_days": 30,
+  "feature_windows": [
+    1,
+    7,
+    14,
+    30
+  ],
+  "feature_columns": [],
+  "feature_metadata": {},
+  "window_alignment": {
+    "model_trained_on": [
+      "window_1d",
+      "window_7d",
+      "window_14d",
+      "window_30d"
+    ],
+    "prediction_window": "30d",
+    "realtime_windows": [
+      "window_1d",
+      "window_7d",
+      "window_14d",
+      "window_30d"
+    ]
+  }
+}

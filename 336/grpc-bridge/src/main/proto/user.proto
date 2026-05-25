@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.apigateway.grpc.user";
+option java_outer_classname = "UserProto";
+
+package user;
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (UserResponse) {}
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {}
+  rpc CreateUser(CreateUserRequest) returns (UserResponse) {}
+  rpc UpdateUser(UpdateUserRequest) returns (UserResponse) {}
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {}
+}
+
+message GetUserRequest {
+  int64 id = 1;
+}
+
+message ListUsersRequest {
+  int32 page = 1;
+  int32 size = 2;
+}
+
+message CreateUserRequest {
+  string name = 1;
+  string email = 2;
+  int32 age = 3;
+}
+
+message UpdateUserRequest {
+  int64 id = 1;
+  string name = 2;
+  string email = 3;
+  int32 age = 4;
+}
+
+message DeleteUserRequest {
+  int64 id = 1;
+}
+
+message UserResponse {
+  int64 id = 1;
+  string name = 2;
+  string email = 3;
+  int32 age = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+message ListUsersResponse {
+  repeated UserResponse users = 1;
+  int64 total = 2;
+  int32 page = 3;
+  int32 size = 4;
+}
+
+message DeleteUserResponse {
+  bool success = 1;
+  string message = 2;
+}

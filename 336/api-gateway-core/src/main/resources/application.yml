@@ -1,0 +1,520 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: api-gateway-core
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+          lower-case-service-id: true
+
+      routes:
+        - id: rest-api-route
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/rest/**
+          filters:
+            - StripPrefix=2
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+            - name: CircuitBreaker
+              args:
+                name: restApiCircuitBreaker
+                fallbackUri: forward:/fallback/rest
+            - name: TimeLimiter
+              args:
+                name: restApiTimeLimiter
+
+        - id: graphql-route
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/graphql/**
+          filters:
+            - StripPrefix=2
+            - name: CircuitBreaker
+              args:
+                name: graphqlCircuitBreaker
+                fallbackUri: forward:/fallback/graphql
+            - name: TimeLimiter
+              args:
+                name: graphqlTimeLimiter
+            - name: Bulkhead
+              args:
+                name: graphqlBulkhead
+
+        - id: grpc-bridge-route
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/grpc/**
+          filters:
+            - StripPrefix=2
+            - name: CircuitBreaker
+              args:
+                name: grpcCircuitBreaker
+                fallbackUri: forward:/fallback/grpc
+            - name: TimeLimiter
+              args:
+                name: grpcTimeLimiter
+            - name: RateLimiter
+              args:
+                name: grpcRateLimiter
+            - name: Bulkhead
+              args:
+                name: grpcBulkhead
+
+        - id: aggregation-route
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/aggregate/**
+          filters:
+            - StripPrefix=2
+            - name: CircuitBreaker
+              args:
+                name: aggregationCircuitBreaker
+                fallbackUri: forward:/fallback/aggregate
+            - name: TimeLimiter
+              args:
+                name: aggregationTimeLimiter
+
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origin-patterns: "*"
+            allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+            allowed-headers: "*"
+            allow-credentials: true
+            max-age: 3600
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      database: 0
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: 3000ms
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 100
+        minimum-number-of-calls: 20
+        # 半开状态单请求探测，成功后逐步增大流量（代码中动态调整）
+        permitted-number-of-calls-in-half-open-state: 1
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 30s
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 60
+        slow-call-duration-threshold: 500ms
+        max-wait-duration-in-half-open-state: 10s
+        writable-stack-trace-enabled: true
+        record-exceptions:
+          - java.lang.Exception
+        ignore-exceptions:
+          - java.lang.IllegalArgumentException
+
+    instances:
+      restApiCircuitBreaker:
+        base-config: default
+        sliding-window-size: 100
+        minimum-number-of-calls: 20
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 60
+        slow-call-duration-threshold: 500ms
+        wait-duration-in-open-state: 30s
+        max-wait-duration-in-half-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 1
+
+      graphqlCircuitBreaker:
+        base-config: default
+        sliding-window-size: 80
+        minimum-number-of-calls: 15
+        failure-rate-threshold: 60
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 1000ms
+        wait-duration-in-open-state: 20s
+        max-wait-duration-in-half-open-state: 8s
+        permitted-number-of-calls-in-half-open-state: 1
+
+      grpcCircuitBreaker:
+        base-config: default
+        sliding-window-size: 150
+        minimum-number-of-calls: 30
+        failure-rate-threshold: 40
+        slow-call-rate-threshold: 70
+        slow-call-duration-threshold: 800ms
+        wait-duration-in-open-state: 45s
+        max-wait-duration-in-half-open-state: 15s
+        permitted-number-of-calls-in-half-open-state: 1
+
+      aggregationCircuitBreaker:
+        base-config: default
+        sliding-window-size: 200
+        minimum-number-of-calls: 50
+        failure-rate-threshold: 30
+        slow-call-rate-threshold: 80
+        slow-call-duration-threshold: 2000ms
+        wait-duration-in-open-state: 60s
+        max-wait-duration-in-half-open-state: 20s
+        permitted-number-of-calls-in-half-open-state: 1
+
+  ratelimiter:
+    configs:
+      default:
+        limit-for-period: 10
+        limit-refresh-period: 1s
+        permit-wait-duration: 0s
+        event-consumer-buffer-size: 100
+
+    instances:
+      defaultRateLimiter:
+        limit-for-period: 10
+        limit-refresh-period: 1s
+
+      grpcRateLimiter:
+        limit-for-period: 50
+        limit-refresh-period: 1s
+        permit-wait-duration: 100ms
+
+      apiRateLimiter:
+        limit-for-period: 100
+        limit-refresh-period: 1s
+
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 5s
+        cancel-running-future: true
+
+    instances:
+      restApiTimeLimiter:
+        timeout-duration: 3s
+        cancel-running-future: true
+
+      graphqlTimeLimiter:
+        timeout-duration: 5s
+        cancel-running-future: true
+
+      grpcTimeLimiter:
+        timeout-duration: 10s
+        cancel-running-future: true
+
+      aggregationTimeLimiter:
+        timeout-duration: 15s
+        cancel-running-future: true
+
+  bulkhead:
+    configs:
+      default:
+        max-concurrent-calls: 10
+        max-wait-duration: 0s
+
+    instances:
+      defaultBulkhead:
+        max-concurrent-calls: 10
+        max-wait-duration: 0s
+
+      graphqlBulkhead:
+        max-concurrent-calls: 20
+        max-wait-duration: 100ms
+
+      grpcBulkhead:
+        max-concurrent-calls: 30
+        max-wait-duration: 50ms
+
+  thread-pool-bulkhead:
+    configs:
+      default:
+        max-thread-pool-size: 10
+        core-thread-pool-size: 5
+        queue-capacity: 20
+        keep-alive-duration: 60s
+
+    instances:
+      asyncBulkhead:
+        max-thread-pool-size: 20
+        core-thread-pool-size: 10
+        queue-capacity: 50
+        keep-alive-duration: 30s
+
+  retry:
+    configs:
+      default:
+        max-attempts: 3
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        exponential-max-wait-duration: 5s
+        retry-exceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+        ignore-exceptions:
+          - java.lang.IllegalArgumentException
+
+    instances:
+      restApiRetry:
+        max-attempts: 3
+        wait-duration: 200ms
+
+      grpcRetry:
+        max-attempts: 2
+        wait-duration: 100ms
+
+redisson:
+  single-server-config:
+    address: "redis://localhost:6379"
+    database: 0
+    password:
+    connection-minimum-idle-size: 5
+    connection-pool-size: 20
+    idle-connection-timeout: 30000
+    connect-timeout: 10000
+    timeout: 3000
+    retry-attempts: 3
+    retry-interval: 1000
+
+gateway:
+  cache:
+    enabled: true
+    default-expire-time: 5m
+    key-prefix: "gateway:cache"
+    cache-get-requests: true
+    max-entries: 10000
+    enable-stats: true
+    exclude-paths:
+      - /api/rest/auth/**
+      - /api/rest/admin/**
+    rules:
+      - path-pattern: /api/rest/users/**
+        expire-time: 10m
+        enabled: true
+        include-query-params:
+          - page
+          - size
+        exclude-query-params:
+          - timestamp
+      - path-pattern: /api/rest/products/**
+        expire-time: 30m
+        enabled: true
+        include-headers: true
+        include-headers-list:
+          - Accept-Language
+      - path-pattern: /api/rest/orders/**
+        enabled: false
+
+  replay:
+    enabled: false
+    key-prefix: "gateway:replay"
+    max-records: 1000
+    expire-time: 24h
+    include-methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+    exclude-methods:
+      - OPTIONS
+      - HEAD
+    include-paths:
+      - /api/rest/**
+      - /api/graphql/**
+      - /api/grpc/**
+    exclude-paths:
+      - /api/rest/auth/**
+      - /api/rest/admin/**
+    record-body: true
+    max-body-size: 1048576
+    record-headers: true
+    exclude-headers:
+      - Authorization
+      - Cookie
+      - Proxy-Authorization
+    environments:
+      dev: "http://localhost:8081"
+      test: "http://test-api.example.com"
+      staging: "http://staging-api.example.com"
+      prod: "http://api.example.com"
+    default-environment: "dev"
+    replay-timeout: 30s
+    max-concurrent-replays: 10
+
+  # 灰度路由配置
+  gray:
+    enabled: true
+    v1-uri: http://localhost:8081
+    v2-uri: http://localhost:8082
+    default-version: v1
+    consistent-hash-enabled: true
+    consistent-hash-virtual-nodes: 160
+    stats-enabled: true
+    rules:
+      # 规则1：按Header灰度 - 指定Header的用户走v2
+      - id: gray-rule-header
+        name: Header灰度规则
+        type: HEADER
+        header-name: X-Gray-User
+        header-value: "true"
+        target-version: v2
+        weight: 100
+        enabled: true
+        consistent-hash-key: userId
+
+      # 规则2：按比例灰度 - 10%流量走v2
+      - id: gray-rule-ratio
+        name: 比例灰度规则
+        type: RATIO
+        ratio: 10
+        target-version: v2
+        weight: 50
+        enabled: true
+        consistent-hash-key: userId
+
+      # 规则3：按用户ID灰度 - 指定用户走v2
+      - id: gray-rule-user
+        name: 用户ID灰度规则
+        type: USER_ID
+        user-ids:
+          - "1001"
+          - "1002"
+          - "1003"
+        target-version: v2
+        weight: 80
+        enabled: true
+
+      # 规则4：按IP灰度 - 指定IP走v2
+      - id: gray-rule-ip
+        name: IP灰度规则
+        type: IP
+        ips:
+          - 192.168.1.100
+          - 192.168.1.101
+        target-version: v2
+        weight: 70
+        enabled: true
+
+      # 规则5：按路径灰度 - 指定路径走v2
+      - id: gray-rule-path
+        name: 路径灰度规则
+        type: PATH
+        path-pattern: /api/rest/v2/**
+        method: GET
+        target-version: v2
+        weight: 60
+        enabled: true
+        consistent-hash-key: ip
+
+  health-check:
+    enabled: true
+    check-interval: 30000
+    max-history-size: 100
+
+    thread-pool:
+      core-size: 5
+      max-size: 10
+      queue-capacity: 100
+      keep-alive-seconds: 60
+
+    alert:
+      consecutive-failure-threshold: 3
+      degraded-threshold: 0.3
+      unhealthy-threshold: 0.6
+
+    notification:
+      webhook-enabled: false
+      webhook-url: "http://localhost:8080/api/alerts"
+      email-enabled: false
+      email-recipients:
+        - "admin@example.com"
+      silent-period: 300000
+
+    endpoints:
+      - name: "REST API健康检查"
+        url: "http://localhost:8081/actuator/health"
+        method: "GET"
+        expected-status-code: 200
+        timeout: 5s
+        check-interval: 30000
+        enabled: true
+      - name: "GraphQL健康检查"
+        url: "http://localhost:8081/graphql/health"
+        method: "GET"
+        expected-status-code: 200
+        timeout: 5s
+        check-interval: 30000
+        enabled: true
+      - name: "gRPC健康检查"
+        url: "http://localhost:8081/grpc/health"
+        method: "GET"
+        expected-status-code: 200
+        timeout: 5s
+        check-interval: 30000
+        enabled: true
+      - name: "Redis健康检查"
+        url: "http://localhost:8081/actuator/health/redis"
+        method: "GET"
+        expected-status-code: 200
+        timeout: 3s
+        check-interval: 60000
+        enabled: true
+
+grpc:
+  client:
+    default-host: localhost
+    default-port: 9090
+    default-deadline: 30s
+    pool:
+      max-connections: 10
+      min-idle-connections: 2
+      max-idle-time: 5m
+      max-life-time: 30m
+      acquisition-timeout: 10s
+    netty:
+      connect-timeout: 5s
+      keep-alive: true
+      keep-alive-time: 2m
+      keep-alive-timeout: 20s
+      no-delay: true
+      flow-control-window: 1048576
+      max-message-size: 4194304
+    services:
+      user-service:
+        host: localhost
+        port: 9090
+        deadline: 15s
+        tls-enabled: false
+      order-service:
+        host: localhost
+        port: 9090
+        deadline: 20s
+        tls-enabled: false
+
+logging:
+  level:
+    root: INFO
+    com.apigateway: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+    io.github.resilience4j: DEBUG
+    org.redisson: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: logs/api-gateway.log
+    max-size: 100MB
+    max-history: 30

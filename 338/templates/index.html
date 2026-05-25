@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <title>MongoDB 慢查询分析</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body { background: #f6f8fa; }
+        .stat-card { border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .pattern-code { max-height: 200px; overflow: auto; background: #0d1117; color: #e6edf3;
+                        padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 12px; }
+        .tag { display:inline-block; padding:2px 8px; border-radius:10px; font-size:12px; margin-right:4px;}
+        .tag-high { background:#fee2e2; color:#b91c1c;}
+        .tag-med  { background:#fef3c7; color:#92400e;}
+        .tag-low  { background:#d1fae5; color:#065f46;}
+        .nav-tab { cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="container-fluid py-4">
+    <h1 class="h3 mb-3">MongoDB 慢查询分析工具</h1>
+
+    <form class="row g-3 mb-4" method="POST" action="/">
+        <div class="col-md-3">
+            <label class="form-label">数据源</label>
+            <select name="source" class="form-select" id="source">
+                <option value="profile" {% if request.form.get('source') != 'file' %}selected{% endif %}>system.profile (MongoDB)</option>
+                <option value="file" {% if request.form.get('source') == 'file' %}selected{% endif %}>本地日志文件</option>
+            </select>
+        </div>
+        <div class="col-md-3 db-only">
+            <label class="form-label">数据库</label>
+            <input name="db" class="form-control" placeholder="例如 test" value="{{ request.form.get('db', '') }}"/>
+        </div>
+        <div class="col-md-2 db-only">
+            <label class="form-label">慢阈值(ms)</label>
+            <input name="slow_ms" type="number" class="form-control"
+                   value="{{ request.form.get('slow_ms', '100') }}"/>
+        </div>
+        <div class="col-md-2 db-only">
+            <label class="form-label">最大条数</label>
+            <input name="limit" type="number" class="form-control"
+                   value="{{ request.form.get('limit', '1000') }}"/>
+        </div>
+        <div class="col-md-4 file-only" style="display:none;">
+            <label class="form-label">日志文件路径</label>
+            <input name="log_path" class="form-control" placeholder="绝对路径"
+                   value="{{ request.form.get('log_path', '') }}"/>
+        </div>
+        <div class="col-md-2 align-self-end">
+            <button type="submit" class="btn btn-primary w-100">分析</button>
+        </div>
+    </form>
+
+    {% if report %}
+    <ul class="nav nav-tabs mb-3" role="tablist">
+        <li class="nav-item"><a class="nav-link active nav-tab" data-bs-toggle="tab" data-bs-target="#overview">概览</a></li>
+        <li class="nav-item"><a class="nav-link nav-tab" data-bs-toggle="tab" data-bs-target="#total">按总耗时排名</a></li>
+        <li class="nav-item"><a class="nav-link nav-tab" data-bs-toggle="tab" data-bs-target="#avg">按平均耗时</a></li>
+        <li class="nav-item"><a class="nav-link nav-tab" data-bs-toggle="tab" data-bs-target="#count">按次数</a></li>
+        <li class="nav-item"><a class="nav-link nav-tab" data-bs-toggle="tab" data-bs-target="#index">索引建议</a></li>
+        <li class="nav-item"><a class="nav-link nav-tab" data-bs-toggle="tab" data-bs-target="#covered">覆盖查询</a></li>
+        <li class="nav-item"><a class="nav-link nav-tab" data-bs-toggle="tab" data-bs-target="#trend">趋势预测</a></li>
+        <li class="nav-item"><a class="nav-link nav-tab" data-bs-toggle="tab" data-bs-target="#explain">Explain火焰图</a></li>
+        <li class="nav-item"><a class="nav-link nav-tab" data-bs-toggle="tab" data-bs-target="#shard">分片热点</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="overview">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card stat-card p-3">
+                        <div class="text-muted small">慢查询总数</div>
+                        <div class="h2 mb-0">{{ report.total_entries }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stat-card p-3">
+                        <div class="text-muted small">唯一查询模式数</div>
+                        <div class="h2 mb-0">{{ report.total_unique_patterns }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stat-card p-3">
+                        <div class="text-muted small">索引建议数</div>
+                        <div class="h2 mb-0">{{ report.index_suggestions|length }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="total">
+            {% with items=report.ranking_by_total_ms, sort='total_ms' %}
+            {% include '_ranking.html' %}
+            {% endwith %}
+        </div>
+        <div class="tab-pane fade" id="avg">
+            {% with items=report.ranking_by_avg_ms, sort='avg_ms' %}
+            {% include '_ranking.html' %}
+            {% endwith %}
+        </div>
+        <div class="tab-pane fade" id="count">
+            {% with items=report.ranking_by_count, sort='count' %}
+            {% include '_ranking.html' %}
+            {% endwith %}
+        </div>
+
+        <div class="tab-pane fade" id="index">
+            <table class="table table-sm table-bordered bg-white">
+                <thead><tr>
+                    <th>命名空间</th><th>推荐索引</th><th>次数</th><th>最大扫描</th><th>字段选择性</th><th>顺序指导</th><th>原因</th>
+                </tr></thead>
+                <tbody>
+                {% for s in report.index_suggestions %}
+                <tr>
+                    <td>{{ s.ns }}</td>
+                    <td><code>{{ s.index }}</code></td>
+                    <td>{{ s.count }}</td>
+                    <td>docsExamined={{ s.worst_docsExamined }}, keysExamined={{ s.worst_keysExamined }}</td>
+                    <td>
+                        {% for field, info in s.field_selectivity.items() %}
+                            <div class="small">
+                                <strong>{{ field }}</strong>
+                                <span class="text-muted">
+                                    ({{ info.type }}, distinct={{ info.distinct_count }},
+                                    sel_score={{ info.selectivity_score }})
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for note in s.ordering_notes %}
+                            <div class="small">{{ note }}</div>
+                        {% endfor %}
+                    </td>
+                    <td>{{ s.reasons|join(', ') }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="text-center text-muted">暂无建议</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ========== 覆盖查询 Tab ========== -->
+        <div class="tab-pane fade" id="covered">
+            <div class="mb-3">
+                <div class="alert alert-info py-2 px-3" role="alert" style="font-size:13px;">
+                    <strong>覆盖查询</strong>：查询所需字段全部在索引中，无需回表读取文档（docsExamined=0 或极低）。
+                    可极大减少 IO，优化关键查询路径。
+                </div>
+            </div>
+            <table class="table table-sm table-bordered bg-white">
+                <thead><tr>
+                    <th>命名空间</th><th>次数</th><th>覆盖比例</th><th>是否完全覆盖</th>
+                    <th>使用字段</th><th>覆盖索引</th><th>建议</th>
+                </tr></thead>
+                <tbody>
+                {% for c in report.covered_queries %}
+                <tr>
+                    <td>{{ c.ns }}</td>
+                    <td>{{ c.count }}</td>
+                    <td>
+                        <div class="progress" style="height:18px;">
+                            <div class="progress-bar bg-{{ 'success' if c.avg_coverage_ratio > 0.95 else 'warning' }}"
+                                 style="width: {{ (c.avg_coverage_ratio * 100) | round(1) }}%">
+                                {{ (c.avg_coverage_ratio * 100) | round(1) }}%
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if c.is_fully_covered %}
+                            <span class="tag tag-low">✅ 完全覆盖</span>
+                        {% else %}
+                            <span class="tag tag-med">⚠️ 部分覆盖</span>
+                        {% endif %}
+                    </td>
+                    <td><small>{{ c.used_fields | join(', ') }}</small></td>
+                    <td><small>{{ c.coverable_by_indexes | join(', ') or '-' }}</small></td>
+                    <td><small>{{ c.suggestion }}</small></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="text-center text-muted">未发现可覆盖查询（需存在 IXSCAN 且 docsExamined/keysExamined 比例低）</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ========== 趋势预测 Tab ========== -->
+        <div class="tab-pane fade" id="trend">
+            <div class="mb-3">
+                <div class="alert alert-info py-2 px-3" role="alert" style="font-size:13px;">
+                    <strong>慢查询趋势预测</strong>：基于历史时间序列，使用
+                    <em>简单指数平滑 (SES, α={{ report.trend_forecast.metrics.alpha }})</em> +
+                    <em>线性回归</em> 预测未来 {{ report.trend_forecast.metrics.periods }} 个周期的慢查询量。
+                    当前趋势: <strong class="text-{{ 'danger' if report.trend_forecast.metrics.trend == '上升' else 'success' }}">
+                        {{ report.trend_forecast.metrics.trend }}
+                    </strong>，
+                    斜率: <code>{{ report.trend_forecast.metrics.slope }}</code>，
+                    残差标准差: <code>{{ report.trend_forecast.metrics.residual_std }}</code>。
+                    {% if report.trend_forecast.metrics.note %}
+                        <span class="text-warning ms-2">⚠️ {{ report.trend_forecast.metrics.note }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card p-3 bg-white mb-3">
+                <h6 class="mb-2">历史与预测慢查询量</h6>
+                <div id="trend-chart" style="width:100%; height: 340px;"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>历史数据</h6>
+                    <table class="table table-sm table-bordered bg-white">
+                        <thead><tr><th>时间</th><th>慢查询数</th><th>总耗时(ms)</th></tr></thead>
+                        <tbody>
+                        {% for h in report.trend_forecast.history %}
+                        <tr>
+                            <td>{{ h.timestamp }}</td>
+                            <td>{{ h.count }}</td>
+                            <td>{{ h.total_ms }}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h6>预测数据</h6>
+                    <table class="table table-sm table-bordered bg-white">
+                        <thead><tr><th>预测周期</th><th>预测数量</th><th>平滑值</th><th>趋势</th></tr></thead>
+                        <tbody>
+                        {% for f in report.trend_forecast.forecast %}
+                        <tr>
+                            <td>{{ f.timestamp }}</td>
+                            <td>{{ f.predicted_count }}</td>
+                            <td>{{ f.smoothed_count }}</td>
+                            <td>
+                                <span class="tag {% if f.trend == '上升' %}tag-high{% elif f.trend == '下降' %}tag-low{% else %}tag-med{% endif %}">
+                                    {{ f.trend }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== Explain 火焰图 Tab ========== -->
+        <div class="tab-pane fade" id="explain">
+            <div class="mb-3">
+                <div class="alert alert-info py-2 px-3" role="alert" style="font-size:13px;">
+                    <strong>Explain 火焰图</strong>：展示 Top 慢查询的执行阶段耗时分布。
+                    横向长度代表耗时占比，纵向代表调用栈深度。
+                    <span class="text-warning ms-2">
+                        ⚠️ 纯日志文件模式下为模拟数据；连接 MongoDB 后可调用真实 explain 获取精确结果。
+                    </span>
+                </div>
+            </div>
+
+            {% if report.explain_samples %}
+            <div class="mb-3">
+                <label class="form-label">选择慢查询样本：</label>
+                <select id="explain-select" class="form-select form-select-sm" style="width: auto;">
+                    {% for s in report.explain_samples %}
+                        <option value="{{ loop.index0 }}">{{ s.ns }} - {{ s.flamegraph.total_execution_time_ms }}ms</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="card p-3 bg-white mb-3">
+                <h6 id="explain-title" class="mb-2">执行阶段耗时分布</h6>
+                <div id="flamechart" style="width:100%; height: 220px;"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <h6>执行统计</h6>
+                    <table class="table table-sm table-bordered bg-white">
+                        <tbody id="explain-stats">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-md-8">
+                    <h6>阶段详情</h6>
+                    <table class="table table-sm table-bordered bg-white" id="explain-details">
+                        <thead><tr><th>阶段</th><th>耗时(ms)</th><th>keys</th><th>docs</th><th>nReturned</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-secondary">暂无可用的 Explain 数据</div>
+            {% endif %}
+        </div>
+
+        <div class="tab-pane fade" id="shard">
+            <div class="mb-2">
+                <strong>是否分片集群:</strong>
+                <span class="tag {% if report.shard_hotspots.is_sharded %}tag-high{% else %}tag-low{% endif %}">
+                    {{ '是' if report.shard_hotspots.is_sharded else '否' }}
+                </span>
+            </div>
+            {% if report.shard_hotspots.shards %}
+            <div class="mb-3">
+                <h6>分片列表</h6>
+                <ul>
+                {% for sh in report.shard_hotspots.shards %}
+                    <li>{{ sh._id }} ({{ sh.host }})</li>
+                {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            <div class="card card-body mb-3 py-2 px-3" style="font-size:13px;">
+                <strong>动态分位阈值:</strong>
+                Q25={{ report.shard_hotspots.quantile_thresholds.q25 }},
+                Q50={{ report.shard_hotspots.quantile_thresholds.q50 }},
+                Q75={{ report.shard_hotspots.quantile_thresholds.q75 }},
+                Q90={{ report.shard_hotspots.quantile_thresholds.q90 }}
+                <span class="text-muted ms-2">
+                    （{{ report.shard_hotspots.classification_rule }}）
+                </span>
+            </div>
+            <table class="table table-sm table-bordered bg-white">
+                <thead><tr>
+                    <th>集合</th><th>慢查询次数</th><th>总耗时(ms)</th><th>热度分</th><th>执行计划</th><th>热点级别</th>
+                </tr></thead>
+                <tbody>
+                {% for c in report.shard_hotspots.collections %}
+                <tr>
+                    <td>{{ c.ns }}</td>
+                    <td>{{ c.count }}</td>
+                    <td>{{ c.total_ms }}</td>
+                    <td>{{ c.hot_score }}</td>
+                    <td>{{ c.plans|join(', ') }}</td>
+                    <td>
+                        {% if c.hotspot_level == 'HIGH' %}<span class="tag tag-high">{{ c.hotspot_level }}</span>
+                        {% elif c.hotspot_level == 'MEDIUM' %}<span class="tag tag-med">{{ c.hotspot_level }}</span>
+                        {% else %}<span class="tag tag-low">{{ c.hotspot_level }}</span>{% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center text-muted">无数据</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% else %}
+        <div class="alert alert-info">请选择数据源并填写参数后点击「分析」。</div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function toggleSource() {
+        var src = document.getElementById('source').value;
+        var showDb = src !== 'file';
+        document.querySelectorAll('.db-only').forEach(function(el) { el.style.display = showDb ? '' : 'none'; });
+        document.querySelectorAll('.file-only').forEach(function(el) { el.style.display = showDb ? 'none' : ''; });
+    }
+    document.getElementById('source').addEventListener('change', toggleSource);
+    toggleSource();
+
+    // ========== 趋势预测折线图 ==========
+    var trendData = {
+        history: {{ report.trend_forecast.history | tojson }},
+        forecast: {{ report.trend_forecast.forecast | tojson }}
+    };
+
+    function drawTrendChart() {
+        var container = document.getElementById('trend-chart');
+        if (!container || !trendData.history) return;
+        container.innerHTML = '';
+
+        var margin = {top: 20, right: 20, bottom: 60, left: 50};
+        var width = container.clientWidth - margin.left - margin.right;
+        var height = 340 - margin.top - margin.bottom;
+
+        var svg = d3.select('#trend-chart').append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+        // 合并历史与预测
+        var allLabels = [];
+        var allValues = [];
+        var forecastStart = trendData.history.length;
+
+        trendData.history.forEach(function(h, i) {
+            allLabels.push(h.timestamp);
+            allValues.push({x: i, y: h.count, type: 'history'});
+        });
+        trendData.forecast.forEach(function(f, i) {
+            allLabels.push(f.timestamp);
+            allValues.push({x: forecastStart + i, y: f.predicted_count, type: 'forecast'});
+        });
+
+        var x = d3.scaleLinear().domain([0, allLabels.length - 1]).range([0, width]);
+        var maxY = d3.max(allValues, function(d) { return d.y; }) || 1;
+        var y = d3.scaleLinear().domain([0, maxY * 1.15]).range([height, 0]);
+
+        // 预测区域
+        if (trendData.forecast.length > 0) {
+            var area = d3.area()
+                .x(function(d) { return x(d.x); })
+                .y0(height)
+                .y1(function(d) { return y(d.y); });
+            svg.append('path')
+                .datum(allValues.filter(function(d) { return d.type === 'forecast'; }))
+                .attr('fill', '#fef3c7')
+                .attr('opacity', 0.5)
+                .attr('d', area);
+        }
+
+        // 历史线
+        var line = d3.line()
+            .x(function(d) { return x(d.x); })
+            .y(function(d) { return y(d.y); })
+            .curve(d3.curveMonotoneX);
+
+        svg.append('path')
+            .datum(allValues.filter(function(d) { return d.type === 'history'; }))
+            .attr('fill', 'none')
+            .attr('stroke', '#2563eb')
+            .attr('stroke-width', 2.5)
+            .attr('d', line);
+
+        // 预测线（虚线）
+        svg.append('path')
+            .datum(allValues.filter(function(d) { return d.type === 'forecast'; }))
+            .attr('fill', 'none')
+            .attr('stroke', '#d97706')
+            .attr('stroke-width', 2.5)
+            .attr('stroke-dasharray', '6,3')
+            .attr('d', line);
+
+        // 数据点
+        svg.selectAll('.dot')
+            .data(allValues)
+            .enter().append('circle')
+            .attr('cx', function(d) { return x(d.x); })
+            .attr('cy', function(d) { return y(d.y); })
+            .attr('r', 4)
+            .attr('fill', function(d) { return d.type === 'history' ? '#2563eb' : '#d97706'; });
+
+        // 坐标轴
+        svg.append('g')
+            .attr('transform', 'translate(0,' + height + ')')
+            .call(d3.axisBottom(x).tickFormat(function(i) { return allLabels[i] || ''; }))
+            .selectAll('text')
+            .attr('transform', 'rotate(-35)')
+            .style('text-anchor', 'end')
+            .style('font-size', '11px');
+
+        svg.append('g').call(d3.axisLeft(y));
+
+        // 图例
+        svg.append('circle').attr('cx', 10).attr('cy', 12).attr('r', 5).attr('fill', '#2563eb');
+        svg.append('text').attr('x', 22).attr('y', 16).text('历史').style('font-size', '12px');
+        svg.append('circle').attr('cx', 80).attr('cy', 12).attr('r', 5).attr('fill', '#d97706');
+        svg.append('text').attr('x', 92).attr('y', 16).text('预测').style('font-size', '12px');
+    }
+
+    // ========== Explain 火焰图 ==========
+    var explainSamples = {{ report.explain_samples | tojson }};
+
+    function drawFlamegraph(sample) {
+        var container = document.getElementById('flamechart');
+        if (!container || !sample) return;
+        container.innerHTML = '';
+
+        var flame = sample.flamegraph;
+        var tree = flame.tree;
+        var totalTime = flame.total_execution_time_ms || 1;
+
+        var margin = {top: 10, right: 20, bottom: 20, left: 120};
+        var width = container.clientWidth - margin.left - margin.right;
+        var height = 220 - margin.top - margin.bottom;
+
+        var svg = d3.select('#flamechart').append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+        // 层级化布局
+        var root = d3.hierarchy(tree)
+            .sum(function(d) { return d.value || 0; })
+            .sort(function(a, b) { return b.value - a.value; });
+
+        var maxDepth = d3.max(root.descendants(), function(d) { return d.depth; }) || 1;
+        var rowHeight = height / (maxDepth + 1);
+
+        var x = d3.scaleLinear().domain([0, root.value]).range([0, width]);
+        var colorScale = d3.scaleOrdinal()
+            .domain(['COLLSCAN', 'IXSCAN', 'FETCH', 'SORT', 'AGGREGATE', 'PROJECTION', 'SHARD_MERGE', 'SINGLE_SHARD'])
+            .range(['#ef4444', '#22c55e', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b', '#475569']);
+
+        var xOffset = 0;
+        function renderNode(node, depth, startX) {
+            if (!node.data) return;
+            var w = Math.max(2, x(node.value));
+            var y = (maxDepth - depth) * rowHeight;
+            var name = node.data.name || 'UNKNOWN';
+            var value = node.data.value || 0;
+            var pct = ((value / totalTime) * 100).toFixed(1);
+
+            var rect = svg.append('rect')
+                .attr('x', startX)
+                .attr('y', y)
+                .attr('width', w - 1)
+                .attr('height', rowHeight - 2)
+                .attr('fill', colorScale(name) || '#94a3b8')
+                .attr('rx', 2)
+                .attr('stroke', '#ffffff')
+                .append('title')
+                .text(name + ' | ' + value + 'ms | ' + pct + '%');
+
+            if (w > 60) {
+                svg.append('text')
+                    .attr('x', startX + 4)
+                    .attr('y', y + rowHeight / 2 + 4)
+                    .attr('fill', '#fff')
+                    .style('font-size', '11px')
+                    .style('font-weight', 'bold')
+                    .text(name + ' (' + pct + '%)');
+            }
+
+            var childStart = startX;
+            if (node.children) {
+                node.children.forEach(function(child) {
+                    renderNode(child, depth + 1, childStart);
+                    childStart += x(child.value);
+                });
+            }
+        }
+        renderNode(root, 0, 0);
+
+        // 更新统计与详情
+        var statsHtml = '' +
+            '<tr><th class="small">总耗时</th><td>' + flame.total_execution_time_ms + 'ms</td></tr>' +
+            '<tr><th class="small">返回文档</th><td>' + flame.n_returned + '</td></tr>' +
+            '<tr><th class="small">索引扫描</th><td>' + flame.total_keys_examined + '</td></tr>' +
+            '<tr><th class="small">文档扫描</th><td>' + flame.total_docs_examined + '</td></tr>' +
+            '<tr><th class="small">数据来源</th><td>' + (sample.simulated ? '模拟' : '真实') + '</td></tr>';
+        document.getElementById('explain-stats').innerHTML = statsHtml;
+
+        // 详情表
+        var detailsHtml = '';
+        flame.nodes.forEach(function(n) {
+            var pct = ((n.value / totalTime) * 100).toFixed(1);
+            detailsHtml += '<tr><td><code>' + n.name + '</code></td>' +
+                '<td>' + n.value + 'ms (' + pct + '%)</td>' +
+                '<td>' + (n.details.keysExamined || 0) + '</td>' +
+                '<td>' + (n.details.docsExamined || 0) + '</td>' +
+                '<td>' + (n.details.nReturned || 0) + '</td></tr>';
+        });
+        document.querySelector('#explain-details tbody').innerHTML = detailsHtml;
+
+        document.getElementById('explain-title').textContent =
+            sample.ns + ' 执行阶段耗时分布（总 ' + flame.total_execution_time_ms + 'ms）';
+    }
+
+    // 初始化图表
+    document.addEventListener('shown.bs.tab', function(e) {
+        var targetId = e.target.getAttribute('data-bs-target');
+        if (targetId === '#trend') {
+            setTimeout(drawTrendChart, 50);
+        } else if (targetId === '#explain' && explainSamples && explainSamples.length > 0) {
+            setTimeout(function() {
+                var idx = parseInt(document.getElementById('explain-select').value || '0');
+                drawFlamegraph(explainSamples[idx]);
+            }, 50);
+        }
+    });
+
+    // 切换 Explain 样本
+    var explainSel = document.getElementById('explain-select');
+    if (explainSel) {
+        explainSel.addEventListener('change', function() {
+            var idx = parseInt(this.value || '0');
+            drawFlamegraph(explainSamples[idx]);
+        });
+    }
+
+    // 页面加载时默认绘制第一张 Tab 激活时的图表
+    var activeTab = document.querySelector('.nav-link.active');
+    if (activeTab && activeTab.getAttribute('data-bs-target') === '#trend') {
+        window.addEventListener('load', drawTrendChart);
+    }
+</script>
+</body>
+</html>
