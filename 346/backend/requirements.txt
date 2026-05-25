@@ -1,0 +1,10 @@
+flask==3.0.0
+flask-cors==4.0.0
+networkx==3.2.1
+neo4j==5.16.0
+python-louvain==0.16
+leidenalg==0.10.2
+scipy==1.11.4
+pandas==2.1.4
+numpy==1.26.2
+python-dotenv==1.0.0

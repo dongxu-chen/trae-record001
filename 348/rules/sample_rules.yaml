@@ -1,0 +1,167 @@
+row_count_check:
+  enabled: true
+  tolerance: 0.5
+  exclude_tables:
+    - audit_log
+    - migration_history
+
+sample_check:
+  enabled: true
+  sample_percentage: 5.0
+  sample_min_rows: 100
+  sample_max_rows: 10000
+  stratified_sampling: true
+  num_strata: 10
+  exclude_tables:
+    - raw_logs
+
+business_logic_check:
+  enabled: true
+  rules:
+    - name: check_order_total_consistency
+      enabled: true
+      description: "订单总金额应等于各商品单价乘以数量之和"
+      tables:
+        - orders
+      query: >
+        SELECT COUNT(*) as cnt
+        FROM {table} o
+        WHERE o.total_amount != (
+          SELECT COALESCE(SUM(oi.price * oi.quantity), 0)
+          FROM order_items oi
+          WHERE oi.order_id = o.id
+        )
+      expected_result:
+        cnt: 0
+      comparison: equals
+
+    - name: check_user_balance_non_negative
+      enabled: true
+      description: "用户余额不应为负数"
+      tables:
+        - users
+      query: >
+        SELECT COUNT(*) as cnt
+        FROM {table}
+        WHERE balance < 0
+      expected_result:
+        cnt: 0
+      comparison: equals
+
+    - name: check_product_price_range
+      enabled: true
+      description: "商品价格应在合理范围内"
+      tables:
+        - products
+      query: >
+        SELECT COUNT(*) as cnt
+        FROM {table}
+        WHERE price <= 0 OR price > 100000
+      expected_result:
+        cnt: 0
+      comparison: equals
+
+    - name: check_no_orphaned_orders
+      enabled: true
+      description: "所有订单都应有对应用户"
+      tables:
+        - orders
+      query: >
+        SELECT COUNT(*) as cnt
+        FROM {table} o
+        WHERE NOT EXISTS (
+          SELECT 1 FROM users u WHERE u.id = o.user_id
+        )
+      expected_result:
+        cnt: 0
+      comparison: equals
+
+    - name: check_email_format
+      enabled: true
+      description: "用户邮箱格式应合法"
+      tables:
+        - users
+      query: >
+        SELECT COUNT(*) as cnt
+        FROM {table}
+        WHERE email NOT REGEXP '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'
+      expected_result:
+        cnt: 0
+      comparison: equals
+
+    - name: check_created_at_order
+      enabled: true
+      description: "创建时间不应晚于更新时间"
+      query: >
+        SELECT COUNT(*) as cnt
+        FROM {table}
+        WHERE created_at > updated_at
+      expected_result:
+        cnt: 0
+      comparison: equals
+      exclude_tables:
+        - audit_log
+
+    - name: check_active_users_minimum
+      enabled: true
+      description: "活跃用户数应保持在最低水平以上"
+      tables:
+        - users
+      query: >
+        SELECT COUNT(*) as cnt
+        FROM {table}
+        WHERE status = 'active'
+      expected_result:
+        cnt: 100
+      comparison: greater_or_equal
+
+    - name: check_no_duplicate_emails
+      enabled: true
+      description: "用户邮箱不应重复"
+      tables:
+        - users
+      query: >
+        SELECT COUNT(*) as dup_count
+        FROM (
+          SELECT email, COUNT(*) as cnt
+          FROM {table}
+          GROUP BY email
+          HAVING cnt > 1
+        ) as duplicates
+      expected_result:
+        dup_count: 0
+      comparison: equals
+
+    - name: check_inventory_consistency
+      enabled: true
+      description: "库存数量应等于入库数量减去出库数量"
+      tables:
+        - products
+      query: >
+        SELECT COUNT(*) as cnt
+        FROM {table} p
+        WHERE p.stock_quantity != (
+          SELECT COALESCE(SUM(CASE WHEN type = 'in' THEN quantity ELSE -quantity END), 0)
+          FROM inventory_transactions it
+          WHERE it.product_id = p.id
+        )
+      expected_result:
+        cnt: 0
+      comparison: equals
+
+    - name: check_payment_status_consistency
+      enabled: true
+      description: "已支付订单应有对应的支付记录"
+      tables:
+        - orders
+      query: >
+        SELECT COUNT(*) as cnt
+        FROM {table} o
+        WHERE o.status = 'paid'
+          AND NOT EXISTS (
+            SELECT 1 FROM payments p
+            WHERE p.order_id = o.id AND p.status = 'success'
+          )
+      expected_result:
+        cnt: 0
+      comparison: equals

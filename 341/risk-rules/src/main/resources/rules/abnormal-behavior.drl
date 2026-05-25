@@ -1,0 +1,131 @@
+package com.riskcontrol.rules.behavior
+
+import com.riskcontrol.common.model.RiskEvent
+import com.riskcontrol.common.model.RuleHit
+import com.riskcontrol.common.model.RiskAssessmentResult
+import com.riskcontrol.common.enums.RuleType
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.List
+
+function int getHourOfDay(long timestamp) {
+    return LocalDateTime.ofInstant(
+        java.time.Instant.ofEpochMilli(timestamp),
+        ZoneId.systemDefault()
+    ).getHour();
+}
+
+rule "Unusual Login Time"
+    no-loop true
+    salience 70
+    when
+        $event : RiskEvent(eventTimestamp > 0)
+        $result : RiskAssessmentResult()
+        $hitRules : List()
+    then
+        int hour = getHourOfDay($event.getEventTimestamp());
+        if (hour >= 2 && hour < 6) {
+            RuleHit hit = RuleHit.builder()
+                .ruleId("RULE_BEHAVIOR_UNUSUAL_TIME_001")
+                .ruleName("Unusual Login Time")
+                .ruleType(RuleType.TIME_ANOMALY)
+                .score(15)
+                .description("Login during unusual hours (2:00-6:00)")
+                .evidence("Login hour: " + hour)
+                .hitTimestamp(System.currentTimeMillis())
+                .build();
+            $hitRules.add(hit);
+        }
+end
+
+rule "Suspicious Email Pattern"
+    no-loop true
+    salience 75
+    when
+        $event : RiskEvent(email != null)
+        $result : RiskAssessmentResult()
+        $hitRules : List()
+    then
+        String email = $event.getEmail();
+        if (email != null) {
+            int score = 0;
+            StringBuilder evidence = new StringBuilder();
+            String[] parts = email.split("@");
+            if (parts.length == 2) {
+                String local = parts[0];
+                String domain = parts[1];
+                if (local.length() > 30) {
+                    score += 10;
+                    evidence.append("Long local part; ");
+                }
+                if (local.matches(".*\\d{6,}.*")) {
+                    score += 15;
+                    evidence.append("Many numbers in local part; ");
+                }
+                if (domain.contains("throwaway") || domain.contains("temp") ||
+                    domain.contains("dispostable") || domain.contains("guerrillamail")) {
+                    score += 30;
+                    evidence.append("Disposable email domain; ");
+                }
+                if (score > 0) {
+                    RuleHit hit = RuleHit.builder()
+                        .ruleId("RULE_EMAIL_SUSPICIOUS_001")
+                        .ruleName("Suspicious Email Pattern")
+                        .ruleType(RuleType.EMAIL_PATTERN)
+                        .score(Math.min(score, 35))
+                        .description("Suspicious email pattern detected")
+                        .evidence(evidence.toString() + " Email: " + email)
+                        .hitTimestamp(System.currentTimeMillis())
+                        .build();
+                    $hitRules.add(hit);
+                }
+            }
+        }
+end
+
+rule "High IP Risk Score"
+    no-loop true
+    salience 88
+    when
+        $event : RiskEvent(ipInfo != null, ipInfo.riskScore >= 50)
+        $result : RiskAssessmentResult()
+        $hitRules : List()
+    then
+        RuleHit hit = RuleHit.builder()
+            .ruleId("RULE_IP_RISK_SCORE_001")
+            .ruleName("High IP Risk Score")
+            .ruleType(RuleType.IP_PROXY)
+            .score($event.getIpInfo().getRiskScore() / 2)
+            .description("IP address has high risk score")
+            .evidence("IP Risk Score: " + $event.getIpInfo().getRiskScore())
+            .hitTimestamp(System.currentTimeMillis())
+            .build();
+        $hitRules.add(hit);
+end
+
+rule "Cross-Device Session"
+    no-loop true
+    salience 82
+    when
+        $event : RiskEvent(lastLoginDeviceId != null,
+                          deviceFingerprint != null,
+                          deviceFingerprint.deviceId != null,
+                          !deviceFingerprint.deviceId.equals(lastLoginDeviceId),
+                          lastLoginTimestamp > 0,
+                          eventTimestamp - lastLoginTimestamp < 7200000)
+        $result : RiskAssessmentResult()
+        $hitRules : List()
+    then
+        RuleHit hit = RuleHit.builder()
+            .ruleId("RULE_CROSS_DEVICE_001")
+            .ruleName("Cross-Device Activity")
+            .ruleType(RuleType.CROSS_DEVICE)
+            .score(25)
+            .description("Account accessed from different devices within 2 hours")
+            .evidence("Previous device: " + $event.getLastLoginDeviceId() +
+                     ", Current device: " + $event.getDeviceFingerprint().getDeviceId())
+            .hitTimestamp(System.currentTimeMillis())
+            .build();
+        $hitRules.add(hit);
+        modify($result) { setRequireMfa(true) };
+end

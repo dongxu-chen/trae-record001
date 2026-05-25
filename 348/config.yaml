@@ -1,0 +1,44 @@
+source_database:
+  type: mysql
+  host: localhost
+  port: 3306
+  database: production_db
+  username: root
+  password: your_password
+  charset: utf8mb4
+
+verification_database:
+  type: mysql
+  host: localhost
+  port: 3307
+  database: verification_db
+  username: root
+  password: your_password
+  charset: utf8mb4
+
+backup:
+  file_path: ./backups/production_db_backup.sql
+  type: full
+  encryption_key: "your-encryption-key-here"
+  encryption_algorithm: AES-256-CBC
+  compression: null
+
+validation:
+  row_count_check: true
+  row_count_tolerance: 0.0
+  sample_check: true
+  sample_percentage: 5.0
+  sample_min_rows: 100
+  sample_max_rows: 10000
+  business_logic_check: true
+  rules_file: ./rules/sample_rules.yaml
+  tables: null
+  exclude_tables:
+    - audit_log
+    - migration_history
+
+report:
+  output_dir: ./output
+  format: html
+  template_path: null
+  include_detailed_log: true

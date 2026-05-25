@@ -1,0 +1,82 @@
+package com.riskcontrol.rules.frequency
+
+import com.riskcontrol.common.model.RiskEvent
+import com.riskcontrol.common.model.RuleHit
+import com.riskcontrol.common.model.RiskAssessmentResult
+import com.riskcontrol.common.enums.RuleType
+import java.util.List
+
+rule "High Failed Login Attempts"
+    no-loop true
+    salience 90
+    when
+        $event : RiskEvent(loginAttemptCount >= 5)
+        $result : RiskAssessmentResult()
+        $hitRules : List()
+    then
+        int score = Math.min(($event.getLoginAttemptCount() - 4) * 10, 50);
+        RuleHit hit = RuleHit.builder()
+            .ruleId("RULE_LOGIN_FAILED_ATTEMPTS_001")
+            .ruleName("High Failed Login Attempts")
+            .ruleType(RuleType.LOGIN_FREQUENCY)
+            .score(score)
+            .description("Multiple failed login attempts detected")
+            .evidence("Failed attempts: " + $event.getLoginAttemptCount())
+            .hitTimestamp(System.currentTimeMillis())
+            .build();
+        $hitRules.add(hit);
+        if ($event.getLoginAttemptCount() >= 10) {
+            modify($result) { setBlockAccount(true) };
+        } else {
+            modify($result) { setRequireCaptcha(true) };
+        }
+end
+
+rule "Rapid Login from Different IPs"
+    no-loop true
+    salience 85
+    when
+        $event : RiskEvent(lastLoginIp != null,
+                          ipAddress != null,
+                          lastLoginIp != ipAddress,
+                          lastLoginTimestamp > 0,
+                          eventTimestamp - lastLoginTimestamp < 60000)
+        $result : RiskAssessmentResult()
+        $hitRules : List()
+    then
+        RuleHit hit = RuleHit.builder()
+            .ruleId("RULE_LOGIN_RAPID_IP_CHANGE_001")
+            .ruleName("Rapid IP Change")
+            .ruleType(RuleType.LOGIN_FREQUENCY)
+            .score(30)
+            .description("Login from different IP within 1 minute")
+            .evidence("Previous IP: " + $event.getLastLoginIp() +
+                     ", Current IP: " + $event.getIpAddress() +
+                     ", Time diff: " + ($event.getEventTimestamp() - $event.getLastLoginTimestamp()) + "ms")
+            .hitTimestamp(System.currentTimeMillis())
+            .build();
+        $hitRules.add(hit);
+        modify($result) { setRequireMfa(true) };
+end
+
+rule "Very Recent Login"
+    no-loop true
+    salience 70
+    when
+        $event : RiskEvent(lastLoginTimestamp > 0,
+                          eventTimestamp - lastLoginTimestamp < 300000)
+        $result : RiskAssessmentResult()
+        $hitRules : List()
+    then
+        long diffSeconds = ($event.getEventTimestamp() - $event.getLastLoginTimestamp()) / 1000;
+        RuleHit hit = RuleHit.builder()
+            .ruleId("RULE_LOGIN_TOO_FREQUENT_001")
+            .ruleName("Too Frequent Logins")
+            .ruleType(RuleType.LOGIN_FREQUENCY)
+            .score(10)
+            .description("Login within 5 minutes of previous login")
+            .evidence("Time since last login: " + diffSeconds + " seconds")
+            .hitTimestamp(System.currentTimeMillis())
+            .build();
+        $hitRules.add(hit);
+end

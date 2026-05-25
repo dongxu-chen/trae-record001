@@ -1,0 +1,85 @@
+package com.riskcontrol.rules.device
+
+import com.riskcontrol.common.model.RiskEvent
+import com.riskcontrol.common.model.RuleHit
+import com.riskcontrol.common.model.RiskAssessmentResult
+import com.riskcontrol.common.enums.RuleType
+import com.riskcontrol.common.utils.DeviceFingerprintUtil
+import java.util.List
+
+rule "New Device Detection"
+    no-loop true
+    salience 85
+    when
+        $event : RiskEvent(deviceFingerprint != null,
+                          lastLoginDeviceId != null,
+                          deviceFingerprint.deviceId != lastLoginDeviceId,
+                          loginAttemptCount < 3)
+        $result : RiskAssessmentResult()
+        $hitRules : List()
+    then
+        double similarity = DeviceFingerprintUtil.calculateSimilarity(
+            $event.getDeviceFingerprint(), null);
+        RuleHit hit = RuleHit.builder()
+            .ruleId("RULE_DEVICE_NEW_001")
+            .ruleName("New Device Login")
+            .ruleType(RuleType.DEVICE_FINGERPRINT)
+            .score(15)
+            .description("Login from a new device")
+            .evidence("Current device: " + $event.getDeviceFingerprint().getDeviceId() +
+                     ", Previous device: " + $event.getLastLoginDeviceId())
+            .hitTimestamp(System.currentTimeMillis())
+            .build();
+        $hitRules.add(hit);
+        modify($result) { setRequireMfa(true) };
+end
+
+rule "High Risk Device Fingerprint Mismatch"
+    no-loop true
+    salience 80
+    when
+        $event : RiskEvent(deviceFingerprint != null,
+                          deviceFingerprint.associationCount == 0,
+                          deviceFingerprint.firstSeenTimestamp >= 0)
+        $result : RiskAssessmentResult()
+        $hitRules : List()
+    then
+        long now = System.currentTimeMillis();
+        long deviceAge = now - $event.getDeviceFingerprint().getFirstSeenTimestamp();
+        long oneDayMs = 24 * 60 * 60 * 1000L;
+        if (deviceAge < oneDayMs) {
+            RuleHit hit = RuleHit.builder()
+                .ruleId("RULE_DEVICE_NEW_AGE_001")
+                .ruleName("Recently Created Device")
+                .ruleType(RuleType.DEVICE_FINGERPRINT)
+                .score(25)
+                .description("Device fingerprint first seen within 24 hours")
+                .evidence("Device first seen: " + $event.getDeviceFingerprint().getFirstSeenTimestamp())
+                .hitTimestamp(System.currentTimeMillis())
+                .build();
+            $hitRules.add(hit);
+        }
+end
+
+rule "Device Associated with Multiple Accounts"
+    no-loop true
+    salience 75
+    when
+        $event : RiskEvent(deviceFingerprint != null,
+                          deviceFingerprint.associationCount >= 5)
+        $result : RiskAssessmentResult()
+        $hitRules : List()
+    then
+        int score = Math.min($event.getDeviceFingerprint().getAssociationCount() * 5, 40);
+        RuleHit hit = RuleHit.builder()
+            .ruleId("RULE_DEVICE_MULTI_ACCOUNT_001")
+            .ruleName("Device Associated with Multiple Accounts")
+            .ruleType(RuleType.DEVICE_FINGERPRINT)
+            .score(score)
+            .description("Device has been associated with " + $event.getDeviceFingerprint().getAssociationCount() + " accounts")
+            .evidence("Account associations: " + $event.getDeviceFingerprint().getAssociationCount())
+            .hitTimestamp(System.currentTimeMillis())
+            .build();
+        $hitRules.add(hit);
+        modify($result) { setRequireCaptcha(true) };
+end

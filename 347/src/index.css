@@ -1,0 +1,255 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: dark;
+  color: rgba(230, 241, 255, 0.95);
+  background-color: #01040a;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  background: linear-gradient(135deg, #01040a 0%, #040e27 50%, #01040a 100%);
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #040e27;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #006255;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00937f;
+}
+
+::-webkit-scrollbar-corner {
+  background: #040e27;
+}
+
+/* 选中文字颜色 */
+::selection {
+  background: rgba(0, 245, 212, 0.3);
+  color: #ffffff;
+}
+
+/* 输入框样式 */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Canvas 抗锯齿 */
+canvas {
+  display: block;
+  image-rendering: auto;
+}
+
+/* 拖拽时禁用文本选择 */
+.dragging,
+.dragging * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+/* 霓虹发光动画 */
+@keyframes neonPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+}
+
+.neon-pulse {
+  animation: neonPulse 2s ease-in-out infinite;
+}
+
+/* 网格背景纹理 */
+.grid-pattern {
+  background-image:
+    linear-gradient(rgba(0, 245, 212, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 245, 212, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* 面板边框发光效果 */
+.panel-border {
+  border: 1px solid rgba(0, 245, 212, 0.15);
+  box-shadow:
+    inset 0 0 20px rgba(0, 245, 212, 0.03),
+    0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.panel-border:hover {
+  border-color: rgba(0, 245, 212, 0.3);
+}
+
+/* 工具栏分隔线 */
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: linear-gradient(to bottom, transparent, rgba(0, 245, 212, 0.3), transparent);
+}
+
+/* 按钮点击波纹效果 */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(0, 245, 212, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+
+.ripple:active::after {
+  width: 200%;
+  height: 200%;
+}
+
+/* 数值滑块轨道 */
+.slider-track {
+  background: linear-gradient(to right, #040e27, #06153b);
+}
+
+.slider-fill {
+  background: linear-gradient(to right, #006255, #00f5d4);
+}
+
+/* 时间轴刻度 */
+.timeline-tick-major {
+  height: 12px;
+  width: 1px;
+  background: rgba(0, 245, 212, 0.4);
+}
+
+.timeline-tick-minor {
+  height: 6px;
+  width: 1px;
+  background: rgba(0, 245, 212, 0.15);
+}
+
+/* 树节点缩进线 */
+.tree-indent {
+  border-left: 1px dashed rgba(0, 245, 212, 0.15);
+}
+
+/* 禁止拖拽时的光标 */
+.resizing {
+  cursor: col-resize !important;
+}
+
+.resizing-vertical {
+  cursor: row-resize !important;
+}
+
+/* 上下文菜单样式 */
+.context-menu {
+  background: #06153b;
+  border: 1px solid rgba(0, 245, 212, 0.2);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 245, 212, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+/* 关键帧标记 */
+.keyframe-diamond {
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+/* 曲线编辑器网格 */
+.curve-grid-major {
+  stroke: rgba(0, 245, 212, 0.1);
+  stroke-width: 1;
+}
+
+.curve-grid-minor {
+  stroke: rgba(0, 245, 212, 0.05);
+  stroke-width: 1;
+}
+
+/* 动画混合饼图 */
+.pie-chart {
+  filter: drop-shadow(0 0 10px rgba(0, 245, 212, 0.3));
+}
+
+/* 骨骼节点高亮 */
+.bone-highlight {
+  filter: drop-shadow(0 0 6px #ec4899) drop-shadow(0 0 12px #ec4899);
+}
+
+/* 加载动画 */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* 扫描线效果 */
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.scanline-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent, rgba(0, 245, 212, 0.5), transparent);
+  animation: scanline 4s linear infinite;
+  pointer-events: none;
+}

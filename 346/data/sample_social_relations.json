@@ -1,0 +1,932 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "label": "User",
+      "name": "张三",
+      "age": 28,
+      "gender": "男",
+      "location": "北京",
+      "occupation": "软件工程师"
+    },
+    {
+      "id": "2",
+      "label": "User",
+      "name": "李四",
+      "age": 32,
+      "gender": "男",
+      "location": "上海",
+      "occupation": "产品经理"
+    },
+    {
+      "id": "3",
+      "label": "User",
+      "name": "王五",
+      "age": 25,
+      "gender": "女",
+      "location": "深圳",
+      "occupation": "设计师"
+    },
+    {
+      "id": "4",
+      "label": "User",
+      "name": "赵六",
+      "age": 30,
+      "gender": "男",
+      "location": "杭州",
+      "occupation": "数据分析师"
+    },
+    {
+      "id": "5",
+      "label": "User",
+      "name": "钱七",
+      "age": 27,
+      "gender": "女",
+      "location": "北京",
+      "occupation": "运营经理"
+    },
+    {
+      "id": "6",
+      "label": "User",
+      "name": "孙八",
+      "age": 35,
+      "gender": "男",
+      "location": "广州",
+      "occupation": "技术总监"
+    },
+    {
+      "id": "7",
+      "label": "User",
+      "name": "周九",
+      "age": 24,
+      "gender": "女",
+      "location": "成都",
+      "occupation": "前端开发"
+    },
+    {
+      "id": "8",
+      "label": "User",
+      "name": "吴十",
+      "age": 29,
+      "gender": "男",
+      "location": "北京",
+      "occupation": "后端开发"
+    },
+    {
+      "id": "9",
+      "label": "User",
+      "name": "郑十一",
+      "age": 31,
+      "gender": "女",
+      "location": "上海",
+      "occupation": "UI设计师"
+    },
+    {
+      "id": "10",
+      "label": "User",
+      "name": "王十二",
+      "age": 26,
+      "gender": "男",
+      "location": "深圳",
+      "occupation": "测试工程师"
+    },
+    {
+      "id": "11",
+      "label": "User",
+      "name": "陈十三",
+      "age": 33,
+      "gender": "男",
+      "location": "杭州",
+      "occupation": "架构师"
+    },
+    {
+      "id": "12",
+      "label": "User",
+      "name": "林十四",
+      "age": 28,
+      "gender": "女",
+      "location": "北京",
+      "occupation": "项目经理"
+    },
+    {
+      "id": "13",
+      "label": "User",
+      "name": "黄十五",
+      "age": 23,
+      "gender": "男",
+      "location": "广州",
+      "occupation": "实习生"
+    },
+    {
+      "id": "14",
+      "label": "User",
+      "name": "刘十六",
+      "age": 34,
+      "gender": "女",
+      "location": "成都",
+      "occupation": "HR经理"
+    },
+    {
+      "id": "15",
+      "label": "User",
+      "name": "杨十七",
+      "age": 27,
+      "gender": "男",
+      "location": "上海",
+      "occupation": "算法工程师"
+    },
+    {
+      "id": "16",
+      "label": "User",
+      "name": "朱十八",
+      "age": 30,
+      "gender": "女",
+      "location": "北京",
+      "occupation": "全栈开发"
+    },
+    {
+      "id": "17",
+      "label": "User",
+      "name": "秦十九",
+      "age": 26,
+      "gender": "男",
+      "location": "深圳",
+      "occupation": "市场专员"
+    },
+    {
+      "id": "18",
+      "label": "User",
+      "name": "尤二十",
+      "age": 29,
+      "gender": "女",
+      "location": "杭州",
+      "occupation": "内容运营"
+    },
+    {
+      "id": "19",
+      "label": "User",
+      "name": "许二一",
+      "age": 31,
+      "gender": "男",
+      "location": "广州",
+      "occupation": "销售经理"
+    },
+    {
+      "id": "20",
+      "label": "User",
+      "name": "何二二",
+      "age": 25,
+      "gender": "女",
+      "location": "成都",
+      "occupation": "用户研究"
+    }
+  ],
+  "edges": [
+    {
+      "source": "1",
+      "target": "8",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1750275043902
+    },
+    {
+      "source": "1",
+      "target": "16",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1758630556097
+    },
+    {
+      "source": "1",
+      "target": "11",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1766986068292
+    },
+    {
+      "source": "8",
+      "target": "1",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1754384312195
+    },
+    {
+      "source": "8",
+      "target": "16",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1762876800000
+    },
+    {
+      "source": "16",
+      "target": "1",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1758630556097
+    },
+    {
+      "source": "16",
+      "target": "11",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1771338848780
+    },
+    {
+      "source": "11",
+      "target": "6",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1746028800000
+    },
+    {
+      "source": "6",
+      "target": "11",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1750275043902
+    },
+    {
+      "source": "2",
+      "target": "9",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1746028800000
+    },
+    {
+      "source": "2",
+      "target": "15",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1754384312195
+    },
+    {
+      "source": "9",
+      "target": "2",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1750275043902
+    },
+    {
+      "source": "9",
+      "target": "7",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1762876800000
+    },
+    {
+      "source": "15",
+      "target": "2",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1758630556097
+    },
+    {
+      "source": "15",
+      "target": "4",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1771338848780
+    },
+    {
+      "source": "7",
+      "target": "9",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1766986068292
+    },
+    {
+      "source": "7",
+      "target": "14",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1775478556097
+    },
+    {
+      "source": "14",
+      "target": "7",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1771338848780
+    },
+    {
+      "source": "3",
+      "target": "5",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1746028800000
+    },
+    {
+      "source": "3",
+      "target": "17",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1754384312195
+    },
+    {
+      "source": "5",
+      "target": "3",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1750275043902
+    },
+    {
+      "source": "5",
+      "target": "18",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1762876800000
+    },
+    {
+      "source": "17",
+      "target": "3",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1758630556097
+    },
+    {
+      "source": "17",
+      "target": "19",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1771338848780
+    },
+    {
+      "source": "18",
+      "target": "5",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1766986068292
+    },
+    {
+      "source": "18",
+      "target": "20",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1775478556097
+    },
+    {
+      "source": "19",
+      "target": "17",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1771338848780
+    },
+    {
+      "source": "20",
+      "target": "18",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1775478556097
+    },
+    {
+      "source": "4",
+      "target": "11",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1746028800000
+    },
+    {
+      "source": "4",
+      "target": "15",
+      "type": "FOLLOW",
+      "weight": 1,
+      "timestamp": 1754384312195
+    },
+    {
+      "source": "1",
+      "target": "5",
+      "type": "LIKE",
+      "weight": 3,
+      "timestamp": 1746028800000
+    },
+    {
+      "source": "1",
+      "target": "8",
+      "type": "LIKE",
+      "weight": 5,
+      "timestamp": 1750275043902
+    },
+    {
+      "source": "1",
+      "target": "16",
+      "type": "LIKE",
+      "weight": 4,
+      "timestamp": 1754384312195
+    },
+    {
+      "source": "8",
+      "target": "1",
+      "type": "LIKE",
+      "weight": 4,
+      "timestamp": 1750275043902
+    },
+    {
+      "source": "8",
+      "target": "11",
+      "type": "LIKE",
+      "weight": 5,
+      "timestamp": 1758630556097
+    },
+    {
+      "source": "8",
+      "target": "16",
+      "type": "LIKE",
+      "weight": 3,
+      "timestamp": 1762876800000
+    },
+    {
+      "source": "16",
+      "target": "1",
+      "type": "LIKE",
+      "weight": 4,
+      "timestamp": 1758630556097
+    },
+    {
+      "source": "16",
+      "target": "8",
+      "type": "LIKE",
+      "weight": 3,
+      "timestamp": 1762876800000
+    },
+    {
+      "source": "11",
+      "target": "8",
+      "type": "LIKE",
+      "weight": 5,
+      "timestamp": 1754384312195
+    },
+    {
+      "source": "11",
+      "target": "6",
+      "type": "LIKE",
+      "weight": 4,
+      "timestamp": 1766986068292
+    },
+    {
+      "source": "6",
+      "target": "11",
+      "type": "LIKE",
+      "weight": 5,
+      "timestamp": 1750275043902
+    },
+    {
+      "source": "6",
+      "target": "19",
+      "type": "LIKE",
+      "weight": 3,
+      "timestamp": 1771338848780
+    },
+    {
+      "source": "2",
+      "target": "9",
+      "type": "LIKE",
+      "weight": 4,
+      "timestamp": 1746028800000
+    },
+    {
+      "source": "2",
+      "target": "15",
+      "type": "LIKE",
+      "weight": 5,
+      "timestamp": 1754384312195
+    },
+    {
+      "source": "9",
+      "target": "2",
+      "type": "LIKE",
+      "weight": 4,
+      "timestamp": 1750275043902
+    },
+    {
+      "source": "9",
+      "target": "7",
+      "type": "LIKE",
+      "weight": 3,
+      "timestamp": 1762876800000
+    },
+    {
+      "source": "15",
+      "target": "2",
+      "type": "LIKE",
+      "weight": 5,
+      "timestamp": 1758630556097
+    },
+    {
+      "source": "15",
+      "target": "4",
+      "type": "LIKE",
+      "weight": 4,
+      "timestamp": 1771338848780
+    },
+    {
+      "source": "7",
+      "target": "9",
+      "type": "LIKE",
+      "weight": 4,
+      "timestamp": 1766986068292
+    },
+    {
+      "source": "7",
+      "target": "14",
+      "type": "LIKE",
+      "weight": 3,
+      "timestamp": 1775478556097
+    },
+    {
+      "source": "14",
+      "target": "7",
+      "type": "LIKE",
+      "weight": 4,
+      "timestamp": 1771338848780
+    },
+    {
+      "source": "14",
+      "target": "20",
+      "type": "LIKE",
+      "weight": 3,
+      "timestamp": 1779724800000
+    },
+    {
+      "source": "3",
+      "target": "5",
+      "type": "LIKE",
+      "weight": 5,
+      "timestamp": 1746028800000
+    },
+    {
+      "source": "3",
+      "target": "17",
+      "type": "LIKE",
+      "weight": 4,
+      "timestamp": 1754384312195
+    },
+    {
+      "source": "5",
+      "target": "3",
+      "type": "LIKE",
+      "weight": 4,
+      "timestamp": 1750275043902
+    },
+    {
+      "source": "5",
+      "target": "18",
+      "type": "LIKE",
+      "weight": 5,
+      "timestamp": 1762876800000
+    },
+    {
+      "source": "17",
+      "target": "3",
+      "type": "LIKE",
+      "weight": 4,
+      "timestamp": 1758630556097
+    },
+    {
+      "source": "17",
+      "target": "19",
+      "type": "LIKE",
+      "weight": 3,
+      "timestamp": 1771338848780
+    },
+    {
+      "source": "18",
+      "target": "5",
+      "type": "LIKE",
+      "weight": 5,
+      "timestamp": 1766986068292
+    },
+    {
+      "source": "18",
+      "target": "20",
+      "type": "LIKE",
+      "weight": 4,
+      "timestamp": 1775478556097
+    },
+    {
+      "source": "19",
+      "target": "17",
+      "type": "LIKE",
+      "weight": 4,
+      "timestamp": 1771338848780
+    },
+    {
+      "source": "20",
+      "target": "18",
+      "type": "LIKE",
+      "weight": 3,
+      "timestamp": 1775478556097
+    },
+    {
+      "source": "4",
+      "target": "15",
+      "type": "LIKE",
+      "weight": 4,
+      "timestamp": 1754384312195
+    },
+    {
+      "source": "4",
+      "target": "11",
+      "type": "LIKE",
+      "weight": 5,
+      "timestamp": 1766986068292
+    },
+    {
+      "source": "12",
+      "target": "1",
+      "type": "LIKE",
+      "weight": 3,
+      "timestamp": 1746028800000
+    },
+    {
+      "source": "12",
+      "target": "5",
+      "type": "LIKE",
+      "weight": 4,
+      "timestamp": 1758630556097
+    },
+    {
+      "source": "10",
+      "target": "3",
+      "type": "LIKE",
+      "weight": 3,
+      "timestamp": 1750275043902
+    },
+    {
+      "source": "10",
+      "target": "17",
+      "type": "LIKE",
+      "weight": 2,
+      "timestamp": 1762876800000
+    },
+    {
+      "source": "13",
+      "target": "6",
+      "type": "LIKE",
+      "weight": 3,
+      "timestamp": 1766986068292
+    },
+    {
+      "source": "13",
+      "target": "10",
+      "type": "LIKE",
+      "weight": 2,
+      "timestamp": 1771338848780
+    },
+    {
+      "source": "1",
+      "target": "8",
+      "type": "COMMENT",
+      "weight": 5,
+      "content": "这个技术方案设计得很严谨，学习了！",
+      "timestamp": 1750275043902
+    },
+    {
+      "source": "1",
+      "target": "16",
+      "type": "COMMENT",
+      "weight": 4,
+      "content": "全栈开发的经验分享很有价值，收藏了。",
+      "timestamp": 1758630556097
+    },
+    {
+      "source": "8",
+      "target": "1",
+      "type": "COMMENT",
+      "weight": 4,
+      "content": "代码写得很规范，值得我们学习。",
+      "timestamp": 1754384312195
+    },
+    {
+      "source": "8",
+      "target": "11",
+      "type": "COMMENT",
+      "weight": 5,
+      "content": "架构设计思路清晰，解决了我们一直困扰的问题。",
+      "timestamp": 1762876800000
+    },
+    {
+      "source": "16",
+      "target": "1",
+      "type": "COMMENT",
+      "weight": 4,
+      "content": "技术分享很到位，期待更多优质内容。",
+      "timestamp": 1758630556097
+    },
+    {
+      "source": "11",
+      "target": "6",
+      "type": "COMMENT",
+      "weight": 5,
+      "content": "领导的技术视野确实不一样，受益匪浅。",
+      "timestamp": 1766986068292
+    },
+    {
+      "source": "6",
+      "target": "11",
+      "type": "COMMENT",
+      "weight": 5,
+      "content": "你的架构能力越来越强了，继续保持。",
+      "timestamp": 1750275043902
+    },
+    {
+      "source": "2",
+      "target": "9",
+      "type": "COMMENT",
+      "weight": 4,
+      "content": "产品原型设计得很棒，用户体验考虑得很周全。",
+      "timestamp": 1746028800000
+    },
+    {
+      "source": "2",
+      "target": "15",
+      "type": "COMMENT",
+      "weight": 5,
+      "content": "推荐算法的优化建议非常专业，已采纳。",
+      "timestamp": 1754384312195
+    },
+    {
+      "source": "9",
+      "target": "2",
+      "type": "COMMENT",
+      "weight": 4,
+      "content": "产品需求文档写得很清晰，减少了很多沟通成本。",
+      "timestamp": 1750275043902
+    },
+    {
+      "source": "9",
+      "target": "7",
+      "type": "COMMENT",
+      "weight": 3,
+      "content": "前端交互实现得很流畅，配合得很好。",
+      "timestamp": 1762876800000
+    },
+    {
+      "source": "15",
+      "target": "2",
+      "type": "COMMENT",
+      "weight": 5,
+      "content": "产品方向把控得很好，跟着做很有成就感。",
+      "timestamp": 1758630556097
+    },
+    {
+      "source": "7",
+      "target": "9",
+      "type": "COMMENT",
+      "weight": 4,
+      "content": "UI设计稿很精美，实现起来心情都好了。",
+      "timestamp": 1766986068292
+    },
+    {
+      "source": "7",
+      "target": "14",
+      "type": "COMMENT",
+      "weight": 3,
+      "content": "HR组织的技术培训很有意义，感谢！",
+      "timestamp": 1775478556097
+    },
+    {
+      "source": "14",
+      "target": "7",
+      "type": "COMMENT",
+      "weight": 4,
+      "content": "你的学习能力很强，继续加油。",
+      "timestamp": 1771338848780
+    },
+    {
+      "source": "3",
+      "target": "5",
+      "type": "COMMENT",
+      "weight": 5,
+      "content": "运营活动策划得太成功了，数据增长很明显。",
+      "timestamp": 1746028800000
+    },
+    {
+      "source": "3",
+      "target": "17",
+      "type": "COMMENT",
+      "weight": 4,
+      "content": "市场推广素材设计得很有吸引力。",
+      "timestamp": 1754384312195
+    },
+    {
+      "source": "5",
+      "target": "3",
+      "type": "COMMENT",
+      "weight": 4,
+      "content": "设计稿每次都超出预期，合作很愉快。",
+      "timestamp": 1750275043902
+    },
+    {
+      "source": "5",
+      "target": "18",
+      "type": "COMMENT",
+      "weight": 5,
+      "content": "内容运营做得很出色，用户互动率提升明显。",
+      "timestamp": 1762876800000
+    },
+    {
+      "source": "17",
+      "target": "3",
+      "type": "COMMENT",
+      "weight": 4,
+      "content": "设计配合得很默契，下次活动继续合作。",
+      "timestamp": 1758630556097
+    },
+    {
+      "source": "17",
+      "target": "19",
+      "type": "COMMENT",
+      "weight": 3,
+      "content": "销售线索质量很高，转化率不错。",
+      "timestamp": 1771338848780
+    },
+    {
+      "source": "18",
+      "target": "5",
+      "type": "COMMENT",
+      "weight": 5,
+      "content": "运营策略指导得很到位，学到很多。",
+      "timestamp": 1766986068292
+    },
+    {
+      "source": "18",
+      "target": "20",
+      "type": "COMMENT",
+      "weight": 4,
+      "content": "用户调研报告很详细，对内容优化帮助很大。",
+      "timestamp": 1775478556097
+    },
+    {
+      "source": "19",
+      "target": "17",
+      "type": "COMMENT",
+      "weight": 4,
+      "content": "市场支持很给力，继续保持。",
+      "timestamp": 1771338848780
+    },
+    {
+      "source": "20",
+      "target": "18",
+      "type": "COMMENT",
+      "weight": 3,
+      "content": "内容方向很符合用户需求，调研数据验证了这点。",
+      "timestamp": 1775478556097
+    },
+    {
+      "source": "4",
+      "target": "15",
+      "type": "COMMENT",
+      "weight": 4,
+      "content": "算法模型的评估指标分析得很透彻。",
+      "timestamp": 1754384312195
+    },
+    {
+      "source": "4",
+      "target": "11",
+      "type": "COMMENT",
+      "weight": 5,
+      "content": "数据架构设计得很合理，查询效率提升明显。",
+      "timestamp": 1766986068292
+    },
+    {
+      "source": "12",
+      "target": "1",
+      "type": "COMMENT",
+      "weight": 3,
+      "content": "项目进度把控得很好，继续保持。",
+      "timestamp": 1746028800000
+    },
+    {
+      "source": "12",
+      "target": "5",
+      "type": "COMMENT",
+      "weight": 4,
+      "content": "跨部门协作很顺畅，运营团队配合得很好。",
+      "timestamp": 1758630556097
+    },
+    {
+      "source": "10",
+      "target": "3",
+      "type": "COMMENT",
+      "weight": 3,
+      "content": "设计稿还原度很高，测试起来很舒心。",
+      "timestamp": 1750275043902
+    },
+    {
+      "source": "13",
+      "target": "6",
+      "type": "COMMENT",
+      "weight": 3,
+      "content": "技术分享会收获很大，感谢总监的指导。",
+      "timestamp": 1766986068292
+    },
+    {
+      "source": "20",
+      "target": "14",
+      "type": "COMMENT",
+      "weight": 3,
+      "content": "用户访谈招募很顺利，HR支持很到位。",
+      "timestamp": 1779724800000
+    }
+  ]
+}

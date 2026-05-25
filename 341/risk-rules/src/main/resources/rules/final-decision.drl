@@ -1,0 +1,71 @@
+package com.riskcontrol.rules.decision
+
+import com.riskcontrol.common.model.RiskAssessmentResult
+import com.riskcontrol.common.enums.RiskLevel
+import com.riskcontrol.common.model.RuleHit
+import java.util.List
+
+function int calculateTotalScore(List<RuleHit> hitRules) {
+    if (hitRules == null || hitRules.isEmpty()) return 0;
+    int total = 0;
+    for (RuleHit hit : hitRules) {
+        total += hit.getScore();
+    }
+    return Math.min(total, 100);
+}
+
+function String generateDecisionReason(List<RuleHit> hitRules, int score) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Risk score: ").append(score).append(". ");
+    if (hitRules != null && !hitRules.isEmpty()) {
+        sb.append("Hit rules: ");
+        for (int i = 0; i < Math.min(hitRules.size(), 3); i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(hitRules.get(i).getRuleName());
+        }
+        if (hitRules.size() > 3) {
+            sb.append(" and ").append(hitRules.size() - 3).append(" more");
+        }
+    } else {
+        sb.append("No risk rules triggered.");
+    }
+    return sb.toString();
+}
+
+rule "Calculate Final Risk Score"
+    salience 10
+    when
+        $result : RiskAssessmentResult(hitRules != null, finalScore == 0)
+    then
+        int totalScore = calculateTotalScore($result.getHitRules());
+        RiskLevel level = RiskLevel.fromScore(totalScore);
+        boolean isAllowed = totalScore < 90;
+        String reason = generateDecisionReason($result.getHitRules(), totalScore);
+
+        modify($result) {
+            setFinalScore(totalScore),
+            setRiskLevel(level),
+            setIsAllowed(isAllowed),
+            setDecisionReason(reason)
+        };
+end
+
+rule "Enforce Block for Critical Risk"
+    salience 5
+    when
+        $result : RiskAssessmentResult(riskLevel == RiskLevel.CRITICAL)
+    then
+        modify($result) {
+            setIsAllowed(false),
+            setBlockAccount(true),
+            setRequireMfa(true)
+        };
+end
+
+rule "Enforce MFA for High Risk"
+    salience 5
+    when
+        $result : RiskAssessmentResult(riskLevel == RiskLevel.HIGH, requireMfa == false)
+    then
+        modify($result) { setRequireMfa(true) };
+end

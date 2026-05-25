@@ -1,0 +1,77 @@
+package com.riskcontrol.rules.geo
+
+import com.riskcontrol.common.model.RiskEvent
+import com.riskcontrol.common.model.RuleHit
+import com.riskcontrol.common.model.RiskAssessmentResult
+import com.riskcontrol.common.enums.RuleType
+import com.riskcontrol.common.utils.GeolocationUtil
+import java.util.List
+
+rule "Impossible Travel Detection"
+    no-loop true
+    salience 95
+    when
+        $event : RiskEvent(velocityKmPerHour > 1000)
+        $result : RiskAssessmentResult()
+        $hitRules : List()
+    then
+        RuleHit hit = RuleHit.builder()
+            .ruleId("RULE_GEO_IMPOSSIBLE_TRAVEL_001")
+            .ruleName("Impossible Travel")
+            .ruleType(RuleType.GEOLOCATION)
+            .score(45)
+            .description("Impossible travel velocity detected")
+            .evidence("Velocity: " + String.format("%.2f", $event.getVelocityKmPerHour()) + " km/h")
+            .hitTimestamp(System.currentTimeMillis())
+            .build();
+        $hitRules.add(hit);
+        modify($result) { setRequireMfa(true); setBlockAccount(true) };
+end
+
+rule "High Velocity Travel"
+    no-loop true
+    salience 90
+    when
+        $event : RiskEvent(velocityKmPerHour > 600, velocityKmPerHour <= 1000)
+        $result : RiskAssessmentResult()
+        $hitRules : List()
+    then
+        RuleHit hit = RuleHit.builder()
+            .ruleId("RULE_GEO_HIGH_VELOCITY_001")
+            .ruleName("High Velocity Travel")
+            .ruleType(RuleType.GEOLOCATION)
+            .score(30)
+            .description("Unusually high travel velocity")
+            .evidence("Velocity: " + String.format("%.2f", $event.getVelocityKmPerHour()) + " km/h")
+            .hitTimestamp(System.currentTimeMillis())
+            .build();
+        $hitRules.add(hit);
+        modify($result) { setRequireMfa(true) };
+end
+
+rule "New Country Login"
+    no-loop true
+    salience 80
+    when
+        $event : RiskEvent(ipInfo != null,
+                          ipInfo.country != null)
+        $result : RiskAssessmentResult()
+        $hitRules : List()
+    then
+        if ($event.getIpInfo() != null && $event.getIpInfo().getCountry() != null) {
+            String country = $event.getIpInfo().getCountry();
+            if ("KP".equals(country) || "IR".equals(country) || "SY".equals(country)) {
+                RuleHit hit = RuleHit.builder()
+                    .ruleId("RULE_GEO_HIGH_RISK_COUNTRY_001")
+                    .ruleName("High Risk Country")
+                    .ruleType(RuleType.GEOLOCATION)
+                    .score(40)
+                    .description("Login from high risk country")
+                    .evidence("Country: " + country)
+                    .hitTimestamp(System.currentTimeMillis())
+                    .build();
+                $hitRules.add(hit);
+                modify($result) { setRequireCaptcha(true) };
+            }
+        }
+end

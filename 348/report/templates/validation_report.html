@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据库备份恢复验证报告</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; color: #333; line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .header h1 { font-size: 26px; margin-bottom: 12px; }
+        .header .meta { font-size: 14px; opacity: 0.9; }
+        .header .overall-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-2px); }
+        .card h3 { font-size: 14px; color: #666; margin-bottom: 10px; font-weight: 500; }
+        .card .value { font-size: 32px; font-weight: 700; }
+        .card .sub { font-size: 12px; color: #999; margin-top: 5px; }
+        .card.passed .value { color: #28a745; }
+        .card.failed .value { color: #dc3545; }
+        .card.warning .value { color: #ffc107; }
+        .card.info .value { color: #17a2b8; }
+        .card.neutral .value { color: #6c757d; }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .section h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+            color: #333;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+        }
+        .info-item {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            border-radius: 8px;
+        }
+        .info-item .label { font-size: 12px; color: #666; margin-bottom: 4px; }
+        .info-item .value { font-size: 14px; font-weight: 600; color: #333; word-break: break-all; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            font-size: 13px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        tr { transition: background 0.15s; }
+        tr:hover { background: #f8f9fa; }
+        td { font-size: 14px; }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 80px;
+        }
+        .badge.passed { background: #d4edda; color: #155724; }
+        .badge.failed { background: #f8d7da; color: #721c24; }
+        .badge.warning { background: #fff3cd; color: #856404; }
+        .badge.skipped { background: #e2e3e5; color: #383d41; }
+        .badge.error { background: #f8d7da; color: #721c24; }
+
+        .result-row { cursor: pointer; }
+        .result-row::after {
+            content: '▼';
+            font-size: 10px;
+            color: #999;
+            margin-left: 5px;
+        }
+        .result-row.expanded::after { content: '▲'; }
+
+        .detail-box {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 5px;
+        }
+        .detail-box::-webkit-scrollbar { width: 8px; }
+        .detail-box::-webkit-scrollbar-track { background: #2d2d2d; }
+        .detail-box::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+
+        .hidden { display: none; }
+
+        .progress-container {
+            margin: 15px 0;
+        }
+        .progress-bar {
+            height: 24px;
+            background: #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-bar .fill {
+            height: 100%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+        .progress-bar .fill.passed { background: linear-gradient(90deg, #28a745, #20c997); }
+        .progress-bar .fill.failed { background: linear-gradient(90deg, #dc3545, #fd7e14); }
+        .progress-bar .fill.warning { background: linear-gradient(90deg, #ffc107, #fd7e14); }
+
+        .timeline-container {
+            margin: 20px 0;
+        }
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            position: relative;
+        }
+        .timeline-label {
+            width: 140px;
+            font-size: 13px;
+            color: #666;
+            flex-shrink: 0;
+        }
+        .timeline-bar-container {
+            flex: 1;
+            height: 32px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+        .timeline-bar {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            transition: width 0.5s ease;
+        }
+        .timeline-bar.primary { background: linear-gradient(90deg, #667eea, #764ba2); }
+        .timeline-bar.success { background: linear-gradient(90deg, #28a745, #20c997); }
+        .timeline-bar.info { background: linear-gradient(90deg, #17a2b8, #138496); }
+        .timeline-bar.warning { background: linear-gradient(90deg, #ffc107, #e0a800); }
+        .timeline-bar.secondary { background: linear-gradient(90deg, #6c757d, #5a6268); }
+        .timeline-value {
+            width: 80px;
+            text-align: right;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-left: 12px;
+        }
+
+        .timeline-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .timeline-summary .label { font-size: 14px; opacity: 0.9; }
+        .timeline-summary .value { font-size: 22px; font-weight: 700; }
+
+        .error-text { color: #dc3545; font-weight: 600; }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header { padding: 20px; }
+            .header h1 { font-size: 20px; }
+            .card .value { font-size: 24px; }
+            .info-grid { grid-template-columns: 1fr; }
+            th, td { padding: 10px 8px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>数据库备份恢复验证报告</h1>
+            <div class="meta">
+                报告生成时间: {{ generated_at | format_datetime }}<br>
+                备份文件: {{ restore_result.backup_file | default('N/A') }}
+            </div>
+            <span class="overall-badge" style="background: {{ validation.overall_status | status_color }}; color: white;">
+                总体状态: {{ validation.overall_status | status_badge }}
+            </span>
+        </div>
+
+        <div class="summary-grid">
+            <div class="card passed">
+                <h3>通过</h3>
+                <div class="value">{{ validation.passed }}</div>
+                <div class="sub">检查项通过数量</div>
+            </div>
+            <div class="card {{ 'failed' if validation.failed > 0 else 'neutral' }}">
+                <h3>失败</h3>
+                <div class="value">{{ validation.failed }}</div>
+                <div class="sub">检查项失败数量</div>
+            </div>
+            <div class="card {{ 'warning' if validation.warnings > 0 else 'neutral' }}">
+                <h3>警告</h3>
+                <div class="value">{{ validation.warnings }}</div>
+                <div class="sub">警告数量</div>
+            </div>
+            <div class="card info">
+                <h3>通过率</h3>
+                <div class="value">{{ '%.1f' | format(validation.pass_rate) }}%</div>
+                <div class="sub">总检查通过率</div>
+            </div>
+            <div class="card info">
+                <h3>恢复耗时</h3>
+                <div class="value">{{ restore_result.duration_seconds | format_duration }}</div>
+                <div class="sub">备份恢复总耗时</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>恢复结果</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="label">恢复状态</div>
+                    <div class="value">
+                        <span class="badge {{ 'passed' if restore_result.success else 'failed' }}">
+                            {{ '成功' if restore_result.success else '失败' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="label">开始时间</div>
+                    <div class="value">{{ restore_result.start_time | format_datetime }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">结束时间</div>
+                    <div class="value">{{ restore_result.end_time | format_datetime }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">恢复耗时</div>
+                    <div class="value">{{ restore_result.duration_seconds | format_duration }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">加密验证</div>
+                    <div class="value">{{ '已验证' if restore_result.encryption_verified else '未启用' }}</div>
+                </div>
+                {% if restore_result.original_hash %}
+                <div class="info-item">
+                    <div class="label">原始文件哈希</div>
+                    <div class="value" style="font-size: 11px;">{{ restore_result.original_hash | truncate(32) }}</div>
+                </div>
+                {% endif %}
+                {% if restore_result.error %}
+                <div class="info-item" style="grid-column: span 2;">
+                    <div class="label">错误信息</div>
+                    <div class="value error-text">{{ restore_result.error }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if restore_result.timings %}
+        <div class="section">
+            <h2>端到端恢复时间分析</h2>
+            {% if restore_result.timings.file_size_bytes %}
+            <div class="info-item" style="margin-bottom: 15px;">
+                <div class="label">备份文件大小</div>
+                <div class="value" style="font-size: 18px; color: #667eea;">
+                    {% if restore_result.timings.file_size_bytes < 1024 %}
+                        {{ restore_result.timings.file_size_bytes }} B
+                    {% elif restore_result.timings.file_size_bytes < 1048576 %}
+                        {{ '%.2f' | format(restore_result.timings.file_size_bytes / 1024) }} KB
+                    {% elif restore_result.timings.file_size_bytes < 1073741824 %}
+                        {{ '%.2f' | format(restore_result.timings.file_size_bytes / 1048576) }} MB
+                    {% else %}
+                        {{ '%.2f' | format(restore_result.timings.file_size_bytes / 1073741824) }} GB
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="timeline-container">
+                {% set total_time = restore_result.timings.end_to_end_seconds if restore_result.timings.end_to_end_seconds > 0 else 1 %}
+                {% set timing_items = [
+                    ('文件准备', restore_result.timings.file_preparation_seconds, 'secondary'),
+                    ('完整性校验', restore_result.timings.integrity_verification_seconds, 'info') if restore_result.timings.integrity_verification_seconds > 0,
+                    ('解密处理', restore_result.timings.decryption_seconds, 'warning') if restore_result.timings.decryption_seconds > 0,
+                    ('解压处理', restore_result.timings.decompression_seconds, 'info') if restore_result.timings.decompression_seconds > 0,
+                    ('数据库恢复', restore_result.timings.database_restore_seconds, 'primary'),
+                    ('哈希验证', restore_result.timings.hash_verification_seconds, 'success') if restore_result.timings.hash_verification_seconds > 0,
+                    ('清理工作', restore_result.timings.cleanup_seconds, 'secondary'),
+                ] %}
+
+                {% for label, seconds, style in timing_items %}
+                {% if seconds is defined and seconds >= 0 %}
+                <div class="timeline-item">
+                    <div class="timeline-label">{{ label }}</div>
+                    <div class="timeline-bar-container">
+                        {% set pct = (seconds / total_time * 100) if total_time > 0 else 0 %}
+                        {% set width_pct = pct if pct > 3 else 3 %}
+                        <div class="timeline-bar {{ style }}" style="width: {{ width_pct }}%;">
+                            {% if pct > 15 %}
+                                {{ '%.1f%%' | format(pct) }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="timeline-value">{{ '%.3fs' | format(seconds) }}</div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="timeline-summary">
+                <span class="label">端到端总耗时</span>
+                <span class="value">{{ '%.3f' | format(restore_result.timings.end_to_end_seconds) }}s</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="section">
+            <h2>通过率进度</h2>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="fill {{ 'passed' if validation.pass_rate >= 95 else ('warning' if validation.pass_rate >= 80 else 'failed') }}"
+                         style="width: {{ validation.pass_rate }}%;">
+                        {{ '%.1f' | format(validation.pass_rate) }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>验证结果详情</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>检查类型</th>
+                        <th>表名</th>
+                        <th>状态</th>
+                        <th>消息</th>
+                        <th>耗时</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in validation.results %}
+                    <tr class="result-row" onclick="toggleDetail(this)">
+                        <td><strong>{{ result.check_name }}</strong></td>
+                        <td>{{ result.table_name | default('-') }}</td>
+                        <td><span class="badge {{ result.status.value | lower }}">{{ result.status | status_badge }}</span></td>
+                        <td>{{ result.message | truncate(150) }}</td>
+                        <td>{{ result.duration_seconds | format_duration }}</td>
+                    </tr>
+                    {% if include_detailed_log and result.details %}
+                    <tr class="detail-row hidden">
+                        <td colspan="5">
+                            <div class="detail-box">{{ result.details | tojson }}</div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>配置信息</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="label">源数据库</div>
+                    <div class="value">{{ config.source_db.host }}:{{ config.source_db.port }}/{{ config.source_db.database }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">验证数据库</div>
+                    <div class="value">{{ config.verification_db.host }}:{{ config.verification_db.port }}/{{ config.verification_db.database }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">备份文件路径</div>
+                    <div class="value" style="font-size: 12px;">{{ config.backup.backup_file_path }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">备份类型</div>
+                    <div class="value">{{ config.backup.backup_type }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">加密算法</div>
+                    <div class="value">{{ config.backup.encryption_algorithm | default('未加密') }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">行数容差</div>
+                    <div class="value">{{ config.validation.row_count_tolerance }}%</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">抽样比例</div>
+                    <div class="value">{{ config.validation.sample_percentage }}%</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">抽样范围</div>
+                    <div class="value">{{ config.validation.sample_min_rows }} - {{ config.validation.sample_max_rows }} 行</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            DB Backup Validator | 报告生成于 {{ generated_at | format_datetime }}
+        </div>
+    </div>
+
+    <script>
+        function toggleDetail(row) {
+            row.classList.toggle('expanded');
+            const nextRow = row.nextElementSibling;
+            if (nextRow && nextRow.classList.contains('detail-row')) {
+                nextRow.classList.toggle('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

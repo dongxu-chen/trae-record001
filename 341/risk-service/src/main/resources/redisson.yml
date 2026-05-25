@@ -1,0 +1,22 @@
+singleServerConfig:
+  address: "redis://${REDIS_HOST:localhost}:${REDIS_PORT:6379}"
+  password: "${REDIS_PASSWORD:}"
+  database: ${REDIS_DATABASE:0}
+  idleConnectionTimeout: 10000
+  connectTimeout: 10000
+  timeout: 3000
+  retryAttempts: 3
+  retryInterval: 1500
+  subscriptionsPerConnection: 5
+  clientName: "risk-control-system"
+  subscriptionConnectionMinimumIdleSize: 1
+  subscriptionConnectionPoolSize: 50
+  connectionMinimumIdleSize: 10
+  connectionPoolSize: 64
+  dnsMonitoringInterval: 5000
+
+threads: 16
+nettyThreads: 32
+codec:
+  class: org.redisson.codec.JsonJacksonCodec
+transportMode: "NIO"

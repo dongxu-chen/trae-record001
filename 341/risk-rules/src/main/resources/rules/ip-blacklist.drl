@@ -1,0 +1,81 @@
+package com.riskcontrol.rules.ip
+
+import com.riskcontrol.common.model.RiskEvent
+import com.riskcontrol.common.model.RuleHit
+import com.riskcontrol.common.model.RiskAssessmentResult
+import com.riskcontrol.common.enums.RuleType
+import java.util.List
+
+rule "IP Blacklist Check"
+    no-loop true
+    salience 100
+    when
+        $event : RiskEvent(ipInfo != null, ipInfo.isBlacklisted == true)
+        $result : RiskAssessmentResult()
+        $hitRules : List()
+    then
+        RuleHit hit = RuleHit.builder()
+            .ruleId("RULE_IP_BLACKLIST_001")
+            .ruleName("IP Blacklisted")
+            .ruleType(RuleType.IP_BLACKLIST)
+            .score(50)
+            .description("IP address is in blacklist")
+            .evidence("Blacklisted IP: " + $event.getIpAddress())
+            .hitTimestamp(System.currentTimeMillis())
+            .build();
+        $hitRules.add(hit);
+        modify($result) { setBlockAccount(true) };
+end
+
+rule "Proxy IP Detection"
+    no-loop true
+    salience 95
+    when
+        $event : RiskEvent(ipInfo != null, ipInfo.isProxy == true || ipInfo.isVpn == true || ipInfo.isTor == true)
+        $result : RiskAssessmentResult()
+        $hitRules : List()
+    then
+        String proxyType = "";
+        int score = 0;
+        if ($event.getIpInfo().isTor()) {
+            proxyType = "TOR";
+            score = 40;
+        } else if ($event.getIpInfo().isVpn()) {
+            proxyType = "VPN";
+            score = 30;
+        } else {
+            proxyType = $event.getIpInfo().getProxyType() != null ? $event.getIpInfo().getProxyType() : "PROXY";
+            score = 25;
+        }
+        RuleHit hit = RuleHit.builder()
+            .ruleId("RULE_IP_PROXY_001")
+            .ruleName("Proxy IP Detected")
+            .ruleType(RuleType.IP_PROXY)
+            .score(score)
+            .description("IP address is using " + proxyType)
+            .evidence("Proxy IP: " + $event.getIpAddress() + ", Type: " + proxyType)
+            .hitTimestamp(System.currentTimeMillis())
+            .build();
+        $hitRules.add(hit);
+        modify($result) { setRequireCaptcha(true) };
+end
+
+rule "Data Center IP Detection"
+    no-loop true
+    salience 90
+    when
+        $event : RiskEvent(ipInfo != null, ipInfo.isDataCenter == true)
+        $result : RiskAssessmentResult()
+        $hitRules : List()
+    then
+        RuleHit hit = RuleHit.builder()
+            .ruleId("RULE_IP_DATACENTER_001")
+            .ruleName("Data Center IP")
+            .ruleType(RuleType.IP_PROXY)
+            .score(20)
+            .description("IP address belongs to a data center")
+            .evidence("Data Center IP: " + $event.getIpAddress())
+            .hitTimestamp(System.currentTimeMillis())
+            .build();
+        $hitRules.add(hit);
+end
