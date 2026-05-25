@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>监控告警事件管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .ws-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ws-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc3545;
+        }
+
+        .ws-indicator.connected {
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stat-card.CRITICAL h3 { color: #dc3545; }
+        .stat-card.MAJOR h3 { color: #fd7e14; }
+        .stat-card.MINOR h3 { color: #ffc107; }
+        .stat-card.WARNING h3 { color: #17a2b8; }
+        .stat-card.INFO h3 { color: #6f42c1; }
+        .stat-card.TOTAL h3 { color: #343a40; }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .panel-header h2 {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .alert-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .alert-item:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .alert-item.new {
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-item.ACKNOWLEDGED {
+            border-left: 4px solid #ffc107;
+        }
+
+        .alert-item.PROCESSING {
+            border-left: 4px solid #17a2b8;
+        }
+
+        .alert-item.RESOLVED {
+            border-left: 4px solid #28a745;
+            opacity: 0.8;
+        }
+
+        .alert-item.CLOSED {
+            border-left: 4px solid #6c757d;
+            opacity: 0.6;
+        }
+
+        .alert-item.SUPPRESSED {
+            border-left: 4px solid #6f42c1;
+            opacity: 0.5;
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .severity-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .severity-badge.CRITICAL {
+            background: #dc3545;
+            color: white;
+        }
+
+        .severity-badge.MAJOR {
+            background: #fd7e14;
+            color: white;
+        }
+
+        .severity-badge.MINOR {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .severity-badge.WARNING {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .severity-badge.INFO {
+            background: #6f42c1;
+            color: white;
+        }
+
+        .alert-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .alert-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .alert-actions .btn {
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+
+        .status-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-badge.NEW {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-badge.ACKNOWLEDGED {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.PROCESSING {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-badge.RESOLVED {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.CLOSED {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .status-badge.SUPPRESSED {
+            background: #e2d9f3;
+            color: #563d7c;
+        }
+
+        .aggregation-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .aggregation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .aggregation-count {
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-left: 3px solid #667eea;
+            background: #f8f9fa;
+            margin-bottom: 8px;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .history-type {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .history-meta {
+            font-size: 11px;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        .history-remark {
+            font-size: 13px;
+            margin-top: 5px;
+            color: #333;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .upgrade-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 11px;
+            color: #dc3545;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="display: flex; align-items: center; gap: 30px;">
+            <h1>🔔 监控告警事件管理系统</h1>
+            <nav style="display: flex; gap: 15px;">
+                <a href="index.html" style="color: white; text-decoration: none; opacity: 1; font-weight: 600;">告警列表</a>
+                <a href="suppression-rules.html" style="color: white; text-decoration: none; opacity: 0.8;">抑制规则</a>
+                <a href="analytics.html" style="color: white; text-decoration: none; opacity: 0.8;">分析报告</a>
+            </nav>
+        </div>
+        <div class="ws-status">
+            <div class="ws-indicator" id="wsIndicator"></div>
+            <span id="wsStatusText">未连接</span>
+        </div>
+    </div>
+
+    <div class="stats-container">
+        <div class="stat-card CRITICAL">
+            <h3 id="statCritical">0</h3>
+            <p>紧急告警</p>
+        </div>
+        <div class="stat-card MAJOR">
+            <h3 id="statMajor">0</h3>
+            <p>重要告警</p>
+        </div>
+        <div class="stat-card MINOR">
+            <h3 id="statMinor">0</h3>
+            <p>次要告警</p>
+        </div>
+        <div class="stat-card WARNING">
+            <h3 id="statWarning">0</h3>
+            <p>警告</p>
+        </div>
+        <div class="stat-card INFO">
+            <h3 id="statInfo">0</h3>
+            <p>信息</p>
+        </div>
+        <div class="stat-card TOTAL">
+            <h3 id="statTotal">0</h3>
+            <p>总数</p>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="panel">
+            <div class="panel-header">
+                <h2>📋 告警事件列表</h2>
+                <button class="btn btn-primary" onclick="openCreateModal()">+ 新建告警</button>
+            </div>
+            <div class="alert-list" id="alertList">
+                <div class="empty-state">加载中...</div>
+            </div>
+        </div>
+
+        <div>
+            <div class="panel" style="margin-bottom: 20px;">
+                <div class="panel-header">
+                    <h2>📊 聚合告警</h2>
+                    <button class="btn btn-info" onclick="refreshAggregations()">刷新</button>
+                </div>
+                <div id="aggregationList">
+                    <div class="empty-state" style="padding: 20px;">暂无聚合数据</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>⚡ 快捷操作</h2>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn btn-primary" onclick="createTestAlert('CRITICAL')">模拟紧急告警</button>
+                    <button class="btn btn-warning" onclick="createTestAlert('MAJOR')">模拟重要告警</button>
+                    <button class="btn btn-info" onclick="createTestAlert('MINOR')">模拟次要告警</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="createModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>新建告警事件</h3>
+                <button class="close-modal" onclick="closeModal('createModal')">&times;</button>
+            </div>
+            <form id="createForm">
+                <div class="form-group">
+                    <label>告警标题 *</label>
+                    <input type="text" name="title" required placeholder="请输入告警标题">
+                </div>
+                <div class="form-group">
+                    <label>告警内容</label>
+                    <textarea name="content" placeholder="请输入告警详情"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>告警级别 *</label>
+                    <select name="severity" required>
+                        <option value="CRITICAL">紧急 (CRITICAL)</option>
+                        <option value="MAJOR">重要 (MAJOR)</option>
+                        <option value="MINOR">次要 (MINOR)</option>
+                        <option value="WARNING">警告 (WARNING)</option>
+                        <option value="INFO">信息 (INFO)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>来源</label>
+                    <input type="text" name="source" placeholder="例如：Zabbix、Prometheus">
+                </div>
+                <div class="form-group">
+                    <label>主机</label>
+                    <input type="text" name="host" placeholder="例如：192.168.1.1">
+                </div>
+                <div class="form-group">
+                    <label>服务</label>
+                    <input type="text" name="service" placeholder="例如：MySQL、Nginx">
+                </div>
+                <div class="form-group">
+                    <label>聚合键</label>
+                    <input type="text" name="aggregationKey" placeholder="相同键的告警会被聚合">
+                </div>
+                <div class="form-group">
+                    <label>父告警ID（抑制用）</label>
+                    <input type="text" name="parentAlertId" placeholder="父告警存在时当前告警将被抑制">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" onclick="closeModal('createModal')">取消</button>
+                    <button type="submit" class="btn btn-primary">创建</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="acknowledgeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>认领告警</h3>
+                <button class="close-modal" onclick="closeModal('acknowledgeModal')">&times;</button>
+            </div>
+            <form id="acknowledgeForm">
+                <input type="hidden" name="alertId" id="ackAlertId">
+                <div class="form-group">
+                    <label>处理人 *</label>
+                    <input type="text" name="assignee" required placeholder="请输入您的姓名">
+                </div>
+                <div class="form-group">
+                    <label>备注</label>
+                    <textarea name="remark" placeholder="请输入备注信息"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" onclick="closeModal('acknowledgeModal')">取消</button>
+                    <button type="submit" class="btn btn-warning">认领</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>告警历史记录</h3>
+                <button class="close-modal" onclick="closeModal('historyModal')">&times;</button>
+            </div>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api/alerts';
+        let ws = null;
+        let alerts = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAlerts();
+            loadAggregations();
+            connectWebSocket();
+            setupFormHandlers();
+        });
+
+        function connectWebSocket() {
+            const wsUrl = 'ws://localhost:8080/ws/alerts';
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function() {
+                document.getElementById('wsIndicator').classList.add('connected');
+                document.getElementById('wsStatusText').textContent = '已连接';
+                console.log('WebSocket连接成功');
+            };
+
+            ws.onmessage = function(event) {
+                const message = JSON.parse(event.data);
+                console.log('收到WebSocket消息:', message);
+                
+                if (message.type === 'ALERT') {
+                    updateAlertInList(message.data);
+                    loadAlerts();
+                } else if (message.type === 'AGGREGATION') {
+                    loadAggregations();
+                }
+            };
+
+            ws.onclose = function() {
+                document.getElementById('wsIndicator').classList.remove('connected');
+                document.getElementById('wsStatusText').textContent = '连接断开';
+                console.log('WebSocket连接断开，3秒后重连...');
+                setTimeout(connectWebSocket, 3000);
+            };
+
+            ws.onerror = function(error) {
+                console.error('WebSocket错误:', error);
+            };
+        }
+
+        async function loadAlerts() {
+            try {
+                const response = await fetch(API_BASE);
+                alerts = await response.json();
+                renderAlerts();
+                updateStats();
+            } catch (error) {
+                console.error('加载告警失败:', error);
+            }
+        }
+
+        function renderAlerts() {
+            const container = document.getElementById('alertList');
+            
+            if (alerts.length === 0) {
+                container.innerHTML = '<div class="empty-state">暂无告警事件</div>';
+                return;
+            }
+
+            const sortedAlerts = [...alerts].sort((a, b) => {
+                const severityOrder = { CRITICAL: 0, MAJOR: 1, MINOR: 2, WARNING: 3, INFO: 4 };
+                if (severityOrder[a.severity] !== severityOrder[b.severity]) {
+                    return severityOrder[a.severity] - severityOrder[b.severity];
+                }
+                return new Date(b.createTime) - new Date(a.createTime);
+            });
+
+            container.innerHTML = sortedAlerts.map(alert => `
+                <div class="alert-item ${alert.status.toLowerCase()} ${alert.status}">
+                    <div class="alert-header">
+                        <span class="alert-title">${escapeHtml(alert.title)}</span>
+                        <div>
+                            <span class="severity-badge ${alert.severity}">${alert.severity}</span>
+                            ${alert.upgradeCount > 0 ? `<span class="upgrade-indicator">⬆️${alert.upgradeCount}</span>` : ''}
+                            <span class="status-badge ${alert.status}" style="margin-left: 5px;">${alert.status}</span>
+                        </div>
+                    </div>
+                    ${alert.content ? `<p style="font-size: 13px; color: #666; margin-bottom: 10px;">${escapeHtml(alert.content)}</p>` : ''}
+                    <div class="alert-meta">
+                        <span>📝 ID: ${alert.alertId.substring(0, 8)}...</span>
+                        ${alert.source ? `<span>📡 ${alert.source}</span>` : ''}
+                        ${alert.host ? `<span>💻 ${alert.host}</span>` : ''}
+                        ${alert.service ? `<span>🔧 ${alert.service}</span>` : ''}
+                        <span>⏰ ${formatTime(alert.createTime)}</span>
+                        ${alert.assignee ? `<span>👤 ${alert.assignee}</span>` : ''}
+                    </div>
+                    <div class="alert-actions">
+                        ${alert.status === 'NEW' ? `<button class="btn btn-warning" onclick="openAcknowledgeModal('${alert.alertId}')">认领</button>` : ''}
+                        ${(alert.status === 'NEW' || alert.status === 'ACKNOWLEDGED') ? `<button class="btn btn-info" onclick="processAlert('${alert.alertId}')">开始处理</button>` : ''}
+                        ${alert.status === 'PROCESSING' ? `<button class="btn btn-success" onclick="resolveAlert('${alert.alertId}')">解决</button>` : ''}
+                        ${alert.status === 'RESOLVED' ? `<button class="btn btn-danger" onclick="closeAlert('${alert.alertId}')">关闭</button>` : ''}
+                        <button class="btn" onclick="showHistory('${alert.alertId}')">历史</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            const stats = { CRITICAL: 0, MAJOR: 0, MINOR: 0, WARNING: 0, INFO: 0 };
+            alerts.forEach(alert => {
+                if (alert.status !== 'CLOSED' && alert.status !== 'SUPPRESSED') {
+                    stats[alert.severity]++;
+                }
+            });
+
+            document.getElementById('statCritical').textContent = stats.CRITICAL;
+            document.getElementById('statMajor').textContent = stats.MAJOR;
+            document.getElementById('statMinor').textContent = stats.MINOR;
+            document.getElementById('statWarning').textContent = stats.WARNING;
+            document.getElementById('statInfo').textContent = stats.INFO;
+            document.getElementById('statTotal').textContent = alerts.length;
+        }
+
+        function updateAlertInList(updatedAlert) {
+            const index = alerts.findIndex(a => a.alertId === updatedAlert.alertId);
+            if (index >= 0) {
+                alerts[index] = updatedAlert;
+            } else {
+                alerts.unshift(updatedAlert);
+            }
+            renderAlerts();
+            updateStats();
+        }
+
+        async function loadAggregations() {
+            try {
+                const response = await fetch(API_BASE + '/aggregations');
+                const aggregations = await response.json();
+                renderAggregations(aggregations);
+            } catch (error) {
+                console.error('加载聚合数据失败:', error);
+            }
+        }
+
+        function renderAggregations(aggregations) {
+            const container = document.getElementById('aggregationList');
+            
+            if (aggregations.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="padding: 20px;">暂无聚合数据</div>';
+                return;
+            }
+
+            container.innerHTML = aggregations.map(agg => `
+                <div class="aggregation-item">
+                    <div class="aggregation-header">
+                        <span class="severity-badge ${agg.severity}">${agg.severity}</span>
+                        <span class="aggregation-count">${agg.count} 条</span>
+                    </div>
+                    <div style="font-size: 13px; font-weight: 600; margin-bottom: 5px;">${escapeHtml(agg.title)}</div>
+                    <div style="font-size: 11px; color: #666;">
+                        首次: ${formatTime(agg.firstAlertTime)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setupFormHandlers() {
+            document.getElementById('createForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData.entries());
+                
+                try {
+                    await fetch(API_BASE, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    closeModal('createModal');
+                    this.reset();
+                    loadAlerts();
+                } catch (error) {
+                    alert('创建失败: ' + error.message);
+                }
+            });
+
+            document.getElementById('acknowledgeForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const alertId = document.getElementById('ackAlertId').value;
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData.entries());
+                delete data.alertId;
+                
+                try {
+                    await fetch(`${API_BASE}/${alertId}/acknowledge`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    closeModal('acknowledgeModal');
+                    this.reset();
+                    loadAlerts();
+                } catch (error) {
+                    alert('认领失败: ' + error.message);
+                }
+            });
+        }
+
+        async function processAlert(alertId) {
+            const operator = prompt('请输入处理人姓名:', 'admin');
+            if (!operator) return;
+            
+            try {
+                await fetch(`${API_BASE}/${alertId}/process`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ operator })
+                });
+                loadAlerts();
+            } catch (error) {
+                alert('操作失败: ' + error.message);
+            }
+        }
+
+        async function resolveAlert(alertId) {
+            const operator = prompt('请输入处理人姓名:', 'admin');
+            if (!operator) return;
+            const remark = prompt('请输入解决备注:');
+            
+            try {
+                await fetch(`${API_BASE}/${alertId}/resolve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ operator, remark })
+                });
+                loadAlerts();
+            } catch (error) {
+                alert('操作失败: ' + error.message);
+            }
+        }
+
+        async function closeAlert(alertId) {
+            const operator = prompt('请输入关闭人姓名:', 'admin');
+            if (!operator) return;
+            const remark = prompt('请输入关闭备注:');
+            
+            try {
+                await fetch(`${API_BASE}/${alertId}/close`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ operator, remark })
+                });
+                loadAlerts();
+            } catch (error) {
+                alert('操作失败: ' + error.message);
+            }
+        }
+
+        async function showHistory(alertId) {
+            try {
+                const response = await fetch(`${API_BASE}/${alertId}/history`);
+                const history = await response.json();
+                
+                const container = document.getElementById('historyList');
+                if (history.length === 0) {
+                    container.innerHTML = '<div class="empty-state">暂无历史记录</div>';
+                } else {
+                    container.innerHTML = history.map(h => `
+                        <div class="history-item">
+                            <div class="history-type">${h.operationType}</div>
+                            <div class="history-meta">操作人: ${h.operator} | ${formatTime(h.createTime)}</div>
+                            ${h.remark ? `<div class="history-remark">${escapeHtml(h.remark)}</div>` : ''}
+                        </div>
+                    `).join('');
+                }
+                
+                document.getElementById('historyModal').classList.add('show');
+            } catch (error) {
+                alert('加载历史失败: ' + error.message);
+            }
+        }
+
+        async function createTestAlert(severity) {
+            const titles = {
+                CRITICAL: 'CPU使用率超过95%',
+                MAJOR: '磁盘空间不足10%',
+                MINOR: '内存使用率超过80%'
+            };
+            
+            const data = {
+                title: titles[severity] || '测试告警',
+                content: `这是一个${severity}级别的测试告警，请及时处理。`,
+                severity: severity,
+                source: 'Test System',
+                host: '192.168.1.' + Math.floor(Math.random() * 255),
+                service: ['MySQL', 'Nginx', 'Redis', 'Java'][Math.floor(Math.random() * 4)],
+                aggregationKey: 'server_' + Math.floor(Math.random() * 3)
+            };
+
+            try {
+                await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                loadAlerts();
+            } catch (error) {
+                alert('创建失败: ' + error.message);
+            }
+        }
+
+        function openCreateModal() {
+            document.getElementById('createModal').classList.add('show');
+        }
+
+        function openAcknowledgeModal(alertId) {
+            document.getElementById('ackAlertId').value = alertId;
+            document.getElementById('acknowledgeModal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function refreshAggregations() {
+            loadAggregations();
+        }
+
+        function formatTime(timeStr) {
+            if (!timeStr) return '-';
+            const date = new Date(timeStr);
+            return date.toLocaleString('zh-CN');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        };
+    </script>
+</body>
+</html>

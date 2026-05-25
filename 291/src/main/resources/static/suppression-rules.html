@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>告警抑制依赖配置</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 20px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: #f0f0f0;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 12px;
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            background: 
+                linear-gradient(90deg, #e0e0e0 1px, transparent 1px),
+                linear-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-color: #fafafa;
+        }
+
+        .canvas {
+            width: 3000px;
+            height: 2000px;
+            position: relative;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .rule-node {
+            position: absolute;
+            min-width: 220px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            cursor: move;
+            user-select: none;
+            transition: box-shadow 0.3s, transform 0.1s;
+            z-index: 10;
+        }
+
+        .rule-node:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        .rule-node.selected {
+            box-shadow: 0 0 0 3px #667eea, 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        .rule-node.disabled {
+            opacity: 0.5;
+        }
+
+        .node-header {
+            padding: 12px 15px;
+            border-radius: 10px 10px 0 0;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .node-header.parent {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .node-header.child {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .node-body {
+            padding: 12px 15px;
+        }
+
+        .condition-item {
+            background: #f8f9fa;
+            padding: 6px 10px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .condition-label {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .node-footer {
+            padding: 8px 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 5px;
+        }
+
+        .dependency-line {
+            position: absolute;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .arrow-marker {
+            fill: #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+            font-family: monospace;
+        }
+
+        .form-hint {
+            font-size: 11px;
+            color: #999;
+            margin-top: 3px;
+        }
+
+        .section-divider {
+            margin: 20px 0;
+            border-top: 1px solid #eee;
+        }
+
+        .rule-list-item {
+            padding: 12px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .rule-list-item:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+
+        .rule-list-item.selected {
+            background: #eef2ff;
+            border-color: #667eea;
+        }
+
+        .rule-list-item.disabled {
+            opacity: 0.5;
+        }
+
+        .rule-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .rule-desc {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #28a745;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(20px);
+        }
+
+        .condition-builder {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .condition-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .condition-row select,
+        .condition-row input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+
+        .btn-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .btn-add {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+
+        .legend-color.parent {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .legend-color.child {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .nav-link:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <h1>🔗 告警抑制依赖配置</h1>
+            <a href="index.html" class="nav-link">← 返回告警列表</a>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-primary" onclick="openCreateModal()">+ 新建依赖规则</button>
+            <button class="btn btn-success" onclick="refreshRules()">🔄 刷新</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="canvas-container" id="canvasContainer">
+            <div class="canvas" id="canvas">
+                <svg class="dependency-line" id="lineSvg" width="3000" height="2000" style="position: absolute; top: 0; left: 0;">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon class="arrow-marker" points="0 0, 10 3.5, 0 7" />
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <h3>📋 规则列表</h3>
+            <div id="ruleList"></div>
+
+            <div class="section-divider"></div>
+
+            <h3>📝 规则详情</h3>
+            <div id="ruleDetail">
+                <div class="empty-state" style="padding: 20px;">选择一个规则查看详情</div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <h3>📖 图例</h3>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color parent"></div>
+                    <span>父告警条件</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color child"></div>
+                    <span>子告警条件</span>
+                </div>
+            </div>
+
+            <h3>💡 使用说明</h3>
+            <div style="font-size: 12px; color: #666; line-height: 1.6;">
+                <p>• 拖拽节点可调整位置</p>
+                <p>• 点击节点可查看/编辑详情</p>
+                <p>• 父告警存在时，匹配子条件的告警将被抑制</p>
+                <p>• 条件格式：source=xxx;host=xxx;service=xxx;severity=xxx;tag=xxx;title=xxx</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="createModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>新建抑制依赖规则</h3>
+                <button class="close-modal" onclick="closeModal('createModal')">&times;</button>
+            </div>
+            <form id="createForm">
+                <div class="form-group">
+                    <label>规则名称 *</label>
+                    <input type="text" name="ruleName" required placeholder="例如：网络故障抑制下游告警">
+                </div>
+                <div class="form-group">
+                    <label>描述</label>
+                    <textarea name="description" placeholder="规则说明"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>父告警条件（依赖告警）</label>
+                    <div class="condition-builder" id="parentConditions">
+                        <div class="condition-row">
+                            <select class="cond-key">
+                                <option value="source">source</option>
+                                <option value="host">host</option>
+                                <option value="service">service</option>
+                                <option value="severity">severity</option>
+                                <option value="tag">tag</option>
+                                <option value="title">title</option>
+                            </select>
+                            <input type="text" class="cond-value" placeholder="值">
+                            <button type="button" class="btn-remove" onclick="removeCondition(this)">×</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-add" onclick="addCondition('parentConditions')">+ 添加条件</button>
+                </div>
+
+                <div class="form-group">
+                    <label>子告警条件（被抑制告警）</label>
+                    <div class="condition-builder" id="childConditions">
+                        <div class="condition-row">
+                            <select class="cond-key">
+                                <option value="source">source</option>
+                                <option value="host">host</option>
+                                <option value="service">service</option>
+                                <option value="severity">severity</option>
+                                <option value="tag">tag</option>
+                                <option value="title">title</option>
+                            </select>
+                            <input type="text" class="cond-value" placeholder="值">
+                            <button type="button" class="btn-remove" onclick="removeCondition(this)">×</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-add" onclick="addCondition('childConditions')">+ 添加条件</button>
+                </div>
+
+                <div class="form-group">
+                    <label>启用规则</label>
+                    <div class="toggle-switch active" id="enabledToggle" onclick="toggleSwitch(this)"></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn" onclick="closeModal('createModal')">取消</button>
+                    <button type="submit" class="btn btn-success">创建</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api/suppression-rules';
+        let rules = [];
+        let selectedRuleId = null;
+        let draggingNode = null;
+        let dragOffset = { x: 0, y: 0 };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshRules();
+            setupFormHandlers();
+            setupCanvasDrag();
+        });
+
+        async function refreshRules() {
+            try {
+                const response = await fetch(API_BASE);
+                rules = await response.json();
+                renderRuleList();
+                renderCanvas();
+            } catch (error) {
+                console.error('加载规则失败:', error);
+            }
+        }
+
+        function renderRuleList() {
+            const container = document.getElementById('ruleList');
+            
+            if (rules.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="padding: 20px;">暂无规则</div>';
+                return;
+            }
+
+            container.innerHTML = rules.map(rule => `
+                <div class="rule-list-item ${rule.enabled ? '' : 'disabled'} ${rule.id === selectedRuleId ? 'selected' : ''}" 
+                     onclick="selectRule(${rule.id})">
+                    <div class="rule-name">
+                        ${rule.enabled ? '✅' : '❌'} ${escapeHtml(rule.ruleName)}
+                    </div>
+                    <div class="rule-desc">${rule.description || '无描述'}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderCanvas() {
+            const canvas = document.getElementById('canvas');
+            const svg = document.getElementById('lineSvg');
+            
+            const existingNodes = canvas.querySelectorAll('.rule-node');
+            existingNodes.forEach(n => n.remove());
+            
+            const existingLines = svg.querySelectorAll('line');
+            existingLines.forEach(l => l.remove());
+
+            rules.forEach((rule, index) => {
+                const baseX = rule.positionX || 100 + (index % 3) * 400;
+                const baseY = rule.positionY || 100 + Math.floor(index / 3) * 300;
+
+                createRuleNode(rule, baseX, baseY);
+            });
+
+            rules.forEach((rule, index) => {
+                const baseX = rule.positionX || 100 + (index % 3) * 400;
+                const baseY = rule.positionY || 100 + Math.floor(index / 3) * 300;
+                
+                drawDependencyLine(baseX + 110, baseY + 120, baseX + 110, baseY + 220);
+            });
+        }
+
+        function createRuleNode(rule, x, y) {
+            const canvas = document.getElementById('canvas');
+            
+            const parentNode = document.createElement('div');
+            parentNode.className = `rule-node ${rule.enabled ? '' : 'disabled'}`;
+            parentNode.style.left = x + 'px';
+            parentNode.style.top = y + 'px';
+            parentNode.dataset.ruleId = rule.id;
+            parentNode.dataset.nodeType = 'parent';
+            parentNode.innerHTML = `
+                <div class="node-header parent">
+                    <span>👑 父告警</span>
+                    <span class="toggle-switch ${rule.enabled ? 'active' : ''}" style="transform: scale(0.8);"></span>
+                </div>
+                <div class="node-body">
+                    <div class="condition-item">
+                        <span class="condition-label">IF:</span> ${formatCondition(rule.parentCondition)}
+                    </div>
+                </div>
+            `;
+            
+            parentNode.addEventListener('mousedown', startDrag);
+            parentNode.addEventListener('click', (e) => {
+                if (!draggingNode) selectRule(rule.id);
+            });
+
+            const childNode = document.createElement('div');
+            childNode.className = `rule-node ${rule.enabled ? '' : 'disabled'}`;
+            childNode.style.left = x + 'px';
+            childNode.style.top = (y + 150) + 'px';
+            childNode.dataset.ruleId = rule.id;
+            childNode.dataset.nodeType = 'child';
+            childNode.innerHTML = `
+                <div class="node-header child">
+                    <span>🔒 子告警</span>
+                </div>
+                <div class="node-body">
+                    <div class="condition-item">
+                        <span class="condition-label">THEN SUPPRESS:</span> ${formatCondition(rule.childCondition)}
+                    </div>
+                </div>
+                <div class="node-footer">
+                    <button class="btn btn-sm btn-warning" onclick="event.stopPropagation(); editRule(${rule.id})">编辑</button>
+                    <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteRule(${rule.id})">删除</button>
+                </div>
+            `;
+            
+            childNode.addEventListener('mousedown', startDrag);
+            childNode.addEventListener('click', (e) => {
+                if (!draggingNode) selectRule(rule.id);
+            });
+
+            canvas.appendChild(parentNode);
+            canvas.appendChild(childNode);
+        }
+
+        function drawDependencyLine(x1, y1, x2, y2) {
+            const svg = document.getElementById('lineSvg');
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+            line.setAttribute('stroke', '#667eea');
+            line.setAttribute('stroke-width', '2');
+            line.setAttribute('stroke-dasharray', '5,5');
+            line.setAttribute('marker-end', 'url(#arrowhead)');
+            svg.appendChild(line);
+        }
+
+        function formatCondition(condition) {
+            if (!condition) return '无限制';
+            return condition.split(';').map(c => {
+                const [k, v] = c.split('=');
+                return `<span class="condition-label">${k}:</span>${v || '*'}`;
+            }).join(' ');
+        }
+
+        function selectRule(ruleId) {
+            selectedRuleId = ruleId;
+            const rule = rules.find(r => r.id === ruleId);
+            
+            document.querySelectorAll('.rule-node').forEach(node => {
+                node.classList.remove('selected');
+                if (parseInt(node.dataset.ruleId) === ruleId) {
+                    node.classList.add('selected');
+                }
+            });
+
+            renderRuleList();
+            renderRuleDetail(rule);
+        }
+
+        function renderRuleDetail(rule) {
+            const container = document.getElementById('ruleDetail');
+            if (!rule) {
+                container.innerHTML = '<div class="empty-state" style="padding: 20px;">选择一个规则查看详情</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h4 style="font-size: 15px;">${escapeHtml(rule.ruleName)}</h4>
+                        <div class="toggle-switch ${rule.enabled ? 'active' : ''}" 
+                             onclick="toggleRule(${rule.id})"
+                             title="点击启用/禁用"></div>
+                    </div>
+                    <p style="font-size: 12px; color: #666;">${rule.description || '无描述'}</p>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="font-size: 12px; font-weight: 600; color: #667eea; margin-bottom: 5px;">👑 父告警条件</div>
+                    <div style="font-size: 12px; font-family: monospace;">${escapeHtml(rule.parentCondition) || '无限制'}</div>
+                </div>
+
+                <div style="background: #fff0f3; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="font-size: 12px; font-weight: 600; color: #f5576c; margin-bottom: 5px;">🔒 子告警条件（被抑制）</div>
+                    <div style="font-size: 12px; font-family: monospace;">${escapeHtml(rule.childCondition) || '无限制'}</div>
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-warning btn-sm" onclick="editRule(${rule.id})">✏️ 编辑</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteRule(${rule.id})">🗑️ 删除</button>
+                </div>
+
+                <div style="font-size: 11px; color: #999; margin-top: 15px;">
+                    创建时间: ${formatTime(rule.createTime)}<br>
+                    更新时间: ${formatTime(rule.updateTime)}
+                </div>
+            `;
+        }
+
+        async function toggleRule(ruleId) {
+            try {
+                await fetch(`${API_BASE}/${ruleId}/toggle`, { method: 'POST' });
+                refreshRules();
+            } catch (error) {
+                alert('操作失败: ' + error.message);
+            }
+        }
+
+        async function deleteRule(ruleId) {
+            if (!confirm('确定要删除此规则吗？')) return;
+            
+            try {
+                await fetch(`${API_BASE}/${ruleId}`, { method: 'DELETE' });
+                selectedRuleId = null;
+                refreshRules();
+            } catch (error) {
+                alert('删除失败: ' + error.message);
+            }
+        }
+
+        function editRule(ruleId) {
+            const rule = rules.find(r => r.id === ruleId);
+            if (!rule) return;
+
+            alert('编辑功能请在侧边栏或节点上操作，详细编辑弹窗可扩展实现');
+        }
+
+        function startDrag(e) {
+            const node = e.currentTarget;
+            draggingNode = node;
+            
+            const rect = node.getBoundingClientRect();
+            const canvasRect = document.getElementById('canvasContainer').getBoundingClientRect();
+            
+            dragOffset.x = e.clientX - rect.left;
+            dragOffset.y = e.clientY - rect.top;
+
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function onDrag(e) {
+            if (!draggingNode) return;
+            
+            const canvasContainer = document.getElementById('canvasContainer');
+            const scrollLeft = canvasContainer.scrollLeft;
+            const scrollTop = canvasContainer.scrollTop;
+            
+            const canvasRect = canvasContainer.getBoundingClientRect();
+            
+            let newX = e.clientX - canvasRect.left + scrollLeft - dragOffset.x;
+            let newY = e.clientY - canvasRect.top + scrollTop - dragOffset.y;
+            
+            newX = Math.max(0, Math.min(newX, 2800));
+            newY = Math.max(0, Math.min(newY, 1800));
+
+            draggingNode.style.left = newX + 'px';
+            draggingNode.style.top = newY + 'px';
+        }
+
+        async function stopDrag(e) {
+            if (!draggingNode) return;
+            
+            const ruleId = parseInt(draggingNode.dataset.ruleId);
+            const nodeType = draggingNode.dataset.nodeType;
+            const newX = parseInt(draggingNode.style.left);
+            const newY = parseInt(draggingNode.style.top);
+
+            const finalY = nodeType === 'parent' ? newY : newY - 150;
+
+            try {
+                await fetch(`${API_BASE}/${ruleId}/position`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ positionX: newX, positionY: finalY })
+                });
+            } catch (error) {
+                console.error('更新位置失败:', error);
+            }
+
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', stopDrag);
+            
+            setTimeout(() => { draggingNode = null; }, 100);
+            
+            refreshRules();
+        }
+
+        function setupCanvasDrag() {
+            const canvasContainer = document.getElementById('canvasContainer');
+            let isPanning = false;
+            let startX, startY;
+
+            canvasContainer.addEventListener('mousedown', (e) => {
+                if (e.target === canvasContainer || e.target.id === 'canvas') {
+                    isPanning = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                }
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isPanning) {
+                    canvasContainer.scrollLeft -= e.clientX - startX;
+                    canvasContainer.scrollTop -= e.clientY - startY;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isPanning = false;
+            });
+        }
+
+        function setupFormHandlers() {
+            document.getElementById('createForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const data = {
+                    ruleName: formData.get('ruleName'),
+                    description: formData.get('description'),
+                    parentCondition: buildConditionString('parentConditions'),
+                    childCondition: buildConditionString('childConditions'),
+                    enabled: document.getElementById('enabledToggle').classList.contains('active'),
+                    positionX: 100 + rules.length * 50,
+                    positionY: 100 + rules.length * 30
+                };
+
+                try {
+                    await fetch(API_BASE, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    closeModal('createModal');
+                    this.reset();
+                    refreshRules();
+                } catch (error) {
+                    alert('创建失败: ' + error.message);
+                }
+            });
+        }
+
+        function addCondition(containerId) {
+            const container = document.getElementById(containerId);
+            const row = document.createElement('div');
+            row.className = 'condition-row';
+            row.innerHTML = `
+                <select class="cond-key">
+                    <option value="source">source</option>
+                    <option value="host">host</option>
+                    <option value="service">service</option>
+                    <option value="severity">severity</option>
+                    <option value="tag">tag</option>
+                    <option value="title">title</option>
+                </select>
+                <input type="text" class="cond-value" placeholder="值">
+                <button type="button" class="btn-remove" onclick="removeCondition(this)">×</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function removeCondition(btn) {
+            const container = btn.parentElement.parentElement;
+            if (container.querySelectorAll('.condition-row').length > 1) {
+                btn.parentElement.remove();
+            }
+        }
+
+        function buildConditionString(containerId) {
+            const container = document.getElementById(containerId);
+            const rows = container.querySelectorAll('.condition-row');
+            const conditions = [];
+            
+            rows.forEach(row => {
+                const key = row.querySelector('.cond-key').value;
+                const value = row.querySelector('.cond-value').value.trim();
+                if (value) {
+                    conditions.push(`${key}=${value}`);
+                }
+            });
+
+            return conditions.join(';');
+        }
+
+        function toggleSwitch(el) {
+            el.classList.toggle('active');
+        }
+
+        function openCreateModal() {
+            document.getElementById('createModal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function formatTime(timeStr) {
+            if (!timeStr) return '-';
+            const date = new Date(timeStr);
+            return date.toLocaleString('zh-CN');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+package com.alert.rules
+
+import com.alert.entity.AlertEvent
+import com.alert.service.AlertService
+
+global com.alert.service.AlertService alertService
+
+rule "告警聚合规则"
+    when
+        $alert: AlertEvent(status == "NEW", aggregationKey != null)
+    then
+        alertService.aggregateAlert($alert);
+end
+
+rule "告警抑制规则"
+    when
+        $child: AlertEvent(status == "NEW", parentAlertId != null)
+        $parent: AlertEvent(alertId == $child.parentAlertId, status in ("NEW", "ACKNOWLEDGED", "PROCESSING"))
+    then
+        alertService.suppressAlert($child);
+end
+
+rule "告警升级规则-紧急"
+    when
+        $alert: AlertEvent(status == "NEW", severity == "CRITICAL", upgradeCount == 0)
+    then
+        alertService.scheduleEscalation($alert, 5);
+end
+
+rule "告警升级规则-重要"
+    when
+        $alert: AlertEvent(status == "NEW", severity == "MAJOR", upgradeCount == 0)
+    then
+        alertService.scheduleEscalation($alert, 15);
+end
+
+rule "告警升级规则-次要"
+    when
+        $alert: AlertEvent(status == "NEW", severity == "MINOR", upgradeCount == 0)
+    then
+        alertService.scheduleEscalation($alert, 30);
+end

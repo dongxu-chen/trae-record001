@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>空气质量数值预报可视化系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@7.5.2/ol.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <header class="top-header">
+            <div class="header-left">
+                <div class="logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                </div>
+                <h1 class="title">空气质量数值预报可视化系统</h1>
+            </div>
+            <div class="header-right">
+                <span id="currentTimeDisplay" class="time-display"></span>
+                <button id="helpBtn" class="icon-btn" title="帮助">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div id="map" class="map-container"></div>
+            
+            <aside class="side-panel">
+                <div class="panel-section">
+                    <h3 class="panel-title">图层控制</h3>
+                    <div class="layer-controls">
+                        <label class="layer-item">
+                            <input type="checkbox" id="layerAqi" checked>
+                            <span class="checkmark"></span>
+                            <span>AQI色斑图</span>
+                        </label>
+                        <label class="layer-item">
+                            <input type="checkbox" id="layerContour">
+                            <span class="checkmark"></span>
+                            <span>等值线</span>
+                        </label>
+                        <label class="layer-item">
+                            <input type="checkbox" id="layerWind">
+                            <span class="checkmark"></span>
+                            <span>风矢量场</span>
+                        </label>
+                    </div>
+                    <div class="opacity-control">
+                        <label>透明度</label>
+                        <input type="range" id="opacitySlider" min="0" max="100" value="70">
+                        <span id="opacityValue">70%</span>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3 class="panel-title">AQI图例</h3>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #00E400"></div>
+                            <span>优 0-50</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #FFFF00"></div>
+                            <span>良 51-100</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #FF7E00"></div>
+                            <span>轻度 101-150</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #FF0000"></div>
+                            <span>中度 151-200</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #99004C"></div>
+                            <span>重度 201-300</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #7E0023"></div>
+                            <span>严重 301+</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3 class="panel-title">渲染模式</h3>
+                    <div class="render-mode-control">
+                        <label class="render-option">
+                            <input type="radio" name="renderMode" value="tile" checked>
+                            <span class="radio-mark"></span>
+                            <span>瓦片缓存 (快速)</span>
+                        </label>
+                        <label class="render-option">
+                            <input type="radio" name="renderMode" value="webgl">
+                            <span class="radio-mark"></span>
+                            <span>WebGL (高质量)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3 class="panel-title">播放控制</h3>
+                    <div class="speed-control">
+                        <label>播放速度</label>
+                        <select id="speedSelect">
+                            <option value="2000">0.5x</option>
+                            <option value="1000" selected>1x</option>
+                            <option value="500">2x</option>
+                            <option value="250">4x</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3 class="panel-title">扩散模拟</h3>
+                    <div class="diffusion-controls">
+                        <label class="layer-item">
+                            <input type="checkbox" id="enableDiffusion">
+                            <span class="checkmark"></span>
+                            <span>启用扩散动画</span>
+                        </label>
+                        <div class="control-row">
+                            <label>粒子数量</label>
+                            <input type="range" id="particleCount" min="500" max="5000" value="2000" step="100">
+                            <span id="particleCountValue">2000</span>
+                        </div>
+                        <div class="control-row">
+                            <label>扩散速度</label>
+                            <input type="range" id="diffusionSpeed" min="0.5" max="3" value="1" step="0.1">
+                            <span id="diffusionSpeedValue">1.0x</span>
+                        </div>
+                        <div class="control-row">
+                            <label>拖尾效果</label>
+                            <input type="range" id="trailEffect" min="0" max="1" value="0.85" step="0.05">
+                            <span id="trailEffectValue">85%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3 class="panel-title">数据对比</h3>
+                    <div class="compare-controls">
+                        <label class="layer-item">
+                            <input type="checkbox" id="enableCompare">
+                            <span class="checkmark"></span>
+                            <span>启用对比模式</span>
+                        </label>
+                        <div class="compare-modes">
+                            <label class="compare-option">
+                                <input type="radio" name="compareMode" value="swipe" checked disabled>
+                                <span class="radio-mark"></span>
+                                <span>卷帘对比</span>
+                            </label>
+                            <label class="compare-option">
+                                <input type="radio" name="compareMode" value="flicker" disabled>
+                                <span class="radio-mark"></span>
+                                <span>闪烁对比</span>
+                            </label>
+                            <label class="compare-option">
+                                <input type="radio" name="compareMode" value="difference" disabled>
+                                <span class="radio-mark"></span>
+                                <span>差值显示</span>
+                            </label>
+                        </div>
+                        <div class="control-row compare-options hidden" id="swipeOptions">
+                            <label>对比数据集</label>
+                            <select id="compareDataset" disabled>
+                                <option value="previous">上一次预报</option>
+                                <option value="control">控制试验</option>
+                                <option value="sensitivity">敏感性试验</option>
+                            </select>
+                        </div>
+                        <div class="control-row compare-options hidden" id="flickerOptions">
+                            <label>闪烁频率</label>
+                            <input type="range" id="flickerFreq" min="0.5" max="4" value="1" step="0.5" disabled>
+                            <span id="flickerFreqValue">1.0Hz</span>
+                        </div>
+                        <div class="compare-stats hidden" id="compareStats">
+                            <div class="stat-row">
+                                <span>RMSE:</span>
+                                <span id="statRMSE">--</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>相关系数:</span>
+                                <span id="statCorr">--</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>最大差值:</span>
+                                <span id="statMaxDiff">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3 class="panel-title">报告导出</h3>
+                    <div class="report-controls">
+                        <button id="exportReportBtn" class="export-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            导出预报报告
+                        </button>
+                        <p class="report-desc">生成当前时刻的AQI预报评估报告，包含空间分布图、时间序列和统计摘要。</p>
+                    </div>
+                </div>
+            </aside>
+
+            <div id="pollutantPopup" class="popup hidden">
+                <div class="popup-header">
+                    <h4>格点详情</h4>
+                    <button id="closePopup" class="close-btn">&times;</button>
+                </div>
+                <div class="popup-content">
+                    <div class="popup-location">
+                        <span id="popupCoords"></span>
+                    </div>
+                    <div class="aqi-display">
+                        <div id="aqiValue" class="aqi-value">--</div>
+                        <div id="aqiLevel" class="aqi-level">--</div>
+                    </div>
+                    <div class="primary-pollutant">
+                        <span>首要污染物：</span>
+                        <span id="primaryPollutant">--</span>
+                    </div>
+                    <div class="pollutant-list">
+                        <div class="pollutant-item">
+                            <span class="pollutant-name">PM2.5</span>
+                            <span id="pm25Value" class="pollutant-value">--</span>
+                        </div>
+                        <div class="pollutant-item">
+                            <span class="pollutant-name">PM10</span>
+                            <span id="pm10Value" class="pollutant-value">--</span>
+                        </div>
+                        <div class="pollutant-item">
+                            <span class="pollutant-name">O₃</span>
+                            <span id="o3Value" class="pollutant-value">--</span>
+                        </div>
+                        <div class="pollutant-item">
+                            <span class="pollutant-name">NO₂</span>
+                            <span id="no2Value" class="pollutant-value">--</span>
+                        </div>
+                        <div class="pollutant-item">
+                            <span class="pollutant-name">SO₂</span>
+                            <span id="so2Value" class="pollutant-value">--</span>
+                        </div>
+                        <div class="pollutant-item">
+                            <span class="pollutant-name">CO</span>
+                            <span id="coValue" class="pollutant-value">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="time-control-bar">
+            <div class="play-controls">
+                <button id="prevBtn" class="play-btn" title="上一时刻">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="19 20 9 12 19 4 19 20"/>
+                        <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </button>
+                <button id="playBtn" class="play-btn play-pause" title="播放/暂停">
+                    <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    <svg id="pauseIcon" class="hidden" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="4" width="4" height="16"/>
+                        <rect x="14" y="4" width="4" height="16"/>
+                    </svg>
+                </button>
+                <button id="nextBtn" class="play-btn" title="下一时刻">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="5 4 15 12 5 20 5 4"/>
+                        <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="slider-container">
+                <div class="time-labels">
+                    <span id="startTimeLabel">--</span>
+                    <span id="endTimeLabel">--</span>
+                </div>
+                <input type="range" id="timeSlider" min="0" max="71" value="0" class="time-slider">
+                <div class="time-indicator">
+                    <span id="currentForecastTime">--</span>
+                    <span id="forecastHour">T+0h</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>正在加载数据...</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ol@7.5.2/dist/ol.js"></script>
+    <script src="{{ url_for('static', filename='js/webgl_renderer.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/contour_layer.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/time_controller.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/popup.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/diffusion_animation.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/compare_mode.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

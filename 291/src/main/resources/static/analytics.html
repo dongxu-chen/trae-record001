@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>告警分析与报告</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 20px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 5px;
+        }
+
+        .nav-tab {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px 5px 0 0;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .main-container {
+            padding: 20px;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 28px;
+            margin-bottom: 5px;
+            color: #667eea;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section-header h2 {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 12px;
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .root-cause-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 15px;
+        }
+
+        .root-cause-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .root-cause-title {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .confidence-badge {
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .root-cause-meta {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .root-cause-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .status-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-badge.ANALYZING {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.CONFIRMED {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.REJECTED {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .prediction-item {
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .prediction-item::before {
+            content: '🔮';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 40px;
+            opacity: 0.3;
+        }
+
+        .prediction-title {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .prediction-desc {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .prediction-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .probability-bar {
+            height: 6px;
+            background: #ddd;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .probability-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.5s;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .severity-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .severity-badge.CRITICAL {
+            background: #dc3545;
+            color: white;
+        }
+
+        .severity-badge.MAJOR {
+            background: #fd7e14;
+            color: white;
+        }
+
+        .severity-badge.MINOR {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .severity-badge.WARNING {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .severity-badge.INFO {
+            background: #6f42c1;
+            color: white;
+        }
+
+        .time-selector {
+            display: flex;
+            gap: 5px;
+        }
+
+        .time-btn {
+            padding: 5px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .time-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .mttr-card {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        }
+
+        .mttr-card h3 {
+            color: #856404;
+        }
+
+        .sla-card {
+            background: linear-gradient(135deg, #d4edda 0%, #a3d9a5 100%);
+        }
+
+        .sla-card h3 {
+            color: #155724;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .nav-links a:hover {
+            opacity: 1;
+        }
+
+        .nav-links a.active {
+            font-weight: 600;
+            opacity: 1;
+            border-bottom: 2px solid white;
+            padding-bottom: 3px;
+        }
+
+        .sublinks {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .sublink-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .sublink-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 告警分析与报告</h1>
+        <div class="nav-links">
+            <a href="index.html">告警列表</a>
+            <a href="suppression-rules.html">抑制规则</a>
+            <a href="analytics.html" class="active">分析报告</a>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sublinks">
+            <button class="sublink-btn active" onclick="switchTab('report')">📈 复盘报告</button>
+            <button class="sublink-btn" onclick="switchTab('rootcause')">🔍 根因分析</button>
+            <button class="sublink-btn" onclick="switchTab('prediction')">🔮 告警预测</button>
+        </div>
+
+        <div id="report-tab" class="tab-content active">
+            <div class="section">
+                <div class="section-header">
+                    <h2>📋 报告概览</h2>
+                    <div class="time-selector">
+                        <button class="time-btn" onclick="loadReport(1)">1天</button>
+                        <button class="time-btn active" onclick="loadReport(7)">7天</button>
+                        <button class="time-btn" onclick="loadReport(30)">30天</button>
+                    </div>
+                </div>
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <h3 id="totalAlerts">0</h3>
+                        <p>总告警数</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="resolvedAlerts">0</h3>
+                        <p>已解决</p>
+                    </div>
+                    <div class="stat-card mttr-card">
+                        <h3 id="avgMttr">0</h3>
+                        <p>平均MTTR (分钟)</p>
+                    </div>
+                    <div class="stat-card sla-card">
+                        <h3 id="slaCompliance">0%</h3>
+                        <p>SLA合规率</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="section">
+                    <div class="section-header">
+                        <h2>📈 告警趋势</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2>🏷️ 级别分布</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="severityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="section">
+                    <div class="section-header">
+                        <h2>⏰ 时段分布</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="hourlyChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2>📊 来源分布</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="sourceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="section">
+                    <div class="section-header">
+                        <h2>💻 高频告警主机 TOP 10</h2>
+                    </div>
+                    <div id="topHosts"></div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2>🔧 高频告警服务 TOP 10</h2>
+                    </div>
+                    <div id="topServices"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="rootcause-tab" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h2>🔍 根因分析</h2>
+                    <button class="btn btn-primary" onclick="triggerRootCauseAnalysis()">立即分析</button>
+                </div>
+                <div id="rootCauseList">
+                    <div class="empty-state">加载中...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="prediction-tab" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h2>🔮 告警预测</h2>
+                    <button class="btn btn-primary" onclick="generatePredictions()">生成预测</button>
+                </div>
+                <div id="predictionList">
+                    <div class="empty-state">加载中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api/analytics';
+        let trendChart, severityChart, hourlyChart, sourceChart;
+        let currentReportDays = 7;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadReport(7);
+            loadRootCauses();
+            loadPredictions();
+        });
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.sublink-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function loadReport(days) {
+            currentReportDays = days;
+            
+            document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            try {
+                const response = await fetch(`${API_BASE}/report?days=${days}`);
+                const report = await response.json();
+                renderReport(report);
+            } catch (error) {
+                console.error('加载报告失败:', error);
+            }
+        }
+
+        function renderReport(report) {
+            document.getElementById('totalAlerts').textContent = report.totalAlerts;
+            document.getElementById('resolvedAlerts').textContent = report.resolvedAlerts;
+            document.getElementById('avgMttr').textContent = report.avgMttrMinutes;
+            document.getElementById('slaCompliance').textContent = report.slaCompliance + '%';
+
+            renderTrendChart(report.dailyTrend);
+            renderSeverityChart(report.alertBySeverity);
+            renderHourlyChart(report.hourlyTrend);
+            renderSourceChart(report.alertBySource);
+
+            renderTopList('topHosts', report.topHosts);
+            renderTopList('topServices', report.topServices);
+        }
+
+        function renderTrendChart(data) {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            if (trendChart) trendChart.destroy();
+
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.date.substring(5)),
+                    datasets: [
+                        {
+                            label: '新增告警',
+                            data: data.map(d => d.count),
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: '已解决',
+                            data: data.map(d => d.resolved),
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    }
+                }
+            });
+        }
+
+        function renderSeverityChart(data) {
+            const ctx = document.getElementById('severityChart').getContext('2d');
+            
+            if (severityChart) severityChart.destroy();
+
+            const colors = {
+                CRITICAL: '#dc3545',
+                MAJOR: '#fd7e14',
+                MINOR: '#ffc107',
+                WARNING: '#17a2b8',
+                INFO: '#6f42c1'
+            };
+
+            severityChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: Object.keys(data).map(k => colors[k] || '#999')
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        }
+
+        function renderHourlyChart(data) {
+            const ctx = document.getElementById('hourlyChart').getContext('2d');
+            
+            if (hourlyChart) hourlyChart.destroy();
+
+            hourlyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.hour + '时'),
+                    datasets: [{
+                        label: '平均告警数',
+                        data: data.map(d => d.avgCount),
+                        backgroundColor: 'rgba(102, 126, 234, 0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function renderSourceChart(data) {
+            const ctx = document.getElementById('sourceChart').getContext('2d');
+            
+            if (sourceChart) sourceChart.destroy();
+
+            sourceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: '告警数',
+                        data: Object.values(data),
+                        backgroundColor: 'rgba(118, 75, 162, 0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    indexAxis: 'y',
+                    scales: {
+                        x: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function renderTopList(containerId, items) {
+            const container = document.getElementById(containerId);
+            
+            if (!items || items.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="padding: 20px;">暂无数据</div>';
+                return;
+            }
+
+            container.innerHTML = items.map((item, index) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="width: 24px; height: 24px; background: ${index < 3 ? '#667eea' : '#ccc'}; 
+                              color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+                              font-size: 12px; font-weight: 600;">${index + 1}</span>
+                        <span>${item.split(' (')[0]}</span>
+                    </div>
+                    <span style="color: #667eea; font-weight: 600;">${item.match(/\((\d+)\)/)[1]}</span>
+                </div>
+            `).join('');
+        }
+
+        async function loadRootCauses() {
+            try {
+                const response = await fetch(`${API_BASE}/root-causes`);
+                const rootCauses = await response.json();
+                renderRootCauses(rootCauses);
+            } catch (error) {
+                console.error('加载根因分析失败:', error);
+            }
+        }
+
+        function renderRootCauses(rootCauses) {
+            const container = document.getElementById('rootCauseList');
+            
+            if (rootCauses.length === 0) {
+                container.innerHTML = '<div class="empty-state">暂无根因分析结果，点击"立即分析"开始检测</div>';
+                return;
+            }
+
+            container.innerHTML = rootCauses.map(rc => `
+                <div class="root-cause-item">
+                    <div class="root-cause-header">
+                        <span class="root-cause-title">${escapeHtml(rc.title)}</span>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span class="status-badge ${rc.status}">${rc.status}</span>
+                            <span class="confidence-badge">${(rc.confidenceScore * 100).toFixed(0)}%</span>
+                        </div>
+                    </div>
+                    <div class="root-cause-meta">
+                        📝 ${escapeHtml(rc.description)} | 
+                        👥 影响告警: ${rc.affectedCount} 条 | 
+                        ⏰ 分析时间: ${formatTime(rc.analysisTime)}
+                    </div>
+                    <div class="root-cause-actions">
+                        <button class="btn btn-success btn-sm" onclick="confirmRootCause('${rc.rootCauseId}')">确认</button>
+                        <button class="btn btn-danger btn-sm" onclick="rejectRootCause('${rc.rootCauseId}')">忽略</button>
+                        <button class="btn btn-sm" onclick="showAffectedAlerts('${rc.rootCauseId}')">查看关联告警</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function triggerRootCauseAnalysis() {
+            try {
+                await fetch(`${API_BASE}/root-causes/analyze`, { method: 'POST' });
+                alert('根因分析已触发，请稍后刷新查看结果');
+                setTimeout(loadRootCauses, 1000);
+            } catch (error) {
+                alert('分析失败: ' + error.message);
+            }
+        }
+
+        async function confirmRootCause(rootCauseId) {
+            try {
+                await fetch(`${API_BASE}/root-causes/${rootCauseId}/confirm`, { method: 'POST' });
+                loadRootCauses();
+            } catch (error) {
+                alert('操作失败: ' + error.message);
+            }
+        }
+
+        async function rejectRootCause(rootCauseId) {
+            try {
+                await fetch(`${API_BASE}/root-causes/${rootCauseId}/reject`, { method: 'POST' });
+                loadRootCauses();
+            } catch (error) {
+                alert('操作失败: ' + error.message);
+            }
+        }
+
+        async function showAffectedAlerts(rootCauseId) {
+            try {
+                const response = await fetch(`${API_BASE}/root-causes/${rootCauseId}/affected-alerts`);
+                const alerts = await response.json();
+                alert('找到 ' + alerts.length + ' 条关联告警，请查看控制台详情');
+                console.log('关联告警:', alerts);
+            } catch (error) {
+                alert('加载失败: ' + error.message);
+            }
+        }
+
+        async function loadPredictions() {
+            try {
+                const response = await fetch(`${API_BASE}/predictions`);
+                const predictions = await response.json();
+                renderPredictions(predictions);
+            } catch (error) {
+                console.error('加载预测失败:', error);
+            }
+        }
+
+        function renderPredictions(predictions) {
+            const container = document.getElementById('predictionList');
+            
+            if (predictions.length === 0) {
+                container.innerHTML = '<div class="empty-state">暂无告警预测，点击"生成预测"基于历史数据开始分析</div>';
+                return;
+            }
+
+            container.innerHTML = predictions.map(p => `
+                <div class="prediction-item">
+                    <div class="prediction-title">${escapeHtml(p.title)}</div>
+                    <div class="prediction-desc">${escapeHtml(p.description)}</div>
+                    <div class="prediction-meta">
+                        <span class="severity-badge ${p.predictedSeverity}">${p.predictedSeverity}</span>
+                        <span>⏰ 预测时间: ${formatTime(p.predictedTime)}</span>
+                        <span>📊 置信度: ${(p.probability * 100).toFixed(0)}%</span>
+                    </div>
+                    <div class="probability-bar">
+                        <div class="probability-fill" style="width: ${p.probability * 100}%"></div>
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 15px;">
+                        <button class="btn btn-success btn-sm" onclick="confirmPrediction('${p.predictionId}')">确认发生</button>
+                        <button class="btn btn-danger btn-sm" onclick="dismissPrediction('${p.predictionId}')">消除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function generatePredictions() {
+            try {
+                await fetch(`${API_BASE}/predictions/generate`, { method: 'POST' });
+                alert('预测生成已触发，请稍后刷新查看结果');
+                setTimeout(loadPredictions, 1000);
+            } catch (error) {
+                alert('生成失败: ' + error.message);
+            }
+        }
+
+        async function confirmPrediction(predictionId) {
+            try {
+                await fetch(`${API_BASE}/predictions/${predictionId}/confirm`, { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                loadPredictions();
+            } catch (error) {
+                alert('操作失败: ' + error.message);
+            }
+        }
+
+        async function dismissPrediction(predictionId) {
+            try {
+                await fetch(`${API_BASE}/predictions/${predictionId}/dismiss`, { method: 'POST' });
+                loadPredictions();
+            } catch (error) {
+                alert('操作失败: ' + error.message);
+            }
+        }
+
+        function formatTime(timeStr) {
+            if (!timeStr) return '-';
+            const date = new Date(timeStr);
+            return date.toLocaleString('zh-CN');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

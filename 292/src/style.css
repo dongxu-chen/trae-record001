@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* 拖拽样式 */
+.sortable-ghost {
+  opacity: 0.5;
+  background: #eef2ff !important;
+  border: 2px dashed #6366f1 !important;
+}
+
+.sortable-drag {
+  opacity: 0.9;
+}
+
+/* FormKit 自定义样式 */
+.formkit-outer {
+  margin-bottom: 1rem;
+}
+
+.formkit-label {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #334155;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.formkit-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.formkit-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.formkit-messages {
+  margin-top: 0.25rem;
+}
+
+.formkit-message {
+  font-size: 0.75rem;
+  color: #ef4444;
+}
