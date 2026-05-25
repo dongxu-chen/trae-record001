@@ -1,0 +1,71 @@
+{
+  "entities": [
+    {"id": "brand_1", "name": "苹果", "type": "品牌", "alias": ["Apple"]},
+    {"id": "brand_2", "name": "华为", "type": "品牌", "alias": ["HUAWEI"]},
+    {"id": "brand_3", "name": "小米", "type": "品牌", "alias": ["Xiaomi", "MI"]},
+    {"id": "brand_4", "name": "三星", "type": "品牌", "alias": ["Samsung"]},
+    {"id": "brand_5", "name": "索尼", "type": "品牌", "alias": ["Sony"]},
+    {"id": "brand_6", "name": "戴尔", "type": "品牌", "alias": ["Dell"]},
+    {"id": "brand_7", "name": "联想", "type": "品牌", "alias": ["Lenovo"]},
+    {"id": "brand_8", "name": "惠普", "type": "品牌", "alias": ["HP"]},
+    {"id": "brand_9", "name": "华硕", "type": "品牌", "alias": ["ASUS"]},
+    {"id": "brand_10", "name": "罗技", "type": "品牌", "alias": ["Logitech"]},
+    
+    {"id": "category_1", "name": "手机", "type": "品类", "alias": ["移动电话", "智能手机"]},
+    {"id": "category_2", "name": "笔记本电脑", "type": "品类", "alias": ["笔记本", "手提电脑"]},
+    {"id": "category_3", "name": "耳机", "type": "品类", "alias": ["耳麦", "耳塞"]},
+    {"id": "category_4", "name": "显示器", "type": "品类", "alias": ["显示屏", "屏幕"]},
+    {"id": "category_5", "name": "电视", "type": "品类", "alias": ["电视机", "彩电"]},
+    {"id": "category_6", "name": "鼠标", "type": "品类", "alias": ["滑鼠"]},
+    {"id": "category_7", "name": "键盘", "type": "品类", "alias": ["键盤"]},
+    {"id": "category_8", "name": "平板电脑", "type": "品类", "alias": ["平板", "Pad"]},
+    {"id": "category_9", "name": "智能手表", "type": "品类", "alias": ["手表", "腕表"]},
+    {"id": "category_10", "name": "相机", "type": "品类", "alias": ["照相机", "摄影机"]},
+    
+    {"id": "spec_1", "name": "256G", "type": "规格", "alias": ["256GB"]},
+    {"id": "spec_2", "name": "512G", "type": "规格", "alias": ["512GB"]},
+    {"id": "spec_3", "name": "128G", "type": "规格", "alias": ["128GB"]},
+    {"id": "spec_4", "name": "4K", "type": "规格", "alias": ["4K分辨率"]},
+    {"id": "spec_5", "name": "27寸", "type": "规格", "alias": ["27英寸"]},
+    {"id": "spec_6", "name": "65寸", "type": "规格", "alias": ["65英寸"]},
+    {"id": "spec_7", "name": "50ml", "type": "规格", "alias": ["50毫升"]},
+    {"id": "spec_8", "name": "42码", "type": "规格", "alias": ["42"]}
+  ],
+  "relations": [
+    {"source": "brand_1", "target": "category_1", "type": "生产"},
+    {"source": "brand_1", "target": "category_2", "type": "生产"},
+    {"source": "brand_1", "target": "category_3", "type": "生产"},
+    {"source": "brand_1", "target": "category_8", "type": "生产"},
+    {"source": "brand_1", "target": "category_9", "type": "生产"},
+    
+    {"source": "brand_2", "target": "category_1", "type": "生产"},
+    {"source": "brand_2", "target": "category_3", "type": "生产"},
+    {"source": "brand_2", "target": "category_5", "type": "生产"},
+    {"source": "brand_2", "target": "category_8", "type": "生产"},
+    {"source": "brand_2", "target": "category_9", "type": "生产"},
+    
+    {"source": "brand_3", "target": "category_1", "type": "生产"},
+    {"source": "brand_3", "target": "category_5", "type": "生产"},
+    {"source": "brand_3", "target": "category_4", "type": "生产"},
+    {"source": "brand_3", "target": "category_8", "type": "生产"},
+    {"source": "brand_3", "target": "category_7", "type": "生产"},
+    
+    {"source": "brand_4", "target": "category_1", "type": "生产"},
+    {"source": "brand_4", "target": "category_4", "type": "生产"},
+    {"source": "brand_4", "target": "category_5", "type": "生产"},
+    {"source": "brand_4", "target": "category_10", "type": "生产"},
+    
+    {"source": "brand_5", "target": "category_3", "type": "生产"},
+    {"source": "brand_5", "target": "category_4", "type": "生产"},
+    {"source": "brand_5", "target": "category_10", "type": "生产"},
+    
+    {"source": "brand_6", "target": "category_2", "type": "生产"},
+    {"source": "brand_6", "target": "category_4", "type": "生产"},
+    
+    {"source": "brand_7", "target": "category_2", "type": "生产"},
+    {"source": "brand_7", "target": "category_4", "type": "生产"},
+    
+    {"source": "brand_10", "target": "category_6", "type": "生产"},
+    {"source": "brand_10", "target": "category_7", "type": "生产"}
+  ]
+}

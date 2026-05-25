@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  passwordHash  String
+  role          String    @default("viewer")
+  avatar        String?
+  createdAt     DateTime  @default(now())
+  icons         Icon[]
+  teamMembers   TeamMember[] @relation("InvitedBy")
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  parentId  String?
+  parent    Category? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Category[] @relation("CategoryHierarchy")
+  order     Int       @default(0)
+  icons     Icon[]
+  createdAt DateTime  @default(now())
+}
+
+model Icon {
+  id            String    @id @default(cuid())
+  name          String
+  svgContent    String
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags          String[]
+  originalColor String
+  filePath      String
+  createdBy     User     @relation(fields: [createdById], references: [id])
+  createdById   String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+}
+
+model TeamMember {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       String   @default("viewer")
+  invitedBy  String
+  invitedByUser User @relation("InvitedBy", fields: [invitedBy], references: [id])
+  invitedAt  DateTime @default(now())
+  acceptedAt DateTime?
+}

@@ -1,0 +1,38 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  node_id: "node-1"
+
+etcd:
+  endpoints:
+    - "localhost:2379"
+  dial_timeout: 5000
+  lease_ttl: 30
+  root_prefix: "/scheduler"
+
+redis:
+  addr: "localhost:6379"
+  password: ""
+  db: 0
+  pool_size: 100
+  task_queue_prefix: "scheduler:task:"
+  node_tasks_prefix: "scheduler:node:tasks:"
+
+postgres:
+  host: "localhost"
+  port: 5432
+  user: "scheduler"
+  password: "scheduler123"
+  dbname: "scheduler"
+  max_connections: 100
+
+scheduler:
+  scan_interval: 1000
+  balance_interval: 30000
+  retry_interval: 5000
+  max_retries: 3
+  shard_size: 1000
+  miss_compensation_threshold: 300
+  hash_slot_count: 16384
+  heartbeat_check_interval: 3000
+  heartbeat_timeout: 10000

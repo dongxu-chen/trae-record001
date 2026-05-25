@@ -1,0 +1,42 @@
+[
+    {
+        "text": "我想买一部苹果iPhone 15 256G",
+        "labels": ["O", "O", "O", "O", "B-BRAND", "B-BRAND", "I-BRAND", "I-BRAND", "B-SPEC", "I-SPEC", "O"]
+    },
+    {
+        "text": "华为Mate 60 Pro 12+512G",
+        "labels": ["B-BRAND", "B-BRAND", "I-BRAND", "I-BRAND", "I-BRAND", "B-SPEC", "I-SPEC", "I-SPEC", "I-SPEC"]
+    },
+    {
+        "text": "小米14 Ultra黑色手机",
+        "labels": ["B-BRAND", "B-BRAND", "I-BRAND", "I-BRAND", "O", "B-CATEGORY", "O"]
+    },
+    {
+        "text": "索尼WH-1000XM5降噪耳机",
+        "labels": ["B-BRAND", "B-BRAND", "I-BRAND", "I-BRAND", "O", "B-CATEGORY", "O"]
+    },
+    {
+        "text": "联想ThinkPad X1 Carbon笔记本电脑",
+        "labels": ["B-BRAND", "B-BRAND", "I-BRAND", "I-BRAND", "I-BRAND", "I-BRAND", "B-CATEGORY", "I-CATEGORY", "O"]
+    },
+    {
+        "text": "三星65英寸4K智能电视",
+        "labels": ["B-BRAND", "B-SPEC", "I-SPEC", "I-SPEC", "B-SPEC", "I-SPEC", "B-CATEGORY", "O"]
+    },
+    {
+        "text": "戴尔U2723QE 27寸4K显示器",
+        "labels": ["B-BRAND", "B-BRAND", "I-BRAND", "I-BRAND", "B-SPEC", "I-SPEC", "B-SPEC", "I-SPEC", "B-CATEGORY", "O"]
+    },
+    {
+        "text": "罗技MX Master 3S无线鼠标",
+        "labels": ["B-BRAND", "B-BRAND", "I-BRAND", "I-BRAND", "I-BRAND", "O", "B-CATEGORY", "O"]
+    },
+    {
+        "text": "耐克Air Max 270运动鞋42码",
+        "labels": ["B-BRAND", "B-BRAND", "I-BRAND", "I-BRAND", "B-CATEGORY", "I-CATEGORY", "B-SPEC", "I-SPEC", "O"]
+    },
+    {
+        "text": "雅诗兰黛小棕瓶精华50ml",
+        "labels": ["B-BRAND", "I-BRAND", "I-BRAND", "O", "O", "B-CATEGORY", "B-SPEC", "I-SPEC", "O"]
+    }
+]

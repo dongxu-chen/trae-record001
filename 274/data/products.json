@@ -1,0 +1,92 @@
+[
+    {
+        "id": "1",
+        "name": "苹果 iPhone 15 Pro Max 256GB 原色钛金属",
+        "brand": "苹果",
+        "category": "手机",
+        "spec": "256GB, 原色钛金属",
+        "price": 9999,
+        "description": "A17 Pro芯片, 钛金属设计, 专业级摄像系统"
+    },
+    {
+        "id": "2",
+        "name": "华为 Mate 60 Pro 12GB+512GB 雅川青",
+        "brand": "华为",
+        "category": "手机",
+        "spec": "12GB+512GB, 雅川青",
+        "price": 6999,
+        "description": "麒麟9000S芯片, 卫星通话, 超可靠玄武架构"
+    },
+    {
+        "id": "3",
+        "name": "小米14 Ultra 16GB+512GB 黑色",
+        "brand": "小米",
+        "category": "手机",
+        "spec": "16GB+512GB, 黑色",
+        "price": 6499,
+        "description": "徕卡Summilux镜头, 骁龙8 Gen3, 专业影像"
+    },
+    {
+        "id": "4",
+        "name": "索尼 WH-1000XM5 无线降噪耳机 黑色",
+        "brand": "索尼",
+        "category": "耳机",
+        "spec": "黑色, 无线降噪",
+        "price": 2699,
+        "description": "业界领先降噪, 30小时续航, 舒适佩戴"
+    },
+    {
+        "id": "5",
+        "name": "联想 ThinkPad X1 Carbon Gen 11",
+        "brand": "联想",
+        "category": "笔记本电脑",
+        "spec": "i7-1365U, 16GB, 512GB",
+        "price": 12999,
+        "description": "超轻薄商务本, 碳纤维外壳, 军规品质"
+    },
+    {
+        "id": "6",
+        "name": "戴尔 U2723QE 27英寸 4K显示器",
+        "brand": "戴尔",
+        "category": "显示器",
+        "spec": "27英寸, 4K, IPS Black",
+        "price": 4999,
+        "description": "IPS Black面板, 硬件级校色, USB-C供电"
+    },
+    {
+        "id": "7",
+        "name": "三星 65英寸 Neo QLED 4K智能电视",
+        "brand": "三星",
+        "category": "电视",
+        "spec": "65英寸, Neo QLED, 4K",
+        "price": 12999,
+        "description": "量子点矩阵技术, 杜比全景声, 智能语音"
+    },
+    {
+        "id": "8",
+        "name": "罗技 MX Master 3S 无线蓝牙鼠标 石墨灰",
+        "brand": "罗技",
+        "category": "鼠标",
+        "spec": "石墨灰, 无线蓝牙",
+        "price": 899,
+        "description": "8000DPI传感器, 电磁滚轮, 70天续航"
+    },
+    {
+        "id": "9",
+        "name": "苹果 MacBook Pro 14英寸 M3 Pro",
+        "brand": "苹果",
+        "category": "笔记本电脑",
+        "spec": "M3 Pro, 18GB, 512GB",
+        "price": 16999,
+        "description": "M3 Pro芯片, Liquid Retina XDR显示屏, 18小时续航"
+    },
+    {
+        "id": "10",
+        "name": "苹果 AirPods Pro (第二代) USB-C",
+        "brand": "苹果",
+        "category": "耳机",
+        "spec": "第二代, USB-C, 主动降噪",
+        "price": 1899,
+        "description": "主动降噪, 自适应通透模式, 个性化空间音频"
+    }
+]

@@ -1,0 +1,54 @@
+custom_rules:
+  python:
+    max_function_args:
+      enabled: true
+      max_args: 5
+      severity: medium
+      message: "函数参数过多"
+    
+    max_nesting_depth:
+      enabled: true
+      max_depth: 4
+      severity: high
+      message: "嵌套层级过深"
+    
+    max_line_length:
+      enabled: true
+      max_length: 120
+      severity: low
+      message: "行长度超过限制"
+
+  javascript:
+    max_function_length:
+      enabled: true
+      max_lines: 100
+      severity: medium
+      message: "函数体过长"
+    
+    no_console_log:
+      enabled: true
+      severity: low
+      message: "避免使用 console.log"
+
+  security:
+    hardcoded_secrets:
+      enabled: true
+      patterns:
+        - "password\\s*=\\s*['\"][^'\"]+['\"]"
+        - "api_key\\s*=\\s*['\"][^'\"]+['\"]"
+        - "secret\\s*=\\s*['\"][^'\"]+['\"]"
+      severity: critical
+      message: "检测到硬编码的敏感信息"
+
+  naming:
+    class_name_pattern:
+      enabled: true
+      pattern: "^[A-Z][a-zA-Z0-9]*$"
+      severity: medium
+      message: "类名应使用大驼峰命名法"
+    
+    function_name_pattern:
+      enabled: true
+      pattern: "^[a-z_][a-zA-Z0-9_]*$"
+      severity: low
+      message: "函数名应使用蛇形命名法"

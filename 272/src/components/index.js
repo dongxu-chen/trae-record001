@@ -1,0 +1,6 @@
+export { default as HeatmapLayer } from './HeatmapLayer.vue'
+export { default as HeatmapLegend } from './HeatmapLegend.vue'
+export { default as HeatmapControlPanel } from './HeatmapControlPanel.vue'
+export { default as HeatmapInfoPopup } from './HeatmapInfoPopup.vue'
+export { default as AnimationControlPanel } from './AnimationControlPanel.vue'
+export { default as RegionSelector } from './RegionSelector.vue'

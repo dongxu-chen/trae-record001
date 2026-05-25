@@ -1,0 +1,121 @@
+version: "2.0"
+rules:
+  resources:
+    cpu_limit_required:
+      enabled: true
+      severity: "warning"
+      message: "CPU限制未配置"
+      suggestion: "添加 resources.limits.cpu，建议值: 500m"
+      condition: "is_regular_container"
+
+    cpu_request_required:
+      enabled: true
+      severity: "warning"
+      message: "CPU请求未配置"
+      suggestion: "添加 resources.requests.cpu，建议值: 250m"
+
+    memory_limit_required:
+      enabled: true
+      severity: "warning"
+      message: "内存限制未配置"
+      suggestion: "添加 resources.limits.memory，建议值: 512Mi"
+      condition: "is_regular_container or (is_init_container and container_name == 'init-data')"
+
+    memory_request_required:
+      enabled: true
+      severity: "warning"
+      message: "内存请求未配置"
+      suggestion: "添加 resources.requests.memory，建议值: 256Mi"
+
+  security:
+    pod_run_as_non_root:
+      enabled: true
+      severity: "error"
+      message: "Pod级未配置以非root用户运行"
+      suggestion: "设置 spec.securityContext.runAsNonRoot: true"
+
+    pod_run_as_user:
+      enabled: true
+      severity: "warning"
+      message: "Pod级未指定非root用户ID"
+      suggestion: "设置 spec.securityContext.runAsUser 为非0值（如 1000）"
+      condition: "kind == 'Deployment' or kind == 'StatefulSet'"
+
+    pod_fs_group:
+      enabled: true
+      severity: "info"
+      message: "Pod级未配置文件系统组"
+      suggestion: "设置 spec.securityContext.fsGroup（如 1000）"
+
+    pod_seccomp_profile:
+      enabled: true
+      severity: "warning"
+      message: "Pod级未配置seccomp安全配置"
+      suggestion: "设置 spec.securityContext.seccompProfile.type: RuntimeDefault"
+
+    pod_supplemental_groups:
+      enabled: false
+      severity: "info"
+      message: "Pod级未配置补充组"
+      suggestion: "设置 spec.securityContext.supplementalGroups"
+
+    privileged_container:
+      enabled: true
+      severity: "critical"
+      message: "容器配置为特权模式"
+      suggestion: "设置 securityContext.privileged: false"
+
+    read_only_root_filesystem:
+      enabled: true
+      severity: "error"
+      message: "根文件系统未设置为只读"
+      suggestion: "设置 securityContext.readOnlyRootFilesystem: true"
+      condition: "is_regular_container"
+
+    run_as_non_root:
+      enabled: true
+      severity: "error"
+      message: "容器级未配置以非root用户运行"
+      suggestion: "设置 securityContext.runAsNonRoot: true"
+
+    allow_privilege_escalation:
+      enabled: true
+      severity: "warning"
+      message: "允许权限提升"
+      suggestion: "设置 securityContext.allowPrivilegeEscalation: false"
+      condition: "not is_init_container"
+
+    capabilities_drop_all:
+      enabled: true
+      severity: "warning"
+      message: "未丢弃所有Linux capabilities"
+      suggestion: "设置 securityContext.capabilities.drop: [\"ALL\"]"
+      condition: "is_regular_container"
+
+  image:
+    latest_tag:
+      enabled: true
+      severity: "warning"
+      message: "镜像使用latest标签"
+      suggestion: "使用具体的镜像版本标签，如: v1.0.0"
+
+    no_tag:
+      enabled: true
+      severity: "error"
+      message: "镜像未指定标签"
+      suggestion: "为镜像指定明确的版本标签"
+
+  best_practices:
+    liveness_probe_missing:
+      enabled: true
+      severity: "info"
+      message: "未配置存活探针"
+      suggestion: "添加 livenessProbe 配置"
+      condition: "is_regular_container and container_count > 0"
+
+    readiness_probe_missing:
+      enabled: true
+      severity: "info"
+      message: "未配置就绪探针"
+      suggestion: "添加 readinessProbe 配置"
+      condition: "is_regular_container"

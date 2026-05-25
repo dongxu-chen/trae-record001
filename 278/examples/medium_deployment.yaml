@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: medium-app
+  labels:
+    app: medium-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: medium-app
+  template:
+    metadata:
+      labels:
+        app: medium-app
+    spec:
+      containers:
+      - name: medium-container
+        image: myapp:v1.0.0
+        resources:
+          requests:
+            cpu: "100m"
+        securityContext:
+          runAsNonRoot: true
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080

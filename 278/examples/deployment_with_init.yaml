@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-with-init
+  labels:
+    app: myapp
+    env: production
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      initContainers:
+      - name: init-myservice
+        image: busybox:1.35
+        command: ['sh', '-c', 'echo init']
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "100m"
+            memory: "128Mi"
+        securityContext:
+          allowPrivilegeEscalation: true
+      - name: init-data
+        image: alpine:3.17
+        command: ['sh', '-c', 'cp -r /data /target']
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      containers:
+      - name: main-app
+        image: myapp:latest
+        ports:
+        - containerPort: 8080
+        securityContext:
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+      - name: sidecar
+        image: proxy:v2.0.0
+        securityContext:
+          readOnlyRootFilesystem: false
+        resources:
+          limits:
+            cpu: "100m"
+      volumes:
+      - name: data
+        emptyDir: {}

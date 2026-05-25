@@ -1,0 +1,125 @@
+code_review:
+  platform: github
+  repo_owner: "owner"
+  repo_name: "repo"
+  pr_number: 1
+
+linting:
+  eslint:
+    enabled: true
+    config_file: ".eslintrc.js"
+  pylint:
+    enabled: true
+    config_file: ".pylintrc"
+    rcfile: null
+
+complexity:
+  enabled: true
+  max_ccn: 10
+  max_function_length: 50
+  max_nesting_depth: 4
+  include_inner_functions: true
+  separate_entry_complexity: true
+
+duplication:
+  enabled: true
+  detection_levels:
+    - function
+    - statement
+  min_similarity: 85
+  
+  function_level:
+    min_lines: 5
+    min_tokens: 30
+  
+  statement_level:
+    min_lines: 3
+    min_tokens: 20
+  
+  ignore_comments: true
+  ignore_whitespace: true
+  ignore_string_values: true
+  ignore_numeric_values: true
+  ignore_variable_names: false
+  cross_file_detection: true
+
+sonarqube:
+  enabled: false
+  project_key: "project-key"
+  url: "http://localhost:9000"
+
+rules:
+  dsl_rules_file: "config/rules/code_rules.dsl"
+  
+  severity_weights:
+    critical: 10
+    high: 5
+    medium: 2
+    low: 1
+  
+  risk_thresholds:
+    critical: 80
+    high: 50
+    medium: 20
+    low: 0
+
+impact_analysis:
+  max_depth: 5
+  include_cross_file: true
+  track_dependencies: true
+
+ai_review:
+  enabled: true
+  confidence_threshold: 0.7
+  
+  severity_filters:
+    - critical
+    - high
+    - medium
+    - low
+    - info
+  
+  categories:
+    - best_practice
+    - code_quality
+    - security
+    - error_handling
+    - documentation
+    - performance
+    - resource_management
+    - concurrency
+    - task
+    - convention
+  
+  custom_patterns: []
+
+effort_estimation:
+  enabled: true
+  base_rate_per_line: 0.5
+  setup_time: 10
+  context_switch_penalty: 5
+  max_review_session: 120
+  
+  complexity_multipliers:
+    trivial: 0.5
+    simple: 1.0
+    moderate: 2.0
+    complex: 4.0
+    very_complex: 8.0
+  
+  language_factors:
+    .py: 1.2
+    .js: 1.0
+    .ts: 1.1
+    .tsx: 1.3
+    .jsx: 1.2
+    .java: 1.3
+    .go: 1.0
+    .rs: 1.4
+  
+  critical_paths: []
+  critical_path_multiplier: 2.0
+
+output:
+  format: json
+  report_dir: "reports"

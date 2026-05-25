@@ -1,0 +1,10 @@
+requests>=2.31.0
+PyGithub>=2.1.1
+python-gitlab>=4.4.0
+pylint>=3.0.0
+lizard>=1.17.10
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+junit-xml>=1.9
+chardet>=5.2.0
+bandit>=1.7.5
