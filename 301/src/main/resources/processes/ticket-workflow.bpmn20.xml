@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             targetNamespace="http://flowable.org/ticket">
+
+    <process id="ticketWorkflow" name="工单工作流" isExecutable="true">
+
+        <startEvent id="startEvent" name="创建工单">
+            <outgoing>flow1</outgoing>
+        </startEvent>
+
+        <sequenceFlow id="flow1" sourceRef="startEvent" targetRef="autoAssignTask"/>
+
+        <serviceTask id="autoAssignTask" name="自动分配" flowable:class="com.ticket.workflow.AutoAssignDelegate">
+            <incoming>flow1</incoming>
+            <outgoing>flow2</outgoing>
+        </serviceTask>
+
+        <sequenceFlow id="flow2" sourceRef="autoAssignTask" targetRef="assignGateway"/>
+
+        <exclusiveGateway id="assignGateway" name="是否已分配">
+            <incoming>flow2</incoming>
+            <outgoing>flow3</outgoing>
+            <outgoing>flow4</outgoing>
+        </exclusiveGateway>
+
+        <sequenceFlow id="flow3" name="已分配" sourceRef="assignGateway" targetRef="handleTask">
+            <conditionExpression xsi:type="tFormalExpression">${assigned == true}</conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow id="flow4" name="待分配" sourceRef="assignGateway" targetRef="manualAssignTask">
+            <conditionExpression xsi:type="tFormalExpression">${assigned == false}</conditionExpression>
+        </sequenceFlow>
+
+        <userTask id="manualAssignTask" name="手动分配" flowable:candidateGroups="admin">
+            <incoming>flow4</incoming>
+            <outgoing>flow5</outgoing>
+        </userTask>
+
+        <sequenceFlow id="flow5" sourceRef="manualAssignTask" targetRef="handleTask"/>
+
+        <userTask id="handleTask" name="处理工单" flowable:assignee="${assignee}">
+            <incoming>flow3</incoming>
+            <incoming>flow5</incoming>
+            <outgoing>flow6</outgoing>
+        </userTask>
+
+        <sequenceFlow id="flow6" sourceRef="handleTask" targetRef="resolveGateway"/>
+
+        <exclusiveGateway id="resolveGateway" name="是否解决">
+            <incoming>flow6</incoming>
+            <outgoing>flow7</outgoing>
+            <outgoing>flow8</outgoing>
+        </exclusiveGateway>
+
+        <sequenceFlow id="flow7" name="已解决" sourceRef="resolveGateway" targetRef="confirmTask">
+            <conditionExpression xsi:type="tFormalExpression">${resolved == true}</conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow id="flow8" name="待回复" sourceRef="resolveGateway" targetRef="pendingReplyTask">
+            <conditionExpression xsi:type="tFormalExpression">${resolved == false}</conditionExpression>
+        </sequenceFlow>
+
+        <userTask id="pendingReplyTask" name="等待用户回复" flowable:assignee="${creator}">
+            <incoming>flow8</incoming>
+            <outgoing>flow9</outgoing>
+        </userTask>
+
+        <sequenceFlow id="flow9" sourceRef="pendingReplyTask" targetRef="handleTask"/>
+
+        <userTask id="confirmTask" name="确认解决" flowable:assignee="${creator}">
+            <incoming>flow7</incoming>
+            <outgoing>flow10</outgoing>
+        </userTask>
+
+        <sequenceFlow id="flow10" sourceRef="confirmTask" targetRef="confirmGateway"/>
+
+        <exclusiveGateway id="confirmGateway" name="是否确认">
+            <incoming>flow10</incoming>
+            <outgoing>flow11</outgoing>
+            <outgoing>flow12</outgoing>
+        </exclusiveGateway>
+
+        <sequenceFlow id="flow11" name="已确认" sourceRef="confirmGateway" targetRef="endEvent">
+            <conditionExpression xsi:type="tFormalExpression">${confirmed == true}</conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow id="flow12" name="未确认" sourceRef="confirmGateway" targetRef="handleTask">
+            <conditionExpression xsi:type="tFormalExpression">${confirmed == false}</conditionExpression>
+        </sequenceFlow>
+
+        <endEvent id="endEvent" name="工单完成">
+            <incoming>flow11</incoming>
+        </endEvent>
+
+    </process>
+
+</definitions>

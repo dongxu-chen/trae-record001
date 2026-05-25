@@ -1,0 +1,62 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ticket-management-system
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/ticket_system?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+
+flowable:
+  async-executor-activate: true
+  database-schema-update: true
+  history-level: audit
+  idm-engine-enabled: false
+  form-enabled: false
+  content-enabled: false
+  dmn-enabled: false
+
+ticket:
+  sla:
+    check-interval: 60000
+    use-work-calendar: true
+  auto-assign:
+    enabled: true
+    round-robin: true
+  calendar:
+    enabled: true
+    work-start-time: 09:00:00
+    work-end-time: 18:00:00
+    noon-start-time: 12:00:00
+    noon-end-time: 13:30:00
+
+logging:
+  level:
+    com.ticket: DEBUG
+    org.flowable: INFO

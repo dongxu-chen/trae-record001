@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线考试防作弊系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>在线考试防作弊系统</h1>
+            <p class="subtitle">基于人脸识别、屏幕录制、切屏检测的智能监考系统</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="role-selection">
+                <h2>请选择您的身份</h2>
+                <div class="role-cards">
+                    <a href="/student" class="role-card student">
+                        <div class="role-icon">🎓</div>
+                        <h3>考生</h3>
+                        <p>进入考试页面</p>
+                        <ul>
+                            <li>✓ 人脸识别身份验证</li>
+                            <li>✓ 智能题目抽取</li>
+                            <li>✓ 实时监控</li>
+                        </ul>
+                    </a>
+                    <a href="/teacher" class="role-card teacher">
+                        <div class="role-icon">👨‍🏫</div>
+                        <h3>监考老师</h3>
+                        <p>进入监控中心</p>
+                        <ul>
+                            <li>✓ 实时监控所有考生</li>
+                            <li>✓ 异常行为预警</li>
+                            <li>✓ 答案相似度分析</li>
+                        </ul>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="features">
+                <h2>系统功能</h2>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">👤</div>
+                        <h3>人脸识别</h3>
+                        <p>考前身份比对，考试中实时验证</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📹</div>
+                        <h3>屏幕录制</h3>
+                        <p>全程录屏，操作可追溯</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🖥️</div>
+                        <h3>切屏检测</h3>
+                        <p>检测切换应用或标签页行为</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">⚠️</div>
+                        <h3>异常预警</h3>
+                        <p>实时检测可疑行为并告警</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🎲</div>
+                        <h3>随机抽题</h3>
+                        <p>防止题目泄露，保证公平</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <h3>相似度分析</h3>
+                        <p>检测答案雷同，防止抄袭</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="footer">
+            <p>&copy; 2024 在线考试防作弊系统 | 技术栈: Python + OpenCV + WebRTC + PyTorch + WebSocket</p>
+        </footer>
+    </div>
+</body>
+</html>

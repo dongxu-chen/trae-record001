@@ -1,0 +1,10 @@
+name: forbid-credentials
+weight: 20
+type: file_pattern
+conditions:
+  forbidden_patterns:
+    - "\.env$"
+    - "credentials"
+    - "secret"
+    - "id_rsa"
+error_message: "Commit contains potentially sensitive files"

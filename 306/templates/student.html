@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考生考试页面 - 在线考试防作弊系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="exam-container">
+        <header class="exam-header">
+            <h1>在线考试</h1>
+            <div class="exam-info">
+                <span id="examTimer">剩余时间: --:--:--</span>
+                <span id="faceStatus" class="status-badge status-warning">人脸识别: 未验证</span>
+                <span id="recStatus" class="status-badge status-info">录屏: 未启动</span>
+            </div>
+        </header>
+        
+        <div class="exam-main">
+            <aside class="exam-sidebar">
+                <div class="video-container">
+                    <video id="localVideo" autoplay muted playsinline></video>
+                    <div id="faceOverlay" class="face-overlay"></div>
+                </div>
+                <div class="monitor-stats">
+                    <h4>监控状态</h4>
+                    <div class="stat-item">
+                        <span>人脸检测:</span>
+                        <span id="statFace" class="stat-value">未检测</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>相似度:</span>
+                        <span id="statSimilarity" class="stat-value">0%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>切屏次数:</span>
+                        <span id="statTabSwitch" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>告警次数:</span>
+                        <span id="statAlerts" class="stat-value">0</span>
+                    </div>
+                </div>
+            </aside>
+            
+            <main class="exam-content">
+                <div id="loginSection" class="section">
+                    <h2>考生登录</h2>
+                    <div class="form-group">
+                        <label for="studentId">学号:</label>
+                        <input type="text" id="studentId" placeholder="请输入学号">
+                    </div>
+                    <div class="form-group">
+                        <label for="studentName">姓名:</label>
+                        <input type="text" id="studentName" placeholder="请输入姓名">
+                    </div>
+                    <button id="btnLogin" class="btn btn-primary">进入考试</button>
+                </div>
+                
+                <div id="faceRegisterSection" class="section hidden">
+                    <h2>人脸注册</h2>
+                    <p class="info-text">请将面部正对摄像头，点击下方按钮进行人脸注册</p>
+                    <button id="btnRegisterFace" class="btn btn-primary">注册人脸</button>
+                    <div id="registerResult" class="result-message"></div>
+                    <button id="btnStartExam" class="btn btn-success hidden">开始考试</button>
+                </div>
+                
+                <div id="examSection" class="section hidden">
+                    <div id="questionArea">
+                        <div class="question-header">
+                            <span id="questionNumber">第 1 题</span>
+                            <span id="questionType" class="question-type">单选题</span>
+                        </div>
+                        <div id="questionContent" class="question-content"></div>
+                        <div id="questionOptions" class="question-options"></div>
+                    </div>
+                    
+                    <div class="exam-controls">
+                        <button id="btnPrev" class="btn btn-secondary">上一题</button>
+                        <button id="btnNext" class="btn btn-secondary">下一题</button>
+                        <button id="btnSubmit" class="btn btn-danger hidden">提交试卷</button>
+                    </div>
+                    
+                    <div class="question-nav">
+                        <h4>答题卡</h4>
+                        <div id="questionNav" class="question-nav-grid"></div>
+                    </div>
+                </div>
+                
+                <div id="resultSection" class="section hidden">
+                    <h2>考试完成</h2>
+                    <div class="result-info">
+                        <p>您的考试已提交，感谢您的参与！</p>
+                        <div id="examResult" class="result-details"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <div id="alertContainer" class="alert-container"></div>
+    </div>
+    
+    <script src="/static/js/webrtc.js"></script>
+    <script src="/static/js/student.js"></script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+name: Commit Quality Check
+
+on:
+  pull_request:
+    branches: [main, master, develop]
+  push:
+    branches: [main, master, develop]
+
+jobs:
+  commit-quality-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install git-commit-quality-checker
+
+      - name: Run commit quality check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            echo "Checking PR commits: $BASE_REF..$HEAD_REF"
+            git-commit-check check --range "$BASE_REF..$HEAD_REF" --strict
+          else
+            echo "Checking latest commit"
+            git-commit-check check -n 1 --strict
+          fi

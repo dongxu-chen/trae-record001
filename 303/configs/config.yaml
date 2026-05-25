@@ -1,0 +1,123 @@
+autoscaler:
+  group_id: "mock-group-1"
+  scaling_type: "horizontal"
+  deployment_strategy: "bluegreen"
+  interval: "5m"
+  instance_ids: []
+  monitor_metrics:
+    - "cpu"
+    - "memory"
+    - "network"
+  enable_prediction: true
+  enable_error_correction: true
+  dry_run: false
+  dry_run_mode: "off"
+  service_name: "web-service"
+  service_level: "high"
+  bluegreen_timeout: "10m"
+  enable_cost_optimization: true
+  history_enabled: true
+  history_storage_path: "data/scaling_history.json"
+
+prometheus:
+  address: "http://localhost:9090"
+  timeout: "30s"
+  step: "15s"
+  lookback: "1h"
+
+prediction:
+  method: "exponential"
+  window_size: 10
+  horizon: 5
+  alpha: 0.3
+  differencing: 1
+  ar_order: 2
+  ma_order: 1
+  error_feedback:
+    enabled: true
+    window_size: 50
+    min_samples: 10
+    max_correction: 20.0
+    update_interval: "5m"
+    alpha: 0.3
+
+strategy:
+  use_prediction: true
+  use_error_correction: true
+  cooldown_key: ""
+  default_service_level: "medium"
+  service_cooldowns:
+    critical: "30m"
+    high: "20m"
+    medium: "10m"
+    low: "5m"
+  cost_optimization: true
+  cost_config:
+    enabled: true
+    reserved_instance_ratio: 0.7
+    max_ondemand_instances: 5
+    spot_instance_enabled: true
+    spot_max_price: 0.5
+    cost_threshold: 10.0
+    optimization_interval: "1h"
+  policies:
+    - metric_type: "cpu"
+      target_value: 70.0
+      tolerance: 10.0
+      step_size: 1
+      cooldown_period: "10m"
+      max_instances: 10
+      min_instances: 1
+      max_size: "ecs.2xlarge"
+      min_size: "ecs.small"
+      service_level: "high"
+    - metric_type: "memory"
+      target_value: 75.0
+      tolerance: 10.0
+      step_size: 1
+      cooldown_period: "10m"
+      max_instances: 10
+      min_instances: 1
+      max_size: "ecs.2xlarge"
+      min_size: "ecs.small"
+      service_level: "high"
+    - metric_type: "network"
+      target_value: 100000000.0
+      tolerance: 20000000.0
+      step_size: 1
+      cooldown_period: "10m"
+      max_instances: 10
+      min_instances: 1
+      max_size: "ecs.2xlarge"
+      min_size: "ecs.small"
+      service_level: "medium"
+
+cloud:
+  provider: "mock"
+  region: "cn-beijing"
+  access_key: ""
+  secret_key: ""
+  assume_role: ""
+  flavor_map:
+    aws:
+      - "t3.small"
+      - "t3.medium"
+      - "t3.large"
+      - "t3.xlarge"
+      - "t3.2xlarge"
+    aliyun:
+      - "ecs.small"
+      - "ecs.medium"
+      - "ecs.large"
+      - "ecs.xlarge"
+      - "ecs.2xlarge"
+    mock:
+      - "ecs.small"
+      - "ecs.medium"
+      - "ecs.large"
+      - "ecs.xlarge"
+      - "ecs.2xlarge"
+
+logging:
+  level: "info"
+  format: "console"

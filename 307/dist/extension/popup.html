@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>安全密码管理器</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        width: 360px;
+        min-height: 400px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #0f172a;
+        color: #f1f5f9;
+      }
+
+      .header {
+        padding: 16px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        font-size: 16px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .lock-btn {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      .lock-btn:hover {
+        background: rgba(255,255,255,0.3);
+      }
+
+      .content {
+        padding: 16px;
+      }
+
+      .input-group {
+        margin-bottom: 16px;
+      }
+
+      .input-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 12px;
+        color: #94a3b8;
+      }
+
+      .input-group input {
+        width: 100%;
+        padding: 10px 12px;
+        background: #1e293b;
+        border: 1px solid #475569;
+        border-radius: 6px;
+        color: #f1f5f9;
+        font-size: 14px;
+      }
+
+      .input-group input:focus {
+        outline: none;
+        border-color: #6366f1;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 12px;
+        background: #6366f1;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .btn:hover {
+        background: #4f46e5;
+      }
+
+      .btn-secondary {
+        background: #334155;
+        margin-top: 8px;
+      }
+
+      .btn-secondary:hover {
+        background: #475569;
+      }
+
+      .btn-small {
+        padding: 6px 12px;
+        font-size: 12px;
+        width: auto;
+      }
+
+      .tabs {
+        display: flex;
+        margin-bottom: 16px;
+        border-bottom: 1px solid #334155;
+      }
+
+      .tab {
+        flex: 1;
+        padding: 10px;
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        font-size: 13px;
+        border-bottom: 2px solid transparent;
+      }
+
+      .tab.active {
+        color: #6366f1;
+        border-bottom-color: #6366f1;
+      }
+
+      .search-input {
+        margin-bottom: 16px;
+      }
+
+      .password-list {
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      .password-item {
+        padding: 12px;
+        background: #1e293b;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .password-item:hover {
+        background: #334155;
+      }
+
+      .password-title {
+        font-weight: 500;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+
+      .password-username {
+        font-size: 12px;
+        color: #94a3b8;
+      }
+
+      .password-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .action-btn {
+        flex: 1;
+        padding: 6px;
+        background: #334155;
+        border: none;
+        border-radius: 4px;
+        color: #f1f5f9;
+        font-size: 11px;
+        cursor: pointer;
+      }
+
+      .action-btn:hover {
+        background: #475569;
+      }
+
+      .generate-options {
+        padding: 12px;
+        background: #1e293b;
+        border-radius: 6px;
+        margin-bottom: 16px;
+      }
+
+      .option-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .option-row label {
+        font-size: 13px;
+        color: #94a3b8;
+      }
+
+      .option-row input[type="number"] {
+        width: 60px;
+        padding: 4px 8px;
+        background: #334155;
+        border: 1px solid #475569;
+        border-radius: 4px;
+        color: #f1f5f9;
+      }
+
+      .checkbox-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+      }
+
+      .generated-password {
+        padding: 12px;
+        background: #0f172a;
+        border-radius: 6px;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        word-break: break-all;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .strength-bar {
+        height: 4px;
+        background: #334155;
+        border-radius: 2px;
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+
+      .strength-fill {
+        height: 100%;
+        transition: width 0.3s, background 0.3s;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #64748b;
+      }
+
+      .empty-state-icon {
+        font-size: 40px;
+        margin-bottom: 12px;
+      }
+
+      .alert {
+        padding: 10px 12px;
+        border-radius: 6px;
+        margin-bottom: 12px;
+        font-size: 12px;
+      }
+
+      .alert-error {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid #ef4444;
+        color: #ef4444;
+      }
+
+      .alert-success {
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid #22c55e;
+        color: #22c55e;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="logo">🔐 密码管理器</div>
+      <button class="lock-btn" id="lockBtn">锁定</button>
+    </div>
+
+    <div class="content">
+      <div id="unlockForm">
+        <div class="input-group">
+          <label>主密码</label>
+          <input type="password" id="masterPassword" placeholder="请输入主密码" />
+        </div>
+        <button class="btn" id="unlockBtn">解锁</button>
+        <div id="unlockError"></div>
+      </div>
+
+      <div id="appContent" class="hidden">
+        <div class="tabs">
+          <button class="tab active" data-tab="passwords">密码列表</button>
+          <button class="tab" data-tab="generator">生成器</button>
+        </div>
+
+        <div id="passwordsTab">
+          <div class="input-group search-input">
+            <input type="text" id="searchInput" placeholder="搜索密码..." />
+          </div>
+          <div class="password-list" id="passwordList"></div>
+        </div>
+
+        <div id="generatorTab" class="hidden">
+          <div class="generate-options">
+            <div class="option-row">
+              <label>密码长度</label>
+              <input type="number" id="passwordLength" value="16" min="8" max="128" />
+            </div>
+            <div class="checkbox-group">
+              <label class="checkbox-item">
+                <input type="checkbox" id="includeUppercase" checked />
+                大写字母
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox" id="includeLowercase" checked />
+                小写字母
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox" id="includeNumbers" checked />
+                数字
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox" id="includeSymbols" checked />
+                特殊符号
+              </label>
+            </div>
+          </div>
+
+          <div class="strength-bar">
+            <div class="strength-fill" id="strengthFill" style="width: 0%"></div>
+          </div>
+
+          <div class="generated-password" id="generatedPassword">
+            <span id="passwordText">点击生成按钮</span>
+            <button class="btn btn-small" id="copyGeneratedBtn">复制</button>
+          </div>
+
+          <button class="btn" id="generateBtn">生成密码</button>
+          <button class="btn btn-secondary" id="insertGeneratedBtn">插入到当前输入框</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

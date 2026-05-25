@@ -1,0 +1,195 @@
+conventional_commits:
+  enabled: true
+  weight: 35
+  types:
+    - feat
+    - fix
+    - docs
+    - style
+    - refactor
+    - perf
+    - test
+    - build
+    - ci
+    - chore
+    - revert
+  require_scope: false
+  allow_empty_scope: true
+  max_subject_length: 72
+  require_body: false
+  require_footer: false
+  allow_multiple_types: true
+  max_types: 3
+  allow_multiple_scopes: true
+  max_scopes: 3
+
+change_scope:
+  enabled: true
+  weight: 30
+  module_patterns:
+    - "^src/([^/]+)/"
+    - "^packages/([^/]+)/"
+    - "^([^/]+)/"
+  max_modules_per_commit: 2
+  cross_module_warning: true
+  use_dependency_graph: true
+
+change_size:
+  enabled: true
+  weight: 35
+  max_lines_changed: 400
+  max_files_changed: 20
+  warn_lines_changed: 200
+  warn_files_changed: 10
+  use_dynamic_thresholds: true
+  refactor_keywords:
+    - refactor
+    - 重构
+    - rename
+    - 重命名
+    - format
+    - 格式化
+    - reorganize
+    - 重组
+    - restructure
+    - 调整结构
+  type_thresholds:
+    feat:
+      max_lines: 500
+      max_files: 25
+      warn_lines: 250
+      warn_files: 12
+      description: "新功能开发，允许较大变更"
+    fix:
+      max_lines: 300
+      max_files: 15
+      warn_lines: 150
+      warn_files: 8
+      description: "Bug修复，变更应相对集中"
+    refactor:
+      max_lines: 1000
+      max_files: 50
+      warn_lines: 500
+      warn_files: 25
+      description: "重构操作，允许大幅变更"
+    style:
+      max_lines: 200
+      max_files: 30
+      warn_lines: 100
+      warn_files: 15
+      description: "代码风格调整，可能涉及多文件"
+    docs:
+      max_lines: 1000
+      max_files: 50
+      warn_lines: 500
+      warn_files: 25
+      description: "文档更新，允许大篇幅修改"
+    perf:
+      max_lines: 400
+      max_files: 20
+      warn_lines: 200
+      warn_files: 10
+      description: "性能优化，变更应适度"
+    test:
+      max_lines: 600
+      max_files: 30
+      warn_lines: 300
+      warn_files: 15
+      description: "测试代码，允许较多文件"
+    build:
+      max_lines: 300
+      max_files: 20
+      warn_lines: 150
+      warn_files: 10
+      description: "构建系统，变更应适度"
+    ci:
+      max_lines: 200
+      max_files: 15
+      warn_lines: 100
+      warn_files: 8
+      description: "CI配置，变更应集中"
+    chore:
+      max_lines: 200
+      max_files: 15
+      warn_lines: 100
+      warn_files: 8
+      description: "杂项，变更应小"
+    revert:
+      max_lines: 10000
+      max_files: 1000
+      warn_lines: 5000
+      warn_files: 500
+      description: "回滚操作，无限制"
+  exclude_patterns:
+    - "package-lock.json"
+    - "yarn.lock"
+    - "pnpm-lock.yaml"
+    - "*.min.js"
+    - "*.min.css"
+    - "dist/"
+    - "build/"
+    - "node_modules/"
+
+scoring:
+  pass_threshold: 70
+  warning_threshold: 50
+  perfect_score: 100
+
+output:
+  format: human
+  show_details: true
+  show_suggestions: true
+  color: true
+
+ci:
+  enabled: false
+  fail_on_error: true
+  check_last_n_commits: 1
+  branch_pattern: "^(main|master|develop|feature/.*|hotfix/.*)$"
+
+test_consistency:
+  enabled: true
+  weight: 20
+  require_test_for_types:
+    - feat
+    - fix
+    - perf
+  exclude_patterns:
+    - "^docs?/"
+    - "^LICENSE$"
+    - "^README\\."
+    - "\\.md$"
+  test_file_extensions:
+    - py
+    - js
+    - ts
+    - jsx
+    - tsx
+    - java
+    - go
+    - cpp
+    - c
+    - h
+    - hpp
+    - rb
+    - rs
+
+history_analysis:
+  enabled: true
+  weight: 15
+  lookback_days: 30
+  frequency_threshold: 10
+  hotspot_threshold: 5
+  conflict_file_threshold: 3
+  min_commits_for_analysis: 5
+
+template_recommendation:
+  enabled: true
+  weight: 10
+  analyze_content: true
+  max_recommendations: 3
+  custom_templates: {}
+
+custom_rules:
+  enabled: false
+  rules_dir: ".commit-rules"

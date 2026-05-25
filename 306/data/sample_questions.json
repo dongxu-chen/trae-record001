@@ -1,0 +1,218 @@
+[
+  {
+    "id": "q001",
+    "type": "single",
+    "subject": "计算机基础",
+    "difficulty": "easy",
+    "content": "Python中用于定义函数的关键字是？",
+    "options": ["func", "def", "function", "define"],
+    "correct_answer": "def",
+    "tags": ["Python", "基础语法"],
+    "explanation": "def是Python中定义函数的关键字，格式为：def 函数名(参数):"
+  },
+  {
+    "id": "q002",
+    "type": "single",
+    "subject": "计算机基础",
+    "difficulty": "easy",
+    "content": "以下哪个不是Python的数据类型？",
+    "options": ["int", "string", "float", "char"],
+    "correct_answer": "char",
+    "tags": ["Python", "数据类型"],
+    "explanation": "Python中没有char类型，单个字符也是字符串类型"
+  },
+  {
+    "id": "q003",
+    "type": "single",
+    "subject": "计算机基础",
+    "difficulty": "medium",
+    "content": "在Python中，列表使用以下哪种符号表示？",
+    "options": ["{}", "[]", "()", "<>"],
+    "correct_answer": "[]",
+    "tags": ["Python", "数据结构"],
+    "explanation": "列表使用[]，字典使用{}，元组使用()"
+  },
+  {
+    "id": "q004",
+    "type": "single",
+    "subject": "计算机基础",
+    "difficulty": "medium",
+    "content": "以下哪个方法可以向列表末尾添加元素？",
+    "options": ["add()", "append()", "insert()", "push()"],
+    "correct_answer": "append()",
+    "tags": ["Python", "列表"],
+    "explanation": "append()在末尾添加，insert()在指定位置插入"
+  },
+  {
+    "id": "q005",
+    "type": "single",
+    "subject": "计算机基础",
+    "difficulty": "hard",
+    "content": "Python中用于处理异常的语句是？",
+    "options": ["if-else", "try-except", "for-in", "while"],
+    "correct_answer": "try-except",
+    "tags": ["Python", "异常处理"],
+    "explanation": "try-except用于捕获和处理异常"
+  },
+  {
+    "id": "q006",
+    "type": "single",
+    "subject": "计算机网络",
+    "difficulty": "easy",
+    "content": "HTTP协议默认使用的端口号是？",
+    "options": ["21", "22", "80", "443"],
+    "correct_answer": "80",
+    "tags": ["网络", "HTTP"],
+    "explanation": "HTTP默认端口80，HTTPS默认端口443"
+  },
+  {
+    "id": "q007",
+    "type": "single",
+    "subject": "计算机网络",
+    "difficulty": "medium",
+    "content": "HTTPS协议使用的默认端口号是？",
+    "options": ["21", "22", "80", "443"],
+    "correct_answer": "443",
+    "tags": ["网络", "HTTPS"],
+    "explanation": "HTTPS是加密的HTTP，默认使用443端口"
+  },
+  {
+    "id": "q008",
+    "type": "single",
+    "subject": "计算机网络",
+    "difficulty": "medium",
+    "content": "DNS的主要作用是？",
+    "options": ["加密数据", "域名解析", "数据压缩", "负载均衡"],
+    "correct_answer": "域名解析",
+    "tags": ["网络", "DNS"],
+    "explanation": "DNS（域名系统）将域名转换为IP地址"
+  },
+  {
+    "id": "q009",
+    "type": "text",
+    "subject": "计算机基础",
+    "difficulty": "medium",
+    "content": "请简述Python中列表和元组的区别。",
+    "correct_answer": "列表是可变的，使用[]表示，可以添加、删除、修改元素；元组是不可变的，使用()表示，一旦创建就不能修改。列表适用于需要动态修改的数据，元组适用于固定不变的数据。",
+    "tags": ["Python", "数据结构"],
+    "explanation": "主要区别在于可变性，列表可变，元组不可变"
+  },
+  {
+    "id": "q010",
+    "type": "text",
+    "subject": "计算机网络",
+    "difficulty": "hard",
+    "content": "请简述TCP和UDP的区别。",
+    "correct_answer": "TCP是面向连接的可靠传输协议，提供确认、重传、流量控制等机制，保证数据可靠到达；UDP是无连接的不可靠传输协议，不保证数据可靠到达，但传输速度快，开销小。TCP适用于对可靠性要求高的场景，UDP适用于对实时性要求高的场景。",
+    "tags": ["网络", "传输协议"],
+    "explanation": "TCP可靠但速度慢，UDP速度快但不可靠"
+  },
+  {
+    "id": "q011",
+    "type": "multiple",
+    "subject": "计算机基础",
+    "difficulty": "medium",
+    "content": "以下哪些是Python的关键字？（多选）",
+    "options": ["if", "else", "then", "for", "loop"],
+    "correct_answer": ["if", "else", "for"],
+    "tags": ["Python", "基础语法"],
+    "explanation": "if、else、for都是Python的关键字，then和loop不是"
+  },
+  {
+    "id": "q012",
+    "type": "single",
+    "subject": "数据库",
+    "difficulty": "easy",
+    "content": "SQL中用于查询数据的关键字是？",
+    "options": ["INSERT", "UPDATE", "SELECT", "DELETE"],
+    "correct_answer": "SELECT",
+    "tags": ["数据库", "SQL"],
+    "explanation": "SELECT用于查询，INSERT用于插入，UPDATE用于更新，DELETE用于删除"
+  },
+  {
+    "id": "q013",
+    "type": "single",
+    "subject": "数据库",
+    "difficulty": "medium",
+    "content": "SQL中用于添加数据的关键字是？",
+    "options": ["INSERT", "UPDATE", "SELECT", "DELETE"],
+    "correct_answer": "INSERT",
+    "tags": ["数据库", "SQL"],
+    "explanation": "INSERT INTO语句用于向表中插入新数据"
+  },
+  {
+    "id": "q014",
+    "type": "text",
+    "subject": "操作系统",
+    "difficulty": "medium",
+    "content": "什么是进程和线程？它们有什么区别？",
+    "correct_answer": "进程是资源分配的最小单位，线程是CPU调度的最小单位。一个进程可以包含多个线程，线程共享进程的资源。进程间通信开销大，线程间通信开销小。进程有独立的地址空间，线程共享地址空间。",
+    "tags": ["操作系统", "进程线程"],
+    "explanation": "进程是资源分配单位，线程是执行单位"
+  },
+  {
+    "id": "q015",
+    "type": "single",
+    "subject": "数据结构",
+    "difficulty": "easy",
+    "content": "栈的特点是？",
+    "options": ["先进先出", "后进先出", "随机访问", "双端操作"],
+    "correct_answer": "后进先出",
+    "tags": ["数据结构", "栈"],
+    "explanation": "栈是后进先出（LIFO）的数据结构，队列是先进先出（FIFO）"
+  },
+  {
+    "id": "q016",
+    "type": "single",
+    "subject": "数据结构",
+    "difficulty": "easy",
+    "content": "队列的特点是？",
+    "options": ["先进先出", "后进先出", "随机访问", "双端操作"],
+    "correct_answer": "先进先出",
+    "tags": ["数据结构", "队列"],
+    "explanation": "队列是先进先出（FIFO）的数据结构"
+  },
+  {
+    "id": "q017",
+    "type": "single",
+    "subject": "计算机基础",
+    "difficulty": "easy",
+    "content": "Python中用于注释的符号是？",
+    "options": ["//", "/*", "#", "--"],
+    "correct_answer": "#",
+    "tags": ["Python", "基础语法"],
+    "explanation": "#用于单行注释，三引号用于多行注释"
+  },
+  {
+    "id": "q018",
+    "type": "single",
+    "subject": "计算机网络",
+    "difficulty": "hard",
+    "content": "TCP三次握手的目的是？",
+    "options": ["加密数据", "建立可靠连接", "压缩数据", "路由选择"],
+    "correct_answer": "建立可靠连接",
+    "tags": ["网络", "TCP"],
+    "explanation": "三次握手确保双方都有发送和接收能力，建立可靠连接"
+  },
+  {
+    "id": "q019",
+    "type": "text",
+    "subject": "计算机基础",
+    "difficulty": "hard",
+    "content": "什么是面向对象编程？它的三大特性是什么？",
+    "correct_answer": "面向对象编程（OOP）是一种编程范式，将抽象概念组织成对象，对象包含数据和方法。三大特性是：封装（将数据和方法包装在一起，隐藏内部实现）、继承（子类继承父类的属性和方法）、多态（同一接口不同实现）。",
+    "tags": ["编程思想", "OOP"],
+    "explanation": "封装、继承、多态是面向对象的三大特性"
+  },
+  {
+    "id": "q020",
+    "type": "multiple",
+    "subject": "数据库",
+    "difficulty": "medium",
+    "content": "以下哪些是SQL中的约束？（多选）",
+    "options": ["PRIMARY KEY", "FOREIGN KEY", "UNIQUE", "INDEX", "NOT NULL"],
+    "correct_answer": ["PRIMARY KEY", "FOREIGN KEY", "UNIQUE", "NOT NULL"],
+    "tags": ["数据库", "SQL"],
+    "explanation": "INDEX是索引不是约束，其他都是约束类型"
+  }
+]

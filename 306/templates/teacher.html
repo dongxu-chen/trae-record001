@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>监考中心 - 在线考试防作弊系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="monitor-container">
+        <header class="monitor-header">
+            <h1>监考中心</h1>
+            <div class="monitor-stats-bar">
+                <div class="stat-box">
+                    <span class="stat-number" id="statStudents">0</span>
+                    <span class="stat-label">在线考生</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number" id="statWarnings">0</span>
+                    <span class="stat-label">警告</span>
+                </div>
+                <div class="stat-box danger">
+                    <span class="stat-number" id="statDangers">0</span>
+                    <span class="stat-label">危险</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number" id="statAvgSimilarity">0%</span>
+                    <span class="stat-label">平均相似度</span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="monitor-main">
+            <nav class="monitor-nav">
+                <button class="nav-btn active" data-tab="overview">总览</button>
+                <button class="nav-btn" data-tab="students">考生监控</button>
+                <button class="nav-btn" data-tab="alerts">告警记录</button>
+                <button class="nav-btn" data-tab="analysis">相似度分析</button>
+                <button class="nav-btn" data-tab="questions">题库管理</button>
+            </nav>
+            
+            <div class="monitor-content">
+                <div id="overviewTab" class="tab-content active">
+                    <h2>考试总览</h2>
+                    <div class="overview-grid">
+                        <div class="overview-card">
+                            <h3>实时监控画面</h3>
+                            <div id="monitorGrid" class="monitor-grid"></div>
+                        </div>
+                        <div class="overview-card">
+                            <h3>最新告警</h3>
+                            <div id="recentAlerts" class="recent-alerts"></div>
+                        </div>
+                        <div class="overview-card">
+                            <h3>考生状态分布</h3>
+                            <div id="statusChart" class="status-chart"></div>
+                        </div>
+                        <div class="overview-card">
+                            <h3>操作记录</h3>
+                            <div id="activityLog" class="activity-log"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="studentsTab" class="tab-content">
+                    <h2>考生监控</h2>
+                    <div class="students-list" id="studentsList"></div>
+                </div>
+                
+                <div id="alertsTab" class="tab-content">
+                    <h2>告警记录</h2>
+                    <div class="alerts-filter">
+                        <select id="alertFilter">
+                            <option value="all">全部告警</option>
+                            <option value="danger">危险告警</option>
+                            <option value="warning">警告</option>
+                        </select>
+                        <button id="btnClearAlerts" class="btn btn-secondary">清空已确认</button>
+                    </div>
+                    <div id="alertsList" class="alerts-list"></div>
+                </div>
+                
+                <div id="analysisTab" class="tab-content">
+                    <h2>答案相似度分析</h2>
+                    <div class="analysis-controls">
+                        <select id="examSelect">
+                            <option value="">选择考试</option>
+                        </select>
+                        <button id="btnRunAnalysis" class="btn btn-primary">运行分析</button>
+                    </div>
+                    <div id="analysisResult" class="analysis-result"></div>
+                </div>
+                
+                <div id="questionsTab" class="tab-content">
+                    <h2>题库管理</h2>
+                    <div class="question-controls">
+                        <button id="btnAddQuestion" class="btn btn-primary">添加题目</button>
+                        <button id="btnImportQuestions" class="btn btn-secondary">导入题目</button>
+                        <button id="btnGenerateExam" class="btn btn-success">生成试卷</button>
+                    </div>
+                    <div id="questionsList" class="questions-list"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="alertModal" class="modal hidden">
+            <div class="modal-content alert-modal">
+                <h3 id="alertModalTitle">新告警</h3>
+                <p id="alertModalMessage"></p>
+                <div class="modal-actions">
+                    <button id="btnAcknowledge" class="btn btn-primary">确认</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="studentDetailModal" class="modal hidden">
+            <div class="modal-content detail-modal">
+                <h3 id="studentDetailTitle">考生详情</h3>
+                <div id="studentDetailContent"></div>
+                <div class="modal-actions">
+                    <button id="btnCloseDetail" class="btn btn-secondary">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/js/webrtc.js"></script>
+    <script src="/static/js/teacher.js"></script>
+</body>
+</html>

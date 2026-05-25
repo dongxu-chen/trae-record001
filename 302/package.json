@@ -1,0 +1,52 @@
+{
+  "name": "multilingual-translator",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "electron": "wait-on http://localhost:5173 && electron .",
+    "electron:dev": "concurrently \"npm run dev\" \"npm run electron\"",
+    "electron:build": "npm run build && electron-builder"
+  },
+  "main": "electron/main.js",
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
+    "idb": "^8.0.0",
+    "mammoth": "^1.8.0",
+    "pdfjs-dist": "^4.6.82",
+    "docx": "^8.5.0",
+    "file-saver": "^2.0.5"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@types/file-saver": "^2.0.7",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.1",
+    "tailwindcss": "^3.4.13",
+    "postcss": "^8.4.47",
+    "autoprefixer": "^10.4.20",
+    "electron": "^32.1.2",
+    "electron-builder": "^25.1.8",
+    "concurrently": "^9.0.1",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.translator.app",
+    "productName": "Multilingual Translator",
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    }
+  }
+}

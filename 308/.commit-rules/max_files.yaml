@@ -1,0 +1,6 @@
+name: max-files-per-commit
+weight: 10
+type: file_count
+conditions:
+  max: 15
+error_message: "Commit should not modify more than 15 files"
