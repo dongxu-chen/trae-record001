@@ -1,0 +1,104 @@
+cloud_providers:
+  aliyun:
+    enabled: true
+    access_key_id: ${ALIYUN_ACCESS_KEY_ID}
+    access_key_secret: ${ALIYUN_ACCESS_KEY_SECRET}
+    regions:
+      - cn-hangzhou
+      - cn-beijing
+      - cn-shanghai
+  aws:
+    enabled: false
+    access_key_id: ${AWS_ACCESS_KEY_ID}
+    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+    regions:
+      - us-east-1
+      - cn-north-1
+
+optimization_rules:
+  sampling:
+    interval_minutes: 1
+    retention_days: 30
+  
+  idle_resources:
+    cpu_threshold: 10.0
+    memory_threshold: 20.0
+    idle_days: 7
+    network_threshold: 102400
+  
+  eip:
+    unbound_days: 3
+    low_usage_threshold: 10240
+  
+  downsizing:
+    cpu_upper_threshold: 60.0
+    cpu_lower_threshold: 20.0
+    p99_safety_threshold: 70.0
+    min_instance_type: ecs.t5-lc1m2.small
+  
+  periodicity:
+    enabled: true
+    min_confidence: 0.3
+    detection_window_days: 7
+  
+  buffer:
+    enabled: true
+    safety_padding: 1.2
+    default_buffer_pct: 20
+    peak_hours_weight: 1.5
+
+cost:
+  currency: CNY
+  eip_daily_cost: 2.5
+  ecs_hourly_cost_multiplier: 1.0
+
+approval:
+  enabled: true
+  approvers:
+    - admin@example.com
+  auto_approve_below: 100.0
+  auto_execute_on_approve: true
+
+webhooks:
+  enabled: true
+  timeout: 10
+  max_retries: 3
+  auto_execute_on_approve: true
+  endpoints: []
+
+spot_instances:
+  enabled: true
+  min_savings_threshold: 0.25
+  max_interruption_risk: 0.4
+  discount_rates:
+    aliyun:
+      default: 0.3
+      burst: 0.5
+      stable: 0.2
+    aws:
+      default: 0.4
+      burst: 0.6
+      stable: 0.3
+
+resource_packing:
+  enabled: true
+  utilization_headroom: 0.3
+  min_savings_threshold: 0.1
+  min_instances_to_merge: 2
+  max_vcpu_per_bin: 64
+
+multi_cloud:
+  enabled: true
+  min_savings_threshold: 0.1
+  max_migration_risk: 0.5
+  include_hidden_costs: true
+  providers:
+    - aliyun
+    - aws
+    - tencent
+    - huawei
+
+grafana:
+  enabled: true
+  data_source_name: CloudCostOptimizer
+  dashboard_path: ./grafana/dashboards

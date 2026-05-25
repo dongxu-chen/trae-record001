@@ -1,0 +1,40 @@
+{
+  "floor_width": 750,
+  "floor_height": 700,
+  "resolution": 5.0,
+  "floors": [
+    {
+      "id": 0,
+      "name": "1F - 大厅",
+      "obstacles": [
+        {"type": "rectangle", "x": 200, "y": 100, "width": 100, "height": 150},
+        {"type": "rectangle", "x": 450, "y": 150, "width": 80, "height": 200},
+        {"type": "circle", "x": 600, "y": 450, "radius": 40}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "2F - 办公区",
+      "obstacles": [
+        {"type": "rectangle", "x": 100, "y": 100, "width": 120, "height": 100},
+        {"type": "rectangle", "x": 300, "y": 200, "width": 150, "height": 80},
+        {"type": "rectangle", "x": 500, "y": 350, "width": 100, "height": 150},
+        {"type": "polygon", "vertices": [[200, 400], [280, 350], [350, 420], [250, 480]]}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "3F - 会议室",
+      "obstacles": [
+        {"type": "rectangle", "x": 150, "y": 150, "width": 200, "height": 150},
+        {"type": "rectangle", "x": 500, "y": 100, "width": 80, "height": 250},
+        {"type": "circle", "x": 350, "y": 500, "radius": 50}
+      ]
+    }
+  ],
+  "connections": [
+    {"type": "elevator", "floor1": 0, "floor2": 1, "pos1": [700, 100], "pos2": [700, 100], "speed": 2.0},
+    {"type": "stairs", "floor1": 1, "floor2": 2, "pos1": [100, 600], "pos2": [100, 600], "speed": 1.0},
+    {"type": "elevator", "floor1": 0, "floor2": 2, "pos1": [50, 300], "pos2": [50, 300], "speed": 2.0}
+  ]
+}

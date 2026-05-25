@@ -1,0 +1,2 @@
+$ProgressPreference = 'SilentlyContinue'
+npm install

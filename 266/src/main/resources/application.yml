@@ -1,0 +1,53 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: survey-system
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/survey_db
+      auto-index-creation: true
+
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 1
+        retry:
+          enabled: true
+          max-attempts: 3
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+survey:
+  base-url: http://localhost:8080
+  qrcode:
+    width: 300
+    height: 300
+  redis:
+    vote-lock-prefix: "survey:vote:lock:"
+    stats-prefix: "survey:stats:"
+    expire-hours: 24
