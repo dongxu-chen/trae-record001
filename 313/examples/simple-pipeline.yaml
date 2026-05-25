@@ -1,0 +1,62 @@
+id: simple-test-001
+name: Simple Test Pipeline
+
+default_resources:
+  cpu: 0.5
+  memory: 256
+
+tasks:
+  - id: task-a
+    name: Task A
+    image: alpine:latest
+    command: ["echo", "Running Task A"]
+    priority: 10
+    max_retries: 2
+    retry_delay: 2
+    estimated_time: 2s
+    resources:
+      cpu: 0.5
+      memory: 128
+
+  - id: task-b
+    name: Task B
+    image: alpine:latest
+    command: ["echo", "Running Task B"]
+    depends_on:
+      - task-a
+    priority: 8
+    max_retries: 2
+    retry_delay: 2
+    estimated_time: 2s
+    resources:
+      cpu: 0.5
+      memory: 128
+
+  - id: task-c
+    name: Task C
+    image: alpine:latest
+    command: ["echo", "Running Task C"]
+    depends_on:
+      - task-a
+    priority: 9
+    max_retries: 2
+    retry_delay: 2
+    estimated_time: 3s
+    resources:
+      cpu: 1.0
+      memory: 256
+
+  - id: task-d
+    name: Task D
+    image: alpine:latest
+    command: ["echo", "Running Task D"]
+    depends_on:
+      - task-b
+      - task-c
+    priority: 10
+    max_retries: 2
+    retry_delay: 2
+    estimated_time: 2s
+    resources:
+      cpu: 0.5
+      memory: 128

@@ -1,0 +1,91 @@
+spring:
+  application:
+    name: coupon-intelligent-system
+
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 200
+          max-idle: 50
+          min-idle: 10
+          max-wait: 3000ms
+
+  datasource:
+    clickhouse:
+      driver-class-name: com.clickhouse.jdbc.ClickHouseDriver
+      url: jdbc:ch://${CLICKHOUSE_HOST:127.0.0.1}:${CLICKHOUSE_PORT:8123}/${CLICKHOUSE_DB:coupon_db}
+      username: ${CLICKHOUSE_USER:default}
+      password: ${CLICKHOUSE_PASSWORD:}
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+logging:
+  level:
+    root: INFO
+    com.coupon: DEBUG
+    org.deeplearning4j: WARN
+    org.nd4j: WARN
+
+coupon:
+  rl:
+    model-path: ./models/dqn_model.zip
+    state-dim: 18
+    action-dim: 20
+    learning-rate: 0.001
+    gamma: 0.99
+    epsilon-start: 1.0
+    epsilon-end: 0.01
+    epsilon-decay: 0.995
+    batch-size: 64
+    replay-buffer-size: 100000
+    target-update-frequency: 100
+    train-enabled: true
+    avoid-duplicate-coupons: true
+
+  ab-test:
+    default-experiment: default_coupon_exp
+    traffic-salt: coupon_ab_test_2024
+
+  budget:
+    daily-budget: 100000
+    rolling-window-days: 7
+    rolling-window-budget: 500000
+    max-coupons-per-day: 5000
+    max-denomination: 100
+    warn-threshold-percent: 80
+
+  cache:
+    user-profile-ttl: 3600
+    coupon-stock-ttl: 600
+
+  antifraud:
+    enable: true
+    max-coupons-per-user-per-hour: 3
+    max-coupons-per-user-per-day: 10
+    max-users-per-ip: 5
+    max-users-per-device: 3
+    min-interval-ms: 1000
+    risk-threshold: 70
+
+  personalization:
+    enable: true
+    default-discount-rate: 0.1
+    max-adjustment-percent: 20
+
+  notification:
+    enable: true
+    batch-size: 100
+    default-channels: app_push,in_app

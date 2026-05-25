@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <circle id="bg-circle" cx="100" cy="100" r="90" fill="#f0f4f8" stroke="#e2e8f0" stroke-width="2"/>
+  <rect id="body" x="50" y="60" width="100" height="80" rx="10" fill="#4f46e5"/>
+  <circle id="eye-left" cx="75" cy="90" r="12" fill="white"/>
+  <circle id="eye-right" cx="125" cy="90" r="12" fill="white"/>
+  <circle id="pupil-left" cx="78" cy="90" r="6" fill="#1e1b4b"/>
+  <circle id="pupil-right" cx="128" cy="90" r="6" fill="#1e1b4b"/>
+  <path id="mouth" d="M 70 120 Q 100 140 130 120" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <rect id="highlight" x="60" y="70" width="30" height="10" rx="5" fill="rgba(255,255,255,0.3)"/>
+</svg>

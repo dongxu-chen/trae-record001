@@ -1,0 +1,170 @@
+id: build-pipeline-001
+name: CI Build Pipeline
+
+default_resources:
+  cpu: 1.0
+  memory: 1024
+
+labels:
+  environment: production
+  team: platform
+
+tasks:
+  - id: clone-repo
+    name: Clone Repository
+    image: alpine/git:latest
+    command: ["git", "clone", "https://github.com/example/project.git", "/workspace"]
+    priority: 10
+    max_retries: 2
+    retry_delay: 5
+    estimated_time: 30s
+    resources:
+      cpu: 0.5
+      memory: 512
+    labels:
+      stage: prepare
+
+  - id: lint-code
+    name: Lint Source Code
+    image: golangci/golangci-lint:latest
+    command: ["golangci-lint", "run", "./..."]
+    depends_on:
+      - clone-repo
+    priority: 8
+    max_retries: 2
+    retry_delay: 10
+    estimated_time: 1m
+    resources:
+      cpu: 2.0
+      memory: 2048
+    labels:
+      stage: test
+
+  - id: unit-tests
+    name: Run Unit Tests
+    image: golang:1.21
+    command: ["go", "test", "-v", "-cover", "./..."]
+    depends_on:
+      - clone-repo
+    priority: 9
+    max_retries: 3
+    retry_delay: 15
+    estimated_time: 2m
+    resources:
+      cpu: 2.0
+      memory: 2048
+    labels:
+      stage: test
+
+  - id: build-app
+    name: Build Application
+    image: golang:1.21
+    command: ["go", "build", "-o", "app", "./cmd/main.go"]
+    depends_on:
+      - lint-code
+      - unit-tests
+    priority: 7
+    max_retries: 2
+    retry_delay: 30
+    estimated_time: 3m
+    resources:
+      cpu: 4.0
+      memory: 4096
+    labels:
+      stage: build
+
+  - id: build-image
+    name: Build Docker Image
+    image: docker:24.0
+    command: ["docker", "build", "-t", "myapp:${TAG}", "."]
+    depends_on:
+      - build-app
+    priority: 8
+    max_retries: 2
+    retry_delay: 60
+    estimated_time: 5m
+    resources:
+      cpu: 2.0
+      memory: 4096
+    labels:
+      stage: build
+
+  - id: scan-image
+    name: Scan Docker Image
+    image: aquasec/trivy:latest
+    command: ["trivy", "image", "--severity", "CRITICAL,HIGH", "myapp:${TAG}"]
+    depends_on:
+      - build-image
+    priority: 6
+    max_retries: 2
+    retry_delay: 30
+    estimated_time: 2m
+    resources:
+      cpu: 1.0
+      memory: 2048
+    labels:
+      stage: security
+
+  - id: push-image
+    name: Push Docker Image
+    image: docker:24.0
+    command: ["docker", "push", "myregistry.com/myapp:${TAG}"]
+    depends_on:
+      - scan-image
+    priority: 9
+    max_retries: 3
+    retry_delay: 60
+    estimated_time: 3m
+    resources:
+      cpu: 1.0
+      memory: 1024
+    labels:
+      stage: deploy
+
+  - id: deploy-staging
+    name: Deploy to Staging
+    image: bitnami/kubectl:latest
+    command: ["kubectl", "apply", "-f", "k8s/staging.yaml"]
+    depends_on:
+      - push-image
+    priority: 8
+    max_retries: 2
+    retry_delay: 120
+    estimated_time: 2m
+    resources:
+      cpu: 0.5
+      memory: 512
+    labels:
+      stage: deploy
+
+  - id: integration-tests
+    name: Run Integration Tests
+    image: golang:1.21
+    command: ["go", "test", "-v", "-tags=integration", "./test/integration/..."]
+    depends_on:
+      - deploy-staging
+    priority: 9
+    max_retries: 2
+    retry_delay: 60
+    estimated_time: 10m
+    resources:
+      cpu: 2.0
+      memory: 2048
+    labels:
+      stage: test
+
+  - id: deploy-production
+    name: Deploy to Production
+    image: bitnami/kubectl:latest
+    command: ["kubectl", "apply", "-f", "k8s/production.yaml"]
+    depends_on:
+      - integration-tests
+    priority: 10
+    max_retries: 1
+    retry_delay: 300
+    estimated_time: 5m
+    resources:
+      cpu: 0.5
+      memory: 512
+    labels:
+      stage: deploy
