@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物流路径优化系统 - VRPTW Solver</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .input-field {
+            transition: all 0.2s ease;
+        }
+        .input-field:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .customer-row {
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #map {
+            height: 500px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .tab-btn {
+            transition: all 0.2s ease;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        .depot-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .traffic-preview {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .carbon-icon {
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="gradient-bg text-white py-8">
+        <div class="container mx-auto px-4">
+            <h1 class="text-4xl font-bold text-center mb-2">🚚 物流路径优化系统</h1>
+            <p class="text-center text-purple-200">多仓库协同调度 | 实时交通优化 | 碳排放计算</p>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-gray-800">⚙️ 参数配置</h2>
+                        <button onclick="loadSampleData()" class="text-sm text-purple-600 hover:text-purple-800">
+                            加载示例
+                        </button>
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm font-medium text-gray-700">仓库列表</label>
+                            <button onclick="addDepot()" class="text-sm bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">
+                                + 添加仓库
+                            </button>
+                        </div>
+                        <div id="depotList" class="space-y-2 max-h-40 overflow-y-auto scrollbar-thin">
+                        </div>
+                    </div>
+
+                    <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-3">🚦 实时交通</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-gray-500">时间</label>
+                                <select id="trafficHour" class="w-full px-2 py-1 border rounded text-sm">
+                                    <option value="0">00:00</option>
+                                    <option value="6">06:00</option>
+                                    <option value="7">07:00</option>
+                                    <option value="8" selected>08:00</option>
+                                    <option value="9">09:00</option>
+                                    <option value="12">12:00</option>
+                                    <option value="17">17:00</option>
+                                    <option value="18">18:00</option>
+                                    <option value="20">20:00</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">拥堵程度</label>
+                                <select id="trafficLevel" class="w-full px-2 py-1 border rounded text-sm">
+                                    <option value="low">畅通</option>
+                                    <option value="normal" selected>正常</option>
+                                    <option value="medium">拥堵</option>
+                                    <option value="high">严重</option>
+                                    <option value="severe">极严重</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="trafficPreview" class="mt-2 text-xs text-gray-600"></div>
+                    </div>
+
+                    <div class="mb-6 p-4 bg-green-50 rounded-lg">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-semibold text-gray-700">🌱 碳排放计算</h3>
+                            <label class="flex items-center gap-1">
+                                <input type="checkbox" id="enableCarbon" checked class="w-4 h-4">
+                                <span class="text-xs text-gray-600">启用</span>
+                            </label>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-gray-500">排放因子 (kgCO₂/km)</label>
+                                <input type="number" id="carbonFactor" value="0.27" step="0.01"
+                                    class="w-full px-2 py-1 border rounded text-sm">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">碳价 (元/吨)</label>
+                                <input type="number" id="carbonPrice" value="50" step="10"
+                                    class="w-full px-2 py-1 border rounded text-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="useOsm" class="w-4 h-4 text-purple-600 rounded">
+                            <span class="text-sm text-gray-700">使用OSMnx真实路网</span>
+                        </label>
+                    </div>
+
+                    <div class="border-t pt-4 mb-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-lg font-semibold text-gray-800">📦 配送点列表</h3>
+                            <button onclick="addCustomer()" class="bg-green-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-600 transition">
+                                + 添加
+                            </button>
+                        </div>
+                        <div id="customerList" class="space-y-2 max-h-64 overflow-y-auto scrollbar-thin">
+                        </div>
+                    </div>
+
+                    <button id="solveBtn" onclick="solveVRPTW()" 
+                        class="w-full btn-primary text-white py-3 rounded-xl font-semibold text-lg">
+                        🚀 开始优化
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3">
+                <div id="resultsSection" class="hidden">
+                    <div class="bg-white rounded-xl p-6 card-shadow mb-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold text-gray-800">📊 优化结果</h2>
+                            <div id="feasibilityBadge" class="px-3 py-1 rounded-full text-sm font-medium"></div>
+                        </div>
+
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                            <div class="stat-card">
+                                <div class="text-gray-500 text-sm mb-1">总里程</div>
+                                <div class="stat-value" id="statDistance">0</div>
+                                <div class="text-gray-400 text-xs">km</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="text-gray-500 text-sm mb-1">使用车辆</div>
+                                <div class="stat-value" id="statVehicles">0</div>
+                                <div class="text-gray-400 text-xs">辆</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="text-gray-500 text-sm mb-1">平均装载率</div>
+                                <div class="stat-value" id="statLoadRate">0</div>
+                                <div class="text-gray-400 text-xs">%</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="text-gray-500 text-sm mb-1">🌱 CO₂排放</div>
+                                <div class="stat-value" id="statCarbon">0</div>
+                                <div class="text-gray-400 text-xs">kg</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="text-gray-500 text-sm mb-1">💰 碳成本</div>
+                                <div class="stat-value" id="statCarbonCost">0</div>
+                                <div class="text-gray-400 text-xs">元</div>
+                            </div>
+                        </div>
+
+                        <div id="trafficInfo" class="hidden mb-4 p-3 traffic-preview rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">🚦 交通因子</span>
+                                <span id="trafficFactorDisplay" class="font-bold">1.0x</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-3">🚛 车辆路径详情</h3>
+                            <div id="routeDetails" class="space-y-3 max-h-96 overflow-y-auto scrollbar-thin"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 card-shadow">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-bold text-gray-800">🗺️ 路线地图</h2>
+                            <div class="flex gap-2">
+                                <button onclick="switchTab('map')" id="tabMap" class="tab-btn active px-4 py-2 rounded-lg text-sm">
+                                    地图视图
+                                </button>
+                                <button onclick="switchTab('folium')" id="tabFolium" class="tab-btn px-4 py-2 rounded-lg text-sm bg-gray-200">
+                                    详细地图
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="mapView">
+                            <div id="map"></div>
+                        </div>
+                        <div id="foliumView" class="hidden">
+                            <div id="foliumMapContainer" class="h-[500px] rounded-xl overflow-hidden"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="emptyState" class="bg-white rounded-xl p-12 card-shadow text-center">
+                    <div class="text-6xl mb-4">🗺️</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">开始您的路径优化</h3>
+                    <p class="text-gray-500 mb-6">
+                        配置仓库位置、配送点信息、车辆参数，然后点击"开始优化"按钮<br>
+                        支持多仓库协同调度、实时交通优化、碳排放计算
+                    </p>
+                    <div class="flex justify-center gap-4">
+                        <button onclick="loadSampleData()" class="btn-primary text-white px-6 py-3 rounded-xl font-medium">
+                            📋 单仓库示例
+                        </button>
+                        <button onclick="loadMultiDepotSample()" class="bg-green-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-green-600 transition">
+                            🏢 多仓库示例
+                        </button>
+                    </div>
+                </div>
+
+                <div id="loadingState" class="hidden bg-white rounded-xl p-12 card-shadow text-center">
+                    <div class="flex flex-col items-center">
+                        <div class="loader mb-4"></div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">正在优化路径...</h3>
+                        <p class="text-gray-500">遗传算法迭代求解中，请稍候</p>
+                        <div id="loadingProgress" class="mt-4 text-purple-600 font-medium"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-gray-800 text-gray-400 py-6 mt-8">
+        <div class="container mx-auto px-4 text-center text-sm">
+            <p>物流路径优化系统 | VRPTW Solver | 技术栈: Python + DEAP + OSMnx + Folium + Flask</p>
+            <p class="mt-2">支持多仓库协同调度、实时交通因子、碳排放计算</p>
+        </div>
+    </div>
+
+    <script>
+        let depots = [];
+        let customers = [];
+        let map = null;
+        let mapMarkers = [];
+        let mapLines = [];
+        let currentSolution = null;
+
+        const COLOR_SCHEMES = [
+            { name: '红色系', main: '#e53935', light: '#ffcdd2', dark: '#b71c1c' },
+            { name: '橙色系', main: '#fb8c00', light: '#ffe0b2', dark: '#e65100' },
+            { name: '黄色系', main: '#fdd835', light: '#fff9c4', dark: '#f57f17' },
+            { name: '绿色系', main: '#43a047', light: '#c8e6c9', dark: '#1b5e20' },
+            { name: '青色系', main: '#00acc1', light: '#b2ebf2', dark: '#006064' },
+            { name: '蓝色系', main: '#1e88e5', light: '#bbdefb', dark: '#0d47a1' },
+            { name: '紫色系', main: '#8e24aa', light: '#e1bee7', dark: '#4a148c' },
+            { name: '粉色系', main: '#ec407a', light: '#f8bbd0', dark: '#880e4f' },
+            { name: '棕色系', main: '#6d4c41', light: '#d7ccc8', dark: '#3e2723' },
+            { name: '灰色系', main: '#546e7a', light: '#cfd8dc', dark: '#263238' }
+        ];
+
+        const DEPOT_COLORS = [
+            { main: '#2c3e50', icon: '🏭', name: '仓库A' },
+            { main: '#27ae60', icon: '🏬', name: '仓库B' },
+            { main: '#8e44ad', icon: '🏢', name: '仓库C' },
+            { main: '#d35400', icon: '🏪', name: '仓库D' },
+            { main: '#16a085', icon: '🏘️', name: '仓库E' }
+        ];
+
+        const COLORS = COLOR_SCHEMES.map(s => s.main);
+
+        function initMap(lat = 39.904, lng = 116.407) {
+            if (map) {
+                map.remove();
+            }
+            map = L.map('map').setView([lat, lng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+        }
+
+        function clearMap() {
+            mapMarkers.forEach(m => m.remove());
+            mapLines.forEach(l => l.remove());
+            mapMarkers = [];
+            mapLines = [];
+        }
+
+        function addDepot() {
+            const id = depots.length > 0 ? Math.max(...depots.map(d => d.id)) + 1 : 0;
+            const depot = {
+                id: id,
+                x: 116.407 + (Math.random() - 0.5) * 0.1,
+                y: 39.904 + (Math.random() - 0.5) * 0.1,
+                num_vehicles: 5,
+                vehicle_capacity: 100
+            };
+            depots.push(depot);
+            renderDepotList();
+        }
+
+        function removeDepot(id) {
+            if (depots.length <= 1) {
+                alert('至少需要保留一个仓库');
+                return;
+            }
+            depots = depots.filter(d => d.id !== id);
+            renderDepotList();
+        }
+
+        function updateDepot(id, field, value) {
+            const depot = depots.find(d => d.id === id);
+            if (depot) {
+                if (field === 'num_vehicles' || field === 'vehicle_capacity') {
+                    depot[field] = parseInt(value);
+                } else {
+                    depot[field] = parseFloat(value);
+                }
+            }
+        }
+
+        function renderDepotList() {
+            const container = document.getElementById('depotList');
+            container.innerHTML = depots.map(d => {
+                const color = DEPOT_COLORS[d.id % DEPOT_COLORS.length];
+                return `
+                    <div class="p-3 rounded-lg border-2" style="border-color: ${color.main}20; background: ${color.main}10">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <div class="depot-badge" style="background: ${color.main}">${color.icon}</div>
+                                <span class="font-medium text-gray-700">${color.name}</span>
+                            </div>
+                            ${depots.length > 1 ? `<button onclick="removeDepot(${d.id})" class="text-red-500 hover:text-red-700 text-sm">✕</button>` : ''}
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-xs text-gray-500">经度</label>
+                                <input type="number" step="0.001" value="${d.x.toFixed(4)}"
+                                    onchange="updateDepot(${d.id}, 'x', this.value)"
+                                    class="w-full px-2 py-1 border rounded text-xs">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">纬度</label>
+                                <input type="number" step="0.001" value="${d.y.toFixed(4)}"
+                                    onchange="updateDepot(${d.id}, 'y', this.value)"
+                                    class="w-full px-2 py-1 border rounded text-xs">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">车辆数</label>
+                                <input type="number" value="${d.num_vehicles}" min="1"
+                                    onchange="updateDepot(${d.id}, 'num_vehicles', this.value)"
+                                    class="w-full px-2 py-1 border rounded text-xs">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">容量</label>
+                                <input type="number" value="${d.vehicle_capacity}" min="1"
+                                    onchange="updateDepot(${d.id}, 'vehicle_capacity', this.value)"
+                                    class="w-full px-2 py-1 border rounded text-xs">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function addCustomer() {
+            const id = customers.length > 0 ? Math.max(...customers.map(c => c.id)) + 1 : 1;
+            const customer = {
+                id: id,
+                x: 116.407 + (Math.random() - 0.5) * 0.1,
+                y: 39.904 + (Math.random() - 0.5) * 0.1,
+                demand: 20 + Math.floor(Math.random() * 30),
+                ready_time: 0,
+                due_time: 1440,
+                service_time: 10,
+                assigned_depot: 0
+            };
+            customers.push(customer);
+            renderCustomerList();
+        }
+
+        function removeCustomer(id) {
+            customers = customers.filter(c => c.id !== id);
+            renderCustomerList();
+        }
+
+        function updateCustomer(id, field, value) {
+            const cust = customers.find(c => c.id === id);
+            if (cust) {
+                if (field === 'assigned_depot') {
+                    cust[field] = value === '' ? null : parseInt(value);
+                } else {
+                    cust[field] = parseFloat(value);
+                }
+            }
+        }
+
+        function renderCustomerList() {
+            const container = document.getElementById('customerList');
+            container.innerHTML = customers.map(c => `
+                <div class="customer-row bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-medium text-gray-700">配送点 #${c.id}</span>
+                        <button onclick="removeCustomer(${c.id})" class="text-red-500 hover:text-red-700 text-sm">✕</button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="text-xs text-gray-500">经度</label>
+                            <input type="number" step="0.001" value="${c.x.toFixed(4)}"
+                                onchange="updateCustomer(${c.id}, 'x', this.value)"
+                                class="w-full px-2 py-1 border rounded text-xs">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500">纬度</label>
+                            <input type="number" step="0.001" value="${c.y.toFixed(4)}"
+                                onchange="updateCustomer(${c.id}, 'y', this.value)"
+                                class="w-full px-2 py-1 border rounded text-xs">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500">需求</label>
+                            <input type="number" value="${c.demand}"
+                                onchange="updateCustomer(${c.id}, 'demand', this.value)"
+                                class="w-full px-2 py-1 border rounded text-xs">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 mt-2">
+                        <div>
+                            <label class="text-xs text-gray-500">最早</label>
+                            <input type="number" value="${c.ready_time}"
+                                onchange="updateCustomer(${c.id}, 'ready_time', this.value)"
+                                class="w-full px-2 py-1 border rounded text-xs">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500">最晚</label>
+                            <input type="number" value="${c.due_time}"
+                                onchange="updateCustomer(${c.id}, 'due_time', this.value)"
+                                class="w-full px-2 py-1 border rounded text-xs">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500">仓库</label>
+                            <select onchange="updateCustomer(${c.id}, 'assigned_depot', this.value)"
+                                class="w-full px-2 py-1 border rounded text-xs">
+                                <option value="">自动</option>
+                                ${depots.map(d => `<option value="${d.id}" ${c.assigned_depot === d.id ? 'selected' : ''}>${DEPOT_COLORS[d.id % DEPOT_COLORS.length].name}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function previewTraffic() {
+            const hour = document.getElementById('trafficHour').value;
+            const level = document.getElementById('trafficLevel').value;
+
+            try {
+                const response = await fetch('/api/traffic/preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ hour_of_day: hour, congestion_level: level })
+                });
+                const data = await response.json();
+                document.getElementById('trafficPreview').textContent = data.description;
+            } catch (error) {
+                console.error('Traffic preview failed:', error);
+            }
+        }
+
+        async function loadSampleData() {
+            try {
+                const response = await fetch('/api/sample?n=10&depots=1');
+                const data = await response.json();
+                applySampleData(data);
+            } catch (error) {
+                alert('加载示例数据失败: ' + error.message);
+            }
+        }
+
+        async function loadMultiDepotSample() {
+            try {
+                const response = await fetch('/api/sample?n=15&depots=3');
+                const data = await response.json();
+                applySampleData(data);
+            } catch (error) {
+                alert('加载示例数据失败: ' + error.message);
+            }
+        }
+
+        function applySampleData(data) {
+            depots = data.depots.map(d => ({
+                id: d.id,
+                x: d.x,
+                y: d.y,
+                num_vehicles: d.num_vehicles,
+                vehicle_capacity: d.vehicle_capacity
+            }));
+
+            customers = data.customers.map(c => ({
+                id: c.id,
+                x: c.x,
+                y: c.y,
+                demand: c.demand,
+                ready_time: c.ready_time,
+                due_time: c.due_time,
+                service_time: c.service_time,
+                assigned_depot: c.assigned_depot
+            }));
+
+            if (data.traffic) {
+                document.getElementById('trafficHour').value = data.traffic.hour_of_day;
+                document.getElementById('trafficLevel').value = data.traffic.congestion_level;
+            }
+
+            if (data.carbon_config) {
+                document.getElementById('enableCarbon').checked = data.carbon_config.enabled;
+                document.getElementById('carbonFactor').value = data.carbon_config.emission_factor;
+                document.getElementById('carbonPrice').value = data.carbon_config.carbon_price_per_ton;
+            }
+
+            renderDepotList();
+            renderCustomerList();
+            previewTraffic();
+        }
+
+        async function solveVRPTW() {
+            if (depots.length === 0) {
+                alert('请至少添加一个仓库');
+                return;
+            }
+
+            if (customers.length === 0) {
+                alert('请至少添加一个配送点');
+                return;
+            }
+
+            const useOsm = document.getElementById('useOsm').checked;
+            const enableCarbon = document.getElementById('enableCarbon').checked;
+            const trafficHour = document.getElementById('trafficHour').value;
+            const trafficLevel = document.getElementById('trafficLevel').value;
+            const carbonFactor = document.getElementById('carbonFactor').value;
+            const carbonPrice = document.getElementById('carbonPrice').value;
+
+            const data = {
+                depots: depots,
+                customers: customers,
+                use_osm: useOsm,
+                travel_speed: 40,
+                traffic: {
+                    hour_of_day: parseInt(trafficHour),
+                    congestion_level: trafficLevel
+                },
+                carbon_config: enableCarbon ? {
+                    enabled: true,
+                    emission_factor: parseFloat(carbonFactor),
+                    fuel_efficiency: 8.0,
+                    carbon_price_per_ton: parseFloat(carbonPrice)
+                } : null
+            };
+
+            document.getElementById('solveBtn').disabled = true;
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('loadingState').classList.remove('hidden');
+
+            const progressEl = document.getElementById('loadingProgress');
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 5;
+                if (progress > 90) progress = 90;
+                progressEl.textContent = `进度: ${Math.floor(progress)}%`;
+            }, 500);
+
+            try {
+                const response = await fetch('/api/solve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                clearInterval(progressInterval);
+                progressEl.textContent = '完成!';
+
+                setTimeout(() => {
+                    document.getElementById('loadingState').classList.add('hidden');
+                    document.getElementById('resultsSection').classList.remove('hidden');
+                    displayResults(result);
+                }, 500);
+
+            } catch (error) {
+                clearInterval(progressInterval);
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('emptyState').classList.remove('hidden');
+                alert('求解失败: ' + error.message);
+            } finally {
+                document.getElementById('solveBtn').disabled = false;
+            }
+        }
+
+        function displayResults(result) {
+            currentSolution = result;
+
+            document.getElementById('statDistance').textContent = result.total_distance.toFixed(2);
+            document.getElementById('statVehicles').textContent = result.used_vehicles;
+            document.getElementById('statLoadRate').textContent = result.avg_load_rate.toFixed(1);
+            document.getElementById('statCarbon').textContent = result.total_carbon_emission.toFixed(1);
+            document.getElementById('statCarbonCost').textContent = result.carbon_cost.toFixed(2);
+
+            const badge = document.getElementById('feasibilityBadge');
+            if (result.is_feasible) {
+                badge.textContent = '✅ 可行解';
+                badge.className = 'px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800';
+            } else {
+                badge.textContent = '⚠ 有迟到';
+                badge.className = 'px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800';
+            }
+
+            if (result.traffic_info) {
+                const trafficDiv = document.getElementById('trafficInfo');
+                trafficDiv.classList.remove('hidden');
+                document.getElementById('trafficFactorDisplay').textContent = result.traffic_info.factor.toFixed(2) + 'x';
+            }
+
+            const routeDetails = document.getElementById('routeDetails');
+            routeDetails.innerHTML = result.routes.map((route, idx) => {
+                const scheme = COLOR_SCHEMES[idx % COLOR_SCHEMES.length];
+                const depotColor = DEPOT_COLORS[route.depot_id % DEPOT_COLORS.length];
+                const color = scheme.main;
+                const loadPct = (route.total_demand / (depots[route.depot_id]?.vehicle_capacity || 100)) * 100;
+                return `
+                    <div class="rounded-lg p-4" style="background: ${scheme.light}40; border-left: 4px solid ${color}">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 rounded" style="background: ${color}"></div>
+                                <span class="font-semibold" style="color: ${scheme.dark}">${scheme.name} - 车辆 #${route.vehicle_id}</span>
+                                <span class="text-xs px-2 py-0.5 rounded" style="background: ${depotColor.main}; color: white">${depotColor.icon} ${depotColor.name}</span>
+                            </div>
+                            <span class="text-sm text-gray-500">
+                                ${route.customer_ids.length} 个配送点
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
+                            <div>
+                                <span class="text-gray-500">距离:</span>
+                                <span class="font-medium">${route.total_distance.toFixed(2)} km</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">装载:</span>
+                                <span class="font-medium">${route.total_demand.toFixed(1)}/${depots[route.depot_id]?.vehicle_capacity || 100}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">等待:</span>
+                                <span class="font-medium">${route.waiting_time.toFixed(1)} min</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">迟到:</span>
+                                <span class="font-medium ${route.lateness > 0 ? 'text-red-600' : ''}">${route.lateness.toFixed(1)} min</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">🌱 CO₂:</span>
+                                <span class="font-medium text-green-600">${route.carbon_emission.toFixed(2)} kg</span>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1 flex-wrap">
+                            <span class="text-xs bg-gray-200 px-2 py-1 rounded">${depotColor.name}</span>
+                            ${route.customer_ids.map(id => `
+                                <span class="text-xs px-2 py-1 rounded" style="background: ${scheme.light}; color: ${scheme.dark}">→ #${id}</span>
+                            `).join('')}
+                            <span class="text-xs bg-gray-200 px-2 py-1 rounded">→ ${depotColor.name}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const firstDepot = depots[0];
+            initMap(firstDepot.y, firstDepot.x);
+            drawRoutesOnMap(result);
+
+            if (result.map_html) {
+                const container = document.getElementById('foliumMapContainer');
+                const iframe = document.createElement('iframe');
+                iframe.srcdoc = result.map_html;
+                iframe.style.width = '100%';
+                iframe.style.height = '500px';
+                iframe.style.border = 'none';
+                iframe.style.borderRadius = '12px';
+                container.innerHTML = '';
+                container.appendChild(iframe);
+            }
+        }
+
+        function drawRoutesOnMap(result) {
+            clearMap();
+
+            depots.forEach(depot => {
+                const color = DEPOT_COLORS[depot.id % DEPOT_COLORS.length];
+                const depotIcon = L.divIcon({
+                    className: 'custom-depot-icon',
+                    html: `<div style="background: ${color.main}; color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">${color.icon}</div>`,
+                    iconSize: [36, 36]
+                });
+                L.marker([depot.y, depot.x], { icon: depotIcon })
+                    .bindPopup(`<b>${color.name}</b><br>车辆: ${depot.num_vehicles}<br>容量: ${depot.vehicle_capacity}`)
+                    .addTo(map);
+            });
+
+            const customerData = {};
+            customers.forEach(c => customerData[c.id] = c);
+
+            customers.forEach(c => {
+                const depotId = c.assigned_depot || 0;
+                const depotColor = DEPOT_COLORS[depotId % DEPOT_COLORS.length];
+                const custIcon = L.divIcon({
+                    className: 'custom-cust-icon',
+                    html: `<div style="background: ${depotColor.main}; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">${c.id}</div>`,
+                    iconSize: [24, 24]
+                });
+                L.marker([c.y, c.x], { icon: custIcon })
+                    .bindPopup(`<b>客户 #${c.id}</b><br>需求: ${c.demand}<br>分配: ${DEPOT_COLORS[depotId].name}`)
+                    .addTo(map);
+            });
+
+            result.routes.forEach((route, idx) => {
+                const color = COLORS[idx % COLORS.length];
+                const depot = depots[route.depot_id];
+                if (!depot) return;
+
+                const points = [[depot.y, depot.x]];
+                
+                route.customer_ids.forEach(id => {
+                    if (customerData[id]) {
+                        points.push([customerData[id].y, customerData[id].x]);
+                    }
+                });
+                points.push([depot.y, depot.x]);
+
+                const line = L.polyline(points, {
+                    color: color,
+                    weight: 4,
+                    opacity: 0.8
+                }).addTo(map);
+
+                mapLines.push(line);
+            });
+
+            const allPoints = [];
+            depots.forEach(d => allPoints.push([d.y, d.x]));
+            customers.forEach(c => allPoints.push([c.y, c.x]));
+            if (allPoints.length > 1) {
+                map.fitBounds(allPoints, { padding: [50, 50] });
+            }
+        }
+
+        function switchTab(tab) {
+            const mapBtn = document.getElementById('tabMap');
+            const foliumBtn = document.getElementById('tabFolium');
+            const mapView = document.getElementById('mapView');
+            const foliumView = document.getElementById('foliumView');
+
+            if (tab === 'map') {
+                mapBtn.classList.add('active');
+                foliumBtn.classList.remove('active');
+                mapView.classList.remove('hidden');
+                foliumView.classList.add('hidden');
+            } else {
+                mapBtn.classList.remove('active');
+                foliumBtn.classList.add('active');
+                mapView.classList.add('hidden');
+                foliumView.classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('trafficHour').addEventListener('change', previewTraffic);
+        document.getElementById('trafficLevel').addEventListener('change', previewTraffic);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+        });
+    </script>
+</body>
+</html>

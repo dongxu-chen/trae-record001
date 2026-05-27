@@ -1,0 +1,74 @@
+============================================================
+COLOR CONSTANCY EVALUATION SUMMARY
+============================================================
+
+Dataset Information:
+  Number of samples: 10
+
+Angular Error Metrics (degrees):
+------------------------------------------------------------
+Method                   Mean   Median  Trimean   Best25  Worst25
+------------------------------------------------------------
+Gray World               4.53     4.42     4.28     2.23     7.54
+Gray World Block (32x32)     4.81     5.43     4.99     1.22     7.98
+Gray World Block (64x64)     4.53     4.42     4.28     2.23     7.54
+Gray World Multi-scale     4.65     4.80     4.68     1.61     7.82
+Perfect Reflection (99%)     0.34     0.40     0.37     0.13     0.47
+Perfect Reflection (95%)     3.16     2.35     2.36     1.59     7.19
+Shades of Gray (p=1)     4.53     4.42     4.28     2.23     7.54
+Shades of Gray (p=3)     3.43     3.16     3.20     1.02     6.67
+Shades of Gray (p=6)     2.70     2.33     2.37     0.71     5.38
+Shades of Gray (p=10)     2.13     1.87     1.87     1.01     4.02
+Neural Network          17.24    18.43    18.06     7.42    24.56
+
+Image Quality Metrics (if available):
+------------------------------------------------------------
+Method                     ждE     PSNR     SSIM
+------------------------------------------------------------
+Gray World               4.71    27.21    0.981
+Gray World Block (32x32)     4.93    27.74    0.979
+Gray World Block (64x64)     4.71    27.21    0.981
+Gray World Multi-scale     4.80    27.36    0.980
+Perfect Reflection (99%)     0.53    47.91    0.999
+Perfect Reflection (95%)     3.78    31.71    0.984
+Shades of Gray (p=1)     4.71    27.21    0.981
+Shades of Gray (p=3)     4.06    30.35    0.985
+Shades of Gray (p=6)     3.55    33.21    0.988
+Shades of Gray (p=10)     2.85    34.42    0.992
+Neural Network          12.33    16.31    0.859
+
+============================================================
+COLOR DIFFERENCE STANDARD DEVIATION (ждE Std)
+============================================================
+
+Method                     ждE Mean   ждE Std Overall ждE Std
+------------------------------------------------------------
+Gray World                    4.71     2.54         6.04
+Gray World Block (32x32)      4.93     2.89         6.54
+Gray World Block (64x64)      4.71     2.54         6.04
+Gray World Multi-scale        4.80     2.68         6.29
+Perfect Reflection (99%)      0.53     0.35         0.65
+Perfect Reflection (95%)      3.78     2.17         6.72
+Shades of Gray (p=1)          4.71     2.54         6.04
+Shades of Gray (p=3)          4.06     2.16         6.16
+Shades of Gray (p=6)          3.55     1.99         5.75
+Shades of Gray (p=10)         2.85     1.62         4.62
+Neural Network               12.33     5.97         7.53
+
+============================================================
+ALGORITHM STABILITY METRICS
+============================================================
+
+Method                     Angular Var   Mean Std        CoV
+------------------------------------------------------------
+Gray World                      0.0429бу   0.000323   0.000323
+Gray World Block (32x32)        0.0647бу   0.000465   0.000465
+Gray World Block (64x64)        0.0501бу   0.000363   0.000363
+Gray World Multi-scale          0.0534бу   0.000372   0.000372
+Perfect Reflection (99%)        0.3713бу   0.002823   0.002824
+Perfect Reflection (95%)        0.2401бу   0.001626   0.001626
+Shades of Gray (p=1)            0.0503бу   0.000368   0.000368
+Shades of Gray (p=3)            0.0493бу   0.000370   0.000370
+Shades of Gray (p=6)            0.0800бу   0.000583   0.000583
+Shades of Gray (p=10)           0.1252бу   0.000939   0.000939
+Neural Network                  0.0701бу   0.000506   0.000506

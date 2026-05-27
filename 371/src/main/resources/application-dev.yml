@@ -1,0 +1,83 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /sso
+
+spring:
+  application:
+    name: sso-server
+
+  datasource:
+    url: jdbc:h2:mem:sso_db;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  session:
+    store-type: jdbc
+    timeout: 30m
+    jdbc:
+      initialize-schema: always
+
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+
+sso:
+  login:
+    title: "企业统一身份认证平台"
+    logo: "/images/logo.png"
+    background-image: "/images/login-bg.jpg"
+    show-copyright: true
+    copyright-text: "© 2024 企业SSO认证中心"
+    enable-remember-me: true
+    mfa-enabled: true
+    mfa-required: false
+
+  ldap:
+    enabled: false
+
+  saml2:
+    entity-id: https://sso.example.com/sso/saml2
+    base-url: https://sso.example.com/sso
+    signing-key-location: credentials/saml-signing.key
+    signing-cert-location: credentials/saml-signing.crt
+    encryption-key-location: credentials/saml-encryption.key
+    encryption-cert-location: credentials/saml-encryption.crt
+
+  oauth2:
+    issuer: http://localhost:8080/sso
+    jks-keystore: credentials/oauth2.jks
+    jks-password: changeit
+    key-alias: oauth2-key
+    key-password: changeit
+
+  cas:
+    enabled: false
+
+  sync:
+    ldap-sync-cron: "0 0 2 * * ?"
+    sync-on-startup: false
+
+logging:
+  level:
+    org.springframework.security: INFO
+    com.sso: DEBUG
+    org.springframework.session: INFO

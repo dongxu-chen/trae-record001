@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>授权确认 - 统一身份认证</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+</head>
+<body>
+<div class="login-container">
+    <div class="login-box" style="max-width: 480px;">
+        <div class="login-header">
+            <h1 class="login-title">授权确认</h1>
+        </div>
+
+        <div class="consent-info">
+            <div class="app-info">
+                <img th:src="${clientLogo}" alt="App Logo" class="app-logo" th:if="${clientLogo}">
+                <div class="app-details">
+                    <h2 class="app-name" th:text="${clientName}">应用名称</h2>
+                    <p class="app-client-id">Client ID: <span th:text="${clientId}"></span></p>
+                </div>
+            </div>
+
+            <div class="user-info-consent">
+                <p>用户 <strong th:text="${principalName}">user</strong> 正在请求以下权限:</p>
+            </div>
+
+            <div class="scopes-list">
+                <div th:each="scope : ${scopes}" class="scope-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="scope-icon">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    <span class="scope-name" th:text="${scope}">read</span>
+                </div>
+            </div>
+
+            <form method="post" action="/oauth2/authorize" class="consent-form">
+                <input type="hidden" name="client_id" th:value="${clientId}">
+                <input type="hidden" name="state" th:value="${state}">
+                <input type="hidden" name="user_code" th:value="${userCode}">
+
+                <div class="consent-options">
+                    <label class="checkbox">
+                        <input type="checkbox" name="remember">
+                        <span>记住我的选择</span>
+                    </label>
+                </div>
+
+                <div class="consent-buttons">
+                    <button type="submit" name="cancel" value="cancel" class="btn btn-secondary">
+                        取消授权
+                    </button>
+                    <button type="submit" name="submit" value="submit" class="btn btn-primary">
+                        确认授权
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .consent-info {
+        text-align: center;
+    }
+
+    .app-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .app-logo {
+        width: 64px;
+        height: 64px;
+        border-radius: 12px;
+        object-fit: contain;
+    }
+
+    .app-details {
+        text-align: left;
+    }
+
+    .app-name {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1a202c;
+        margin-bottom: 4px;
+    }
+
+    .app-client-id {
+        font-size: 12px;
+        color: #a0aec0;
+    }
+
+    .user-info-consent {
+        margin-bottom: 20px;
+        font-size: 14px;
+        color: #4a5568;
+    }
+
+    .scopes-list {
+        background-color: #f7fafc;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+
+    .scope-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 0;
+        color: #2d3748;
+    }
+
+    .scope-icon {
+        color: #48bb78;
+    }
+
+    .scope-name {
+        font-size: 14px;
+        text-transform: lowercase;
+    }
+
+    .consent-options {
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    .consent-buttons {
+        display: flex;
+        gap: 12px;
+    }
+
+    .consent-buttons .btn {
+        flex: 1;
+    }
+</style>
+</body>
+</html>

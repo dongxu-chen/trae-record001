@@ -1,0 +1,29 @@
+=========================
+ 配置漂移检测报告
+=========================
+
+生成时间: {{ generated_at }}
+
+统计: 总变更={{ summary_total }}  值变更={{ summary_changed }}  新增={{ summary_added }}  删除={{ summary_removed }}
+
+{% for r in reports %}
+----------------------------------------------------------------------
+ 服务器: {{ r.server }}   服务: {{ r.service }}   时间: {{ r.timestamp }}
+ 状态: {% if r.has_drift %}⚠ 存在漂移{% else %}✔ 正常{% endif %}
+{% if r.drift_items %}
+
+{% for it in r.drift_items %}
+  [{{ '%-7s' % it.drift_type }}] {{ it.key }}
+    {% if it.baseline_text %}基准: {{ it.baseline_text }}{% endif %}
+    {% if it.current_text %}当前: {{ it.current_text }}{% endif %}
+{% endfor %}
+
+{% if r.drift_items[0].diff %}
+行级 Diff:
+{{ r.drift_items[0].diff }}
+{% endif %}
+{% endif %}
+{% endfor %}
+
+--
+Config Drift Detector

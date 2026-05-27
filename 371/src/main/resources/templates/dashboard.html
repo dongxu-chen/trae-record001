@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户中心 - 统一身份认证</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body>
+<div class="dashboard-container">
+    <header class="dashboard-header">
+        <div class="header-content">
+            <h1 class="logo">统一身份认证平台</h1>
+            <div class="user-info">
+                <span class="username" th:text="${username}">用户</span>
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-logout">退出登录</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-main">
+        <div class="welcome-section">
+            <h2>欢迎回来, <span th:text="${user?.displayName ?: username}">用户</span>!</h2>
+            <p class="last-login">
+                上次登录: <span th:text="${user?.lastLogin}">N/A</span>
+                (IP: <span th:text="${user?.lastLoginIp}">N/A</span>)
+            </p>
+        </div>
+
+        <div class="dashboard-cards">
+            <div class="card">
+                <h3>账户信息</h3>
+                <div class="info-row">
+                    <span class="label">用户名:</span>
+                    <span th:text="${user?.username}">N/A</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">邮箱:</span>
+                    <span th:text="${user?.email}">N/A</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">手机号:</span>
+                    <span th:text="${user?.phone}">N/A</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">账户状态:</span>
+                    <span class="status status-active" th:if="${user?.enabled}">正常</span>
+                    <span class="status status-disabled" th:unless="${user?.enabled}">禁用</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">MFA状态:</span>
+                    <span class="status status-active" th:if="${user?.mfaEnabled}">已开启</span>
+                    <span class="status status-warning" th:unless="${user?.mfaEnabled}">未开启</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>角色权限</h3>
+                <div class="roles-list">
+                    <div th:each="authority : ${authorities}" class="role-badge"
+                         th:text="${authority.authority}">ROLE_USER</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>可用应用</h3>
+                <div class="apps-list">
+                    <a href="#" class="app-item">
+                        <div class="app-icon">📧</div>
+                        <div class="app-info">
+                            <div class="app-name">企业邮箱</div>
+                            <div class="app-desc">内部邮件系统</div>
+                        </div>
+                    </a>
+                    <a href="#" class="app-item">
+                        <div class="app-icon">📊</div>
+                        <div class="app-info">
+                            <div class="app-name">OA系统</div>
+                            <div class="app-desc">办公自动化</div>
+                        </div>
+                    </a>
+                    <a href="#" class="app-item">
+                        <div class="app-icon">📁</div>
+                        <div class="app-info">
+                            <div class="app-name">云盘</div>
+                            <div class="app-desc">企业文件存储</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>安全设置</h3>
+                <div class="security-actions">
+                    <a href="#" class="btn btn-secondary">修改密码</a>
+                    <a href="#" class="btn btn-secondary" th:if="${!user?.mfaEnabled}">开启MFA</a>
+                    <a href="#" class="btn btn-danger" th:if="${user?.mfaEnabled}">关闭MFA</a>
+                    <a href="#" class="btn btn-secondary">查看登录历史</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

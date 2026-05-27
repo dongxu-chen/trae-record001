@@ -1,0 +1,5 @@
+paramiko>=3.2.0
+PyYAML>=6.0.1
+Jinja2>=3.1.2
+celery>=5.3.4
+redis>=5.0.1

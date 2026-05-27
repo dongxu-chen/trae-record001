@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>配置漂移检测报告</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;margin:24px;color:#222}
+  h1{border-bottom:2px solid #444;padding-bottom:8px}
+  h2{margin-top:32px;color:#333}
+  table{border-collapse:collapse;width:100%;margin-top:12px;font-size:14px}
+  th,td{border:1px solid #ccc;padding:6px 10px;text-align:left;vertical-align:top}
+  th{background:#f2f2f2}
+  .tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;color:#fff;margin-right:6px}
+  .tag-changed{background:#e67e22}
+  .tag-added{background:#27ae60}
+  .tag-removed{background:#c0392b}
+  .ok{color:#27ae60}
+  pre{background:#f6f8fa;padding:10px;border-radius:6px;overflow-x:auto}
+  .summary{display:flex;gap:16px;margin:12px 0;flex-wrap:wrap}
+  .box{padding:12px 18px;border-radius:8px;color:#fff;font-weight:bold}
+  .box-total{background:#34495e}
+  .box-changed{background:#e67e22}
+  .box-added{background:#27ae60}
+  .box-removed{background:#c0392b}
+</style>
+</head>
+<body>
+<h1>配置漂移检测报告</h1>
+<p><strong>生成时间:</strong> {{ generated_at }}</p>
+
+<div class="summary">
+  <div class="box box-total">总变更 {{ summary_total }}</div>
+  <div class="box box-changed">值变更 {{ summary_changed }}</div>
+  <div class="box box-added">新增 {{ summary_added }}</div>
+  <div class="box box-removed">删除 {{ summary_removed }}</div>
+</div>
+
+{% for r in reports %}
+<h2>{{ r.server }} / {{ r.service }}</h2>
+<p><strong>状态:</strong>
+  {% if r.has_drift %}
+    <span style="color:#c0392b;font-weight:bold">⚠ 存在漂移</span>
+  {% else %}
+    <span class="ok">✔ 正常</span>
+  {% endif %}
+  &nbsp;&nbsp; 时间: {{ r.timestamp }}
+</p>
+
+{% if r.drift_items %}
+<table>
+<thead>
+<tr><th>类型</th><th>Key</th><th>基准值</th><th>当前值</th></tr>
+</thead>
+<tbody>
+{% for it in r.drift_items %}
+<tr>
+  <td><span class="tag tag-{{ it.drift_type }}">{{ it.drift_type }}</span></td>
+  <td><code>{{ it.key }}</code></td>
+  <td><code>{{ it.baseline_text }}</code></td>
+  <td><code>{{ it.current_text }}</code></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+{% if r.drift_items[0].diff %}
+<h3>行级 Diff</h3>
+<pre>{{ r.drift_items[0].diff }}</pre>
+{% endif %}
+{% endif %}
+{% endfor %}
+
+<footer style="margin-top:40px;font-size:12px;color:#888">
+  Config Drift Detector · Powered by Python + SSH + Jinja2 + Celery
+</footer>
+</body>
+</html>

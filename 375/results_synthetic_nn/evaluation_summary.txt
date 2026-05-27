@@ -1,0 +1,32 @@
+============================================================
+COLOR CONSTANCY EVALUATION SUMMARY
+============================================================
+
+Dataset Information:
+  Number of samples: 30
+
+Angular Error Metrics (degrees):
+------------------------------------------------------------
+Method                   Mean   Median  Trimean   Best25  Worst25
+------------------------------------------------------------
+Gray World               5.99     5.94     5.71     1.92    10.70
+Perfect Reflection (99%)     0.22     0.22     0.22     0.10     0.36
+Perfect Reflection (95%)     3.16     2.23     2.47     0.94     7.17
+Shades of Gray (p=1)     5.99     5.94     5.71     1.92    10.70
+Shades of Gray (p=3)     4.76     4.14     4.29     1.84     8.64
+Shades of Gray (p=6)     3.53     3.22     3.26     1.79     6.17
+Shades of Gray (p=10)     2.61     2.36     2.46     1.40     4.19
+Neural Network           6.03     5.05     5.44     2.23    11.93
+
+Image Quality Metrics (if available):
+------------------------------------------------------------
+Method                     ¦¤E     PSNR     SSIM
+------------------------------------------------------------
+Gray World               5.99    25.61    0.962
+Perfect Reflection (99%)     0.25    51.42    0.999
+Perfect Reflection (95%)     3.18    32.06    0.983
+Shades of Gray (p=1)     5.99    25.61    0.962
+Shades of Gray (p=3)     4.66    27.39    0.976
+Shades of Gray (p=6)     3.44    29.73    0.987
+Shades of Gray (p=10)     2.60    32.00    0.992
+Neural Network           5.19    26.30    0.966

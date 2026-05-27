@@ -1,0 +1,6 @@
+Init clean amp NRMSE: 1.0853
+Init noisy amp NRMSE: 0.9992
+Recon clean amp NRMSE: 0.6208
+Recon noisy amp NRMSE: 0.6000
+Recon denoised amp NRMSE: 74.9168
+Denoised max: 0.5715, min: 0.0000

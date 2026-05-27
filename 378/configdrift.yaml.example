@@ -1,0 +1,82 @@
+# ============================================================
+# 配置漂移检测工具示例配置
+# ============================================================
+
+# 日志级别
+log_level: INFO
+
+# 基准 / 历史版本 / 报告目录
+baseline_dir: baselines
+history_dir: history
+report_dir: reports
+
+# 定时巡检间隔 (分钟)
+schedule_minutes: 60
+
+# Celery / Redis
+celery_broker: redis://localhost:6379/0
+celery_backend: redis://localhost:6379/1
+
+# 邮件通知 (可选)
+email_on_drift: false
+smtp:
+  host: smtp.example.com
+  port: 465
+  user: alert@example.com
+  password: xxx
+  receivers: ["admin@example.com"]
+
+# ---------- 新增: 合规检查 ----------
+compliance_enabled: true
+cis_profile: level1   # level1 / level2
+
+# ---------- 新增: 影响分析 ----------
+impact_enabled: false                 # 设为 true 开启
+metrics_endpoint: ""                  # Prometheus URL, 如 http://prom:9090
+metrics_window_minutes: 30            # 变更前采样窗口
+
+# 被监控服务器列表
+servers:
+  - name: web01
+    host: 10.0.0.11
+    port: 22
+    username: root
+    password: "your_ssh_password"
+    # key_file: /path/to/id_rsa
+    services: [nginx, redis]
+
+  - name: db01
+    host: 10.0.0.12
+    username: root
+    key_file: /root/.ssh/id_rsa
+    services: [mysql, redis]
+
+  - name: mq01
+    host: 10.0.0.13
+    services: [kafka]
+
+# 服务定义 (可覆盖默认值)
+services:
+  nginx:
+    name: nginx
+    config_path: /etc/nginx/nginx.conf
+    parser: kvshell
+    sudo: true
+
+  mysql:
+    name: mysql
+    config_path: /etc/mysql/my.cnf
+    parser: ini
+    sudo: true
+
+  redis:
+    name: redis
+    config_path: /etc/redis/redis.conf
+    parser: kvshell
+    sudo: false
+
+  kafka:
+    name: kafka
+    config_path: /opt/kafka/config/server.properties
+    parser: kvshell
+    sudo: false
