@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.platform.points.mapper.PointsRecordMapper">
+
+    <resultMap id="PointsRecordVOResultMap" type="com.platform.points.vo.PointsRecordVO">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="order_no" property="orderNo"/>
+        <result column="points_type" property="pointsType"/>
+        <result column="points_type_name" property="pointsTypeName"/>
+        <result column="points_source" property="pointsSource"/>
+        <result column="points_source_name" property="pointsSourceName"/>
+        <result column="points" property="points"/>
+        <result column="balance_before" property="balanceBefore"/>
+        <result column="balance_after" property="balanceAfter"/>
+        <result column="description" property="description"/>
+        <result column="remark" property="remark"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="selectRecordPage" resultMap="PointsRecordVOResultMap">
+        SELECT
+            r.id,
+            r.user_id,
+            r.order_no,
+            r.points_type,
+            CASE r.points_type WHEN 1 THEN '发放' WHEN 2 THEN '扣减' END AS points_type_name,
+            r.points_source,
+            CASE r.points_source
+                WHEN 1 THEN '签到'
+                WHEN 2 THEN '消费'
+                WHEN 3 THEN '活动'
+                WHEN 4 THEN '兑换'
+                WHEN 5 THEN '过期'
+                ELSE '未知'
+            END AS points_source_name,
+            r.points,
+            r.balance_before,
+            r.balance_after,
+            r.description,
+            r.remark,
+            r.create_time
+        FROM points_record r
+        <where>
+            r.deleted = 0
+            <if test="query.userId != null">
+                AND r.user_id = #{query.userId}
+            </if>
+            <if test="query.pointsType != null">
+                AND r.points_type = #{query.pointsType}
+            </if>
+            <if test="query.pointsSource != null">
+                AND r.points_source = #{query.pointsSource}
+            </if>
+            <if test="query.startTime != null and query.startTime != ''">
+                AND r.create_time >= #{query.startTime}
+            </if>
+            <if test="query.endTime != null and query.endTime != ''">
+                AND r.create_time <= #{query.endTime}
+            </if>
+        </where>
+        ORDER BY r.create_time DESC
+    </select>
+
+</mapper>

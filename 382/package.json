@@ -1,0 +1,23 @@
+{
+  "name": "timeline-chart",
+  "version": "1.0.0",
+  "description": "Interactive timeline chart component with D3.js, React, Moment.js and Canvas",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "d3": "^7.8.5",
+    "d3-zoom": "^3.0.0",
+    "moment": "^2.30.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.0"
+  }
+}

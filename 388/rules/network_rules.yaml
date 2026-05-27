@@ -1,0 +1,59 @@
+- name: outbound_ssh_connection
+  description: "Outbound SSH connection from container"
+  severity: high
+  event_type: network
+  condition: "dport.*22"
+  output: "Outbound SSH: %saddr% -> %daddr%:%dport% (%comm%)"
+  remediation: "Review SSH connections. Consider blocking outbound SSH from containers."
+  tags: ["network", "ssh", "outbound"]
+  enabled: true
+
+- name: suspicious_high_port_connection
+  description: "Connection to suspicious high port"
+  severity: medium
+  event_type: network
+  condition: "dport.*(4444|5555|6666|7777|8888|9999)"
+  output: "Suspicious port: %saddr% -> %daddr%:%dport% (%comm%)"
+  remediation: "Investigate C2 communication. Common ports for reverse shells."
+  tags: ["network", "c2", "suspicious"]
+  enabled: true
+
+- name: tor_network_connection
+  description: "Connection to Tor network"
+  severity: high
+  event_type: network
+  condition: "dport.*(9001|9030|9050|9051|9150)"
+  output: "Tor connection: %saddr% -> %daddr%:%dport% (%comm%)"
+  remediation: "Tor usage detected. Investigate anonymous communication attempts."
+  tags: ["network", "tor", "anonymity"]
+  enabled: true
+
+- name: database_connection_unusual
+  description: "Unusual database connection"
+  severity: medium
+  event_type: network
+  condition: "dport.*(3306|5432|27017)"
+  output: "Database connection: %saddr% -> %daddr%:%dport% (%comm%)"
+  remediation: "Verify database access. Ensure only authorized applications access databases."
+  tags: ["network", "database", "access"]
+  enabled: true
+
+- name: http_connection_internal
+  description: "Internal HTTP connection"
+  severity: low
+  event_type: network
+  condition: "dport.*(80|8080).*daddr.*(10\\.|192\\.168\\.|172\\.)"
+  output: "Internal HTTP: %saddr% -> %daddr%:%dport% (%comm%)"
+  remediation: "Monitor internal service communication."
+  tags: ["network", "http", "internal"]
+  enabled: true
+
+- name: dns_tunneling_attempt
+  description: "Potential DNS tunneling"
+  severity: high
+  event_type: network
+  condition: "dport.*53.*comm.*(dig|nslookup|host)"
+  output: "DNS activity: %saddr% -> %daddr%:%dport% (%comm%)"
+  remediation: "Check for DNS tunneling. Monitor for unusual DNS queries."
+  tags: ["network", "dns", "tunneling"]
+  enabled: true

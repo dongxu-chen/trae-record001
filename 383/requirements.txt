@@ -1,0 +1,6 @@
+astor>=0.8.1
+javalang>=0.13.0
+esprima>=4.0.1
+PyGithub>=2.1.0
+click>=8.1.0
+requests>=2.31.0

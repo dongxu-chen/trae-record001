@@ -1,0 +1,67 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /release-service
+
+spring:
+  application:
+    name: release-service
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+  datasource:
+    url: jdbc:h2:mem:grayrelease;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  h2:
+    console:
+      enabled: true
+
+prometheus:
+  url: ${PROMETHEUS_URL:http://prometheus:9090}
+
+kubernetes:
+  namespace: ${K8S_NAMESPACE:gray-release}
+  use-endpointslice: ${K8S_USE_ENDPOINTSLICE:true}
+
+routing:
+  use-k8s-weighted: ${ROUTING_USE_K8S_WEIGHTED:true}
+
+image:
+  registry:
+    url: ${REGISTRY_URL:http://registry:5000}
+    type: ${REGISTRY_TYPE:docker}
+    verify-ssl: ${REGISTRY_VERIFY_SSL:true}
+
+rollback:
+  check-image-exists: ${ROLLBACK_CHECK_IMAGE:true}
+  force-on-automatic: ${ROLLBACK_FORCE_AUTO:true}
+
+quality-gate:
+  min-observation-minutes: ${QUALITY_GATE_MIN_OBSERVATION:5}
+  auto-progress-enabled: ${QUALITY_GATE_AUTO_PROGRESS:true}
+
+kafka:
+  topics:
+    traffic-update: ${KAFKA_TOPIC_TRAFFIC:traffic-update}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.grayrelease: INFO
+    org.springframework: INFO

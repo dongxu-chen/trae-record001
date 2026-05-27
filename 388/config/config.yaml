@@ -1,0 +1,106 @@
+metrics_addr: ":9091"
+rules_dir: "rules"
+log_level: "info"
+
+outputs:
+  - type: stdout
+    config: {}
+  
+  - type: file
+    config:
+      path: "/var/log/csm/alerts.json"
+
+whitelist:
+  processes:
+    - comm: "nginx"
+      container_id: "*"
+      description: "Nginx web server"
+      tags: ["web", "legitimate"]
+    
+    - comm: "envoy"
+      container_id: "*"
+      description: "Envoy proxy"
+      tags: ["proxy", "legitimate"]
+    
+    - comm: "haproxy"
+      container_id: "*"
+      description: "HAProxy load balancer"
+      tags: ["proxy", "legitimate"]
+    
+    - comm: "traefik"
+      container_id: "*"
+      description: "Traefik proxy"
+      tags: ["proxy", "legitimate"]
+    
+    - comm: "kube-proxy"
+      container_id: "*"
+      description: "Kubernetes proxy"
+      tags: ["kubernetes", "legitimate"]
+
+  networks:
+    - ip: "10.0.0.0"
+      port: 0
+      protocol: "tcp"
+      container_id: "*"
+      description: "Internal network"
+      tags: ["internal", "trusted"]
+    
+    - ip: "192.168.0.0"
+      port: 0
+      protocol: "tcp"
+      container_id: "*"
+      description: "Internal network"
+      tags: ["internal", "trusted"]
+    
+    - ip: "172.16.0.0"
+      port: 0
+      protocol: "tcp"
+      container_id: "*"
+      description: "Docker bridge network"
+      tags: ["docker", "trusted"]
+
+remediation:
+  auto_block: true
+  block_severity: "critical"
+  block_rules:
+    - "privilege_escalation"
+    - "reverse_shell_detected"
+    - "docker_socket_access"
+    - "etc_shadow_access"
+  network_isolate: true
+  quarantine_dir: "/var/run/csm/quarantine"
+
+baseline:
+  enabled: true
+  mode: "hybrid"
+  learning_period: 24h
+  baseline_dir: "/var/run/csm/baselines"
+  deviation_threshold: 0.3
+
+correlation:
+  enabled: true
+  time_window: 10m
+  max_buffer_size: 1000
+
+threat_intel:
+  enabled: true
+  auto_block: true
+  block_threshold: 0.7
+  cache_dir: "/var/run/csm/threatintel"
+  sources:
+    - name: "emerging-threats"
+      url: "https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt"
+      type: "c2"
+      interval: 1h
+    
+    - name: "abuse-ch-malware"
+      url: "https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt"
+      type: "malware"
+      interval: 2h
+
+containers:
+  - id: "*"
+    name: "all"
+    monitor: true
+    rules:
+      - "*"

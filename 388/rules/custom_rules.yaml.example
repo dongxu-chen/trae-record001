@@ -1,0 +1,32 @@
+# 自定义规则示例文件
+# 将此文件重命名为 custom_rules.yaml 并添加您的自定义规则
+
+- name: custom_malicious_process
+  description: "检测恶意进程名称"
+  severity: high
+  event_type: process
+  condition: "comm.*(malware|virus|trojan)"
+  output: "检测到恶意进程: %comm% (PID: %pid%)"
+  remediation: "立即终止进程，隔离容器并进行取证分析"
+  tags: ["custom", "malware", "process"]
+  enabled: false
+
+- name: custom_sensitive_file
+  description: "检测自定义敏感文件访问"
+  severity: medium
+  event_type: file
+  condition: "filename.*(my-secret|private-key)"
+  output: "敏感文件访问: %filename% 被 %comm% 访问"
+  remediation: "验证文件访问是否合法"
+  tags: ["custom", "file", "sensitive"]
+  enabled: false
+
+- name: custom_outbound_ip
+  description: "检测到可疑IP的出站连接"
+  severity: high
+  event_type: network
+  condition: "daddr.*(192\\.168\\.1\\.100|10\\.0\\.0\\.50)"
+  output: "可疑出站连接: %saddr% -> %daddr%:%dport%"
+  remediation: "检查与该IP的通信是否合法"
+  tags: ["custom", "network", "suspicious"]
+  enabled: false

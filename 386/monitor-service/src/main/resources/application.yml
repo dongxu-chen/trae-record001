@@ -1,0 +1,39 @@
+server:
+  port: 8082
+  servlet:
+    context-path: /monitor-service
+
+spring:
+  application:
+    name: monitor-service
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+prometheus:
+  url: ${PROMETHEUS_URL:http://prometheus:9090}
+
+anomaly:
+  detection:
+    use-dynamic-baseline: ${ANOMALY_USE_DYNAMIC_BASELINE:true}
+    std-dev-multiplier: ${ANOMALY_STD_DEV_MULTIPLIER:3.0}
+
+kafka:
+  topics:
+    metrics-alert: ${KAFKA_TOPIC_ALERT:metrics-alert}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.grayrelease: INFO
+    org.springframework: INFO

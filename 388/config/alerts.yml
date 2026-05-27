@@ -1,0 +1,47 @@
+groups:
+  - name: csm_alerts
+    rules:
+      - alert: CriticalSecurityAlert
+        expr: increase(csm_security_alerts_total{severity="critical"}[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical security alert detected"
+          description: "Critical alert from rule {{ $labels.rule_name }} on container {{ $labels.container_id }}"
+
+      - alert: HighSecurityAlertRate
+        expr: increase(csm_security_alerts_total{severity="high"}[10m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High rate of high-severity alerts"
+          description: "{{ $value }} high-severity alerts in the last 10 minutes"
+
+      - alert: UnusualNetworkActivity
+        expr: rate(csm_network_events_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Unusual network activity detected"
+          description: "High network event rate: {{ $value }} events/sec"
+
+      - alert: SensitiveFileAccessRate
+        expr: increase(csm_security_alerts_total{rule_name="sensitive_file_access"}[1h]) > 10
+        for: 10m
+        labels:
+          severity: high
+        annotations:
+          summary: "Frequent sensitive file access"
+          description: "Multiple sensitive file access attempts detected"
+
+      - alert: ReverseShellDetected
+        expr: increase(csm_security_alerts_total{rule_name="reverse_shell_detected"}[1m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "REVERSE SHELL DETECTED"
+          description: "Potential reverse shell detected - IMMEDIATE ACTION REQUIRED"

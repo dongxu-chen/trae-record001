@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  csm:
+    build: .
+    privileged: true
+    pid: host
+    network_mode: host
+    volumes:
+      - /sys/fs/bpf:/sys/fs/bpf
+      - /proc:/proc
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./rules:/app/rules
+      - ./config:/app/config
+    ports:
+      - "9091:9091"
+    depends_on:
+      - prometheus
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./config/grafana/datasources:/etc/grafana/provisioning/datasources
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+
+volumes:
+  prometheus_data:
+  grafana_data:

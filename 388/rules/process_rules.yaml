@@ -1,0 +1,49 @@
+- name: unexpected_privileged_container
+  description: "A container is running with unexpected privileged mode"
+  severity: critical
+  event_type: process
+  condition: "uid.*0"
+  output: "Privileged container detected: %comm% (PID: %pid%)"
+  remediation: "Review if this container truly needs privileged mode. Consider removing privileged capabilities."
+  tags: ["process", "privilege", "container"]
+  enabled: true
+
+- name: suspicious_shell_spawn
+  description: "A shell was spawned in a container"
+  severity: high
+  event_type: process
+  condition: "comm.*(bash|sh|zsh|ksh)"
+  output: "Shell spawned in container: %comm% (PID: %pid%, Container: %container_id%)"
+  remediation: "Investigate the shell activity. Verify if this is expected administrative behavior."
+  tags: ["process", "shell", "container"]
+  enabled: true
+
+- name: package_manager_execution
+  description: "Package manager executed inside container"
+  severity: medium
+  event_type: process
+  condition: "comm.*(apt|apt-get|yum|dnf|pip|npm|gem)"
+  output: "Package manager executed: %comm% (PID: %pid%)"
+  remediation: "Ensure only approved packages are being installed. Consider using immutable containers."
+  tags: ["process", "package", "container"]
+  enabled: true
+
+- name: crypto_miner_detection
+  description: "Potential crypto miner process detected"
+  severity: high
+  event_type: process
+  condition: "comm.*(minerd|xmrig|cpuminer|ethminer)"
+  output: "Potential crypto miner: %comm% (PID: %pid%, Container: %container_id%)"
+  remediation: "Terminate the process immediately. Investigate the source of the miner."
+  tags: ["process", "crypto", "malware"]
+  enabled: true
+
+- name: suspicious_uid_change
+  description: "Process changed UID to root"
+  severity: critical
+  event_type: process
+  condition: "uid.*0.*comm.*(su|sudo|setuid)"
+  output: "UID change to root detected: %comm% (PID: %pid%)"
+  remediation: "Investigate the privilege escalation. Check for unauthorized access attempts."
+  tags: ["process", "privilege-escalation", "critical"]
+  enabled: true

@@ -1,0 +1,59 @@
+- name: etc_shadow_access
+  description: "Access to /etc/shadow detected"
+  severity: critical
+  event_type: file
+  condition: "filename.*shadow"
+  output: "Sensitive file access: %filename% by %comm% (PID: %pid%)"
+  remediation: "Block the container immediately. Investigate credential theft attempt."
+  tags: ["file", "sensitive", "credentials"]
+  enabled: true
+
+- name: docker_socket_access
+  description: "Access to Docker socket detected"
+  severity: critical
+  event_type: file
+  condition: "filename.*docker.sock"
+  output: "Docker socket access: %filename% by %comm% (PID: %pid%)"
+  remediation: "Container escape attempt detected. Isolate the container and investigate."
+  tags: ["file", "container-escape", "critical"]
+  enabled: true
+
+- name: ssh_key_access
+  description: "Access to SSH keys detected"
+  severity: high
+  event_type: file
+  condition: "filename.*ssh.*(id_rsa|id_ed25519)"
+  output: "SSH key access: %filename% by %comm% (PID: %pid%)"
+  remediation: "Investigate potential credential theft. Rotate affected keys."
+  tags: ["file", "credentials", "ssh"]
+  enabled: true
+
+- name: kubeconfig_access
+  description: "Access to Kubernetes config detected"
+  severity: high
+  event_type: file
+  condition: "filename.*kube"
+  output: "Kubernetes config access: %filename% by %comm% (PID: %pid%)"
+  remediation: "Review Kubernetes access. Verify if this is legitimate cluster administration."
+  tags: ["file", "kubernetes", "config"]
+  enabled: true
+
+- name: proc_mem_access
+  description: "Access to process memory detected"
+  severity: high
+  event_type: file
+  condition: "filename.*proc.*mem"
+  output: "Process memory access: %filename% by %comm% (PID: %pid%)"
+  remediation: "Potential memory injection attack. Investigate the process behavior."
+  tags: ["file", "memory", "injection"]
+  enabled: true
+
+- name: sensitive_log_access
+  description: "Access to sensitive log files"
+  severity: medium
+  event_type: file
+  condition: "filename.*(auth.log|secure|audit)"
+  output: "Log file access: %filename% by %comm% (PID: %pid%)"
+  remediation: "Check if log tampering is occurring. Review log integrity."
+  tags: ["file", "logs", "tampering"]
+  enabled: true
