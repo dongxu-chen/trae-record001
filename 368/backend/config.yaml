@@ -1,0 +1,63 @@
+server:
+  port: 8080
+  read_timeout: 30
+  write_timeout: 30
+  mode: release
+
+database:
+  type: sqlite
+  dsn: ./data/ssl_monitor.db
+
+cron:
+  scan_interval: "0 */6 * * *"
+  check_expired_days: 30
+  warning_days: 7
+  rules_update_interval: "0 0 */7 * *"
+
+scan:
+  max_concurrent: 5
+  min_delay_ms: 100
+  max_delay_ms: 1000
+  timeout_seconds: 15
+  retry_count: 2
+  retry_delay_ms: 500
+  randomize_delay: true
+  jitter_percent: 20
+
+rule_library:
+  enabled: true
+  source_url: "https://raw.githubusercontent.com/ssllabs/research/master/Server_Cipher_Suites/weak_ciphers.json"
+  update_interval: "0 0 */7 * *"
+  auto_update: true
+  local_file: "./data/rules.json"
+
+dns:
+  enabled: true
+  auto_discover_mx: true
+  auto_discover_subdomains: true
+  auto_add_subdomains: true
+  timeout_seconds: 10
+  subdomain_tags: "auto-discovered"
+  dns_servers:
+    - "8.8.8.8:53"
+    - "1.1.1.1:53"
+    - "114.114.114.114:53"
+
+alert:
+  dingtalk:
+    enabled: false
+    webhook: "https://oapi.dingtalk.com/robot/send?access_token=YOUR_ACCESS_TOKEN"
+    secret: "YOUR_SECRET"
+
+  email:
+    enabled: false
+    host: smtp.example.com
+    port: 465
+    username: your_email@example.com
+    password: your_password
+    from: your_email@example.com
+    to: admin@example.com
+
+  wecom:
+    enabled: false
+    webhook: "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY"

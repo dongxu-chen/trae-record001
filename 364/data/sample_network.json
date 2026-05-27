@@ -1,0 +1,140 @@
+{
+    "nodes": [
+        {"id": "A", "lat": 39.9042, "lng": 116.4074},
+        {"id": "B", "lat": 39.9042, "lng": 116.4174},
+        {"id": "C", "lat": 39.9142, "lng": 116.4074},
+        {"id": "D", "lat": 39.9142, "lng": 116.4174},
+        {"id": "E", "lat": 39.8942, "lng": 116.4074},
+        {"id": "F", "lat": 39.8942, "lng": 116.4174}
+    ],
+    "roads": [
+        {
+            "id": "R1",
+            "name": "长安街东段",
+            "start_node": "A",
+            "end_node": "B",
+            "length": 100,
+            "lanes": 3,
+            "capacity": 150,
+            "speed_limit": 14,
+            "has_signal": true,
+            "signal_id": "S1",
+            "coordinates": [[39.9042, 116.4074], [39.9042, 116.4124], [39.9042, 116.4174]]
+        },
+        {
+            "id": "R2",
+            "name": "长安街西段",
+            "start_node": "B",
+            "end_node": "A",
+            "length": 100,
+            "lanes": 3,
+            "capacity": 150,
+            "speed_limit": 14,
+            "has_signal": true,
+            "signal_id": "S1",
+            "coordinates": [[39.9042, 116.4174], [39.9042, 116.4124], [39.9042, 116.4074]]
+        },
+        {
+            "id": "R3",
+            "name": "王府井大街北段",
+            "start_node": "A",
+            "end_node": "C",
+            "length": 100,
+            "lanes": 2,
+            "capacity": 100,
+            "speed_limit": 12,
+            "has_signal": true,
+            "signal_id": "S1",
+            "coordinates": [[39.9042, 116.4074], [39.9092, 116.4074], [39.9142, 116.4074]]
+        },
+        {
+            "id": "R4",
+            "name": "王府井大街南段",
+            "start_node": "C",
+            "end_node": "A",
+            "length": 100,
+            "lanes": 2,
+            "capacity": 100,
+            "speed_limit": 12,
+            "has_signal": true,
+            "signal_id": "S1",
+            "coordinates": [[39.9142, 116.4074], [39.9092, 116.4074], [39.9042, 116.4074]]
+        },
+        {
+            "id": "R5",
+            "name": "东单北大街",
+            "start_node": "B",
+            "end_node": "D",
+            "length": 100,
+            "lanes": 2,
+            "capacity": 100,
+            "speed_limit": 12,
+            "has_signal": true,
+            "signal_id": "S2",
+            "coordinates": [[39.9042, 116.4174], [39.9092, 116.4174], [39.9142, 116.4174]]
+        },
+        {
+            "id": "R6",
+            "name": "东单南大街",
+            "start_node": "D",
+            "end_node": "B",
+            "length": 100,
+            "lanes": 2,
+            "capacity": 100,
+            "speed_limit": 12,
+            "has_signal": true,
+            "signal_id": "S2",
+            "coordinates": [[39.9142, 116.4174], [39.9092, 116.4174], [39.9042, 116.4174]]
+        },
+        {
+            "id": "R7",
+            "name": "建国门内大街东段",
+            "start_node": "C",
+            "end_node": "D",
+            "length": 100,
+            "lanes": 3,
+            "capacity": 150,
+            "speed_limit": 14,
+            "has_signal": true,
+            "signal_id": "S2",
+            "coordinates": [[39.9142, 116.4074], [39.9142, 116.4124], [39.9142, 116.4174]]
+        },
+        {
+            "id": "R8",
+            "name": "建国门内大街西段",
+            "start_node": "D",
+            "end_node": "C",
+            "length": 100,
+            "lanes": 3,
+            "capacity": 150,
+            "speed_limit": 14,
+            "has_signal": true,
+            "signal_id": "S2",
+            "coordinates": [[39.9142, 116.4174], [39.9142, 116.4124], [39.9142, 116.4074]]
+        },
+        {
+            "id": "R9",
+            "name": "前门大街北段",
+            "start_node": "E",
+            "end_node": "A",
+            "length": 100,
+            "lanes": 2,
+            "capacity": 100,
+            "speed_limit": 12,
+            "has_signal": false,
+            "coordinates": [[39.8942, 116.4074], [39.8992, 116.4074], [39.9042, 116.4074]]
+        },
+        {
+            "id": "R10",
+            "name": "前门大街南段",
+            "start_node": "A",
+            "end_node": "E",
+            "length": 100,
+            "lanes": 2,
+            "capacity": 100,
+            "speed_limit": 12,
+            "has_signal": false,
+            "coordinates": [[39.9042, 116.4074], [39.8992, 116.4074], [39.8942, 116.4074]]
+        }
+    ]
+}

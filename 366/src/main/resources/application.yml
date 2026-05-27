@@ -1,0 +1,45 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: replay-guard
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password:
+      database: 0
+      timeout: 5000
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+          max-wait: 3000ms
+
+replay-guard:
+  sliding-window:
+    time-window-seconds: 60
+    max-requests-per-window: 10
+    dual-buffer-enabled: true
+    overlap-seconds: 10
+  nonce-expire-seconds: 300
+  device-fingerprint-header: X-Device-Fingerprint
+  timestamp-header: X-Timestamp
+  nonce-header: X-Nonce
+  user-id-header: X-User-Id
+  honeypot:
+    enabled: true
+    slow-threshold-ms: 2000
+    max-slow-requests: 5
+    block-duration-seconds: 600
+    dynamic-threshold-enabled: true
+    percentile: 0.95
+    history-window-minutes: 60
+    min-threshold-ms: 500
+    max-threshold-ms: 10000
+    adjustment-interval-seconds: 300
+  consistent-hash:
+    virtual-node-count: 150
+    nodes: node-1,node-2,node-3

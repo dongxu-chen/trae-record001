@@ -1,0 +1,50 @@
+{
+    "signals": [
+        {
+            "id": "S1",
+            "intersection_id": "A",
+            "controlled_roads": ["R1", "R2", "R3", "R4"],
+            "phases": [
+                {
+                    "name": "东西绿",
+                    "duration": 30,
+                    "directions": {
+                        "green": ["R1", "R2"],
+                        "red": ["R3", "R4"]
+                    }
+                },
+                {
+                    "name": "南北绿",
+                    "duration": 25,
+                    "directions": {
+                        "green": ["R3", "R4"],
+                        "red": ["R1", "R2"]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "S2",
+            "intersection_id": "B",
+            "controlled_roads": ["R5", "R6", "R7", "R8"],
+            "phases": [
+                {
+                    "name": "东西绿",
+                    "duration": 30,
+                    "directions": {
+                        "green": ["R7", "R8"],
+                        "red": ["R5", "R6"]
+                    }
+                },
+                {
+                    "name": "南北绿",
+                    "duration": 25,
+                    "directions": {
+                        "green": ["R5", "R6"],
+                        "red": ["R7", "R8"]
+                    }
+                }
+            ]
+        }
+    ]
+}
