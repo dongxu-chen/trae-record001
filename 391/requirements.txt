@@ -1,0 +1,10 @@
+apache-airflow==2.8.0
+celery==5.3.6
+redis==5.0.1
+flower==2.0.1
+SQLAlchemy==1.4.52
+mysql-connector-python==8.2.0
+pymysql==1.1.0
+eventlet==0.35.2
+Flask==2.3.3
+python-dateutil==2.8.2

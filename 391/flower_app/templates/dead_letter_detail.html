@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}死信详情 #{{ entry.dlq_id }} - 定时任务依赖管理系统{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h2><i class="bi bi-exclamation-triangle me-2"></i>死信详情 #{{ entry.dlq_id }}</h2>
+        <p class="text-muted">
+            <code class="text-primary">{{ entry.dag_id }}</code> /
+            <code class="text-info">{{ entry.task_id }}</code>
+        </p>
+    </div>
+    <div>
+        {% if entry.status == 'PENDING' %}
+        <span class="status-badge status-FAILURE fs-6">待处理</span>
+        {% elif entry.status == 'REPROCESSED' %}
+        <span class="status-badge status-SUCCESS fs-6">已重处理</span>
+        {% else %}
+        <span class="status-badge status-REVOKED fs-6">已丢弃</span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card log-detail-card mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>死信信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless mb-0">
+                            <tr>
+                                <th class="ps-0 w-40">DLQ ID:</th>
+                                <td>{{ entry.dlq_id }}</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0">DAG:</th>
+                                <td><code>{{ entry.dag_id }}</code></td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0">任务:</th>
+                                <td>{{ entry.task_id }}</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0">Run ID:</th>
+                                <td><code>{{ entry.run_id }}</code></td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0">任务模块:</th>
+                                <td><code>{{ entry.task_module }}</code></td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0">任务函数:</th>
+                                <td><code>{{ entry.task_function }}</code></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless mb-0">
+                            <tr>
+                                <th class="ps-0 w-40">原Celery ID:</th>
+                                <td><code>{{ entry.celery_task_id }}</code></td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0">总重试次数:</th>
+                                <td>{{ entry.total_retries }}</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0">原始入队时间:</th>
+                                <td>{{ entry.original_queued_at.strftime('%Y-%m-%d %H:%M:%S') if entry.original_queued_at else '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0">入死信时间:</th>
+                                <td>{{ entry.dead_lettered_at.strftime('%Y-%m-%d %H:%M:%S') if entry.dead_lettered_at else '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0">重处理时间:</th>
+                                <td>{{ entry.reprocessed_at.strftime('%Y-%m-%d %H:%M:%S') if entry.reprocessed_at else '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0">重处理人:</th>
+                                <td>{{ entry.reprocessed_by or '-' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if entry.input_params %}
+        <div class="card log-detail-card mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-gear me-2"></i>输入参数</h5>
+            </div>
+            <div class="card-body">
+                <pre class="bg-light p-3 rounded mb-0" style="max-height: 300px; overflow-y: auto;">{{ entry.input_params | tojson(indent=2) }}</pre>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if entry.error_message %}
+        <div class="card log-detail-card mb-4">
+            <div class="card-header bg-danger text-white py-3">
+                <h5 class="mb-0"><i class="bi bi-bug me-2"></i>错误信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger mb-3">
+                    <strong>{{ entry.error_message }}</strong>
+                </div>
+                {% if entry.error_traceback %}
+                <h6 class="mt-3">错误堆栈:</h6>
+                <pre class="error-traceback mb-0" style="max-height: 400px; overflow-y: auto;">{{ entry.error_traceback }}</pre>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if entry.notes %}
+        <div class="card log-detail-card">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-sticky me-2"></i>备注</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">{{ entry.notes }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <div class="card log-detail-card mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-tools me-2"></i>操作</h5>
+            </div>
+            <div class="card-body">
+                {% if entry.status == 'PENDING' %}
+                <button class="btn btn-success w-100 mb-2" onclick="reprocess({{ entry.dlq_id }})">
+                    <i class="bi bi-arrow-repeat me-2"></i>重处理
+                </button>
+                <button class="btn btn-danger w-100 mb-2" onclick="discard({{ entry.dlq_id }})">
+                    <i class="bi bi-trash me-2"></i>丢弃
+                </button>
+                {% endif %}
+                <a href="http://localhost:5555/task/{{ entry.celery_task_id }}" target="_blank" class="btn btn-info w-100 mb-2">
+                    <i class="bi bi-flower1 me-2"></i>Flower查看
+                </a>
+                <a href="{{ url_for('dead_letter') }}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-left me-2"></i>返回列表
+                </a>
+            </div>
+        </div>
+
+        <div class="card log-detail-card">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-link-45deg me-2"></i>关联信息</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('logs', dag_id=entry.dag_id) }}" class="list-group-item list-group-item-action py-2">
+                        <i class="bi bi-journal-text me-2"></i>查看DAG所有日志
+                    </a>
+                    <a href="{{ url_for('logs', task_id=entry.task_id) }}" class="list-group-item list-group-item-action py-2">
+                        <i class="bi bi-tasks me-2"></i>查看任务所有日志
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function reprocess(dlqId) {
+    if (!confirm('确定要重处理此死信任务吗？')) return;
+    fetch(`/api/dead-letter/reprocess/${dlqId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ triggered_by: 'admin' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'submitted') {
+            alert('重处理任务已提交，Celery ID: ' + data.rerun_celery_id);
+            location.reload();
+        } else {
+            alert('提交失败');
+        }
+    })
+    .catch(err => alert('请求失败: ' + err));
+}
+
+function discard(dlqId) {
+    const reason = prompt('请输入丢弃原因:');
+    if (reason === null) return;
+    if (!confirm('确定要丢弃此死信任务吗？此操作不可恢复。')) return;
+    fetch(`/api/dead-letter/discard/${dlqId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'submitted') {
+            alert('丢弃操作已提交');
+            location.reload();
+        } else {
+            alert('操作失败');
+        }
+    })
+    .catch(err => alert('请求失败: ' + err));
+}
+</script>
+{% endblock %}

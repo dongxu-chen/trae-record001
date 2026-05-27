@@ -1,0 +1,186 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: task-scheduler-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: task_scheduler
+      MYSQL_USER: scheduler
+      MYSQL_PASSWORD: scheduler123
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: task-scheduler-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass redis123
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis123", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  airflow-webserver:
+    build: .
+    container_name: airflow-webserver
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=mysql+pymysql://scheduler:scheduler123@mysql:3306/task_scheduler
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+mysql+pymysql://scheduler:scheduler123@mysql:3306/task_scheduler
+      - AIRFLOW__CELERY__BROKER_URL=redis://:redis123@redis:6379/0
+      - AIRFLOW__CORE__FERNET_KEY=
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=false
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./airflow.cfg:/opt/airflow/airflow.cfg
+    ports:
+      - "8080:8080"
+    command: webserver
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  airflow-scheduler:
+    build: .
+    container_name: airflow-scheduler
+    restart: always
+    depends_on:
+      airflow-webserver:
+        condition: service_healthy
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=mysql+pymysql://scheduler:scheduler123@mysql:3306/task_scheduler
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+mysql+pymysql://scheduler:scheduler123@mysql:3306/task_scheduler
+      - AIRFLOW__CELERY__BROKER_URL=redis://:redis123@redis:6379/0
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+    command: scheduler
+
+  airflow-worker:
+    build: .
+    container_name: airflow-worker
+    restart: always
+    depends_on:
+      airflow-scheduler:
+        condition: service_started
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=mysql+pymysql://scheduler:scheduler123@mysql:3306/task_scheduler
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+mysql+pymysql://scheduler:scheduler123@mysql:3306/task_scheduler
+      - AIRFLOW__CELERY__BROKER_URL=redis://:redis123@redis:6379/0
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./celery_app:/opt/airflow/celery_app
+      - ./scripts:/opt/airflow/scripts
+    command: celery worker
+
+  celery-worker:
+    build: .
+    container_name: task-celery-worker
+    restart: always
+    depends_on:
+      redis:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    environment:
+      - CELERY_BROKER_URL=redis://:redis123@redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://:redis123@redis:6379/2
+      - DATABASE_URL=mysql+pymysql://scheduler:scheduler123@mysql:3306/task_scheduler
+    volumes:
+      - ./celery_app:/app/celery_app
+      - ./models:/app/models
+      - ./scripts:/app/scripts
+      - ./logs:/app/logs
+    command: >
+      celery -A celery_app.app worker
+      --loglevel=info
+      --concurrency=4
+      -Q celery,dead_letter
+      --max-tasks-per-child=1000
+      --pool=prefork
+
+  flower:
+    build: .
+    container_name: task-flower
+    restart: always
+    depends_on:
+      celery-worker:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    environment:
+      - CELERY_BROKER_URL=redis://:redis123@redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://:redis123@redis:6379/2
+      - DATABASE_URL=mysql+pymysql://scheduler:scheduler123@mysql:3306/task_scheduler
+      - FLOWER_BASIC_AUTH=admin:admin123
+    volumes:
+      - ./flower_app:/app/flower_app
+      - ./celery_app:/app/celery_app
+      - ./models:/app/models
+      - ./logs:/app/logs
+    ports:
+      - "5555:5555"
+    command: >
+      celery -A celery_app.app flower
+      --port=5555
+      --broker=redis://:redis123@redis:6379/1
+
+  scheduler-ui:
+    build: .
+    container_name: task-scheduler-ui
+    restart: always
+    depends_on:
+      flower:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=mysql+pymysql://scheduler:scheduler123@mysql:3306/task_scheduler
+      - CELERY_BROKER_URL=redis://:redis123@redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://:redis123@redis:6379/2
+    volumes:
+      - ./flower_app:/app/flower_app
+      - ./models:/app/models
+      - ./scripts:/app/scripts
+      - ./logs:/app/logs
+    ports:
+      - "5000:5000"
+    command: python /app/flower_app/app.py
+
+volumes:
+  mysql_data:
+  redis_data:

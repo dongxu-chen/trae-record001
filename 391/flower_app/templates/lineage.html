@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}数据血缘 - 任务调度中心{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <h2><i class="bi bi-diagram-3 me-2"></i>数据血缘追溯</h2>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="bi bi-search me-2"></i>血缘查询</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">DAG ID</label>
+                    <select id="q-dag" class="form-select" onchange="loadTasks()"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">任务ID</label>
+                    <select id="q-task" class="form-select"></select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-primary w-100" onclick="traceFlow()">
+                        <i class="bi bi-diagram-3 me-1"></i>追溯数据流
+                    </button>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-info w-100" onclick="showDagGraph()">
+                        <i class="bi bi-graph-up me-1"></i>DAG血缘图
+                    </button>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-secondary w-100" onclick="showDatasetLineage()">
+                        <i class="bi bi-database me-1"></i>数据集血缘
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-arrow-up-circle me-2"></i>上游血缘</h5>
+                </div>
+                <div class="card-body p-0" style="max-height:400px;overflow-y:auto;">
+                    <div id="upstream-result" class="p-3 text-muted">请选择任务后追溯数据流</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-arrow-down-circle me-2"></i>下游血缘</h5>
+                </div>
+                <div class="card-body p-0" style="max-height:400px;overflow-y:auto;">
+                    <div id="downstream-result" class="p-3 text-muted">请选择任务后追溯数据流</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>血缘记录</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Lineage ID</th>
+                            <th>DAG</th>
+                            <th>任务</th>
+                            <th>Run</th>
+                            <th>源数据集</th>
+                            <th>目标数据集</th>
+                            <th>转换类型</th>
+                            <th>行数</th>
+                            <th>执行时间</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lineage-tbody">
+                        <tr><td colspan="9" class="text-center py-4 text-muted">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadDags() {
+    const res = await fetch('/api/dags');
+    const dags = await res.json();
+    const sel = document.getElementById('q-dag');
+    sel.innerHTML = '<option value="">-- 请选择 --</option>' +
+        dags.map(d => `<option value="${d.dag_id}">${d.dag_name}</option>`).join('');
+}
+
+async function loadTasks() {
+    const dag_id = document.getElementById('q-dag').value;
+    const taskSel = document.getElementById('q-task');
+    if (!dag_id) { taskSel.innerHTML = '<option value="">-- 请选择 --</option>'; return; }
+    const res = await fetch(`/api/dag/${dag_id}`);
+    const dag = await res.json();
+    taskSel.innerHTML = '<option value="">-- 请选择 --</option>' +
+        dag.tasks.map(t => `<option value="${t.task_id}">${t.task_name}</option>`).join('');
+}
+
+function renderLineageList(entries) {
+    if (!entries || !entries.length) return '<div class="text-muted">无血缘记录</div>';
+    return entries.map(e => `
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+            <div>
+                <div class="fw-bold">${e.task_id}</div>
+                <div class="small text-muted">
+                    ${e.source_dataset || '-'} <i class="bi bi-arrow-right"></i> ${e.target_dataset || '-'}
+                </div>
+            </div>
+            <span class="badge bg-light text-dark">${e.execution_time}</span>
+        </div>
+    `).join('');
+}
+
+async function traceFlow() {
+    const dag_id = document.getElementById('q-dag').value;
+    const task_id = document.getElementById('q-task').value;
+    if (!dag_id || !task_id) { alert('请选择DAG和任务'); return; }
+    const res = await fetch(`/api/lineage/data-flow/${dag_id}/${task_id}`);
+    const data = await res.json();
+    document.getElementById('upstream-result').innerHTML =
+        `<div class="p-3"><div class="mb-2"><strong>上游任务:</strong> ${data.upstream.upstream_tasks.map(t => `<span class="badge bg-primary me-1">${t}</span>`).join('') || '<span class="text-muted">无</span>'}</div>` +
+        renderLineageList(data.upstream.lineage_entries) + `</div>`;
+    document.getElementById('downstream-result').innerHTML =
+        `<div class="p-3"><div class="mb-2"><strong>下游任务:</strong> ${data.downstream.downstream_tasks.map(t => `<span class="badge bg-info me-1">${t}</span>`).join('') || '<span class="text-muted">无</span>'}</div>` +
+        renderLineageList(data.downstream.lineage_entries) + `</div>`;
+}
+
+async function showDagGraph() {
+    const dag_id = document.getElementById('q-dag').value;
+    if (!dag_id) { alert('请选择DAG'); return; }
+    const res = await fetch(`/api/lineage/dag-graph/${dag_id}`);
+    const data = await res.json();
+    const nodesHtml = data.nodes.map(n =>
+        `<span class="badge bg-${n.type === 'dataset' ? 'secondary' : 'primary'} me-1 mb-1">${n.type === 'dataset' ? n.dataset : n.task_id}</span>`
+    ).join('');
+    const edgesHtml = data.edges.map(e =>
+        `<div class="small py-1"><code>${e.from}</code> <i class="bi bi-arrow-right"></i> <code>${e.to}</code> <span class="badge bg-light text-dark">${e.type}</span></div>`
+    ).join('') || '<span class="text-muted">暂无边</span>';
+    document.getElementById('upstream-result').innerHTML =
+        `<div class="p-3"><h6>节点 (${data.nodes.length})</h6><div>${nodesHtml}</div></div>`;
+    document.getElementById('downstream-result').innerHTML =
+        `<div class="p-3"><h6>边 (${data.edges.length})</h6><div>${edgesHtml}</div></div>`;
+}
+
+async function showDatasetLineage() {
+    const dag_id = document.getElementById('q-dag').value;
+    const task_id = document.getElementById('q-task').value;
+    if (!dag_id) { alert('请选择DAG'); return; }
+    const res = await fetch(`/api/lineage/data-flow/${dag_id}/${task_id || ''}`);
+    const data = await res.json();
+    const upDatasets = [...new Set((data.upstream.lineage_entries || []).map(e => e.source_dataset).filter(Boolean))];
+    const downDatasets = [...new Set((data.downstream.lineage_entries || []).map(e => e.target_dataset).filter(Boolean))];
+    document.getElementById('upstream-result').innerHTML =
+        `<div class="p-3"><h6>源数据集</h6>` + (upDatasets.map(d => `<span class="badge bg-secondary me-1 mb-1">${d}</span>`).join('') || '<span class="text-muted">无</span>') + `</div>`;
+    document.getElementById('downstream-result').innerHTML =
+        `<div class="p-3"><h6>目标数据集</h6>` + (downDatasets.map(d => `<span class="badge bg-secondary me-1 mb-1">${d}</span>`).join('') || '<span class="text-muted">无</span>') + `</div>`;
+}
+
+async function loadLineageTable() {
+    const dag_id = document.getElementById('q-dag').value;
+    const url = '/api/lineage/list' + (dag_id ? `?dag_id=${dag_id}` : '');
+    const res = await fetch(url);
+    const rows = await res.json();
+    const tbody = document.getElementById('lineage-tbody');
+    if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">暂无血缘记录</td></tr>';
+        return;
+    }
+    tbody.innerHTML = rows.map(r => `
+        <tr>
+            <td>#${r.lineage_id}</td>
+            <td><code>${r.dag_id}</code></td>
+            <td>${r.task_id}</td>
+            <td>${r.run_id}</td>
+            <td><span class="badge bg-light text-dark">${r.source_dataset || '-'}</span></td>
+            <td><span class="badge bg-primary">${r.target_dataset || '-'}</span></td>
+            <td>${r.transformation_type || '-'}</td>
+            <td>${r.row_count || '-'}</td>
+            <td>${r.execution_time}</td>
+        </tr>
+    `).join('');
+}
+
+loadDags();
+loadLineageTable();
+document.getElementById('q-dag').addEventListener('change', loadLineageTable);
+</script>
+{% endblock %}

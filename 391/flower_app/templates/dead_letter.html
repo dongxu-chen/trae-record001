@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}死信队列 - 定时任务依赖管理系统{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h2><i class="bi bi-exclamation-triangle me-2"></i>死信队列</h2>
+        <p class="text-muted">超过重试次数的失败任务集中管理，支持TTL自动过期、重处理与丢弃</p>
+    </div>
+    <div>
+        <button class="btn btn-outline-danger" onclick="cleanupExpired()">
+            <i class="bi bi-trash me-1"></i>清理过期消息
+        </button>
+    </div>
+</div>
+
+<div class="card filter-card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('dead_letter') }}" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-medium">状态</label>
+                <select name="status" class="form-select">
+                    <option value="PENDING" {% if filter_status == 'PENDING' %}selected{% endif %}>待处理</option>
+                    <option value="REPROCESSED" {% if filter_status == 'REPROCESSED' %}selected{% endif %}>已重处理</option>
+                    <option value="DISCARDED" {% if filter_status == 'DISCARDED' %}selected{% endif %}>已丢弃</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-medium">DAG</label>
+                <input type="text" name="dag_id" class="form-control" placeholder="DAG ID" value="{{ filter_dag_id }}">
+            </div>
+            <div class="col-md-6">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-1"></i>查询
+                </button>
+                <a href="{{ url_for('dead_letter') }}" class="btn btn-outline-secondary ms-2">
+                    <i class="bi bi-arrow-clockwise me-1"></i>重置
+                </a>
+                {% if filter_status == 'PENDING' %}
+                <button class="btn btn-success ms-2" onclick="batchReprocess()">
+                    <i class="bi bi-arrow-repeat me-1"></i>批量重处理
+                </button>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">DLQ ID</th>
+                        <th>DAG</th>
+                        <th>任务</th>
+                        <th>重试次数</th>
+                        <th>入死信时间</th>
+                        <th>TTL</th>
+                        <th>过期时间</th>
+                        <th>状态</th>
+                        <th class="pe-4 text-end">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in dlq_entries %}
+                    {% set now = None %}
+                    <tr>
+                        <td class="ps-4">{{ entry.dlq_id }}</td>
+                        <td><code class="text-primary">{{ entry.dag_id }}</code></td>
+                        <td>{{ entry.task_id }}</td>
+                        <td>{{ entry.total_retries }}</td>
+                        <td>{{ entry.dead_lettered_at.strftime('%Y-%m-%d %H:%M') if entry.dead_lettered_at else '-' }}</td>
+                        <td>
+                            {% set days = entry.ttl_seconds // 86400 %}
+                            {% if days > 0 %}{{ days }}天
+                            {% else %}{{ entry.ttl_seconds // 3600 }}小时
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if entry.expires_at %}
+                            <small class="text-muted">
+                                {{ entry.expires_at.strftime('%Y-%m-%d %H:%M') }}
+                            </small>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if entry.status == 'PENDING' %}
+                            <span class="status-badge status-FAILURE">待处理</span>
+                            {% elif entry.status == 'REPROCESSED' %}
+                            <span class="status-badge status-SUCCESS">已重处理</span>
+                            {% else %}
+                            <span class="status-badge status-REVOKED">已丢弃</span>
+                            {% endif %}
+                        </td>
+                        <td class="pe-4 text-end">
+                            <a href="{{ url_for('dead_letter_detail', dlq_id=entry.dlq_id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if entry.status == 'PENDING' %}
+                            <button class="btn btn-sm btn-outline-success ms-1" onclick="reprocess({{ entry.dlq_id }})">
+                                <i class="bi bi-arrow-repeat"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning ms-1" onclick="updateTTL({{ entry.dlq_id }})">
+                                <i class="bi bi-clock"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger ms-1" onclick="discard({{ entry.dlq_id }})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not dlq_entries %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">暂无死信队列记录</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if total > per_page %}
+<nav class="mt-4 d-flex justify-content-center">
+    <ul class="pagination">
+        <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ page - 1 }}&per_page={{ per_page }}&status={{ filter_status }}&dag_id={{ filter_dag_id }}">上一页</a>
+        </li>
+        {% for p in range(1, total_pages + 1) %}
+        <li class="page-item {% if p == page %}active{% endif %}">
+            <a class="page-link" href="?page={{ p }}&per_page={{ per_page }}&status={{ filter_status }}&dag_id={{ filter_dag_id }}">{{ p }}</a>
+        </li>
+        {% endfor %}
+        <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ page + 1 }}&per_page={{ per_page }}&status={{ filter_status }}&dag_id={{ filter_dag_id }}">下一页</a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function reprocess(dlqId) {
+    if (!confirm('确定要重处理此死信任务吗？')) return;
+    fetch(`/api/dead-letter/reprocess/${dlqId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ triggered_by: 'admin' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'submitted') {
+            alert('重处理任务已提交，Celery ID: ' + data.rerun_celery_id);
+            location.reload();
+        } else {
+            alert('提交失败');
+        }
+    })
+    .catch(err => alert('请求失败: ' + err));
+}
+
+function discard(dlqId) {
+    const reason = prompt('请输入丢弃原因（可选）:');
+    if (reason === null) return;
+    if (!confirm('确定要丢弃此死信任务吗？此操作不可恢复。')) return;
+    fetch(`/api/dead-letter/discard/${dlqId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'submitted') {
+            alert('丢弃操作已提交');
+            location.reload();
+        } else {
+            alert('操作失败');
+        }
+    })
+    .catch(err => alert('请求失败: ' + err));
+}
+
+function updateTTL(dlqId) {
+    const ttlHours = prompt('请输入新的TTL（小时）:', '72');
+    if (ttlHours === null) return;
+    const ttlSeconds = parseInt(ttlHours) * 3600;
+    if (isNaN(ttlSeconds) || ttlSeconds <= 0) {
+        alert('请输入有效的小时数');
+        return;
+    }
+    fetch(`/api/dead-letter/update-ttl/${dlqId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ttl_seconds: ttlSeconds })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'submitted') {
+            alert('TTL更新已提交，新TTL: ' + ttlHours + '小时');
+            location.reload();
+        } else {
+            alert('操作失败');
+        }
+    })
+    .catch(err => alert('请求失败: ' + err));
+}
+
+function cleanupExpired() {
+    if (!confirm('确定要清理所有过期的死信消息吗？')) return;
+    fetch('/api/dead-letter/cleanup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'submitted') {
+            alert('清理任务已提交，Celery ID: ' + data.rerun_celery_id);
+            location.reload();
+        } else {
+            alert('操作失败');
+        }
+    })
+    .catch(err => alert('请求失败: ' + err));
+}
+
+function batchReprocess() {
+    if (!confirm('确定要批量重处理所有待处理的死信任务吗？')) return;
+    fetch('/api/dead-letter?status=PENDING&per_page=100')
+        .then(r => r.json())
+        .then(data => {
+            if (data.entries.length === 0) {
+                alert('没有待处理的死信任务');
+                return;
+            }
+            let submitted = 0;
+            const promises = data.entries.map(e =>
+                fetch(`/api/dead-letter/reprocess/${e.dlq_id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ triggered_by: 'admin' })
+                }).then(r => r.json()).then(d => { if (d.status === 'submitted') submitted++; })
+            );
+            Promise.all(promises).then(() => {
+                alert(`已提交 ${submitted} 个重处理任务`);
+                location.reload();
+            });
+        });
+}
+</script>
+{% endblock %}

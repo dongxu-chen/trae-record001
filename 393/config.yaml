@@ -1,0 +1,123 @@
+kafka:
+  bootstrap_servers: "localhost:9092,localhost:9093,localhost:9094"
+  security_protocol: "PLAINTEXT"
+  sasl_mechanism: null
+  sasl_username: null
+  sasl_password: null
+  ssl_cafile: null
+  ssl_certfile: null
+  ssl_keyfile: null
+
+jmx:
+  enabled: true
+  jmx_port: 9999
+  jmx_hosts:
+    - "localhost:9999"
+    - "localhost:9998"
+    - "localhost:9997"
+  username: null
+  password: null
+
+prometheus:
+  enabled: true
+  url: "http://localhost:9090"
+  query_timeout: 30
+
+checks:
+  broker:
+    enabled: true
+    offline_threshold: 1
+  
+  isr:
+    enabled: true
+    under_replicated_threshold: 0
+  
+  lag:
+    enabled: true
+    consumer_groups:
+      - ".*"
+    lag_warning_threshold: 1000
+    lag_critical_threshold: 10000
+    delay_analysis:
+      enabled: true
+      slow_consumer_threshold: 0.5
+      lag_growth_rate_threshold: 100
+      eta_critical_hours: 24
+      eta_warning_hours: 72
+      history_file: "./data/consumer_lag_history.json"
+    topic_priority:
+      enabled: true
+      high:
+        description: "高优Topic - 严格阈值"
+        topics:
+          - ".*order.*"
+          - ".*payment.*"
+          - ".*transaction.*"
+        lag_warning_threshold: 100
+        lag_critical_threshold: 1000
+      medium:
+        description: "中优Topic - 中等阈值"
+        topics:
+          - ".*user.*"
+          - ".*log.*"
+          - ".*metric.*"
+        lag_warning_threshold: 1000
+        lag_critical_threshold: 10000
+      low:
+        description: "低优Topic - 宽松阈值"
+        topics:
+          - ".*test.*"
+          - ".*temp.*"
+          - ".*backup.*"
+        lag_warning_threshold: 10000
+        lag_critical_threshold: 100000
+  
+  disk:
+    enabled: true
+    disk_warning_threshold: 70
+    disk_critical_threshold: 85
+  
+  topic_partition:
+    enabled: true
+    max_partitions_per_broker: 1000
+    rack_aware:
+      enabled: true
+      min_racks_for_replication: 2
+      prefer_rack_spread: true
+      warn_on_single_rack_topics: true
+
+  auto_rebalance:
+    enabled: true
+    hot_topic_threshold_msgs_per_sec: 5000
+    hot_partition_threshold_percent: 30
+    cpu_usage_high_threshold: 70
+    network_in_high_threshold_mbs: 50
+    bytes_in_per_partition_limit_mbs: 10
+    recommended_partition_growth_factor: 1.5
+
+  compression:
+    enabled: true
+    min_topic_size_gb: 10
+    min_compression_savings_percent: 20
+    recommended_compression_types:
+      - "zstd"
+      - "lz4"
+      - "snappy"
+      - "gzip"
+
+isr_history:
+  enabled: true
+  history_file: "./data/isr_history.json"
+  retention_days: 30
+  min_recovery_seconds: 5
+
+output:
+  report_dir: "./reports"
+  format: ["html", "json", "markdown"]
+  grafana:
+    enabled: true
+    dashboard_path: "./grafana/dashboards"
+
+logging:
+  level: "INFO"
+  file: "./logs/kafka_inspector.log"

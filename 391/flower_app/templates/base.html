@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}定时任务依赖管理系统{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 250px;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+        .sidebar {
+            position: fixed; top: 0; left: 0; height: 100vh;
+            width: var(--sidebar-width); background: #1a1a2e; color: #fff;
+            padding-top: 1rem; z-index: 1000;
+        }
+        .sidebar .nav-link {
+            color: #a0a0b0; padding: 0.75rem 1.5rem; font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #fff; background: #16213e;
+        }
+        .sidebar .nav-link i { margin-right: 0.5rem; }
+        .main-content {
+            margin-left: var(--sidebar-width); padding: 1.5rem; min-height: 100vh;
+            background: #f5f7fa;
+        }
+        .stat-card {
+            border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); }
+        .stat-card .card-body { padding: 1.5rem; }
+        .stat-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .stat-value { font-size: 1.8rem; font-weight: 700; }
+        .stat-label { color: #6c757d; font-size: 0.9rem; }
+        .status-badge { padding: 0.35em 0.75em; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .status-SUCCESS { background: #d4edda; color: #155724; }
+        .status-FAILURE { background: #f8d7da; color: #721c24; }
+        .status-RETRY { background: #fff3cd; color: #856404; }
+        .status-PENDING { background: #cce5ff; color: #004085; }
+        .status-RUNNING { background: #b8daff; color: #004085; }
+        .status-REVOKED { background: #e2e3e5; color: #383d41; }
+        .table { background: #fff; }
+        .table thead th { background: #f8f9fa; border-bottom: 2px solid #dee2e6; font-weight: 600; }
+        .page-header { margin-bottom: 1.5rem; }
+        .page-header h2 { font-weight: 700; color: #2c3e50; }
+        .filter-card { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .btn-sm { font-size: 0.85rem; }
+        .dag-graph-container { background: #fff; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .dag-node {
+            display: inline-block; padding: 0.75rem 1.25rem; margin: 0.5rem;
+            background: #3498db; color: #fff; border-radius: 8px;
+            font-weight: 500; position: relative;
+        }
+        .dag-node.success { background: #27ae60; }
+        .dag-node.failed { background: #e74c3c; }
+        .dag-node.pending { background: #95a5a6; }
+        .dag-arrow { display: inline-block; color: #7f8c8d; font-size: 1.5rem; margin: 0 0.25rem; }
+        .log-detail-card { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .error-traceback { background: #2d2d2d; color: #f8f8f2; padding: 1rem; border-radius: 8px; overflow-x: auto; }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="px-4 pb-3 border-bottom border-secondary">
+            <h5 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>任务调度中心</h5>
+        </div>
+        <ul class="nav flex-column mt-3">
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+                    <i class="bi bi-speedometer2"></i> 监控面板
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'logs' or request.endpoint == 'log_detail' %}active{% endif %}" href="{{ url_for('logs') }}">
+                    <i class="bi bi-journal-text"></i> 执行日志
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'dead_letter' in (request.endpoint or '') %}active{% endif %}" href="{{ url_for('dead_letter') }}">
+                    <i class="bi bi-exclamation-triangle"></i> 死信队列
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'scheduler_view' %}active{% endif %}" href="{{ url_for('scheduler_view') }}">
+                    <i class="bi bi-cpu"></i> 智能调度
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'impact_view' %}active{% endif %}" href="{{ url_for('impact_view') }}">
+                    <i class="bi bi-shield-exclamation"></i> 影响分析
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'lineage_view' %}active{% endif %}" href="{{ url_for('lineage_view') }}">
+                    <i class="bi bi-diagram-3"></i> 数据血缘
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="http://localhost:8080" target="_blank">
+                    <i class="bi bi-cloud-arrow-up"></i> Airflow UI
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="http://localhost:5555" target="_blank">
+                    <i class="bi bi-flower1"></i> Flower监控
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

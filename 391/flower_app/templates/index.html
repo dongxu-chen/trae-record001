@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block title %}监控面板 - 定时任务依赖管理系统{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2><i class="bi bi-speedometer2 me-2"></i>监控面板</h2>
+    <p class="text-muted">实时任务调度与执行状态总览</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <div class="stat-icon text-primary"><i class="bi bi-diagram-3"></i></div>
+                <div class="stat-value" id="stat-dags">-</div>
+                <div class="stat-label">活跃DAG</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <div class="stat-icon text-info"><i class="bi bi-tasks"></i></div>
+                <div class="stat-value" id="stat-tasks">-</div>
+                <div class="stat-label">任务总数</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <div class="stat-icon text-success"><i class="bi bi-check-circle"></i></div>
+                <div class="stat-value" id="stat-success">-</div>
+                <div class="stat-label">今日成功</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <div class="stat-icon text-danger"><i class="bi bi-x-circle"></i></div>
+                <div class="stat-value" id="stat-failure">-</div>
+                <div class="stat-label">今日失败</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <div class="stat-icon text-warning"><i class="bi bi-exclamation-triangle"></i></div>
+                <div class="stat-value" id="stat-dlq">-</div>
+                <div class="stat-label">死信队列</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <div class="stat-icon text-primary"><i class="bi bi-play-circle"></i></div>
+                <div class="stat-value" id="stat-running">-</div>
+                <div class="stat-label">运行中</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <div class="stat-icon" style="color:#6f42c1;"><i class="bi bi-cpu"></i></div>
+                <div class="stat-value" id="stat-workers">-</div>
+                <div class="stat-label">在线Worker</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <div class="stat-icon" style="color:#0dcaf0;"><i class="bi bi-motherboard"></i></div>
+                <div class="stat-value" id="stat-cluster-cpu">-</div>
+                <div class="stat-label">集群CPU</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <div class="stat-icon text-danger"><i class="bi bi-shield-exclamation"></i></div>
+                <div class="stat-value" id="stat-high-risk">-</div>
+                <div class="stat-label">高风险任务</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card stat-card border-start border-4" style="border-color: #6f42c1 !important;">
+            <div class="card-body d-flex align-items-center">
+                <div class="stat-icon" style="color: #6f42c1;"><i class="bi bi-plus-circle"></i></div>
+                <div class="ms-3">
+                    <div class="stat-value" id="stat-new-deps" style="font-size: 1.4rem;">-</div>
+                    <div class="stat-label">待检测新依赖</div>
+                </div>
+                <div class="ms-auto">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="triggerDependencyDetection()">
+                        <i class="bi bi-search"></i> 检测
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card stat-card border-start border-4" style="border-color: #fd7e14 !important;">
+            <div class="card-body d-flex align-items-center">
+                <div class="stat-icon" style="color: #fd7e14;"><i class="bi bi-hourglass-split"></i></div>
+                <div class="ms-3">
+                    <div class="stat-value" id="stat-dlq-expiring" style="font-size: 1.4rem;">-</div>
+                    <div class="stat-label">24h内过期DLQ</div>
+                </div>
+                <div class="ms-auto">
+                    <a href="{{ url_for('dead_letter') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-eye"></i> 查看
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>DAG流水线</h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="dagAccordion">
+                    {% for dag in dags %}
+                    <div class="accordion-item mb-2 border-0 bg-light rounded">
+                        <h6 class="accordion-header">
+                            <button class="accordion-button bg-transparent py-3" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#dag-{{ dag.dag_id }}">
+                                <div class="d-flex align-items-center w-100">
+                                    <i class="bi bi-diagram-3 text-primary me-3"></i>
+                                    <div>
+                                        <strong class="me-3">{{ dag.dag_name }}</strong>
+                                        <span class="text-muted" style="font-size: 0.85rem;">
+                                            <i class="bi bi-clock"></i> {{ dag.schedule_interval }}
+                                            <i class="bi bi-list-task ms-3"></i> {{ dag.task_count }} 任务
+                                        </span>
+                                    </div>
+                                </div>
+                            </button>
+                        </h6>
+                        <div id="dag-{{ dag.dag_id }}" class="accordion-collapse collapse">
+                            <div class="accordion-body bg-white">
+                                <div id="graph-{{ dag.dag_id }}">
+                                    <div class="text-center text-muted py-3">
+                                        <span class="spinner-border spinner-border-sm me-2"></span>加载DAG拓扑...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>最近执行</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for dag in dags %}
+                        {% for run in dag.recent_runs %}
+                        <a href="{{ url_for('log_detail', log_id=run.log_id) }}" class="list-group-item list-group-item-action py-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="fw-medium">{{ run.task_id }}</div>
+                                    <small class="text-muted">{{ run.dag_id }} | {{ run.execution_date.strftime('%H:%M:%S') if run.execution_date else '-' }}</small>
+                                </div>
+                                <span class="status-badge status-{{ run.status }}">{{ run.status }}</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    {% endfor %}
+                    {% if not dags %}
+                    <div class="text-center text-muted py-4">暂无执行记录</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>死信队列</h5>
+                <a href="{{ url_for('dead_letter') }}" class="btn btn-sm btn-outline-secondary">查看全部</a>
+            </div>
+            <div class="card-body">
+                <div id="dlq-summary" class="text-center text-muted py-2">
+                    <span class="spinner-border spinner-border-sm me-2"></span>加载中...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function loadStats() {
+    fetch('/api/statistics')
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('stat-dags').textContent = data.total_dags;
+            document.getElementById('stat-tasks').textContent = data.total_tasks;
+            document.getElementById('stat-success').textContent = data.success_today;
+            document.getElementById('stat-failure').textContent = data.failure_today;
+            document.getElementById('stat-dlq').textContent = data.dlq_pending;
+            document.getElementById('stat-running').textContent = data.running_now;
+            document.getElementById('stat-new-deps').textContent = data.new_deps_pending || 0;
+            document.getElementById('stat-dlq-expiring').textContent = data.dlq_expiring_soon || 0;
+            document.getElementById('stat-workers').textContent = data.online_workers || 0;
+            document.getElementById('stat-cluster-cpu').textContent = (data.cluster_avg_cpu_percent || 0).toFixed(1) + '%';
+            document.getElementById('stat-high-risk').textContent = data.high_risk_tasks || 0;
+        });
+}
+
+function triggerDependencyDetection() {
+    if (!confirm('确定要触发增量依赖检测吗？这将检测所有未检测的新依赖关系。')) return;
+    fetch('/api/dependencies/detect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'submitted') {
+            alert('增量依赖检测任务已提交，Celery ID: ' + data.celery_task_id);
+            loadStats();
+        } else {
+            alert('提交失败');
+        }
+    })
+    .catch(err => alert('请求失败: ' + err));
+}
+
+function loadDagGraph(dagId, containerId) {
+    fetch(`/api/dag/${dagId}`)
+        .then(r => r.json())
+        .then(data => {
+            const container = document.getElementById(containerId);
+            if (!data.tasks || data.tasks.length === 0) {
+                container.innerHTML = '<div class="text-muted">暂未配置任务</div>';
+                return;
+            }
+
+            const taskMap = {};
+            data.tasks.forEach(t => taskMap[t.task_id] = t);
+
+            let html = '<div class="dag-graph-container">';
+            html += '<h6 class="mb-3">' + (data.dag.dag_name || dagId) + '</h6>';
+            html += '<div class="d-flex flex-wrap align-items-center">';
+
+            const visited = new Set();
+            const edges = data.edges || [];
+            const inDegree = {};
+            const adjList = {};
+
+            data.tasks.forEach(t => { inDegree[t.task_id] = 0; adjList[t.task_id] = []; });
+            edges.forEach(e => {
+                if (adjList[e.from]) adjList[e.from].push(e.to);
+                inDegree[e.to] = (inDegree[e.to] || 0) + 1;
+            });
+
+            const queue = data.tasks.filter(t => (inDegree[t.task_id] || 0) === 0).map(t => t.task_id);
+            const levels = {};
+            queue.forEach(tid => levels[tid] = 0);
+
+            while (queue.length > 0) {
+                const tid = queue.shift();
+                const currLevel = levels[tid] || 0;
+                (adjList[tid] || []).forEach(next => {
+                    levels[next] = Math.max(levels[next] || 0, currLevel + 1);
+                    inDegree[next]--;
+                    if (inDegree[next] === 0) queue.push(next);
+                });
+            }
+
+            const levelMap = {};
+            Object.keys(levels).forEach(tid => {
+                const lv = levels[tid];
+                if (!levelMap[lv]) levelMap[lv] = [];
+                levelMap[lv].push(tid);
+            });
+
+            Object.keys(levelMap).sort((a, b) => a - b).forEach(lv => {
+                html += '<div class="d-flex flex-column align-items-center">';
+                levelMap[lv].forEach(tid => {
+                    const t = taskMap[tid];
+                    if (t) {
+                        html += `<span class="dag-node pending">${t.task_name}</span>`;
+                    }
+                });
+                html += '</div>';
+                if (parseInt(lv) < Object.keys(levelMap).length - 1) {
+                    html += '<span class="dag-arrow"><i class="bi bi-arrow-down"></i></span>';
+                }
+            });
+
+            html += '</div></div>';
+            container.innerHTML = html;
+        })
+        .catch(err => {
+            document.getElementById(containerId).innerHTML =
+                '<div class="text-danger">加载失败: ' + err.message + '</div>';
+        });
+}
+
+function loadDlqSummary() {
+    fetch('/api/dead-letter?per_page=5&status=PENDING')
+        .then(r => r.json())
+        .then(data => {
+            const container = document.getElementById('dlq-summary');
+            if (data.total === 0) {
+                container.innerHTML = '<div class="text-success py-2"><i class="bi bi-check-circle me-1"></i>暂无待处理死信</div>';
+                return;
+            }
+            let html = `<div class="mb-2">待处理: <strong class="text-danger">${data.total}</strong> 条</div>`;
+            html += '<div class="list-group list-group-flush">';
+            data.entries.forEach(e => {
+                html += `<a href="{{ url_for('dead_letter') }}" class="list-group-item list-group-item-action py-2 px-0" style="font-size:0.85rem;">
+                    <span class="status-badge status-FAILURE me-1">${e.task_id}</span>
+                    <small class="text-muted">${e.dead_lettered_at}</small>
+                </a>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadStats();
+    loadDlqSummary();
+
+    {% for dag in dags %}
+    const trigger_{{ dag.dag_id.replace('-', '_') }} = document.querySelector('[data-bs-target="#dag-{{ dag.dag_id }}"]');
+    if (trigger_{{ dag.dag_id.replace('-', '_') }}) {
+        trigger_{{ dag.dag_id.replace('-', '_') }}.addEventListener('click', function() {
+            setTimeout(() => loadDagGraph('{{ dag.dag_id }}', 'graph-{{ dag.dag_id }}'), 100);
+        });
+    }
+    {% endfor %}
+
+    setInterval(loadStats, 30000);
+});
+</script>
+{% endblock %}

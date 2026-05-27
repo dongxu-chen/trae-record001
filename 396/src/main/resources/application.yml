@@ -1,0 +1,82 @@
+spring:
+  application:
+    name: data-masking-service
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/test
+      database: test
+
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      timeout: 3000ms
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+
+logging:
+  level:
+    com.datasecurity.masking: DEBUG
+    org.springframework.data.mongodb: DEBUG
+
+data-masking:
+  enabled: true
+
+  cache:
+    type: redis
+    expire-hours: 24
+
+  rules:
+    config-path: classpath:rules/
+
+  proxy:
+    enabled: false
+    port: 3307
+    thread-pool-size: 100
+    target:
+      host: localhost
+      port: 3306
+
+  default-policy:
+    id-card:
+      strategy: MASK
+      keep-start: 6
+      keep-end: 4
+      mask-char: "*"
+    phone:
+      strategy: MASK
+      keep-start: 3
+      keep-end: 4
+      mask-char: "*"
+    bank-card:
+      strategy: MASK
+      keep-start: 4
+      keep-end: 4
+      mask-char: "*"
+    name:
+      strategy: MASK
+      keep-start: 1
+      keep-end: 0
+      mask-char: "*"

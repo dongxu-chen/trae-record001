@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}执行日志 - 定时任务依赖管理系统{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h2><i class="bi bi-journal-text me-2"></i>执行日志</h2>
+        <p class="text-muted">集中查看所有任务的执行历史与详情</p>
+    </div>
+</div>
+
+<div class="card filter-card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('logs') }}" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-medium">DAG</label>
+                <select name="dag_id" class="form-select">
+                    <option value="">全部</option>
+                    {% for dag in dags %}
+                    <option value="{{ dag.dag_id }}" {% if filter_dag_id == dag.dag_id %}selected{% endif %}>{{ dag.dag_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-medium">任务</label>
+                <select name="task_id" class="form-select">
+                    <option value="">全部</option>
+                    {% for task in tasks %}
+                    <option value="{{ task.task_id }}" {% if filter_task_id == task.task_id %}selected{% endif %}>{{ task.task_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-medium">状态</label>
+                <select name="status" class="form-select">
+                    <option value="">全部</option>
+                    <option value="SUCCESS" {% if filter_status == 'SUCCESS' %}selected{% endif %}>成功</option>
+                    <option value="FAILURE" {% if filter_status == 'FAILURE' %}selected{% endif %}>失败</option>
+                    <option value="RETRY" {% if filter_status == 'RETRY' %}selected{% endif %}>重试中</option>
+                    <option value="PENDING" {% if filter_status == 'PENDING' %}selected{% endif %}>等待中</option>
+                    <option value="RUNNING" {% if filter_status == 'RUNNING' %}selected{% endif %}>运行中</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-1"></i>查询
+                </button>
+                <a href="{{ url_for('logs') }}" class="btn btn-outline-secondary ms-2">
+                    <i class="bi bi-arrow-clockwise me-1"></i>重置
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">ID</th>
+                        <th>DAG</th>
+                        <th>任务</th>
+                        <th>Run ID</th>
+                        <th>Celery ID</th>
+                        <th>执行时间</th>
+                        <th>耗时(s)</th>
+                        <th>状态</th>
+                        <th>尝试</th>
+                        <th>Worker</th>
+                        <th class="pe-4 text-end">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td class="ps-4">{{ log.log_id }}</td>
+                        <td><code class="text-primary">{{ log.dag_id }}</code></td>
+                        <td>{{ log.task_id }}</td>
+                        <td><small>{{ log.run_id[:16] }}{% if log.run_id|length > 16 %}...{% endif %}</small></td>
+                        <td><small>{{ (log.celery_task_id or '-')[:16] }}{% if (log.celery_task_id or '')|length > 16 %}...{% endif %}</small></td>
+                        <td>{{ log.execution_date.strftime('%Y-%m-%d %H:%M:%S') if log.execution_date else '-' }}</td>
+                        <td>{{ '%.2f'|format(log.duration_sec) if log.duration_sec else '-' }}</td>
+                        <td><span class="status-badge status-{{ log.status }}">{{ log.status }}</span></td>
+                        <td>{{ log.attempt }}</td>
+                        <td><small>{{ log.worker_name or '-' }}</small></td>
+                        <td class="pe-4 text-end">
+                            <a href="{{ url_for('log_detail', log_id=log.log_id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if log.status in ['FAILURE', 'REVOKED'] %}
+                            <button class="btn btn-sm btn-outline-warning ms-1" onclick="rerunTask({{ log.log_id }})">
+                                <i class="bi bi-arrow-repeat"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not logs %}
+                    <tr>
+                        <td colspan="11" class="text-center text-muted py-4">暂无执行记录</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if total > per_page %}
+<nav class="mt-4 d-flex justify-content-center">
+    <ul class="pagination">
+        <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ page - 1 }}&per_page={{ per_page }}&dag_id={{ filter_dag_id }}&task_id={{ filter_task_id }}&status={{ filter_status }}">上一页</a>
+        </li>
+        {% for p in range(1, total_pages + 1) %}
+        <li class="page-item {% if p == page %}active{% endif %}">
+            <a class="page-link" href="?page={{ p }}&per_page={{ per_page }}&dag_id={{ filter_dag_id }}&task_id={{ filter_task_id }}&status={{ filter_status }}">{{ p }}</a>
+        </li>
+        {% endfor %}
+        <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ page + 1 }}&per_page={{ per_page }}&dag_id={{ filter_dag_id }}&task_id={{ filter_task_id }}&status={{ filter_status }}">下一页</a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function rerunTask(logId) {
+    if (!confirm('确定要重跑此任务吗？')) return;
+    fetch('/api/rerun', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ log_id: logId, triggered_by: 'admin' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'submitted') {
+            alert('重跑任务已提交，Celery ID: ' + data.rerun_celery_id);
+        } else {
+            alert('提交失败: ' + (data.error || '未知错误'));
+        }
+    })
+    .catch(err => alert('请求失败: ' + err));
+}
+</script>
+{% endblock %}

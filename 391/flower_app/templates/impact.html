@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}影响分析 - 任务调度中心{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <h2><i class="bi bi-shield-exclamation me-2"></i>任务影响分析</h2>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="bi bi-clipboard-pulse me-2"></i>发起影响分析</h5>
+        </div>
+        <div class="card-body">
+            <form id="analyze-form" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">DAG ID</label>
+                    <select id="analyze-dag" class="form-select"></select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">任务ID</label>
+                    <select id="analyze-task" class="form-select"></select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="button" class="btn btn-primary w-100" onclick="runAnalysis()"><i class="bi bi-play-fill me-1"></i>分析失败影响</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stat-card card">
+                <div class="card-body">
+                    <div class="stat-icon text-danger"><i class="bi bi-exclamation-diamond"></i></div>
+                    <div class="stat-value" id="risk-failure">-</div>
+                    <div class="stat-label">失败概率</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card card">
+                <div class="card-body">
+                    <div class="stat-icon text-warning"><i class="bi bi-diagram-3"></i></div>
+                    <div class="stat-value" id="risk-downstream">-</div>
+                    <div class="stat-label">下游任务影响数</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card card">
+                <div class="card-body">
+                    <div class="stat-icon text-info"><i class="bi bi-clock-history"></i></div>
+                    <div class="stat-value" id="risk-recovery">-</div>
+                    <div class="stat-label">预估恢复(分钟)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-section" class="mb-4" style="display:none;">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-clipboard-data me-2"></i>分析结果</h5>
+                <span class="badge" id="risk-level-badge">-</span>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>受影响任务列表:</strong>
+                    <div id="affected-tasks" class="mt-2"></div>
+                </div>
+                <div class="mb-3">
+                    <strong>受影响数据集:</strong>
+                    <div id="affected-datasets" class="mt-2"></div>
+                </div>
+                <div class="mb-3">
+                    <strong>建议行动:</strong>
+                    <div id="recommendations" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>分析历史</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>分析ID</th>
+                            <th>DAG</th>
+                            <th>任务</th>
+                            <th>失败概率</th>
+                            <th>下游影响</th>
+                            <th>业务影响</th>
+                            <th>分析时间</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-tbody">
+                        <tr><td colspan="7" class="text-center py-4 text-muted">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadDags() {
+    const dagRes = await fetch('/api/dags');
+    const dags = await dagRes.json();
+    const sel = document.getElementById('analyze-dag');
+    sel.innerHTML = '<option value="">-- 请选择 --</option>' +
+        dags.map(d => `<option value="${d.dag_id}">${d.dag_name} (${d.dag_id})</option>`).join('');
+    sel.addEventListener('change', async () => {
+        const taskSel = document.getElementById('analyze-task');
+        if (!sel.value) { taskSel.innerHTML = '<option value="">-- 请选择 --</option>'; return; }
+        const dagRes = await fetch(`/api/dag/${sel.value}`);
+        const dag = await dagRes.json();
+        taskSel.innerHTML = '<option value="">-- 请选择 --</option>' +
+            dag.tasks.map(t => `<option value="${t.task_id}">${t.task_name} (${t.task_id})</option>`).join('');
+    });
+}
+
+async function runAnalysis() {
+    const dag_id = document.getElementById('analyze-dag').value;
+    const task_id = document.getElementById('analyze-task').value;
+    if (!dag_id || !task_id) { alert('请选择DAG和任务'); return; }
+    const res = await fetch('/api/impact/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dag_id, task_id })
+    });
+    const data = await res.json();
+    if (data.status === 'error') { alert('分析失败: ' + data.message); return; }
+    document.getElementById('risk-failure').textContent = (data.failure_probability * 100).toFixed(1) + '%';
+    document.getElementById('risk-downstream').textContent = data.affected_downstream_count;
+    document.getElementById('risk-recovery').textContent = data.estimated_recovery_minutes;
+    const badge = document.getElementById('risk-level-badge');
+    badge.textContent = data.business_impact_level;
+    badge.className = 'badge bg-' + (
+        data.business_impact_level === 'CRITICAL' ? 'danger' :
+        data.business_impact_level === 'HIGH' ? 'warning' :
+        data.business_impact_level === 'MEDIUM' ? 'info' : 'secondary');
+    document.getElementById('affected-tasks').innerHTML =
+        data.affected_tasks.length ? data.affected_tasks.map(t => `<span class="badge bg-primary me-1">${t}</span>`).join('') : '<span class="text-muted">无</span>';
+    document.getElementById('affected-datasets').innerHTML =
+        data.affected_datasets.length ? data.affected_datasets.map(d => `<span class="badge bg-secondary me-1">${d}</span>`).join('') : '<span class="text-muted">无</span>';
+    document.getElementById('recommendations').innerHTML =
+        (data.recommendations || []).map(r => `<div class="alert alert-warning py-2 mb-2"><i class="bi bi-lightbulb me-2"></i>${r}</div>`).join('');
+    document.getElementById('result-section').style.display = 'block';
+    loadHistory();
+}
+
+async function loadHistory() {
+    const res = await fetch('/api/impact/history?limit=20');
+    const rows = await res.json();
+    const tbody = document.getElementById('history-tbody');
+    if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">无历史记录</td></tr>';
+        return;
+    }
+    tbody.innerHTML = rows.map(r => `
+        <tr>
+            <td>#${r.analysis_id}</td>
+            <td><code>${r.dag_id}</code></td>
+            <td>${r.task_id}</td>
+            <td>${(r.failure_probability * 100).toFixed(1)}%</td>
+            <td>${r.affected_downstream_count}</td>
+            <td><span class="badge bg-${r.business_impact_level === 'CRITICAL' ? 'danger' : r.business_impact_level === 'HIGH' ? 'warning' : r.business_impact_level === 'MEDIUM' ? 'info' : 'secondary'}">${r.business_impact_level}</span></td>
+            <td>${r.analysis_time}</td>
+        </tr>
+    `).join('');
+}
+
+loadDags();
+loadHistory();
+</script>
+{% endblock %}

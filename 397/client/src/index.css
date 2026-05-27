@@ -1,0 +1,157 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background: #0F172A;
+  color: #F1F5F9;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1E293B;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748B;
+}
+
+/* Ant Design 组件覆盖 */
+.ant-card {
+  border-radius: 16px !important;
+}
+
+.ant-btn {
+  border-radius: 8px !important;
+}
+
+.ant-input,
+.ant-select-selector,
+.ant-input-number {
+  border-radius: 8px !important;
+}
+
+.ant-menu {
+  background: transparent !important;
+}
+
+.ant-menu-item {
+  border-radius: 8px !important;
+  margin: 4px 0 !important;
+}
+
+.ant-menu-item-selected {
+  background: #3B82F6 !important;
+}
+
+.ant-tabs-nav {
+  margin-bottom: 24px !important;
+}
+
+.ant-tabs-tab {
+  color: #94A3B8 !important;
+}
+
+.ant-tabs-tab-active {
+  color: #3B82F6 !important;
+}
+
+.ant-tabs-ink-bar {
+  background: #3B82F6 !important;
+}
+
+.ant-drawer-content {
+  background: #1E293B !important;
+}
+
+.ant-drawer-header {
+  background: #1E293B !important;
+  border-bottom: 1px solid #334155 !important;
+}
+
+.ant-drawer-title {
+  color: #F1F5F9 !important;
+}
+
+.ant-modal-content {
+  background: #1E293B !important;
+}
+
+.ant-modal-header {
+  background: #1E293B !important;
+  border-bottom: 1px solid #334155 !important;
+}
+
+.ant-modal-title {
+  color: #F1F5F9 !important;
+}
+
+.ant-pagination-item {
+  background: #1E293B !important;
+  border: 1px solid #334155 !important;
+}
+
+.ant-pagination-item a {
+  color: #94A3B8 !important;
+}
+
+.ant-pagination-item-active {
+  background: #3B82F6 !important;
+  border-color: #3B82F6 !important;
+}
+
+.ant-pagination-item-active a {
+  color: #fff !important;
+}
+
+.ant-tag {
+  border-radius: 6px !important;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

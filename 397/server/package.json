@@ -1,0 +1,34 @@
+{
+  "name": "dashboard-market-server",
+  "version": "1.0.0",
+  "description": "仪表板模板市场后端服务",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "seed": "node src/mock/data.js"
+  },
+  "keywords": [
+    "dashboard",
+    "template",
+    "marketplace"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "joi": "^18.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb-memory-server": "^11.1.0",
+    "mongoose": "^9.6.2",
+    "multer": "^2.1.1",
+    "socket.io": "^4.8.3",
+    "winston": "^3.19.0"
+  }
+}

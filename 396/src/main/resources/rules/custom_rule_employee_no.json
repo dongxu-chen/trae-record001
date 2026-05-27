@@ -1,0 +1,14 @@
+{
+  "id": "custom_employee_no",
+  "name": "员工编号",
+  "description": "公司内部员工编号",
+  "columnKeywords": ["employee_no", "emp_no", "员工编号", "工号"],
+  "commentKeywords": ["员工号", "工号", "员工编号"],
+  "valueRegex": "^EMP[0-9]{6,8}$",
+  "defaultStrategy": "MASK",
+  "maskChar": "*",
+  "keepStart": 3,
+  "keepEnd": 2,
+  "enabled": true,
+  "priority": 85
+}

@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}日志详情 #{{ log.log_id }} - 定时任务依赖管理系统{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h2><i class="bi bi-journal-text me-2"></i>日志详情 #{{ log.log_id }}</h2>
+        <p class="text-muted">
+            <code class="text-primary">{{ log.dag_id }}</code> / 
+            <code class="text-info">{{ log.task_id }}</code> / 
+            <code class="text-secondary">{{ log.run_id[:32] }}{% if log.run_id|length > 32 %}...{% endif %}</code>
+        </p>
+    </div>
+    <div>
+        <span class="status-badge status-{{ log.status }} fs-6">{{ log.status }}</span>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card log-detail-card mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>执行信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless mb-0">
+                            <tr>
+                                <th class="ps-0 w-40">Celery Task ID:</th>
+                                <td><code>{{ log.celery_task_id or '-' }}</code></td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0">执行开始:</th>
+                                <td>{{ log.execution_date.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3] if log.execution_date else '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0">执行耗时:</th>
+                                <td>{{ '%.3f'|format(log.duration_sec) if log.duration_sec else '-' }} 秒</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0">尝试次数:</th>
+                                <td>第 {{ log.attempt }} 次</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless mb-0">
+                            <tr>
+                                <th class="ps-0 w-40">Worker:</th>
+                                <td><code>{{ log.worker_name or '-' }}</code></td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0">重试次数:</th>
+                                <td>{{ log.retry_count }} / 3</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0">死信队列:</th>
+                                <td>{% if log.is_dead_letter %}<span class="badge bg-danger">是</span>{% else %}<span class="badge bg-success">否</span>{% endif %}</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0">下次重试:</th>
+                                <td>{{ log.next_retry_time.strftime('%Y-%m-%d %H:%M:%S') if log.next_retry_time else '-' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if log.input_params %}
+        <div class="card log-detail-card mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-gear me-2"></i>输入参数</h5>
+            </div>
+            <div class="card-body">
+                <pre class="bg-light p-3 rounded mb-0" style="max-height: 300px; overflow-y: auto;">{{ log.input_params | tojson(indent=2) }}</pre>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if log.output_result %}
+        <div class="card log-detail-card mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-check2-circle me-2"></i>输出结果</h5>
+            </div>
+            <div class="card-body">
+                <pre class="bg-light p-3 rounded mb-0" style="max-height: 300px; overflow-y: auto;">{{ log.output_result | tojson(indent=2) }}</pre>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if log.error_message %}
+        <div class="card log-detail-card mb-4">
+            <div class="card-header bg-danger text-white py-3">
+                <h5 class="mb-0"><i class="bi bi-bug me-2"></i>错误信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger mb-3">
+                    <strong>{{ log.error_message }}</strong>
+                </div>
+                {% if log.error_traceback %}
+                <h6 class="mt-3">错误堆栈:</h6>
+                <pre class="error-traceback mb-0" style="max-height: 400px; overflow-y: auto;">{{ log.error_traceback }}</pre>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if reruns %}
+        <div class="card log-detail-card">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-arrow-repeat me-2"></i>重跑历史 ({{ reruns|length }})</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">重跑ID</th>
+                            <th>类型</th>
+                            <th>原Celery ID</th>
+                            <th>新Celery ID</th>
+                            <th>状态</th>
+                            <th>触发人</th>
+                            <th class="pe-4">触发时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rerun in reruns %}
+                        <tr>
+                            <td class="ps-4">{{ rerun.rerun_id }}</td>
+                            <td><span class="badge bg-secondary">{{ rerun.rerun_type }}</span></td>
+                            <td><small>{{ rerun.original_celery_id[:16] }}...</small></td>
+                            <td><small>{{ (rerun.rerun_celery_id or '-')[:16] }}{% if rerun.rerun_celery_id and rerun.rerun_celery_id|length > 16 %}...{% endif %}</small></td>
+                            <td><span class="status-badge status-{{ rerun.rerun_status }}">{{ rerun.rerun_status }}</span></td>
+                            <td>{{ rerun.triggered_by }}</td>
+                            <td class="pe-4">{{ rerun.triggered_at.strftime('%Y-%m-%d %H:%M:%S') if rerun.triggered_at else '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <div class="card log-detail-card mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-tools me-2"></i>操作</h5>
+            </div>
+            <div class="card-body">
+                {% if log.status in ['FAILURE', 'REVOKED'] %}
+                <button class="btn btn-warning w-100 mb-2" onclick="rerunTask({{ log.log_id }})">
+                    <i class="bi bi-arrow-repeat me-2"></i>重跑任务
+                </button>
+                {% endif %}
+                {% if log.celery_task_id %}
+                <a href="http://localhost:5555/task/{{ log.celery_task_id }}" target="_blank" class="btn btn-info w-100 mb-2">
+                    <i class="bi bi-flower1 me-2"></i>Flower查看
+                </a>
+                {% endif %}
+                <a href="{{ url_for('logs') }}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-left me-2"></i>返回列表
+                </a>
+            </div>
+        </div>
+
+        <div class="card log-detail-card">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>同DAG任务</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('logs', dag_id=log.dag_id) }}" class="list-group-item list-group-item-action py-2 text-center">
+                        <i class="bi bi-collection me-1"></i>查看所有 {{ log.dag_id }} 日志
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function rerunTask(logId) {
+    if (!confirm('确定要重跑此任务吗？')) return;
+    fetch('/api/rerun', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ log_id: logId, triggered_by: 'admin' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'submitted') {
+            alert('重跑任务已提交，Celery ID: ' + data.rerun_celery_id);
+            location.reload();
+        } else {
+            alert('提交失败: ' + (data.error || '未知错误'));
+        }
+    })
+    .catch(err => alert('请求失败: ' + err));
+}
+</script>
+{% endblock %}

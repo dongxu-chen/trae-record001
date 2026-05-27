@@ -1,0 +1,62 @@
+============================================================
+Test 1: New Module Imports
+OK: SleepPrescriptionGenerator + CircadianRhythmAnalyzer + AgeGroupComparator
+OK: All new visualization functions
+
+============================================================
+Test 2: SleepPrescriptionGenerator
+Summary: score=78.8, issues=['REM睡眠不足']
+Schedule: bedtime=24.0, wakeup=8.0
+Schedule grade: 理想
+Pre-sleep routine: 30min, 4 steps
+Lifestyle prescriptions: 3
+Exercise prescriptions: 1
+Environment prescriptions: 5
+Weekly plan: 改善期, 3 goals
+Expected improvement: +0.6 points
+OK: SleepPrescriptionGenerator works
+
+============================================================
+Test 3: CircadianRhythmAnalyzer
+Chronotype: 中间型
+Optimal bedtime: 23.0
+Optimal wakeup: 7.0
+Optimal sleep duration: 8.0h
+Alignment score: 90.0
+Melatonin start: 20.5
+Cortisol rise: 6.0
+Adjustment: 需要调整
+Schedule entries: 10
+Current phase at 14:00: 午后低迷期 - 体温下降，适合小憩
+OK: CircadianRhythmAnalyzer works
+
+============================================================
+Test 4: AgeGroupComparator
+Age group: 青年(26-35岁)
+Percentile: 70.5
+Rank: 良好
+Description: 您的睡眠质量优于同年龄段大多数人
+Group mean: 70
+Comparisons: 6
+  睡眠时长: yours=40.0小时, group=6.8小时, status=过多
+  睡眠效率: yours=93.8%, group=85.0%, status=优秀
+  深睡比例: yours=31.2%, group=16.0%, status=过多
+  REM睡眠比例: yours=18.8%, group=21.0%, status=不足
+  入睡潜伏期: yours=3.0分钟, group=15-20分钟, status=良好
+  WASO(夜间清醒): yours=0.0%, group=5-10%, status=良好
+Chart data: 7 percentiles, position=4
+Age 65 female: 中老年(56-65岁), P64.6, rank=良好
+OK: AgeGroupComparator works
+
+============================================================
+Test 5: Visualization Functions
+OK: create_circadian_alignment_gauge -> Figure
+OK: create_age_percentile_chart -> Figure
+OK: create_age_group_comparison_radar -> Figure
+OK: create_prescription_timeline -> Figure
+OK: create_weekly_plan_timeline -> Figure
+OK: create_circadian_schedule_plot -> Figure
+OK: All visualization functions work
+
+============================================================
+ALL TESTS COMPLETED

@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block title %}智能调度 - 任务调度中心{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <h2><i class="bi bi-cpu me-2"></i>智能调度</h2>
+        <button class="btn btn-primary btn-sm" onclick="loadAll()"><i class="bi bi-arrow-clockwise me-1"></i>刷新</button>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card card">
+                <div class="card-body">
+                    <div class="stat-icon text-primary"><i class="bi bi-server"></i></div>
+                    <div class="stat-value" id="stat-workers">-</div>
+                    <div class="stat-label">在线Worker</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card card">
+                <div class="card-body">
+                    <div class="stat-icon text-success"><i class="bi bi-cpu"></i></div>
+                    <div class="stat-value" id="stat-cpu">-</div>
+                    <div class="stat-label">集群CPU平均</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card card">
+                <div class="card-body">
+                    <div class="stat-icon text-info"><i class="bi bi-motherboard"></i></div>
+                    <div class="stat-value" id="stat-mem">-</div>
+                    <div class="stat-label">集群内存平均</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card card">
+                <div class="card-body">
+                    <div class="stat-icon text-warning"><i class="bi bi-hourglass-split"></i></div>
+                    <div class="stat-value" id="stat-pending">-</div>
+                    <div class="stat-label">等待调度</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-hdd-network me-2"></i>Worker节点</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Worker</th>
+                                    <th>主机</th>
+                                    <th>队列</th>
+                                    <th>CPU</th>
+                                    <th>内存</th>
+                                    <th>任务</th>
+                                    <th>状态</th>
+                                    <th>心跳</th>
+                                </tr>
+                            </thead>
+                            <tbody id="worker-tbody">
+                                <tr><td colspan="8" class="text-center py-4 text-muted">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-hourglass-split me-2"></i>等待队列</h5>
+                </div>
+                <div class="card-body p-0" style="max-height:400px;overflow-y:auto;">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>任务</th>
+                                    <th>DAG</th>
+                                    <th>重要性</th>
+                                    <th>等待</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pending-tbody">
+                                <tr><td colspan="4" class="text-center py-4 text-muted">无等待任务</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>调度决策历史</h5>
+            <span class="badge bg-secondary" id="decision-count">-</span>
+        </div>
+        <div class="card-body p-0" style="max-height:500px;overflow-y:auto;">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>决策ID</th>
+                            <th>任务</th>
+                            <th>DAG</th>
+                            <th>Worker</th>
+                            <th>类型</th>
+                            <th>优先级</th>
+                            <th>资源</th>
+                            <th>业务</th>
+                            <th>理由</th>
+                            <th>时间</th>
+                        </tr>
+                    </thead>
+                    <tbody id="decision-tbody">
+                        <tr><td colspan="10" class="text-center py-4 text-muted">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function loadAll() {
+    fetch('/api/scheduler/resource-snapshot')
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('stat-workers').textContent = data.total_workers;
+            document.getElementById('stat-cpu').textContent = (data.avg_cpu_percent || 0).toFixed(1) + '%';
+            document.getElementById('stat-mem').textContent = (data.avg_memory_percent || 0).toFixed(1) + '%';
+            document.getElementById('stat-pending').textContent = data.total_active_tasks || 0;
+        });
+
+    fetch('/api/scheduler/workers')
+        .then(r => r.json())
+        .then(rows => {
+            const tbody = document.getElementById('worker-tbody');
+            if (!rows.length) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">暂无Worker节点</td></tr>';
+                return;
+            }
+            tbody.innerHTML = rows.map(w => `
+                <tr>
+                    <td><code>${w.worker_id}</code></td>
+                    <td>${w.hostname}</td>
+                    <td><span class="badge bg-light text-dark">${w.queues}</span></td>
+                    <td>${w.current_cpu_percent.toFixed(1)}%</td>
+                    <td>${w.current_memory_mb}/${w.total_memory_mb}MB</td>
+                    <td>${w.active_task_count}/${w.max_concurrent_tasks}</td>
+                    <td><span class="status-badge ${w.status === 'ONLINE' ? 'status-SUCCESS' : 'status-FAILURE'}">${w.status}</span></td>
+                    <td>${w.last_heartbeat || '-'}</td>
+                </tr>
+            `).join('');
+        });
+
+    fetch('/api/scheduler/pending-queue')
+        .then(r => r.json())
+        .then(rows => {
+            const tbody = document.getElementById('pending-tbody');
+            if (!rows.length) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">无等待任务</td></tr>';
+                return;
+            }
+            tbody.innerHTML = rows.map(t => `
+                <tr>
+                    <td>${t.task_name}</td>
+                    <td><code>${t.dag_id}</code></td>
+                    <td><span class="badge bg-${t.business_criticality === 'CRITICAL' ? 'danger' : t.business_criticality === 'HIGH' ? 'warning' : 'secondary'}">${t.business_criticality}</span></td>
+                    <td>${t.waiting_since}</td>
+                </tr>
+            `).join('');
+        });
+
+    fetch('/api/scheduler/decisions')
+        .then(r => r.json())
+        .then(rows => {
+            document.getElementById('decision-count').textContent = rows.length;
+            const tbody = document.getElementById('decision-tbody');
+            if (!rows.length) {
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-muted">暂无决策记录</td></tr>';
+                return;
+            }
+            tbody.innerHTML = rows.map(d => `
+                <tr>
+                    <td>#${d.decision_id}</td>
+                    <td>${d.task_id}</td>
+                    <td><code>${d.dag_id}</code></td>
+                    <td>${d.worker_id || '-'}</td>
+                    <td><span class="badge ${d.decision_type === 'SCHEDULE' ? 'bg-success' : 'bg-warning'}">${d.decision_type}</span></td>
+                    <td>${d.priority_score.toFixed(3)}</td>
+                    <td>${d.resource_score.toFixed(3)}</td>
+                    <td>${d.business_score.toFixed(3)}</td>
+                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.reason || ''}">${d.reason || '-'}</td>
+                    <td>${d.decision_time}</td>
+                </tr>
+            `).join('');
+        });
+}
+loadAll();
+setInterval(loadAll, 15000);
+</script>
+{% endblock %}
