@@ -1,0 +1,305 @@
+from typing import Dict, List, Tuple, Optional
+from dataclasses import dataclass
+from collections import defaultdict, deque
+import numpy as np
+import yaml
+from .data_models import ClickLog, ClickFeatures
+
+
+@dataclass
+class RuleResult:
+    rule_name: str
+    triggered: bool
+    fraud_score: float
+    reason: str
+    details: Dict = None
+
+    def __post_init__(self):
+        if self.details is None:
+            self.details = {}
+
+
+class RuleEngine:
+    def __init__(self, config_path: str = 'config/config.yaml'):
+        self.config = self._load_config(config_path)
+        self.ip_click_timestamps: Dict[str, deque] = defaultdict(lambda: deque(maxlen=1000))
+        self.device_click_timestamps: Dict[str, deque] = defaultdict(lambda: deque(maxlen=1000))
+        self.user_session_data: Dict[str, Dict] = defaultdict(dict)
+        self.ip_click_counts: Dict[str, int] = defaultdict(int)
+        self.publisher_click_counts: Dict[str, Dict] = defaultdict(lambda: defaultdict(int))
+
+    def _load_config(self, config_path: str) -> Dict:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            return yaml.safe_load(f)['rules']
+
+    def evaluate_all_rules(self, click_log: ClickLog, features: ClickFeatures) -> List[RuleResult]:
+        results = []
+        
+        results.append(self._check_high_frequency_ip(click_log, features))
+        results.append(self._check_high_frequency_device(click_log, features))
+        results.append(self._check_fixed_interval_ip(click_log))
+        results.append(self._check_fixed_interval_device(click_log))
+        results.append(self._check_invalid_session_duration(click_log))
+        results.append(self._check_excessive_session_clicks(click_log, features))
+        results.append(self._check_suspicious_publisher_ratio(click_log, features))
+        results.append(self._check_user_agent_anomaly(click_log))
+        
+        self._update_state(click_log)
+        
+        return results
+
+    def _check_high_frequency_ip(self, click_log: ClickLog, features: ClickFeatures) -> RuleResult:
+        config = self.config['high_frequency']
+        max_clicks = config['max_clicks_per_ip']
+        
+        click_count = features.ip_click_count_1min
+        triggered = click_count > max_clicks
+        
+        fraud_score = min(1.0, click_count / (max_clicks * 2)) if triggered else 0.0
+        reason = f"IP高频点击: {click_count}次/分钟 (阈值: {max_clicks})" if triggered else ""
+        
+        return RuleResult(
+            rule_name='high_frequency_ip',
+            triggered=triggered,
+            fraud_score=fraud_score,
+            reason=reason,
+            details={'click_count': click_count, 'threshold': max_clicks}
+        )
+
+    def _check_high_frequency_device(self, click_log: ClickLog, features: ClickFeatures) -> RuleResult:
+        config = self.config['high_frequency']
+        max_clicks = config['max_clicks_per_device']
+        
+        click_count = features.device_click_count_1min
+        triggered = click_count > max_clicks
+        
+        fraud_score = min(1.0, click_count / (max_clicks * 2)) if triggered else 0.0
+        reason = f"设备高频点击: {click_count}次/分钟 (阈值: {max_clicks})" if triggered else ""
+        
+        return RuleResult(
+            rule_name='high_frequency_device',
+            triggered=triggered,
+            fraud_score=fraud_score,
+            reason=reason,
+            details={'click_count': click_count, 'threshold': max_clicks}
+        )
+
+    def _check_fixed_interval_ip(self, click_log: ClickLog) -> RuleResult:
+        config = self.config['fixed_interval']
+        window = config['window_seconds']
+        min_clicks = config['min_clicks']
+        tolerance = config['tolerance_seconds']
+        
+        timestamps = self.ip_click_timestamps[click_log.ip]
+        if len(timestamps) < min_clicks:
+            return RuleResult('fixed_interval_ip', False, 0.0, '', {})
+        
+        current_time = click_log.timestamp.timestamp()
+        recent_timestamps = [ts for ts in timestamps if current_time - ts <= window]
+        
+        if len(recent_timestamps) < min_clicks:
+            return RuleResult('fixed_interval_ip', False, 0.0, '', {})
+        
+        recent_timestamps.sort()
+        intervals = [recent_timestamps[i] - recent_timestamps[i-1] for i in range(1, len(recent_timestamps))]
+        
+        if not intervals:
+            return RuleResult('fixed_interval_ip', False, 0.0, '', {})
+        
+        mean_interval = np.mean(intervals)
+        std_interval = np.std(intervals)
+        
+        triggered = std_interval < tolerance and mean_interval > 0
+        
+        fraud_score = 0.0
+        reason = ""
+        if triggered:
+            cv = std_interval / mean_interval if mean_interval > 0 else 0
+            fraud_score = min(1.0, 1.0 - cv * 2)
+            reason = f"IP固定间隔点击: 间隔均值={mean_interval:.2f}s, 标准差={std_interval:.3f}s"
+        
+        return RuleResult(
+            rule_name='fixed_interval_ip',
+            triggered=triggered,
+            fraud_score=fraud_score,
+            reason=reason,
+            details={'mean_interval': float(mean_interval), 'std_interval': float(std_interval)}
+        )
+
+    def _check_fixed_interval_device(self, click_log: ClickLog) -> RuleResult:
+        config = self.config['fixed_interval']
+        window = config['window_seconds']
+        min_clicks = config['min_clicks']
+        tolerance = config['tolerance_seconds']
+        
+        timestamps = self.device_click_timestamps[click_log.device_id]
+        if len(timestamps) < min_clicks:
+            return RuleResult('fixed_interval_device', False, 0.0, '', {})
+        
+        current_time = click_log.timestamp.timestamp()
+        recent_timestamps = [ts for ts in timestamps if current_time - ts <= window]
+        
+        if len(recent_timestamps) < min_clicks:
+            return RuleResult('fixed_interval_device', False, 0.0, '', {})
+        
+        recent_timestamps.sort()
+        intervals = [recent_timestamps[i] - recent_timestamps[i-1] for i in range(1, len(recent_timestamps))]
+        
+        if not intervals:
+            return RuleResult('fixed_interval_device', False, 0.0, '', {})
+        
+        mean_interval = np.mean(intervals)
+        std_interval = np.std(intervals)
+        
+        triggered = std_interval < tolerance and mean_interval > 0
+        
+        fraud_score = 0.0
+        reason = ""
+        if triggered:
+            cv = std_interval / mean_interval if mean_interval > 0 else 0
+            fraud_score = min(1.0, 1.0 - cv * 2)
+            reason = f"设备固定间隔点击: 间隔均值={mean_interval:.2f}s, 标准差={std_interval:.3f}s"
+        
+        return RuleResult(
+            rule_name='fixed_interval_device',
+            triggered=triggered,
+            fraud_score=fraud_score,
+            reason=reason,
+            details={'mean_interval': float(mean_interval), 'std_interval': float(std_interval)}
+        )
+
+    def _check_invalid_session_duration(self, click_log: ClickLog) -> RuleResult:
+        config = self.config['invalid_traffic']
+        min_duration = config['min_session_duration_seconds']
+        
+        if not click_log.session_id:
+            return RuleResult('invalid_session_duration', False, 0.0, '', {})
+        
+        session_data = self.user_session_data[click_log.session_id]
+        if 'start_time' not in session_data:
+            session_data['start_time'] = click_log.timestamp.timestamp()
+            return RuleResult('invalid_session_duration', False, 0.0, '', {})
+        
+        session_duration = click_log.timestamp.timestamp() - session_data['start_time']
+        click_count = session_data.get('click_count', 0) + 1
+        
+        triggered = click_count > 3 and session_duration < min_duration
+        
+        fraud_score = 0.7 if triggered else 0.0
+        reason = f"无效会话时长: {session_duration:.2f}s, {click_count}次点击" if triggered else ""
+        
+        return RuleResult(
+            rule_name='invalid_session_duration',
+            triggered=triggered,
+            fraud_score=fraud_score,
+            reason=reason,
+            details={'session_duration': session_duration, 'click_count': click_count}
+        )
+
+    def _check_excessive_session_clicks(self, click_log: ClickLog, features: ClickFeatures) -> RuleResult:
+        config = self.config['invalid_traffic']
+        max_clicks = config['max_click_rate_per_user']
+        
+        session_clicks = features.session_click_count
+        triggered = session_clicks > max_clicks
+        
+        fraud_score = min(1.0, session_clicks / (max_clicks * 2)) if triggered else 0.0
+        reason = f"会话点击过量: {session_clicks}次 (阈值: {max_clicks})" if triggered else ""
+        
+        return RuleResult(
+            rule_name='excessive_session_clicks',
+            triggered=triggered,
+            fraud_score=fraud_score,
+            reason=reason,
+            details={'session_clicks': session_clicks, 'threshold': max_clicks}
+        )
+
+    def _check_suspicious_publisher_ratio(self, click_log: ClickLog, features: ClickFeatures) -> RuleResult:
+        ratio = features.publisher_click_ratio
+        triggered = ratio > 0.5
+        
+        fraud_score = min(1.0, ratio) if triggered else 0.0
+        reason = f"发布商点击占比异常: {ratio:.2%}" if triggered else ""
+        
+        return RuleResult(
+            rule_name='suspicious_publisher_ratio',
+            triggered=triggered,
+            fraud_score=fraud_score,
+            reason=reason,
+            details={'ratio': ratio}
+        )
+
+    def _check_user_agent_anomaly(self, click_log: ClickLog) -> RuleResult:
+        user_agent = click_log.user_agent.lower()
+        
+        suspicious_patterns = [
+            'bot', 'crawler', 'spider', 'scraper',
+            'curl', 'wget', 'python', 'java/',
+            'phantomjs', 'headless', 'selenium'
+        ]
+        
+        triggered = any(pattern in user_agent for pattern in suspicious_patterns)
+        triggered_empty = len(user_agent.strip()) < 10
+        
+        fraud_score = 0.0
+        reason = ""
+        
+        if triggered:
+            fraud_score = 0.9
+            reason = "可疑User-Agent: 包含爬虫/机器人特征"
+        elif triggered_empty:
+            fraud_score = 0.5
+            reason = "User-Agent过短或为空"
+        
+        return RuleResult(
+            rule_name='user_agent_anomaly',
+            triggered=triggered or triggered_empty,
+            fraud_score=fraud_score,
+            reason=reason,
+            details={'user_agent_length': len(user_agent)}
+        )
+
+    def _update_state(self, click_log: ClickLog):
+        timestamp = click_log.timestamp.timestamp()
+        self.ip_click_timestamps[click_log.ip].append(timestamp)
+        self.device_click_timestamps[click_log.device_id].append(timestamp)
+        self.ip_click_counts[click_log.ip] += 1
+        self.publisher_click_counts[click_log.publisher_id][click_log.ip] += 1
+        
+        if click_log.session_id:
+            session_data = self.user_session_data[click_log.session_id]
+            session_data['click_count'] = session_data.get('click_count', 0) + 1
+
+    def get_aggregated_rule_score(self, results: List[RuleResult]) -> float:
+        if not results:
+            return 0.0
+        
+        scores = [r.fraud_score for r in results if r.triggered]
+        if not scores:
+            return 0.0
+        
+        weights = {
+            'high_frequency_ip': 1.2,
+            'high_frequency_device': 1.1,
+            'fixed_interval_ip': 1.3,
+            'fixed_interval_device': 1.2,
+            'invalid_session_duration': 1.0,
+            'excessive_session_clicks': 1.1,
+            'suspicious_publisher_ratio': 0.8,
+            'user_agent_anomaly': 1.0
+        }
+        
+        weighted_scores = []
+        for r in results:
+            if r.triggered:
+                weight = weights.get(r.rule_name, 1.0)
+                weighted_scores.append(r.fraud_score * weight)
+        
+        return min(1.0, sum(weighted_scores) / len(scores) if scores else 0.0)
+
+    def reset(self):
+        self.ip_click_timestamps.clear()
+        self.device_click_timestamps.clear()
+        self.user_session_data.clear()
+        self.ip_click_counts.clear()
+        self.publisher_click_counts.clear()

@@ -1,0 +1,198 @@
+@import '@/styles/variables.less';
+
+.theme-card {
+  background: @bg-base;
+  border: 1px solid @border-color-light;
+  border-radius: @border-radius-lg;
+  padding: @spacing-md;
+  transition: all @transition-base;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    border-color: @primary-color;
+    box-shadow: @shadow-md;
+    transform: translateY(-2px);
+  }
+
+  &.editing {
+    border-color: @primary-color;
+  }
+}
+
+.theme-card-preview {
+  display: flex;
+  gap: 4px;
+  margin-bottom: @spacing-sm;
+  height: 32px;
+
+  .preview-color {
+    flex: 1;
+    border-radius: @border-radius-sm;
+    transition: transform @transition-fast;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+
+    &:first-child {
+      border-radius: @border-radius-sm 0 0 @border-radius-sm;
+    }
+
+    &:last-child {
+      border-radius: 0 @border-radius-sm @border-radius-sm 0;
+    }
+  }
+}
+
+.theme-card-info {
+  .theme-name {
+    font-size: @font-size-sm;
+    font-weight: 600;
+    color: @text-primary;
+    margin: 0 0 @spacing-xs 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .theme-description {
+    font-size: @font-size-xs;
+    color: @text-tertiary;
+    margin: 0;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .theme-meta {
+    margin-top: @spacing-sm;
+    display: flex;
+    gap: @spacing-xs;
+
+    .category-tag {
+      font-size: 10px;
+      padding: 2px @spacing-xs;
+      background: @bg-layout;
+      color: @text-secondary;
+      border-radius: @border-radius-sm;
+    }
+  }
+}
+
+.theme-card-actions {
+  display: flex;
+  gap: @spacing-xs;
+  margin-top: @spacing-md;
+  padding-top: @spacing-sm;
+  border-top: 1px solid @border-color-light;
+
+  .action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: @border-radius-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: @text-tertiary;
+    transition: all @transition-fast;
+
+    &:hover {
+      background: @bg-hover;
+      color: @text-primary;
+    }
+
+    &.favorited {
+      color: @warning-color;
+
+      &:hover {
+        color: #d48806;
+      }
+    }
+
+    &.delete:hover {
+      background: @error-color;
+      color: #fff;
+    }
+  }
+}
+
+.apply-btn {
+  margin-top: @spacing-md;
+  width: 100%;
+  padding: @spacing-sm;
+  background: @primary-color;
+  color: #fff;
+  border-radius: @border-radius-md;
+  font-size: @font-size-sm;
+  font-weight: 500;
+  transition: all @transition-fast;
+
+  &:hover {
+    background: @primary-hover;
+    transform: translateY(-1px);
+    box-shadow: @shadow-sm;
+  }
+}
+
+.theme-card-edit {
+  display: flex;
+  flex-direction: column;
+  gap: @spacing-sm;
+
+  .edit-input,
+  .edit-textarea {
+    width: 100%;
+    padding: @spacing-sm;
+    border: 1px solid @border-color;
+    border-radius: @border-radius-sm;
+    font-size: @font-size-sm;
+    font-family: inherit;
+
+    &:focus {
+      border-color: @primary-color;
+      outline: none;
+    }
+  }
+
+  .edit-textarea {
+    resize: none;
+  }
+
+  .edit-actions {
+    display: flex;
+    gap: @spacing-sm;
+
+    .edit-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: @spacing-xs;
+      padding: @spacing-sm;
+      border-radius: @border-radius-sm;
+      font-size: @font-size-sm;
+      transition: all @transition-fast;
+
+      &.cancel {
+        background: @bg-hover;
+        color: @text-secondary;
+
+        &:hover {
+          background: @border-color-light;
+        }
+      }
+
+      &.confirm {
+        background: @primary-color;
+        color: #fff;
+
+        &:hover {
+          background: @primary-hover;
+        }
+      }
+    }
+  }
+}

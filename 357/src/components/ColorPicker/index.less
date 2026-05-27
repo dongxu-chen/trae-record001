@@ -1,0 +1,122 @@
+@import '@/styles/variables.less';
+
+.color-picker-wrapper {
+  display: flex;
+  align-items: center;
+  gap: @spacing-sm;
+}
+
+.color-picker-label {
+  font-size: @font-size-sm;
+  color: @text-secondary;
+  min-width: 80px;
+}
+
+.color-picker-trigger {
+  width: 32px;
+  height: 32px;
+  border-radius: @border-radius-md;
+  border: 2px solid @border-color;
+  cursor: pointer;
+  transition: all @transition-fast;
+  position: relative;
+
+  &:hover {
+    border-color: @primary-color;
+    transform: scale(1.05);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(45deg, #ccc 25%, transparent 25%),
+      linear-gradient(-45deg, #ccc 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #ccc 75%),
+      linear-gradient(-45deg, transparent 75%, #ccc 75%);
+    background-size: 8px 8px;
+    background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+    border-radius: calc(@border-radius-md - 2px);
+    z-index: -1;
+  }
+}
+
+.color-picker-popup {
+  position: absolute;
+  z-index: 1000;
+  background: @bg-base;
+  border-radius: @border-radius-lg;
+  box-shadow: @shadow-lg;
+  padding: @spacing-md;
+  margin-top: @spacing-sm;
+  min-width: 220px;
+
+  .react-colorful {
+    width: 100% !important;
+    height: 180px !important;
+  }
+
+  .react-colorful__saturation {
+    border-radius: @border-radius-md;
+  }
+
+  .react-colorful__hue {
+    border-radius: @border-radius-md;
+    margin-top: @spacing-sm;
+    height: 20px;
+  }
+}
+
+.color-picker-input-row {
+  margin-top: @spacing-md;
+
+  .color-picker-input {
+    width: 100%;
+    padding: @spacing-sm @spacing-md;
+    border: 1px solid @border-color;
+    border-radius: @border-radius-md;
+    font-family: monospace;
+    font-size: @font-size-sm;
+    text-transform: uppercase;
+
+    &:focus {
+      border-color: @primary-color;
+    }
+  }
+}
+
+.color-picker-actions {
+  display: flex;
+  gap: @spacing-sm;
+  margin-top: @spacing-md;
+
+  .color-picker-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: @spacing-xs;
+    padding: @spacing-sm @spacing-md;
+    border-radius: @border-radius-md;
+    font-size: @font-size-sm;
+    transition: all @transition-fast;
+
+    &.cancel {
+      background: @bg-hover;
+      color: @text-secondary;
+
+      &:hover {
+        background: @border-color-light;
+      }
+    }
+
+    &.confirm {
+      background: @primary-color;
+      color: #fff;
+
+      &:hover {
+        background: @primary-hover;
+      }
+    }
+  }
+}

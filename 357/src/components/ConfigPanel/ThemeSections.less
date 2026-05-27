@@ -1,0 +1,169 @@
+@import '@/styles/variables.less';
+
+.category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: @spacing-xs;
+  margin-bottom: @spacing-md;
+
+  .category-tab {
+    padding: @spacing-xs @spacing-sm;
+    border-radius: @border-radius-md;
+    font-size: @font-size-xs;
+    color: @text-secondary;
+    background: @bg-hover;
+    transition: all @transition-fast;
+
+    &:hover {
+      background: @border-color-light;
+      color: @text-primary;
+    }
+
+    &.active {
+      background: @primary-color;
+      color: #fff;
+    }
+  }
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: @spacing-sm;
+}
+
+.section-hint {
+  font-size: @font-size-xs;
+  color: @text-tertiary;
+  margin-top: @spacing-sm;
+  line-height: 1.4;
+}
+
+.library-toolbar {
+  display: flex;
+  gap: @spacing-xs;
+  margin-bottom: @spacing-md;
+  align-items: center;
+
+  .search-box {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: @spacing-xs;
+    padding: @spacing-xs @spacing-sm;
+    background: @bg-layout;
+    border-radius: @border-radius-md;
+    border: 1px solid transparent;
+    transition: all @transition-fast;
+
+    &:focus-within {
+      border-color: @primary-color;
+      background: @bg-base;
+    }
+
+    svg {
+      color: @text-tertiary;
+      flex-shrink: 0;
+    }
+
+    input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: @font-size-xs;
+      color: @text-primary;
+      outline: none;
+
+      &::placeholder {
+        color: @text-tertiary;
+      }
+    }
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: @border-radius-md;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: @text-secondary;
+    background: transparent;
+    transition: all @transition-fast;
+    flex-shrink: 0;
+
+    &:hover {
+      background: @bg-hover;
+      color: @text-primary;
+    }
+
+    &.active {
+      color: @warning-color;
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: @spacing-xl @spacing-md;
+  color: @text-tertiary;
+
+  svg {
+    margin-bottom: @spacing-sm;
+    opacity: 0.5;
+  }
+
+  p {
+    font-size: @font-size-xs;
+    margin: 0;
+  }
+}
+
+.saved-theme-wrapper {
+  position: relative;
+
+  .delete-confirm {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(239, 68, 68, 0.95);
+    border-radius: @border-radius-lg;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: @spacing-sm;
+    z-index: 10;
+    animation: fadeIn 0.2s ease;
+
+    span {
+      color: #fff;
+      font-size: @font-size-sm;
+      font-weight: 500;
+    }
+
+    .confirm-delete {
+      padding: @spacing-xs @spacing-md;
+      background: #fff;
+      color: @error-color;
+      border-radius: @border-radius-md;
+      font-size: @font-size-sm;
+      font-weight: 500;
+
+      &:hover {
+        background: @bg-hover;
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

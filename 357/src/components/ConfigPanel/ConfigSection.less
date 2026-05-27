@@ -1,0 +1,246 @@
+@import '@/styles/variables.less';
+
+.config-section {
+  border-bottom: 1px solid @border-color-light;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.section-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: @spacing-md @spacing-lg;
+  background: transparent;
+  transition: background @transition-fast;
+
+  &:hover {
+    background: @bg-hover;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: @spacing-sm;
+    font-size: @font-size-sm;
+    font-weight: 600;
+    color: @text-primary;
+
+    svg {
+      color: @primary-color;
+    }
+  }
+
+  .section-arrow {
+    font-size: 10px;
+    color: @text-tertiary;
+    transition: transform @transition-fast;
+
+    &.expanded {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.section-content {
+  padding: 0 @spacing-lg @spacing-lg;
+}
+
+.config-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: @spacing-sm 0;
+  min-height: 40px;
+}
+
+.config-label {
+  font-size: @font-size-sm;
+  color: @text-secondary;
+  flex-shrink: 0;
+}
+
+.config-hint {
+  font-size: @font-size-xs;
+  color: @text-tertiary;
+  margin-top: @spacing-sm;
+  line-height: 1.4;
+}
+
+.config-select {
+  padding: @spacing-xs @spacing-sm;
+  border: 1px solid @border-color;
+  border-radius: @border-radius-sm;
+  font-size: @font-size-sm;
+  background: @bg-base;
+  cursor: pointer;
+  min-width: 140px;
+
+  &:hover {
+    border-color: @primary-color;
+  }
+
+  &:focus {
+    border-color: @primary-color;
+    outline: none;
+  }
+}
+
+.config-range {
+  flex: 1;
+  max-width: 140px;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: @border-color-light;
+  border-radius: 2px;
+  outline: none;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: @primary-color;
+    cursor: pointer;
+    transition: transform @transition-fast;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}
+
+.config-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .switch-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: @border-color;
+    transition: background @transition-fast;
+    border-radius: 22px;
+
+    &::before {
+      position: absolute;
+      content: '';
+      height: 18px;
+      width: 18px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: transform @transition-fast;
+      border-radius: 50%;
+    }
+  }
+
+  input:checked + .switch-slider {
+    background-color: @primary-color;
+  }
+
+  input:checked + .switch-slider::before {
+    transform: translateX(18px);
+  }
+}
+
+.config-divider {
+  display: flex;
+  align-items: center;
+  margin: @spacing-md 0 @spacing-sm;
+
+  &::before {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: @border-color-light;
+  }
+
+  span {
+    padding: 0 @spacing-sm;
+    font-size: @font-size-xs;
+    color: @text-tertiary;
+    font-weight: 500;
+  }
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: @border-color-light;
+  }
+}
+
+.color-palette-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: @spacing-sm;
+  align-items: center;
+}
+
+.color-palette-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: @spacing-xs;
+
+  .color-remove-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: @error-color;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity @transition-fast;
+
+    &:hover {
+      background: #d9363e;
+    }
+  }
+
+  &:hover .color-remove-btn {
+    opacity: 1;
+  }
+
+  .color-index {
+    font-size: @font-size-xs;
+    color: @text-tertiary;
+    min-width: 16px;
+  }
+}
+
+.color-add-btn {
+  width: 32px;
+  height: 32px;
+  border: 2px dashed @border-color;
+  border-radius: @border-radius-md;
+  color: @text-tertiary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all @transition-fast;
+
+  &:hover {
+    border-color: @primary-color;
+    color: @primary-color;
+  }
+}

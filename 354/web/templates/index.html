@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>广告欺诈检测系统 - 控制台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: #1a1a2e;
+        }
+        .sidebar a {
+            color: #aaa;
+            text-decoration: none;
+            padding: 12px 20px;
+            display: block;
+            transition: all 0.3s;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background: #16213e;
+            color: #fff;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card.green {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .stat-card.orange {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .stat-card.blue {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 d-none d-md-block sidebar">
+                <div class="p-3 text-white border-bottom">
+                    <h5>🛡️ 欺诈检测系统</h5>
+                </div>
+                <a href="/" class="active">📊 控制台</a>
+                <a href="/review">🔍 人工审核</a>
+                <a href="/network">🕸️ 发布商网络</a>
+                <a href="/attribution">💰 归因分析</a>
+            </nav>
+
+            <main class="col-md-10 ms-sm-auto px-4 py-4">
+                <h2 class="mb-4">📊 系统控制台</h2>
+
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <h6>待审核样本</h6>
+                            <h2 id="pending-count">--</h2>
+                            <small>需要人工审核</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card green">
+                            <h6>总发布商数</h6>
+                            <h2 id="publisher-count">--</h2>
+                            <small>已接入发布商</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card orange">
+                            <h6>可疑群组</h6>
+                            <h2 id="suspicious-groups">--</h2>
+                            <small>关联作弊检测</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card blue">
+                            <h6>欺诈损失</h6>
+                            <h2 id="fraud-loss">--</h2>
+                            <small>已浪费成本</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>欺诈分数分布</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="scoreChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>模型性能指标</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="metricsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>高风险发布商</h5>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>发布商</th>
+                                            <th>欺诈率</th>
+                                            <th>状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="risk-publishers">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>系统建议</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul id="recommendations" class="list-group">
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        function loadDashboard() {
+            fetch('/api/stats')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('pending-count').textContent = data.review.pending_samples;
+                    document.getElementById('publisher-count').textContent = data.network.total_publishers;
+                    document.getElementById('suspicious-groups').textContent = data.network.collusive_communities;
+                    document.getElementById('fraud-loss').textContent = '¥' + data.attribution.fraud_cost.toFixed(2);
+                    
+                    const scoreCtx = document.getElementById('scoreChart').getContext('2d');
+                    new Chart(scoreCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Precision', 'Recall', 'F1'],
+                            datasets: [{
+                                data: [data.review.precision * 100, data.review.recall * 100, data.review.f1_score * 100],
+                                backgroundColor: ['#667eea', '#11998e', '#f5576c']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { position: 'bottom' }
+                            }
+                        }
+                    });
+
+                    const metricsCtx = document.getElementById('metricsChart').getContext('2d');
+                    new Chart(metricsCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['TP', 'TN', 'FP', 'FN'],
+                            datasets: [{
+                                label: '分类统计',
+                                data: [data.review.true_positives, data.review.true_negatives, 
+                                       data.review.false_positives, data.review.false_negatives],
+                                backgroundColor: ['#28a745', '#007bff', '#ffc107', '#dc3545']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { display: false }
+                            }
+                        }
+                    });
+
+                    const publishersHtml = data.network.communities
+                        .filter(c => c.is_collusive)
+                        .slice(0, 5)
+                        .map(c => `
+                            <tr>
+                                <td>${c.members.slice(0, 2).join(', ')}</td>
+                                <td><span class="badge bg-danger">${(c.avg_fraud_rate * 100).toFixed(1)}%</span></td>
+                                <td><span class="badge bg-warning">${c.risk_level}</span></td>
+                            </tr>
+                        `).join('');
+                    document.getElementById('risk-publishers').innerHTML = publishersHtml || '<tr><td colspan="3" class="text-center text-muted">暂无高风险群组</td></tr>';
+
+                    const recs = [
+                        `当前欺诈率: ${(data.attribution.fraud_rate * 100).toFixed(1)}%`,
+                        `已检测 ${data.network.collusive_communities} 个可疑群组`,
+                        `建议加强对高风险发布商的监控`
+                    ];
+                    document.getElementById('recommendations').innerHTML = 
+                        recs.map(r => `<li class="list-group-item">💡 ${r}</li>`).join('');
+                });
+        }
+
+        loadDashboard();
+        setInterval(loadDashboard, 30000);
+    </script>
+</body>
+</html>

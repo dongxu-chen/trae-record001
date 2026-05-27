@@ -1,0 +1,120 @@
+kafka:
+  bootstrap_servers: "localhost:9092"
+  topic: "click_logs"
+  consumer_group_id: "fraud_detection_group"
+  auto_offset_reset: "earliest"
+
+redis:
+  host: "localhost"
+  port: 6379
+  db: 0
+  password: null
+  socket_timeout: 5000
+
+model:
+  isolation_forest:
+    n_estimators: 100
+    max_samples: "auto"
+    contamination: 0.1
+    random_state: 42
+    model_path: "models/isolation_forest.pkl"
+  dynamic_threshold:
+    enabled: true
+    per_publisher: true
+    update_interval_seconds: 3600
+    min_samples: 100
+    percentile: 95
+    default_threshold: 0.7
+
+rules:
+  high_frequency:
+    use_redis: true
+    window_seconds: 60
+    max_clicks_per_ip: 30
+    max_clicks_per_device: 20
+  fixed_interval:
+    window_seconds: 300
+    min_clicks: 5
+    tolerance_seconds: 0.5
+  invalid_traffic:
+    min_session_duration_seconds: 1
+    max_click_rate_per_user: 100
+
+action:
+  graded_penalty:
+    enabled: true
+    levels:
+      - level: 1
+        name: "观察"
+        score_range: [0.5, 0.7]
+        action: "observe"
+        description: "标记观察，记录日志"
+        penalty_rate: 0.0
+      - level: 2
+        name: "扣量"
+        score_range: [0.7, 0.85]
+        action: "discount"
+        description: "流量扣量50%计费"
+        penalty_rate: 0.5
+      - level: 3
+        name: "强扣量"
+        score_range: [0.85, 0.95]
+        action: "heavy_discount"
+        description: "流量扣量100%计费"
+        penalty_rate: 1.0
+      - level: 4
+        name: "拦截"
+        score_range: [0.95, 1.0]
+        action: "block"
+        description: "直接拦截，不计费"
+        penalty_rate: 1.0
+    escalation:
+      enabled: true
+      repeat_offense_window_seconds: 86400
+      max_offenses: 3
+      escalation_levels: 1
+    ip_penalty_duration:
+      observe: 0
+      discount: 3600
+      heavy_discount: 7200
+      block: 86400
+
+publisher_thresholds:
+  default:
+    fraud_threshold: 0.7
+    high_freq_ip_limit: 30
+    high_freq_device_limit: 20
+  overrides:
+    pub_1:
+      fraud_threshold: 0.65
+      high_freq_ip_limit: 25
+      high_freq_device_limit: 15
+    pub_2:
+      fraud_threshold: 0.75
+      high_freq_ip_limit: 40
+      high_freq_device_limit: 30
+
+flink:
+  job_name: "ClickFraudDetection"
+  parallelism: 2
+  checkpoint_interval: 60000
+
+output:
+  fraud_threshold: 0.7
+  alert_topic: "fraud_alerts"
+
+network_analysis:
+  min_shared_ips: 5
+  min_shared_devices: 3
+  collusion_threshold: 0.7
+  suspicious_fraud_rate: 0.3
+
+review_system:
+  auto_sample_threshold: 0.6
+  sample_high_risk_ratio: 0.7
+  feedback_update_interval: 3600
+
+attribution:
+  attribution_window_hours: 24
+  default_cpc: 0.5
+  default_revenue: 10.0

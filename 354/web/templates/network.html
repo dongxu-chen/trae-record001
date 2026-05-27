@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布商网络分析 - 欺诈检测系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: #1a1a2e;
+        }
+        .sidebar a {
+            color: #aaa;
+            text-decoration: none;
+            padding: 12px 20px;
+            display: block;
+            transition: all 0.3s;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background: #16213e;
+            color: #fff;
+        }
+        .network-container {
+            height: 500px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        .node {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 2;
+        }
+        .node:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+        .node.suspicious {
+            border: 3px solid #dc3545;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+        }
+        .edge {
+            position: absolute;
+            background: #999;
+            transform-origin: 0 50%;
+            z-index: 1;
+        }
+        .community-card {
+            border-left: 4px solid;
+            margin-bottom: 10px;
+        }
+        .community-high { border-color: #dc3545; }
+        .community-medium { border-color: #ffc107; }
+        .community-low { border-color: #28a745; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 d-none d-md-block sidebar">
+                <div class="p-3 text-white border-bottom">
+                    <h5>🛡️ 欺诈检测系统</h5>
+                </div>
+                <a href="/">📊 控制台</a>
+                <a href="/review">🔍 人工审核</a>
+                <a href="/network" class="active">🕸️ 发布商网络</a>
+                <a href="/attribution">💰 归因分析</a>
+            </nav>
+
+            <main class="col-md-10 ms-sm-auto px-4 py-4">
+                <h2 class="mb-4">🕸️ 发布商网络分析</h2>
+
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 id="totalPubs">0</h3>
+                                <small class="text-muted">发布商总数</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 id="suspiciousPubs">0</h3>
+                                <small class="text-muted">可疑发布商</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 id="totalCommunities">0</h3>
+                                <small class="text-muted">社群总数</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 id="collusiveCommunities">0</h3>
+                                <small class="text-muted">共谋群组</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">发布商关联网络图</h5>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="loadNetwork()">刷新</button>
+                            </div>
+                            <div class="card-body">
+                                <div class="network-container" id="networkGraph">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">社群检测结果</h5>
+                            </div>
+                            <div class="card-body p-2" style="max-height: 500px; overflow-y: auto;">
+                                <div id="communityList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">发布商详情</h5>
+                            </div>
+                            <div class="card-body" id="publisherDetail">
+                                <p class="text-muted text-center">点击网络图中的节点查看详情</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const colors = ['#667eea', '#11998e', '#f093fb', '#4facfe', '#fa709a', '#fee140'];
+        
+        function loadNetwork() {
+            fetch('/api/network')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('totalPubs').textContent = data.total_publishers;
+                    document.getElementById('suspiciousPubs').textContent = data.suspicious_publishers;
+                    document.getElementById('totalCommunities').textContent = data.total_communities;
+                    document.getElementById('collusiveCommunities').textContent = data.collusive_communities;
+
+                    const communitiesHtml = data.communities.map(c => `
+                        <div class="card community-card ${c.is_collusive ? 'community-high' : c.risk_level === '中风险' ? 'community-medium' : 'community-low'}">
+                            <div class="card-body p-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong>社群 #${c.community_id}</strong>
+                                    <span class="badge ${c.is_collusive ? 'bg-danger' : 'bg-success'}">${c.risk_level}</span>
+                                </div>
+                                <small class="text-muted">
+                                    ${c.size} 个发布商 | ${c.total_clicks} 点击 | 欺诈率: ${(c.avg_fraud_rate * 100).toFixed(1)}%
+                                </small>
+                                <div class="mt-1">
+                                    ${c.members.map(m => `<span class="badge bg-secondary me-1">${m}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('communityList').innerHTML = communitiesHtml || '<p class="text-muted text-center">暂无社群数据</p>';
+                });
+
+            fetch('/api/network/graph')
+                .then(res => res.json())
+                .then(graph => {
+                    renderNetwork(graph);
+                });
+        }
+
+        function renderNetwork(graph) {
+            const container = document.getElementById('networkGraph');
+            container.innerHTML = '';
+            
+            const width = container.offsetWidth;
+            const height = container.offsetHeight;
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            const communities = {};
+            graph.nodes.forEach(n => {
+                if (!communities[n.community_id]) communities[n.community_id] = [];
+                communities[n.community_id].push(n);
+            });
+
+            const positions = {};
+            const communityCount = Object.keys(communities).length;
+            
+            Object.entries(communities).forEach(([cid, nodes], ci) => {
+                const angle = (ci / communityCount) * Math.PI * 2;
+                const radius = Math.min(width, height) * 0.3;
+                const cx = centerX + Math.cos(angle) * radius;
+                const cy = centerY + Math.sin(angle) * radius;
+                
+                nodes.forEach((node, ni) => {
+                    const nodeAngle = (ni / nodes.length) * Math.PI * 2;
+                    const nodeRadius = 30 + nodes.length * 5;
+                    positions[node.id] = {
+                        x: cx + Math.cos(nodeAngle) * nodeRadius,
+                        y: cy + Math.sin(nodeAngle) * nodeRadius
+                    };
+                });
+            });
+
+            graph.edges.forEach(edge => {
+                const from = positions[edge.source];
+                const to = positions[edge.target];
+                if (!from || !to) return;
+
+                const dx = to.x - from.x;
+                const dy = to.y - from.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+                const edgeEl = document.createElement('div');
+                edgeEl.className = 'edge';
+                edgeEl.style.cssText = `
+                    left: ${from.x + 25}px;
+                    top: ${from.y + 25}px;
+                    width: ${length}px;
+                    height: ${2 + edge.value * 3}px;
+                    transform: rotate(${angle}deg);
+                    opacity: ${0.3 + edge.value * 0.7};
+                `;
+                container.appendChild(edgeEl);
+            });
+
+            graph.nodes.forEach(node => {
+                const pos = positions[node.id];
+                if (!pos) return;
+
+                const color = node.is_suspicious ? '#dc3545' : colors[node.community_id % colors.length];
+                const size = 40 + Math.min(node.value / 10, 30);
+
+                const nodeEl = document.createElement('div');
+                nodeEl.className = `node ${node.is_suspicious ? 'suspicious' : ''}`;
+                nodeEl.style.cssText = `
+                    left: ${pos.x}px;
+                    top: ${pos.y}px;
+                    width: ${size}px;
+                    height: ${size}px;
+                    background: ${color};
+                    font-size: ${Math.max(8, size / 5)}px;
+                `;
+                nodeEl.textContent = node.id.replace('pub_', '');
+                nodeEl.onclick = () => showPublisherDetail(node.id);
+                nodeEl.title = `${node.id}\n欺诈率: ${(node.fraud_rate * 100).toFixed(1)}%\n风险分数: ${(node.risk_score * 100).toFixed(1)}%`;
+                
+                container.appendChild(nodeEl);
+            });
+        }
+
+        function showPublisherDetail(publisherId) {
+            fetch(`/api/network/publisher/${publisherId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const connectionsHtml = data.connections?.map(c => `
+                        <tr>
+                            <td>${c.publisher_id}</td>
+                            <td>${c.shared_ips}</td>
+                            <td>${c.shared_devices}</td>
+                            <td>${c.shared_sessions}</td>
+                            <td>${(c.connection_strength * 100).toFixed(1)}%</td>
+                            <td><span class="badge ${c.neighbor_fraud_rate > 0.5 ? 'bg-danger' : 'bg-success'}">${(c.neighbor_fraud_rate * 100).toFixed(1)}%</span></td>
+                        </tr>
+                    `).join('') || '';
+
+                    document.getElementById('publisherDetail').innerHTML = `
+                        <div class="row">
+                            <div class="col-md-3">
+                                <h4>${data.publisher_id}</h4>
+                                <p class="mb-1">欺诈率: <strong class="${data.fraud_rate > 0.5 ? 'text-danger' : 'text-success'}">${(data.fraud_rate * 100).toFixed(1)}%</strong></p>
+                                <p class="mb-1">风险分数: <strong>${(data.risk_score * 100).toFixed(1)}%</strong></p>
+                                <p class="mb-1">连接数: <strong>${data.connection_count}</strong></p>
+                                <p>状态: <span class="badge ${data.is_suspicious ? 'bg-danger' : 'bg-success'}">${data.is_suspicious ? '可疑' : '正常'}</span></p>
+                            </div>
+                            <div class="col-md-9">
+                                <h6>关联发布商 (${data.connection_count})</h6>
+                                <div style="max-height: 200px; overflow-y: auto;">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>发布商</th>
+                                                <th>共享IP</th>
+                                                <th>共享设备</th>
+                                                <th>共享会话</th>
+                                                <th>关联强度</th>
+                                                <th>对方欺诈率</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>${connectionsHtml || '<tr><td colspan="6" class="text-center text-muted">暂无关联</td></tr>'}</tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+        }
+
+        loadNetwork();
+        window.addEventListener('resize', loadNetwork);
+    </script>
+</body>
+</html>

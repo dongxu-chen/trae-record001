@@ -1,0 +1,60 @@
+source:
+  provider: aws
+  region: us-east-1
+
+destination:
+  provider: aliyun
+  region: cn-hangzhou
+
+resources:
+  ec2:
+    - instance_id: i-1234567890abcdef0
+      name: web-server
+      instance_type: ecs.t5.large
+      target_zone: cn-hangzhou-i
+  rds:
+    - db_instance_id: prod-db
+      target_db_name: migrated-prod-db
+      db_type: mysql
+  s3:
+    - bucket: my-source-bucket
+      target_bucket: my-target-bucket
+      prefix: data/
+
+rsync:
+  source_path: /var/www/html/
+  dest_path: /var/www/html/
+  ssh_user: root
+  ssh_host: 192.168.1.100
+  ssh_port: 22
+  ssh_key_path: ~/.ssh/id_rsa
+  exclude_patterns:
+    - "*.log"
+    - "tmp/*"
+  bandwidth_limit: "10000"
+  continuous_sync: true
+  sync_interval: 300
+
+checkpoint:
+  enabled: true
+  directory: ~/.cloud-migration/checkpoints
+
+image_conversion:
+  enabled: true
+  temp_directory: /tmp/cloud-migration-images
+  target_formats:
+    aliyun: raw
+    tencent: vmdk
+    aws: vmdk
+
+sandbox:
+  enabled: true
+  vpc_cidr: 10.200.0.0/16
+  subnet_cidr: 10.200.1.0/24
+  auto_expiry_hours: 4
+  enable_sub_account: true
+  isolation_policies:
+    - vpc_isolation
+    - subnet_isolation
+    - security_groups
+    - iam_restrictions

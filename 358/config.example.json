@@ -1,0 +1,85 @@
+{
+  "registries": [
+    {
+      "name": "harbor-source",
+      "type": "harbor",
+      "url": "https://harbor.example.com",
+      "username": "admin",
+      "password": "your-harbor-password",
+      "insecure": false
+    },
+    {
+      "name": "acr-target",
+      "type": "acr",
+      "url": "https://registry.cn-hangzhou.aliyuncs.com",
+      "access_key": "your-access-key",
+      "secret_key": "your-secret-key",
+      "region": "cn-hangzhou",
+      "insecure": false
+    },
+    {
+      "name": "ecr-target",
+      "type": "ecr",
+      "url": "https://123456789012.dkr.ecr.us-west-2.amazonaws.com",
+      "access_key": "AWS_ACCESS_KEY_ID",
+      "secret_key": "AWS_SECRET_ACCESS_KEY",
+      "region": "us-west-2",
+      "username": "123456789012",
+      "insecure": false
+    },
+    {
+      "name": "relay-node-sg",
+      "type": "generic",
+      "url": "https://relay-sg.example.com",
+      "username": "relay-user",
+      "password": "relay-password",
+      "region": "ap-southeast-1",
+      "insecure": false
+    }
+  ],
+  "sync_jobs": [
+    {
+      "source_registry": "harbor-source",
+      "target_registry": "acr-target",
+      "source_prefix": "project",
+      "target_prefix": "mirror",
+      "relay_nodes": [
+        {
+          "name": "relay-node-sg",
+          "type": "generic",
+          "url": "https://relay-sg.example.com",
+          "username": "relay-user",
+          "password": "relay-password",
+          "region": "ap-southeast-1"
+        }
+      ],
+      "filter": {
+        "include_namespaces": ["prod", "staging"],
+        "exclude_namespaces": ["test", "dev"],
+        "include_tags": ["v*", "latest"],
+        "exclude_tags": ["*-dev", "*-snapshot"]
+      },
+      "rate_limit": {
+        "max_concurrent": 5,
+        "bytes_per_sec": 104857600
+      },
+      "incremental": true,
+      "verify_digest": true,
+      "dry_run": false,
+      "cleanup": {
+        "enabled": true,
+        "delete_tags": true,
+        "delete_manifests": false,
+        "dry_run": false,
+        "retention_days": 30
+      },
+      "audit": {
+        "enabled": true,
+        "log_path": "logs/audit.log",
+        "operator": "admin",
+        "batch_size": 100
+      }
+    }
+  ],
+  "encrypted": false
+}

@@ -1,0 +1,35 @@
+@import '@/styles/variables.less';
+
+.config-panel {
+  width: @config-panel-width;
+  height: 100%;
+  background: @bg-container;
+  border-right: 1px solid @border-color-light;
+  display: flex;
+  flex-direction: column;
+  box-shadow: @shadow-sm;
+}
+
+.config-panel-header {
+  padding: @spacing-lg;
+  border-bottom: 1px solid @border-color-light;
+  flex-shrink: 0;
+
+  .config-panel-title {
+    font-size: @font-size-xl;
+    font-weight: 600;
+    color: @text-primary;
+    margin-bottom: @spacing-xs;
+  }
+
+  .config-panel-subtitle {
+    font-size: @font-size-xs;
+    color: @text-tertiary;
+  }
+}
+
+.config-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人工审核 - 欺诈检测系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: #1a1a2e;
+        }
+        .sidebar a {
+            color: #aaa;
+            text-decoration: none;
+            padding: 12px 20px;
+            display: block;
+            transition: all 0.3s;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background: #16213e;
+            color: #fff;
+        }
+        .fraud-score-high { color: #dc3545; font-weight: bold; }
+        .fraud-score-medium { color: #ffc107; font-weight: bold; }
+        .fraud-score-low { color: #28a745; font-weight: bold; }
+        .sample-card {
+            border-left: 4px solid #667eea;
+            transition: all 0.2s;
+        }
+        .sample-card:hover {
+            background: #f8f9fa;
+            transform: translateX(4px);
+        }
+        .selected {
+            background: #e7f3ff !important;
+            border-left-color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 d-none d-md-block sidebar">
+                <div class="p-3 text-white border-bottom">
+                    <h5>🛡️ 欺诈检测系统</h5>
+                </div>
+                <a href="/">📊 控制台</a>
+                <a href="/review" class="active">🔍 人工审核</a>
+                <a href="/network">🕸️ 发布商网络</a>
+                <a href="/attribution">💰 归因分析</a>
+            </nav>
+
+            <main class="col-md-10 ms-sm-auto px-4 py-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>🔍 人工审核工作台</h2>
+                    <div>
+                        <button class="btn btn-success me-2" onclick="batchReview('legitimate')">批量标记正常</button>
+                        <button class="btn btn-danger" onclick="batchReview('fraud')">批量标记欺诈</button>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" placeholder="搜索发布商..." id="pubFilter">
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-control" id="scoreFilter">
+                            <option value="">所有分数</option>
+                            <option value="0.9">0.9 以上</option>
+                            <option value="0.7">0.7 以上</option>
+                            <option value="0.5">0.5 以上</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-primary" onclick="loadSamples()">筛选</button>
+                        <button class="btn btn-outline-secondary" onclick="refreshSamples()">刷新</button>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">待审核样本列表</h5>
+                                <span class="badge bg-primary" id="sampleCount">0 条</span>
+                            </div>
+                            <div class="card-body p-0" style="max-height: 70vh; overflow-y: auto;">
+                                <div id="sampleList" class="list-group list-group-flush">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">样本详情</h5>
+                            </div>
+                            <div class="card-body" id="sampleDetail">
+                                <p class="text-muted text-center mt-5">请选择一个样本查看详情</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        let selectedSamples = new Set();
+        let currentSample = null;
+
+        function getScoreClass(score) {
+            if (score >= 0.8) return 'fraud-score-high';
+            if (score >= 0.5) return 'fraud-score-medium';
+            return 'fraud-score-low';
+        }
+
+        function loadSamples() {
+            const pubFilter = document.getElementById('pubFilter').value;
+            const scoreFilter = document.getElementById('scoreFilter').value;
+            
+            let url = '/api/samples/pending?limit=100';
+            if (pubFilter) url += `&publisher=${pubFilter}`;
+            if (scoreFilter) url += `&min_score=${scoreFilter}`;
+            
+            fetch(url)
+                .then(res => res.json())
+                .then(samples => {
+                    document.getElementById('sampleCount').textContent = `${samples.length} 条`;
+                    
+                    const html = samples.map(s => `
+                        <div class="list-group-item list-group-item-action sample-card ${selectedSamples.has(s.sample_id) ? 'selected' : ''}" 
+                             onclick="selectSample('${s.sample_id}', event)"
+                             data-id="${s.sample_id}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <input type="checkbox" class="me-2" 
+                                           ${selectedSamples.has(s.sample_id) ? 'checked' : ''}
+                                           onclick="event.stopPropagation(); toggleSelect('${s.sample_id}')">
+                                    <strong>${s.click_id}</strong>
+                                    <small class="text-muted ms-2">${s.time_str}</small>
+                                </div>
+                                <span class="${getScoreClass(s.fraud_score)}">${(s.fraud_score * 100).toFixed(1)}%</span>
+                            </div>
+                            <div class="mt-1">
+                                <small class="text-muted">IP: ${s.ip} | 发布商: ${s.publisher_id}</small>
+                                ${s.rule_hits.length ? `<span class="badge bg-danger ms-2">${s.rule_hits.length} 条规则</span>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('sampleList').innerHTML = html || 
+                        '<div class="text-center text-muted py-5">暂无待审核样本</div>';
+                });
+        }
+
+        function toggleSelect(sampleId) {
+            if (selectedSamples.has(sampleId)) {
+                selectedSamples.delete(sampleId);
+            } else {
+                selectedSamples.add(sampleId);
+            }
+            loadSamples();
+        }
+
+        function selectSample(sampleId, event) {
+            if (event.target.type !== 'checkbox') {
+                currentSample = sampleId;
+                showSampleDetail(sampleId);
+                
+                document.querySelectorAll('.sample-card').forEach(el => {
+                    el.classList.remove('selected');
+                    if (el.dataset.id === sampleId) {
+                        el.classList.add('selected');
+                    }
+                });
+            }
+        }
+
+        function showSampleDetail(sampleId) {
+            fetch(`/api/sample/${sampleId}`)
+                .then(res => res.json())
+                .then(s => {
+                    const featuresHtml = Object.entries(s.model_features || {})
+                        .map(([k, v]) => `<li class="list-group-item d-flex justify-content-between"><span>${k}</span><strong>${v.toFixed(4)}</strong></li>`)
+                        .join('');
+
+                    document.getElementById('sampleDetail').innerHTML = `
+                        <table class="table table-borderless">
+                            <tr><td style="width: 120px;">样本ID</td><td><code>${s.sample_id}</code></td></tr>
+                            <tr><td>点击ID</td><td>${s.click_id}</td></tr>
+                            <tr><td>IP地址</td><td><span class="badge bg-info">${s.ip}</span></td></tr>
+                            <tr><td>设备ID</td><td>${s.device_id}</td></tr>
+                            <tr><td>发布商</td><td>${s.publisher_id}</td></tr>
+                            <tr><td>时间</td><td>${s.time_str}</td></tr>
+                            <tr>
+                                <td>欺诈分数</td>
+                                <td class="${getScoreClass(s.fraud_score)} fs-4">${(s.fraud_score * 100).toFixed(1)}%</td>
+                            </tr>
+                            <tr><td>预测动作</td><td><span class="badge bg-warning">${s.predicted_action}</span></td></tr>
+                            <tr><td>命中规则</td><td>${s.rule_hits.map(r => `<span class="badge bg-danger me-1">${r}</span>`).join('') || '-'}</td></tr>
+                        </table>
+                        
+                        <h6 class="mt-3 mb-2">模型特征</h6>
+                        <ul class="list-group mb-3">${featuresHtml || '<li class="list-group-item text-muted">无特征数据</li>'}</ul>
+                        
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success flex-fill" onclick="reviewSample('${s.sample_id}', 'legitimate')">✓ 正常流量</button>
+                            <button class="btn btn-danger flex-fill" onclick="reviewSample('${s.sample_id}', 'fraud')">✗ 欺诈流量</button>
+                            <button class="btn btn-secondary flex-fill" onclick="reviewSample('${s.sample_id}', 'uncertain')">? 存疑</button>
+                        </div>
+                    `;
+                });
+        }
+
+        function reviewSample(sampleId, label) {
+            fetch(`/api/sample/${sampleId}/review`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ actual_label: label, reviewer: 'admin' })
+            }).then(() => {
+                selectedSamples.delete(sampleId);
+                loadSamples();
+                document.getElementById('sampleDetail').innerHTML = '<p class="text-muted text-center mt-5">请选择一个样本查看详情</p>';
+            });
+        }
+
+        function batchReview(label) {
+            if (selectedSamples.size === 0) {
+                alert('请先选择要审核的样本');
+                return;
+            }
+            
+            fetch('/api/samples/batch-review', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    sample_ids: Array.from(selectedSamples), 
+                    actual_label: label,
+                    reviewer: 'admin'
+                })
+            }).then(() => {
+                selectedSamples.clear();
+                loadSamples();
+            });
+        }
+
+        function refreshSamples() {
+            selectedSamples.clear();
+            loadSamples();
+        }
+
+        loadSamples();
+    </script>
+</body>
+</html>

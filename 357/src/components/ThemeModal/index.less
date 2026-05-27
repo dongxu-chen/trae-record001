@@ -1,0 +1,213 @@
+@import '@/styles/variables.less';
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: @bg-base;
+  border-radius: @border-radius-lg;
+  box-shadow: @shadow-lg;
+  width: 90%;
+  max-width: 420px;
+  animation: slideUp 0.25s ease;
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: @spacing-lg;
+  border-bottom: 1px solid @border-color-light;
+
+  .modal-title {
+    display: flex;
+    align-items: center;
+    gap: @spacing-sm;
+    font-size: @font-size-lg;
+    font-weight: 600;
+    color: @text-primary;
+    margin: 0;
+  }
+
+  .modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: @border-radius-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: @text-tertiary;
+    transition: all @transition-fast;
+
+    &:hover {
+      background: @bg-hover;
+      color: @text-primary;
+    }
+  }
+}
+
+.modal-body {
+  padding: @spacing-lg;
+}
+
+.form-group {
+  margin-bottom: @spacing-lg;
+
+  &:last-of-type {
+    margin-bottom: @spacing-md;
+  }
+
+  .form-label {
+    display: block;
+    font-size: @font-size-sm;
+    font-weight: 500;
+    color: @text-primary;
+    margin-bottom: @spacing-xs;
+  }
+
+  .form-input,
+  .form-textarea {
+    width: 100%;
+    padding: @spacing-sm @spacing-md;
+    border: 1px solid @border-color;
+    border-radius: @border-radius-md;
+    font-size: @font-size-base;
+    font-family: inherit;
+    transition: all @transition-fast;
+
+    &:focus {
+      border-color: @primary-color;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1);
+    }
+
+    &::placeholder {
+      color: @text-tertiary;
+    }
+  }
+
+  .form-textarea {
+    resize: none;
+  }
+
+  .form-checkbox {
+    display: flex;
+    align-items: center;
+    gap: @spacing-sm;
+    cursor: pointer;
+    font-size: @font-size-sm;
+    color: @text-secondary;
+    user-select: none;
+
+    input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .checkbox-icon {
+      width: 18px;
+      height: 18px;
+      border: 2px solid @border-color;
+      border-radius: @border-radius-sm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all @transition-fast;
+    }
+
+    input:checked + .checkbox-icon {
+      background: @primary-color;
+      border-color: @primary-color;
+
+      &::after {
+        content: '';
+        width: 10px;
+        height: 5px;
+        border-left: 2px solid #fff;
+        border-bottom: 2px solid #fff;
+        transform: rotate(-45deg);
+        margin-top: -2px;
+      }
+    }
+  }
+}
+
+.form-error {
+  padding: @spacing-sm @spacing-md;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid @error-color;
+  border-radius: @border-radius-md;
+  color: @error-color;
+  font-size: @font-size-sm;
+  margin-bottom: @spacing-md;
+}
+
+.modal-actions {
+  display: flex;
+  gap: @spacing-sm;
+  margin-top: @spacing-lg;
+
+  .btn-cancel,
+  .btn-confirm {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: @spacing-xs;
+    padding: @spacing-sm @spacing-lg;
+    border-radius: @border-radius-md;
+    font-size: @font-size-base;
+    font-weight: 500;
+    transition: all @transition-fast;
+  }
+
+  .btn-cancel {
+    background: @bg-hover;
+    color: @text-secondary;
+
+    &:hover {
+      background: @border-color-light;
+    }
+  }
+
+  .btn-confirm {
+    background: @primary-color;
+    color: #fff;
+
+    &:hover {
+      background: @primary-hover;
+      box-shadow: @shadow-sm;
+    }
+  }
+}
