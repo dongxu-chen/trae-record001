@@ -1,0 +1,17 @@
+[
+  {
+    "id": "alert_1779818761_4898",
+    "route": "北京-上海",
+    "target_price": 500,
+    "departure_date": "2025-08-15",
+    "email": "test@example.com",
+    "phone": null,
+    "airline": null,
+    "note": "测试警报",
+    "created_at": "2026-05-27 02:06:01",
+    "status": "active",
+    "triggered_at": null,
+    "current_lowest_price": null,
+    "price_history": []
+  }
+]

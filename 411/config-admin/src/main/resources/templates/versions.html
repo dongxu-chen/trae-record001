@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>版本管理</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header h1 { color: #333; margin-bottom: 15px; }
+        .nav { margin-bottom: 20px; }
+        .nav a { color: #667eea; text-decoration: none; margin-right: 20px; }
+        .form-section { background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-section h2 { color: #333; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #555; font-weight: 500; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;
+        }
+        .form-group textarea { min-height: 200px; font-family: monospace; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #667eea; color: white; }
+        tr:hover { background: #f8f9fa; }
+        .status { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        .status-published { background: #d4edda; color: #155724; }
+        .status-draft { background: #fff3cd; color: #856404; }
+        .status-rolled_back { background: #f8d7da; color: #721c24; }
+        .status-archived { background: #e2e3e5; color: #383d41; }
+        .actions { display: flex; gap: 8px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav">
+        <a href="/">← 返回首页</a>
+    </div>
+
+    <div class="header">
+        <h1>📦 配置版本管理</h1>
+        <p>管理配置版本，支持创建、发布、回滚操作</p>
+    </div>
+
+    <div class="form-section">
+        <h2>创建新版本</h2>
+        <form id="createForm">
+            <div class="form-group">
+                <label>应用名称</label>
+                <input type="text" name="application" required placeholder="例如: config-client">
+            </div>
+            <div class="form-group">
+                <label>Profile</label>
+                <input type="text" name="profile" value="default" required>
+            </div>
+            <div class="form-group">
+                <label>Label (分支)</label>
+                <input type="text" name="label" value="master" required>
+            </div>
+            <div class="form-group">
+                <label>配置内容 (YAML)</label>
+                <textarea name="configContent" required>app:
+  feature:
+    enabled: false
+  threshold:
+    max-requests: 100
+    timeout-ms: 5000
+  database:
+    max-connections: 20
+    min-idle: 5</textarea>
+            </div>
+            <div class="form-group">
+                <label>变更说明</label>
+                <input type="text" name="changeSummary" required placeholder="描述本次变更内容">
+            </div>
+            <div class="form-group">
+                <label>操作人</label>
+                <input type="text" name="operator" value="admin" required>
+            </div>
+            <button type="submit" class="btn btn-primary">创建版本</button>
+        </form>
+    </div>
+
+    <div class="form-section">
+        <h2>版本历史</h2>
+        <div class="form-group">
+            <label>应用名称</label>
+            <input type="text" id="queryApp" placeholder="输入应用名称查询">
+        </div>
+        <button onclick="loadVersions()" class="btn btn-primary">查询</button>
+        <button onclick="loadAllPublished()" class="btn btn-success">查询已发布版本</button>
+        <div id="versionList" style="margin-top: 20px;"></div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = /*[[${configServerUrl}]]*/ 'http://localhost:8888';
+
+    document.getElementById('createForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
+
+        try {
+            const response = await fetch(`${API_BASE}/api/config/versions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            alert('版本创建成功! 版本号: ' + result.version);
+            e.target.reset();
+        } catch (err) {
+            alert('创建失败: ' + err.message);
+        }
+    });
+
+    async function loadVersions() {
+        const app = document.getElementById('queryApp').value;
+        if (!app) { alert('请输入应用名称'); return; }
+
+        try {
+            const response = await fetch(`${API_BASE}/api/config/versions/history?application=${app}`);
+            const versions = await response.json();
+            renderVersions(versions);
+        } catch (err) {
+            alert('查询失败: ' + err.message);
+        }
+    }
+
+    async function loadAllPublished() {
+        const app = document.getElementById('queryApp').value;
+        if (!app) { alert('请输入应用名称'); return; }
+
+        try {
+            const response = await fetch(`${API_BASE}/api/config/versions/published?application=${app}`);
+            const versions = await response.json();
+            renderVersions(versions);
+        } catch (err) {
+            alert('查询失败: ' + err.message);
+        }
+    }
+
+    function renderVersions(versions) {
+        if (!versions.length) {
+            document.getElementById('versionList').innerHTML = '<p>暂无数据</p>';
+            return;
+        }
+
+        let html = '<table><thead><tr>' +
+            '<th>ID</th><th>版本号</th><th>应用</th><th>Profile</th><th>状态</th>' +
+            '<th>变更说明</th><th>操作人</th><th>创建时间</th><th>操作</th>' +
+            '</tr></thead><tbody>';
+
+        versions.forEach(v => {
+            html += `<tr>
+                <td>${v.id}</td>
+                <td>${v.version}</td>
+                <td>${v.application}</td>
+                <td>${v.profile}</td>
+                <td><span class="status status-${v.status.toLowerCase()}">${v.status}</span></td>
+                <td>${v.changeSummary || '-'}</td>
+                <td>${v.operator}</td>
+                <td>${v.createdAt}</td>
+                <td class="actions">
+                    ${v.status === 'DRAFT' ? `<button onclick="publishVersion(${v.id})" class="btn btn-success">发布</button>` : ''}
+                    ${v.status === 'PUBLISHED' || v.status === 'ARCHIVED' ? `<button onclick="rollbackVersion(${v.id})" class="btn btn-warning">回滚</button>` : ''}
+                </td>
+            </tr>`;
+        });
+
+        html += '</tbody></table>';
+        document.getElementById('versionList').innerHTML = html;
+    }
+
+    async function publishVersion(id) {
+        if (!confirm('确认发布该版本?')) return;
+        try {
+            await fetch(`${API_BASE}/api/config/versions/${id}/publish`, { method: 'POST' });
+            alert('发布成功!');
+            loadVersions();
+        } catch (err) {
+            alert('发布失败: ' + err.message);
+        }
+    }
+
+    async function rollbackVersion(id) {
+        if (!confirm('确认回滚到该版本?')) return;
+        try {
+            await fetch(`${API_BASE}/api/config/versions/${id}/rollback`, { method: 'POST' });
+            alert('回滚成功!');
+            loadVersions();
+        } catch (err) {
+            alert('回滚失败: ' + err.message);
+        }
+    }
+</script>
+</body>
+</html>

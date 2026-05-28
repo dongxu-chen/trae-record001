@@ -1,0 +1,21 @@
+api:
+  addr: ":8080"
+
+xds:
+  addr: ":18000"
+
+db:
+  path: "traffic-mirror.db"
+
+envoy:
+  node_id: "traffic-mirror-envoy"
+  production:
+    host: "production-service"
+    port: 8080
+  test:
+    host: "test-service"
+    port: 8080
+  wasm_plugin: "/etc/envoy/wasm/traffic-mirror.wasm"
+
+jaeger:
+  endpoint: "http://jaeger:14268/api/traces"

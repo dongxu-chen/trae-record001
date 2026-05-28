@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置热更新中心</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; margin-bottom: 30px; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { opacity: 0.9; }
+        .nav { display: flex; gap: 15px; margin-bottom: 30px; }
+        .nav a { padding: 12px 24px; background: white; border-radius: 8px; text-decoration: none; color: #333; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.3s; }
+        .nav a:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .card h3 { color: #667eea; margin-bottom: 15px; }
+        .card p { color: #666; line-height: 1.6; }
+        .card ul { list-style: none; margin-top: 10px; }
+        .card ul li { padding: 8px 0; border-bottom: 1px solid #eee; color: #555; }
+        .card ul li:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🔧 配置热更新中心</h1>
+        <p>基于 Spring Cloud Config + Bus + RabbitMQ + Git + Eureka 实现的配置管理平台</p>
+    </div>
+
+    <div class="nav">
+        <a href="/versions">📦 版本管理</a>
+        <a href="/gray">🚀 灰度发布</a>
+        <a href="/snapshots">⏪ 时间点回溯</a>
+        <a href="/pre-validation">🧪 配置预演</a>
+        <a href="/dependencies">🔗 依赖拓扑</a>
+        <a href="/audit">📋 审计日志</a>
+    </div>
+
+    <div class="cards">
+        <div class="card">
+            <h3>📦 版本管理</h3>
+            <p>支持配置版本的创建、发布、回滚，完整记录每次变更历史。</p>
+            <ul>
+                <li>✓ 版本历史追踪</li>
+                <li>✓ 一键回滚</li>
+                <li>✓ Git 版本同步</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>🚀 灰度发布</h3>
+            <p>支持IP白名单、百分比和Pod标签选择器进行灰度发布。</p>
+            <ul>
+                <li>✓ IP白名单策略</li>
+                <li>✓ 百分比流量控制</li>
+                <li>✓ Pod标签选择器</li>
+                <li>✓ 审批流程</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>⏪ 时间点回溯</h3>
+            <p>配置快照管理，支持秒级恢复到任意历史时刻。</p>
+            <ul>
+                <li>✓ 自动快照</li>
+                <li>✓ 时间点回溯</li>
+                <li>✓ 秒级恢复</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>🧪 配置预演</h3>
+            <p>在测试实例验证配置变更，确保安全后再发布生产。</p>
+            <ul>
+                <li>✓ YAML格式验证</li>
+                <li>✓ 测试实例部署</li>
+                <li>✓ 健康检查</li>
+                <li>✓ 功能测试</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>🔗 依赖分析</h3>
+            <p>配置依赖关系管理，变更时提示关联配置需同步调整。</p>
+            <ul>
+                <li>✓ 依赖关系定义</li>
+                <li>✓ 变更影响分析</li>
+                <li>✓ 依赖图可视化</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>📊 拓扑展示</h3>
+            <p>可视化展示配置项依赖的应用和实例，生成拓扑图。</p>
+            <ul>
+                <li>✓ 拓扑图生成</li>
+                <li>✓ 节点依赖关系</li>
+                <li>✓ 应用实例映射</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>🔄 优雅刷新</h3>
+            <p>配置刷新时等待请求处理完毕，避免连接中断。</p>
+            <ul>
+                <li>✓ 请求计数追踪</li>
+                <li>✓ 优雅等待</li>
+                <li>✓ 连接安全重启</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>📋 变更审计</h3>
+            <p>完整记录所有配置变更操作，支持多维度查询审计。</p>
+            <ul>
+                <li>✓ 操作日志</li>
+                <li>✓ 变更对比</li>
+                <li>✓ 时间范围查询</li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>

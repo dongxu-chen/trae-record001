@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  production-service:
+    build:
+      context: ./services/production
+    container_name: production-service
+    ports:
+      - "9090:8080"
+      - "9443:8443"
+    volumes:
+      - ./envoy/tls:/etc/nginx/tls:ro
+    networks:
+      - traffic-mirror
+    environment:
+      - TLS_ENABLED=true
+      - TLS_CERT=/etc/nginx/tls/server.crt
+      - TLS_KEY=/etc/nginx/tls/server.key
+
+  test-service:
+    build:
+      context: ./services/test
+    container_name: test-service
+    ports:
+      - "9091:8080"
+      - "9444:8443"
+    volumes:
+      - ./envoy/tls:/etc/nginx/tls:ro
+    networks:
+      - traffic-mirror
+    environment:
+      - TLS_ENABLED=true
+      - TLS_CERT=/etc/nginx/tls/server.crt
+      - TLS_KEY=/etc/nginx/tls/server.key
+
+  envoy:
+    image: envoyproxy/envoy:v1.29-latest
+    container_name: envoy
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "15000:15000"
+    volumes:
+      - ./envoy/envoy.yaml:/etc/envoy/envoy.yaml
+      - ./envoy/tls:/etc/envoy/tls:ro
+      - ./wasm/output:/etc/envoy/wasm:ro
+    depends_on:
+      - production-service
+      - test-service
+      - control-plane
+    networks:
+      - traffic-mirror
+    command: [ "-c", "/etc/envoy/envoy.yaml", "--log-level", "info" ]
+
+  control-plane:
+    build:
+      context: ./control-plane
+      dockerfile: Dockerfile
+    container_name: control-plane
+    ports:
+      - "8080:8080"
+      - "18000:18000"
+    volumes:
+      - ./control-plane/control-plane.yaml:/app/control-plane.yaml:ro
+      - control-plane-data:/data
+    networks:
+      - traffic-mirror
+    command: [ "--config", "/app/control-plane.yaml" ]
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.55
+    container_name: jaeger
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - traffic-mirror
+
+  tls-gen:
+    image: frapsoft/openssl
+    container_name: tls-gen
+    volumes:
+      - ./envoy/tls:/certs
+    entrypoint: >
+      sh -c "
+        if [ ! -f /certs/ca.key ]; then
+          echo 'Generating TLS certificates...' &&
+          openssl genrsa -out /certs/ca.key 2048 &&
+          openssl req -new -x509 -days 3650 -key /certs/ca.key -out /certs/ca.crt -subj '/CN=traffic-mirror-ca' &&
+          openssl genrsa -out /certs/server.key 2048 &&
+          openssl req -new -key /certs/server.key -out /certs/server.csr -subj '/CN=localhost' &&
+          openssl x509 -req -days 3650 -in /certs/server.csr -CA /certs/ca.crt -CAkey /certs/ca.key -CAcreateserial -out /certs/server.crt &&
+          openssl genrsa -out /certs/client.key 2048 &&
+          openssl req -new -key /certs/client.key -out /certs/client.csr -subj '/CN=client' &&
+          openssl x509 -req -days 3650 -in /certs/client.csr -CA /certs/ca.crt -CAkey /certs/ca.key -CAcreateserial -out /certs/client.crt &&
+          echo 'TLS certificates generated.'
+        else
+          echo 'TLS certificates already exist, skipping.'
+        fi
+      "
+    networks:
+      - traffic-mirror
+
+volumes:
+  control-plane-data:
+
+networks:
+  traffic-mirror:
+    driver: bridge

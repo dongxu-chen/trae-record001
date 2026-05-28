@@ -1,0 +1,271 @@
+syntax = "proto3";
+
+package trafficmirror;
+
+option go_package = "github.com/traffic-mirror/proto";
+
+import "google/protobuf/timestamp.proto";
+
+message MirrorConfig {
+  double sampling_rate = 1;
+  string sampling_hash_key = 2;
+  repeated HeaderRule header_rules = 3;
+  string test_cluster = 4;
+  string control_plane = 5;
+  bool enabled = 6;
+  repeated string proto_content_types = 7;
+  bool color_enabled = 8;
+  string color_header = 9;
+  string color_value = 10;
+  bool anomaly_enabled = 11;
+  double anomaly_threshold = 12;
+}
+
+message HeaderRule {
+  int64 id = 1;
+  string name = 2;
+  string value = 3;
+  string operation = 4;
+  string match = 5;
+  bool override = 6;
+  int32 priority = 7;
+  bool enabled = 8;
+}
+
+message ProtoSchema {
+  int64 id = 1;
+  string message_type = 2;
+  string proto_file_name = 3;
+  bytes file_descriptor = 4;
+  string package_name = 5;
+  string service_name = 6;
+  string method_name = 7;
+  string description = 8;
+  bool enabled = 9;
+}
+
+message ComparisonResult {
+  int64 id = 1;
+  string request_id = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  string path = 4;
+  string method = 5;
+  uint32 prod_status = 6;
+  uint32 test_status = 7;
+  bool status_match = 8;
+  bool body_match = 9;
+  bool header_match = 10;
+  bool has_diff = 11;
+  string severity = 12;
+  string prod_body_hash = 13;
+  string test_body_hash = 14;
+  int32 prod_body_len = 15;
+  int32 test_body_len = 16;
+  repeated Difference differences = 17;
+  bool is_proto = 18;
+  string proto_message_type = 19;
+  repeated ProtoFieldDiff proto_differences = 20;
+  string anomaly = 21;
+}
+
+message Difference {
+  string field = 1;
+  string type = 2;
+  string prod_value = 3;
+  string test_value = 4;
+  string severity = 5;
+}
+
+message ProtoFieldDiff {
+  int32 field_number = 1;
+  string field_name = 2;
+  int32 wire_type = 3;
+  string prod_value = 4;
+  string test_value = 5;
+  string severity = 6;
+}
+
+message ComparisonQuery {
+  string path = 1;
+  string method = 2;
+  string severity = 3;
+  bool has_diff = 4;
+  bool is_proto = 5;
+  int64 start_time = 6;
+  int64 end_time = 7;
+  int32 page = 8;
+  int32 page_size = 9;
+}
+
+message ComparisonStats {
+  int64 total_count = 1;
+  int64 match_count = 2;
+  int64 mismatch_count = 3;
+  int64 proto_count = 4;
+  map<string, int64> severity_count = 5;
+  repeated TopDiff top_diffs = 6;
+  repeated TopDiff top_proto_diffs = 7;
+  int64 anomaly_count = 8;
+}
+
+message TopDiff {
+  string path = 1;
+  int64 count = 2;
+  string severity = 3;
+}
+
+message MirrorStatus {
+  bool enabled = 1;
+  double sampling_rate = 2;
+  string sampling_hash_key = 3;
+  int64 total_requests = 4;
+  int64 mirrored_count = 5;
+  string test_cluster = 6;
+  int64 proto_schema_count = 7;
+  bool color_enabled = 8;
+  string color_header = 9;
+  string color_value = 10;
+  int64 anomaly_count = 11;
+}
+
+message SamplingRateRequest { double rate = 1; }
+message SamplingHashKeyRequest { string hash_key = 1; }
+message TestClusterRequest { string cluster = 1; }
+message EnabledRequest { bool enabled = 1; }
+message ColorConfigRequest {
+  bool enabled = 1;
+  string header = 2;
+  string value = 3;
+}
+message AnomalyConfigRequest {
+  bool enabled = 1;
+  double threshold = 2;
+}
+
+message AnomalyAlert {
+  int64 id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  string request_id = 3;
+  string path = 4;
+  string method = 5;
+  string anomaly_type = 6;
+  string severity = 7;
+  string message = 8;
+  map<string, string> details = 9;
+  bool acknowledged = 10;
+}
+
+message AnomalyQuery {
+  string anomaly_type = 1;
+  string severity = 2;
+  bool acknowledged = 3;
+  int64 start_time = 4;
+  int64 end_time = 5;
+  int32 page = 6;
+  int32 page_size = 7;
+}
+
+message AnomalyStats {
+  int64 total_count = 1;
+  int64 ack_count = 2;
+  int64 unack_count = 3;
+  map<string, int64> type_count = 4;
+  map<string, int64> severity_count = 5;
+}
+
+message ReplayRequest {
+  string name = 1;
+  int64 start_time = 2;
+  int64 end_time = 3;
+  double speed = 4;
+  int32 max_concurrency = 5;
+  string target_host = 6;
+  int32 target_port = 7;
+  string path_filter = 8;
+  string method_filter = 9;
+}
+
+message ReplayTask {
+  int64 id = 1;
+  string name = 2;
+  int64 start_time = 3;
+  int64 end_time = 4;
+  double speed = 5;
+  int32 max_concurrency = 6;
+  string target_host = 7;
+  int32 target_port = 8;
+  string status = 9;
+  double progress = 10;
+  int64 total_count = 11;
+  int64 sent_count = 12;
+  int64 success_count = 13;
+  int64 failed_count = 14;
+  string error = 15;
+}
+
+service MirrorConfigService {
+  rpc GetConfig(GetConfigRequest) returns (MirrorConfig);
+  rpc UpdateSamplingRate(SamplingRateRequest) returns (MirrorConfig);
+  rpc UpdateSamplingHashKey(SamplingHashKeyRequest) returns (MirrorConfig);
+  rpc UpdateTestCluster(TestClusterRequest) returns (MirrorConfig);
+  rpc SetEnabled(EnabledRequest) returns (MirrorConfig);
+}
+
+service ProtoSchemaService {
+  rpc List(ListProtoSchemasRequest) returns (ListProtoSchemasResponse);
+  rpc Get(GetProtoSchemaRequest) returns (ProtoSchema);
+  rpc GetByMessageType(GetProtoSchemaByMessageTypeRequest) returns (ProtoSchema);
+  rpc Create(CreateProtoSchemaRequest) returns (ProtoSchema);
+  rpc Update(UpdateProtoSchemaRequest) returns (ProtoSchema);
+  rpc Delete(DeleteProtoSchemaRequest) returns (DeleteProtoSchemaResponse);
+}
+
+service ComparisonService {
+  rpc Query(ComparisonQuery) returns (stream ComparisonResult);
+  rpc Get(GetComparisonRequest) returns (ComparisonResult);
+  rpc Receive(ComparisonResult) returns (ReceiveResponse);
+  rpc Stats(StatsRequest) returns (ComparisonStats);
+}
+
+service AnomalyAlertService {
+  rpc Query(AnomalyQuery) returns (stream AnomalyAlert);
+  rpc Get(GetAlertRequest) returns (AnomalyAlert);
+  rpc Acknowledge(AcknowledgeAlertRequest) returns (AcknowledgeAlertResponse);
+  rpc AcknowledgeAll(AcknowledgeAllRequest) returns (AcknowledgeAlertResponse);
+  rpc Delete(DeleteAlertRequest) returns (DeleteAlertResponse);
+  rpc Stats(StatsRequest) returns (AnomalyStats);
+}
+
+service ReplayService {
+  rpc Create(ReplayRequest) returns (ReplayTask);
+  rpc List(ListReplayTasksRequest) returns (stream ReplayTask);
+  rpc Get(GetReplayTaskRequest) returns (ReplayTask);
+  rpc Start(StartReplayTaskRequest) returns (ReplayTask);
+  rpc Stop(StopReplayTaskRequest) returns (ReplayTask);
+  rpc Delete(DeleteReplayTaskRequest) returns (DeleteReplayTaskResponse);
+}
+
+message GetConfigRequest {}
+message GetComparisonRequest { int64 id = 1; }
+message ReceiveResponse { int64 id = 1; }
+message StatsRequest {}
+message ListProtoSchemasRequest {}
+message ListProtoSchemasResponse { repeated ProtoSchema schemas = 1; }
+message GetProtoSchemaRequest { int64 id = 1; }
+message GetProtoSchemaByMessageTypeRequest { string message_type = 1; }
+message CreateProtoSchemaRequest { ProtoSchema schema = 1; }
+message UpdateProtoSchemaRequest { int64 id = 1; ProtoSchema schema = 2; }
+message DeleteProtoSchemaRequest { int64 id = 1; }
+message DeleteProtoSchemaResponse { bool success = 1; }
+message GetAlertRequest { int64 id = 1; }
+message AcknowledgeAlertRequest { int64 id = 1; }
+message AcknowledgeAlertResponse { bool success = 1; }
+message AcknowledgeAllRequest {}
+message DeleteAlertRequest { int64 id = 1; }
+message DeleteAlertResponse { bool success = 1; }
+message ListReplayTasksRequest {}
+message GetReplayTaskRequest { int64 id = 1; }
+message StartReplayTaskRequest { int64 id = 1; }
+message StopReplayTaskRequest { int64 id = 1; }
+message DeleteReplayTaskRequest { int64 id = 1; }
+message DeleteReplayTaskResponse { bool success = 1; }

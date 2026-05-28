@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>灰度发布</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header h1 { color: #333; margin-bottom: 15px; }
+        .nav { margin-bottom: 20px; }
+        .nav a { color: #667eea; text-decoration: none; margin-right: 20px; }
+        .form-section { background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-section h2 { color: #333; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #555; font-weight: 500; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;
+        }
+        .form-group textarea { min-height: 150px; font-family: monospace; }
+        .form-row { display: flex; gap: 15px; }
+        .form-row .form-group { flex: 1; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #667eea; color: white; }
+        tr:hover { background: #f8f9fa; }
+        .status { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        .status-PENDING_APPROVAL { background: #fff3cd; color: #856404; }
+        .status-IN_GRAY { background: #cce5ff; color: #004085; }
+        .status-FULL_RELEASED { background: #d4edda; color: #155724; }
+        .status-ROLLED_BACK { background: #f8d7da; color: #721c24; }
+        .status-REJECTED { background: #e2e3e5; color: #383d41; }
+        .actions { display: flex; gap: 8px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav">
+        <a href="/">← 返回首页</a>
+    </div>
+    <div class="header">
+        <h1>🚀 灰度发布管理</h1>
+        <p>配置灰度发布，支持IP白名单、百分比流量和Pod标签选择器策略</p>
+    </div>
+    <div class="form-section">
+        <h2>创建灰度发布</h2>
+        <form id="grayForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>应用名称</label>
+                    <input type="text" name="application" required placeholder="例如: config-client">
+                </div>
+                <div class="form-group">
+                    <label>Profile</label>
+                    <input type="text" name="profile" value="default" required>
+                </div>
+                <div class="form-group">
+                    <label>Label</label>
+                    <input type="text" name="label" value="master" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>灰度配置内容 (YAML)</label>
+                <textarea name="configContent" required>app:
+  feature:
+    enabled: true
+  threshold:
+    max-requests: 200
+    timeout-ms: 3000
+  database:
+    max-connections: 30
+    min-idle: 10</textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>灰度策略</label>
+                    <select name="strategy" id="strategy" required onchange="toggleStrategy()">
+                        <option value="IP_LIST">IP白名单</option>
+                        <option value="PERCENTAGE">百分比</option>
+                        <option value="POD_LABEL">Pod标签选择器</option>
+                    </select>
+                </div>
+                <div class="form-group" id="ipGroup">
+                    <label>灰度IP (逗号分隔)</label>
+                    <input type="text" name="grayIps" placeholder="192.168.1.100,192.168.1.101">
+                </div>
+                <div class="form-group" id="percentGroup" style="display:none">
+                    <label>灰度百分比</label>
+                    <input type="number" name="grayPercentage" min="1" max="100" value="10">
+                </div>
+                <div class="form-group" id="podLabelGroup" style="display:none">
+                    <label>Pod标签选择器 (key=value,逗号分隔)</label>
+                    <input type="text" name="podLabelSelector" placeholder="app=gray-test,env=staging">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>创建人</label>
+                <input type="text" name="createdBy" value="admin" required>
+            </div>
+            <button type="submit" class="btn btn-primary">创建灰度发布</button>
+        </form>
+    </div>
+    <div class="form-section">
+        <h2>灰度发布列表</h2>
+        <button onclick="loadActiveGrays()" class="btn btn-info">查询进行中</button>
+        <div id="grayList" style="margin-top: 20px;"></div>
+    </div>
+</div>
+<script>
+    const API_BASE = /*[[${configServerUrl}]]*/ 'http://localhost:8888';
+
+    function toggleStrategy() {
+        const strategy = document.getElementById('strategy').value;
+        document.getElementById('ipGroup').style.display = strategy === 'IP_LIST' ? 'block' : 'none';
+        document.getElementById('percentGroup').style.display = strategy === 'PERCENTAGE' ? 'block' : 'none';
+        document.getElementById('podLabelGroup').style.display = strategy === 'POD_LABEL' ? 'block' : 'none';
+    }
+
+    document.getElementById('grayForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
+        try {
+            const response = await fetch(`${API_BASE}/api/config/gray`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            alert('灰度发布创建成功! 版本号: ' + result.version);
+            e.target.reset();
+            loadActiveGrays();
+        } catch (err) {
+            alert('创建失败: ' + err.message);
+        }
+    });
+
+    async function loadActiveGrays() {
+        try {
+            const response = await fetch(`${API_BASE}/api/config/gray/active`);
+            const grays = await response.json();
+            renderGrays(grays);
+        } catch (err) {
+            alert('查询失败: ' + err.message);
+        }
+    }
+
+    function renderGrays(grays) {
+        if (!grays.length) {
+            document.getElementById('grayList').innerHTML = '<p>暂无进行中的灰度发布</p>';
+            return;
+        }
+        let html = '<table><thead><tr>';
+        html += '<th>ID</th><th>版本号</th><th>应用</th><th>策略</th><th>状态</th>';
+        html += '<th>创建人</th><th>创建时间</th><th>操作</th></tr></thead><tbody>';
+        grays.forEach(g => {
+            html += '<tr>';
+            html += '<td>' + g.id + '</td>';
+            html += '<td>' + g.version + '</td>';
+            html += '<td>' + g.application + '</td>';
+            html += '<td>' + g.strategy + '</td>';
+            html += '<td><span class="status status-' + g.status + '">' + g.status + '</span></td>';
+            html += '<td>' + g.createdBy + '</td>';
+            html += '<td>' + g.createdAt + '</td>';
+            html += '<td class="actions">';
+            if (g.status === 'PENDING_APPROVAL') {
+                html += '<button onclick="approveGray(' + g.id + ')" class="btn btn-success">审批通过</button>';
+                html += '<button onclick="rejectGray(' + g.id + ')" class="btn btn-danger">拒绝</button>';
+            }
+            if (g.status === 'IN_GRAY') {
+                html += '<button onclick="fullRelease(' + g.id + ')" class="btn btn-success">全量发布</button>';
+                html += '<button onclick="rollbackGray(' + g.id + ')" class="btn btn-warning">回滚</button>';
+            }
+            html += '</td></tr>';
+        });
+        html += '</tbody></table>';
+        document.getElementById('grayList').innerHTML = html;
+    }
+
+    async function approveGray(id) {
+        if (!confirm('确认审批通过该灰度发布?')) return;
+        try {
+            await fetch(`${API_BASE}/api/config/gray/${id}/approve`, { method: 'POST' });
+            alert('审批通过!');
+            loadActiveGrays();
+        } catch (err) {
+            alert('操作失败: ' + err.message);
+        }
+    }
+
+    async function rejectGray(id) {
+        if (!confirm('确认拒绝该灰度发布?')) return;
+        try {
+            await fetch(`${API_BASE}/api/config/gray/${id}/reject`, { method: 'POST' });
+            alert('已拒绝!');
+            loadActiveGrays();
+        } catch (err) {
+            alert('操作失败: ' + err.message);
+        }
+    }
+
+    async function fullRelease(id) {
+        if (!confirm('确认全量发布该灰度配置?')) return;
+        try {
+            await fetch(`${API_BASE}/api/config/gray/${id}/full-release`, { method: 'POST' });
+            alert('全量发布成功!');
+            loadActiveGrays();
+        } catch (err) {
+            alert('操作失败: ' + err.message);
+        }
+    }
+
+    async function rollbackGray(id) {
+        if (!confirm('确认回滚该灰度发布?')) return;
+        try {
+            await fetch(`${API_BASE}/api/config/gray/${id}/rollback`, { method: 'POST' });
+            alert('回滚成功!');
+            loadActiveGrays();
+        } catch (err) {
+            alert('操作失败: ' + err.message);
+        }
+    }
+</script>
+</body>
+</html>

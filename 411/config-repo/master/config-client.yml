@@ -1,0 +1,17 @@
+app:
+  feature:
+    enabled: false
+  threshold:
+    max-requests: 100
+    timeout-ms: 5000
+  database:
+    max-connections: 20
+    min-idle: 5
+
+spring:
+  application:
+    name: config-client
+
+logging:
+  level:
+    com.configcenter: INFO

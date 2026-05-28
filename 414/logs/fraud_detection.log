@@ -1,0 +1,133 @@
+2026-05-27 00:15:05,542 - __main__ - INFO - ============================================================
+2026-05-27 00:15:05,543 - __main__ - INFO -   Credit Card Fraud Detection System - Initializing
+2026-05-27 00:15:05,544 - __main__ - INFO - ============================================================
+2026-05-27 00:15:05,544 - __main__ - INFO - [1/6] Initializing Redis connection...
+2026-05-27 00:15:05,547 - core.redis_manager - INFO - Redis connection pool initialized: localhost:6379/0
+2026-05-27 00:15:27,791 - core.redis_manager - ERROR - Redis ping failed: Error 10061 connecting to localhost:6379. 由于目标计算机积极拒绝，无法连接。.
+2026-05-27 00:15:27,791 - __main__ - WARNING -   Redis connection: FAILED (continuing anyway)
+2026-05-27 00:15:27,794 - __main__ - INFO - [2/6] Initializing fraud detection models...
+2026-05-27 00:15:27,794 - models.ensemble - WARNING - TensorFlow not available. Running in Isolation-Forest-only mode (weight=1.0).
+2026-05-27 00:15:27,794 - models.isolation_forest - WARNING - IsolationForest model file not found: D:\Project\trae\project\record001\414\models\saved\isolation_forest.joblib
+2026-05-27 00:15:27,795 - __main__ - INFO - Training new models...
+2026-05-27 00:15:27,795 - __main__ - INFO - Generating 50000 training samples with 30 features...
+2026-05-27 00:15:27,890 - models.ensemble - INFO - Training fraud detection ensemble...
+2026-05-27 00:15:27,890 - models.isolation_forest - INFO - Training IsolationForest on 50000 samples with 30 features
+2026-05-27 00:15:28,979 - models.isolation_forest - INFO - IsolationForest trained. Threshold=0.2090, Score range=[-0.0290, 0.3492]
+2026-05-27 00:15:28,979 - models.ensemble - WARNING - Skipping Autoencoder training - TensorFlow not available
+2026-05-27 00:15:28,980 - models.ensemble - INFO - Ensemble training complete
+2026-05-27 00:15:29,023 - models.isolation_forest - INFO - IsolationForest model saved to D:\Project\trae\project\record001\414\models\saved\isolation_forest.joblib
+2026-05-27 00:15:29,023 - __main__ - INFO - Models trained and saved successfully
+2026-05-27 00:15:29,024 - __main__ - INFO -   Isolation Forest & Autoencoder: READY
+2026-05-27 00:15:29,024 - __main__ - INFO - [3/6] Initializing rule engine...
+2026-05-27 00:15:29,026 - __main__ - INFO -   Rule engine: READY (10 rules registered)
+2026-05-27 00:15:29,027 - __main__ - INFO - [4/6] Initializing scoring engine...
+2026-05-27 00:15:29,027 - __main__ - INFO -   Scoring engine: READY
+2026-05-27 00:15:29,027 - __main__ - INFO - [5/6] Initializing alert system...
+2026-05-27 00:15:29,028 - __main__ - INFO -   Alert system: READY
+2026-05-27 00:15:29,028 - __main__ - INFO - [6/6] Initializing stream processor...
+2026-05-27 00:15:29,028 - __main__ - INFO -   Stream processor: READY
+2026-05-27 00:15:29,028 - __main__ - INFO - ============================================================
+2026-05-27 00:15:29,029 - __main__ - INFO -   System Initialization Complete
+2026-05-27 00:15:29,029 - __main__ - INFO - ============================================================
+2026-05-27 00:15:29,029 - __main__ - INFO - 
+============================================================
+2026-05-27 00:15:29,029 - __main__ - INFO -   Running Demo Mode - 30 Simulated Transactions
+2026-05-27 00:15:29,029 - __main__ - INFO - ============================================================
+2026-05-27 01:03:32,767 - __main__ - INFO - ============================================================
+2026-05-27 01:03:32,768 - __main__ - INFO -   Credit Card Fraud Detection System - Initializing
+2026-05-27 01:03:32,768 - __main__ - INFO - ============================================================
+2026-05-27 01:03:32,768 - __main__ - INFO - [1/6] Initializing Redis connection...
+2026-05-27 01:03:32,772 - core.redis_manager - INFO - Redis connection pool initialized: localhost:6379/0
+2026-05-27 01:03:57,550 - core.redis_manager - ERROR - Redis ping failed: Error 10061 connecting to localhost:6379. 由于目标计算机积极拒绝，无法连接。.
+2026-05-27 01:03:57,551 - __main__ - WARNING -   Redis connection: FAILED (continuing anyway)
+2026-05-27 01:03:57,552 - __main__ - INFO - [2/6] Initializing fraud detection models...
+2026-05-27 01:03:57,552 - models.ensemble - WARNING - TensorFlow not available. Running in Isolation-Forest-only mode (weight=1.0).
+2026-05-27 01:03:57,634 - models.isolation_forest - INFO - IsolationForest model loaded from D:\Project\trae\project\record001\414\models\saved\isolation_forest.joblib (users: 0)
+2026-05-27 01:03:57,634 - __main__ - INFO - Pre-trained models loaded successfully
+2026-05-27 01:03:57,634 - __main__ - INFO -   Isolation Forest & Autoencoder: READY
+2026-05-27 01:03:57,634 - __main__ - INFO - [3/6] Initializing rule engine...
+2026-05-27 01:03:57,634 - __main__ - INFO -   Rule engine: READY (10 rules registered)
+2026-05-27 01:03:57,635 - __main__ - INFO - [4/6] Initializing scoring engine...
+2026-05-27 01:03:57,635 - __main__ - INFO -   Scoring engine: READY
+2026-05-27 01:03:57,635 - __main__ - INFO - [5/6] Initializing alert system...
+2026-05-27 01:03:57,635 - __main__ - INFO -   Alert system: READY
+2026-05-27 01:03:57,635 - __main__ - INFO - [6/6] Initializing stream processor...
+2026-05-27 01:03:57,635 - __main__ - INFO -   Stream processor: READY
+2026-05-27 01:03:57,635 - __main__ - INFO - ============================================================
+2026-05-27 01:03:57,636 - __main__ - INFO -   System Initialization Complete
+2026-05-27 01:03:57,636 - __main__ - INFO - ============================================================
+2026-05-27 01:03:57,636 - __main__ - INFO - 
+============================================================
+2026-05-27 01:03:57,636 - __main__ - INFO -   Running Demo Mode - 40 Simulated Transactions
+2026-05-27 01:03:57,636 - __main__ - INFO -   [Personalized Models + SMS Verification Enabled]
+2026-05-27 01:03:57,636 - __main__ - INFO - ============================================================
+2026-05-27 01:04:06,722 - __main__ - INFO - ============================================================
+2026-05-27 01:04:06,723 - __main__ - INFO -   Credit Card Fraud Detection System - Initializing
+2026-05-27 01:04:06,723 - __main__ - INFO - ============================================================
+2026-05-27 01:04:06,723 - __main__ - INFO - [1/6] Initializing Redis connection...
+2026-05-27 01:04:06,734 - core.redis_manager - INFO - Redis connection pool initialized: localhost:6379/0
+2026-05-27 01:04:30,375 - __main__ - INFO - ============================================================
+2026-05-27 01:04:30,377 - __main__ - INFO -   Credit Card Fraud Detection System - Initializing
+2026-05-27 01:04:30,378 - __main__ - INFO - ============================================================
+2026-05-27 01:04:30,378 - __main__ - INFO - [1/6] Initializing Redis connection...
+2026-05-27 01:04:30,385 - core.redis_manager - INFO - Redis connection pool initialized: localhost:6379/0
+2026-05-27 01:04:32,934 - core.redis_manager - ERROR - Redis ping failed: Error 10061 connecting to localhost:6379. 由于目标计算机积极拒绝，无法连接。.
+2026-05-27 01:04:32,934 - __main__ - WARNING -   Redis connection: FAILED (continuing anyway)
+2026-05-27 01:04:32,934 - __main__ - INFO - [2/6] Initializing fraud detection models...
+2026-05-27 01:04:32,935 - models.ensemble - WARNING - TensorFlow not available. Running in Isolation-Forest-only mode (weight=1.0).
+2026-05-27 01:04:32,978 - models.isolation_forest - INFO - IsolationForest model loaded from D:\Project\trae\project\record001\414\models\saved\isolation_forest.joblib (users: 0)
+2026-05-27 01:04:32,979 - __main__ - INFO - Pre-trained models loaded successfully
+2026-05-27 01:04:32,979 - __main__ - INFO -   Isolation Forest & Autoencoder: READY
+2026-05-27 01:04:32,979 - __main__ - INFO - [3/6] Initializing rule engine...
+2026-05-27 01:04:32,979 - __main__ - INFO -   Rule engine: READY (10 rules registered)
+2026-05-27 01:04:32,979 - __main__ - INFO - [4/6] Initializing scoring engine...
+2026-05-27 01:04:32,979 - __main__ - INFO -   Scoring engine: READY
+2026-05-27 01:04:32,980 - __main__ - INFO - [5/6] Initializing alert system...
+2026-05-27 01:04:32,980 - __main__ - INFO -   Alert system: READY
+2026-05-27 01:04:32,980 - __main__ - INFO - [6/6] Initializing stream processor...
+2026-05-27 01:04:32,981 - __main__ - INFO -   Stream processor: READY
+2026-05-27 01:04:32,981 - __main__ - INFO - ============================================================
+2026-05-27 01:04:32,981 - __main__ - INFO -   System Initialization Complete
+2026-05-27 01:04:32,981 - __main__ - INFO - ============================================================
+2026-05-27 01:04:32,981 - __main__ - INFO - 
+============================================================
+2026-05-27 01:04:32,981 - __main__ - INFO -   Running Demo Mode - 40 Simulated Transactions
+2026-05-27 01:04:32,981 - __main__ - INFO -   [Personalized Models + SMS Verification Enabled]
+2026-05-27 01:04:32,981 - __main__ - INFO - ============================================================
+2026-05-27 01:08:13,910 - core.redis_manager - ERROR - Redis hset failed for key scored:0a6b5e655566fd04 field data: Error 10061 connecting to localhost:6379. 由于目标计算机积极拒绝，无法连接。.
+2026-05-27 01:08:44,680 - core.redis_manager - ERROR - Redis zadd failed for key customer_risk_scores: Error 10061 connecting to localhost:6379. 由于目标计算机积极拒绝，无法连接。.
+2026-05-27 01:08:45,957 - __main__ - INFO - ============================================================
+2026-05-27 01:08:45,957 - __main__ - INFO -   Credit Card Fraud Detection System - Initializing
+2026-05-27 01:08:45,957 - __main__ - INFO - ============================================================
+2026-05-27 01:08:45,957 - __main__ - INFO - [1/6] Initializing Redis connection...
+2026-05-27 01:08:45,960 - core.redis_manager - INFO - Redis connection pool initialized: localhost:6379/0
+2026-05-27 01:09:07,837 - core.redis_manager - ERROR - Redis lpush failed for key customer:C000019:tx_history: Error 10061 connecting to localhost:6379. 由于目标计算机积极拒绝，无法连接。.
+2026-05-27 01:09:11,511 - core.redis_manager - ERROR - Redis ping failed: Error 10061 connecting to localhost:6379. 由于目标计算机积极拒绝，无法连接。.
+2026-05-27 01:09:11,511 - __main__ - WARNING -   Redis connection: FAILED (continuing anyway)
+2026-05-27 01:09:11,512 - __main__ - INFO - [2/6] Initializing fraud detection models...
+2026-05-27 01:09:11,512 - models.ensemble - WARNING - TensorFlow not available. Running in Isolation-Forest-only mode (weight=1.0).
+2026-05-27 01:09:11,534 - models.isolation_forest - INFO - IsolationForest model loaded from D:\Project\trae\project\record001\414\models\saved\isolation_forest.joblib (users: 0)
+2026-05-27 01:09:11,535 - __main__ - INFO - Pre-trained models loaded successfully
+2026-05-27 01:09:11,535 - __main__ - INFO -   Isolation Forest & Autoencoder: READY
+2026-05-27 01:09:11,535 - __main__ - INFO - [3/6] Initializing rule engine...
+2026-05-27 01:09:11,535 - __main__ - INFO -   Rule engine: READY (10 rules registered)
+2026-05-27 01:09:11,535 - __main__ - INFO - [4/6] Initializing scoring engine...
+2026-05-27 01:09:11,535 - __main__ - INFO -   Scoring engine: READY
+2026-05-27 01:09:11,535 - __main__ - INFO - [5/6] Initializing alert system...
+2026-05-27 01:09:11,536 - __main__ - INFO -   Alert system: READY
+2026-05-27 01:09:11,536 - __main__ - INFO - [6/6] Initializing stream processor...
+2026-05-27 01:09:11,536 - __main__ - INFO -   Stream processor: READY
+2026-05-27 01:09:11,536 - __main__ - INFO - ============================================================
+2026-05-27 01:09:11,536 - __main__ - INFO -   System Initialization Complete
+2026-05-27 01:09:11,536 - __main__ - INFO - ============================================================
+2026-05-27 01:09:11,536 - __main__ - INFO - 
+============================================================
+2026-05-27 01:09:11,536 - __main__ - INFO -   Running Demo Mode - 20 Simulated Transactions
+2026-05-27 01:09:11,536 - __main__ - INFO -   [Personalized Models + SMS Verification Enabled]
+2026-05-27 01:09:11,536 - __main__ - INFO - ============================================================
+2026-05-27 01:09:28,892 - core.redis_manager - ERROR - Redis lrange failed for key customer:C000019:velocity: Error 10061 connecting to localhost:6379. 由于目标计算机积极拒绝，无法连接。.
+2026-05-27 01:12:07,269 - __main__ - INFO - ============================================================
+2026-05-27 01:12:07,270 - __main__ - INFO -   Credit Card Fraud Detection System - Initializing
+2026-05-27 01:12:07,270 - __main__ - INFO - ============================================================
+2026-05-27 01:12:07,271 - __main__ - INFO - [1/6] Initializing Redis connection...
+2026-05-27 01:12:07,280 - core.redis_manager - INFO - Redis connection pool initialized: localhost:6379/0

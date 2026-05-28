@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置依赖分析</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header h1 { color: #333; margin-bottom: 15px; }
+        .nav { margin-bottom: 20px; }
+        .nav a { color: #667eea; text-decoration: none; margin-right: 20px; }
+        .form-section { background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-section h2 { color: #333; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #555; font-weight: 500; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;
+        }
+        .form-row { display: flex; gap: 15px; }
+        .form-row .form-group { flex: 1; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #667eea; color: white; }
+        tr:hover { background: #f8f9fa; }
+        .actions { display: flex; gap: 8px; }
+        .alert { padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .topology-graph { background: white; padding: 20px; border-radius: 10px; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .node { display: inline-block; padding: 10px 20px; margin: 10px; border-radius: 50px; font-weight: bold; }
+        .node-app { background: #667eea; color: white; }
+        .node-config { background: #28a745; color: white; font-size: 12px; padding: 5px 10px; }
+        .connection { display: flex; align-items: center; margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+        .warning-item { padding: 10px; margin: 5px 0; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 5px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav">
+        <a href="/">← 返回首页</a>
+    </div>
+    <div class="header">
+        <h1>🔗 配置依赖分析</h1>
+        <p>分析配置项依赖关系，变更时提示关联配置需同步调整</p>
+    </div>
+
+    <div class="alert alert-info">
+        <strong>💡 使用说明:</strong>
+        <ul>
+            <li>配置依赖关系定义：源配置变更可能影响目标配置</li>
+            <li>依赖类型：REQUIRED(必需)、OPTIONAL(可选)、DERIVED(派生)、INHERITED(继承)</li>
+            <li>配置变更前请检查依赖关系，确保系统稳定性</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h2>添加依赖关系</h2>
+        <form id="dependencyForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>源应用</label>
+                    <input type="text" name="sourceApplication" required>
+                </div>
+                <div class="form-group">
+                    <label>源Profile</label>
+                    <input type="text" name="sourceProfile" value="default" required>
+                </div>
+                <div class="form-group">
+                    <label>源Label</label>
+                    <input type="text" name="sourceLabel" value="master" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>源配置项</label>
+                <input type="text" name="sourceConfigKey" required placeholder="例如: app.feature.enabled">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>目标应用</label>
+                    <input type="text" name="targetApplication" required>
+                </div>
+                <div class="form-group">
+                    <label>目标Profile</label>
+                    <input type="text" name="targetProfile" value="default" required>
+                </div>
+                <div class="form-group">
+                    <label>目标Label</label>
+                    <input type="text" name="targetLabel" value="master" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>目标配置项</label>
+                <input type="text" name="targetConfigKey" required placeholder="例如: app.threshold.max-requests">
+            </div>
+            <div class="form-group">
+                <label>依赖类型</label>
+                <select name="dependencyType">
+                    <option value="REQUIRED">必需</option>
+                    <option value="OPTIONAL">可选</option>
+                    <option value="DERIVED">派生</option>
+                    <option value="INHERITED">继承</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>描述</label>
+                <input type="text" name="description" placeholder="依赖关系说明">
+            </div>
+            <button type="submit" class="btn btn-primary">添加依赖</button>
+        </form>
+    </div>
+
+    <div class="form-section">
+        <h2>依赖关系查询</h2>
+        <div class="form-group">
+            <label>应用名称</label>
+            <input type="text" id="queryApp" placeholder="输入应用名称查询">
+        </div>
+        <button onclick="loadDependencies()" class="btn btn-info">查询依赖</button>
+        <button onclick="loadTopology()" class="btn btn-success">查看拓扑</button>
+        <div id="dependencyList" style="margin-top: 20px;"></div>
+    </div>
+
+    <div class="form-section">
+        <h2>配置变更影响分析</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label>应用名称</label>
+                <input type="text" id="analyzeApp" placeholder="应用名称">
+            </div>
+            <div class="form-group">
+                <label>配置项</label>
+                <input type="text" id="analyzeKey" placeholder="配置项Key">
+            </div>
+        </div>
+        <button onclick="analyzeDependencies()" class="btn btn-warning">分析影响</button>
+        <div id="analysisResult" style="margin-top: 20px;"></div>
+    </div>
+
+    <div id="topologySection" style="display:none">
+        <h2>配置拓扑图</h2>
+        <div id="topologyGraph" class="topology-graph"></div>
+    </div>
+</div>
+<script>
+    const API_BASE = /*[[${configServerUrl}]]*/ 'http://localhost:8888';
+
+    document.getElementById('dependencyForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
+        try {
+            const response = await fetch(`${API_BASE}/api/config/dependencies`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            alert('依赖关系添加成功! ID: ' + result.id);
+            e.target.reset();
+        } catch (err) {
+            alert('添加失败: ' + err.message);
+        }
+    });
+
+    async function loadDependencies() {
+        const app = document.getElementById('queryApp').value;
+        if (!app) { alert('请输入应用名称'); return; }
+        try {
+            const response = await fetch(`${API_BASE}/api/config/dependencies/application/${app}`);
+            const dependencies = await response.json();
+            renderDependencies(dependencies);
+        } catch (err) {
+            alert('查询失败: ' + err.message);
+        }
+    }
+
+    function renderDependencies(dependencies) {
+        if (!dependencies.length) {
+            document.getElementById('dependencyList').innerHTML = '<p>暂无依赖关系</p>';
+            return;
+        }
+        let html = '<table><thead><tr>';
+        html += '<th>ID</th><th>源应用</th><th>源配置</th><th>目标应用</th>';
+        html += '<th>目标配置</th><th>类型</th><th>描述</th><th>操作</th>';
+        html += '</tr></thead><tbody>';
+        dependencies.forEach(d => {
+            html += '<tr>';
+            html += '<td>' + d.id + '</td>';
+            html += '<td>' + d.sourceApplication + '</td>';
+            html += '<td>' + d.sourceConfigKey + '</td>';
+            html += '<td>' + d.targetApplication + '</td>';
+            html += '<td>' + d.targetConfigKey + '</td>';
+            html += '<td>' + d.dependencyType + '</td>';
+            html += '<td>' + (d.description || '-') + '</td>';
+            html += '<td class="actions">';
+            html += '<button onclick="removeDependency(' + d.id + ')" class="btn btn-danger">删除</button>';
+            html += '</td></tr>';
+        });
+        html += '</tbody></table>';
+        document.getElementById('dependencyList').innerHTML = html;
+    }
+
+    async function removeDependency(id) {
+        if (!confirm('确认删除该依赖关系?')) return;
+        try {
+            await fetch(`${API_BASE}/api/config/dependencies/${id}`, { method: 'DELETE' });
+            alert('依赖关系已删除!');
+            loadDependencies();
+        } catch (err) {
+            alert('删除失败: ' + err.message);
+        }
+    }
+
+    async function analyzeDependencies() {
+        const app = document.getElementById('analyzeApp').value;
+        const key = document.getElementById('analyzeKey').value;
+        if (!app || !key) { alert('请输入应用名称和配置项'); return; }
+
+        try {
+            const response = await fetch(`${API_BASE}/api/config/dependencies/analyze?application=${app}&configKey=${key}`);
+            const analysis = await response.json();
+            renderAnalysis(analysis);
+        } catch (err) {
+            alert('分析失败: ' + err.message);
+        }
+    }
+
+    function renderAnalysis(analysis) {
+        let html = '<div class="alert alert-warning">';
+        html += '<h3>影响分析结果</h3>';
+        html += '<p><strong>源依赖数量:</strong> ' + analysis.sourceDependencyCount + '</p>';
+        html += '<p><strong>目标依赖数量:</strong> ' + analysis.targetDependencyCount + '</p>';
+
+        if (analysis.changeWarnings && analysis.changeWarnings.length > 0) {
+            html += '<h4>⚠️ 变更可能影响以下配置:</h4>';
+            analysis.changeWarnings.forEach(w => {
+                html += '<div class="warning-item">';
+                html += '<strong>' + w.targetApplication + '</strong> - ' + w.targetConfigKey + '<br>';
+                html += '<small>' + w.message + '</small>';
+                html += '</div>';
+            });
+        }
+
+        if (analysis.prerequisites && analysis.prerequisites.length > 0) {
+            html += '<h4>📋 该配置依赖于:</h4>';
+            analysis.prerequisites.forEach(p => {
+                html += '<div class="warning-item">';
+                html += '<strong>' + p.sourceApplication + '</strong> - ' + p.sourceConfigKey + '<br>';
+                html += '<small>' + p.message + '</small>';
+                html += '</div>';
+            });
+        }
+
+        if (!analysis.changeWarnings && !analysis.prerequisites) {
+            html += '<p>该配置项没有依赖关系</p>';
+        }
+
+        html += '</div>';
+        document.getElementById('analysisResult').innerHTML = html;
+    }
+
+    async function loadTopology() {
+        const app = document.getElementById('queryApp').value;
+        if (!app) { alert('请输入应用名称'); return; }
+        try {
+            const response = await fetch(`${API_BASE}/api/config/dependencies/topology/${app}`);
+            const topology = await response.json();
+            renderTopology(topology);
+            document.getElementById('topologySection').style.display = 'block';
+        } catch (err) {
+            alert('查询失败: ' + err.message);
+        }
+    }
+
+    function renderTopology(topology) {
+        let html = '<h3>配置拓扑图</h3>';
+        html += '<p><strong>应用数量:</strong> ' + topology.applications.length + '</p>';
+        html += '<div style="margin: 20px 0;">';
+        topology.applications.forEach(app => {
+            html += '<span class="node node-app">' + app + '</span>';
+            if (topology.configsByApp[app]) {
+                html += '<div style="margin-left: 40px;">';
+                topology.configsByApp[app].forEach(config => {
+                    html += '<span class="node node-config">' + config + '</span>';
+                });
+                html += '</div>';
+            }
+        });
+        html += '</div>';
+
+        if (topology.connections && topology.connections.length > 0) {
+        html += '<h4>连接关系:</h4>';
+        topology.connections.forEach(conn => {
+            html += '<div class="connection">';
+            html += '<span class="node node-config">' + conn.from + '.' + conn.fromConfig + '</span>';
+            html += ' → ';
+            html += '<span class="node node-config">' + conn.to + '.' + conn.toConfig + '</span>';
+            html += ' <small>(' + conn.dependencyType + ')</small>';
+            html += '</div>';
+        });
+        }
+        html += '</div>';
+        document.getElementById('topologyGraph').innerHTML = html;
+    }
+</script>
+</body>
+</html>

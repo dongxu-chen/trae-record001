@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>审计日志</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header h1 { color: #333; margin-bottom: 15px; }
+        .nav { margin-bottom: 20px; }
+        .nav a { color: #667eea; text-decoration: none; margin-right: 20px; }
+        .form-section { background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-section h2 { color: #333; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #555; font-weight: 500; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;
+        }
+        .form-row { display: flex; gap: 15px; }
+        .form-row .form-group { flex: 1; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #667eea; color: white; }
+        tr:hover { background: #f8f9fa; }
+        .action { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        .action-CREATE { background: #d4edda; color: #155724; }
+        .action-UPDATE { background: #cce5ff; color: #004085; }
+        .action-PUBLISH { background: #d4edda; color: #155724; }
+        .action-ROLLBACK { background: #f8d7da; color: #721c24; }
+        .action-GRAY_RELEASE { background: #cce5ff; color: #004085; }
+        .action-GRAY_ROLLBACK { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav">
+        <a href="/">← 返回首页</a>
+    </div>
+    <div class="header">
+        <h1>📋 变更审计日志</h1>
+        <p>记录所有配置变更操作，支持多维度查询</p>
+    </div>
+    <div class="form-section">
+        <h2>查询条件</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label>应用名称</label>
+                <input type="text" id="queryApp" placeholder="输入应用名称">
+            </div>
+            <div class="form-group">
+                <label>操作人</label>
+                <input type="text" id="queryOperator" placeholder="输入操作人">
+            </div>
+            <div class="form-group">
+                <label>操作类型</label>
+                <select id="queryAction">
+                    <option value="">全部</option>
+                    <option value="CREATE">创建</option>
+                    <option value="UPDATE">更新</option>
+                    <option value="PUBLISH">发布</option>
+                    <option value="ROLLBACK">回滚</option>
+                    <option value="GRAY_RELEASE">灰度发布</option>
+                    <option value="GRAY_ROLLBACK">灰度回滚</option>
+                </select>
+            </div>
+        </div>
+        <button onclick="queryAuditLogs()" class="btn btn-primary">查询</button>
+        <button onclick="loadRecentLogs()" class="btn btn-info">最近日志</button>
+        <div id="auditList" style="margin-top: 20px;"></div>
+    </div>
+</div>
+<script>
+    const API_BASE = /*[[${configServerUrl}]]*/ 'http://localhost:8888';
+
+    async function queryAuditLogs() {
+        const app = document.getElementById('queryApp').value;
+        const operator = document.getElementById('queryOperator').value;
+        const action = document.getElementById('queryAction').value;
+
+        let url = `${API_BASE}/api/config/audit`;
+        const params = [];
+        if (app) params.push(`application=${app}`);
+        if (operator) {
+            loadByOperator(operator);
+            return;
+        }
+        if (action) {
+            loadByAction(action);
+            return;
+        }
+        if (app) url += `?application=${app}`;
+
+        try {
+            const response = await fetch(url);
+            const logs = await response.json();
+            renderLogs(logs);
+        } catch (err) {
+            alert('查询失败: ' + err.message);
+        }
+    }
+
+    async function loadRecentLogs() {
+        try {
+            const response = await fetch(`${API_BASE}/api/config/audit/recent?limit=50`);
+            const logs = await response.json();
+            renderLogs(logs);
+        } catch (err) {
+            alert('查询失败: ' + err.message);
+        }
+    }
+
+    async function loadByOperator(operator) {
+        try {
+            const response = await fetch(`${API_BASE}/api/config/audit/operator/${operator}`);
+            const logs = await response.json();
+            renderLogs(logs);
+        } catch (err) {
+            alert('查询失败: ' + err.message);
+        }
+    }
+
+    async function loadByAction(action) {
+        try {
+            const response = await fetch(`${API_BASE}/api/config/audit/action/${action}`);
+            const logs = await response.json();
+            renderLogs(logs);
+        } catch (err) {
+            alert('查询失败: ' + err.message);
+        }
+    }
+
+    function renderLogs(logs) {
+        if (!logs.length) {
+            document.getElementById('auditList').innerHTML = '<p>暂无数据</p>';
+            return;
+        }
+        let html = '<table><thead><tr>';
+        html += '<th>ID</th><th>应用</th><th>操作类型</th><th>版本前</th><th>版本后</th>';
+        html += '<th>操作人</th><th>IP</th><th>操作时间</th><th>备注</th></tr></thead><tbody>';
+        logs.forEach(log => {
+            html += '<tr>';
+            html += '<td>' + log.id + '</td>';
+            html += '<td>' + log.application + '</td>';
+            html += '<td><span class="action action-' + log.action + '">' + log.action + '</span></td>';
+            html += '<td>' + (log.versionBefore || '-') + '</td>';
+            html += '<td>' + (log.versionAfter || '-') + '</td>';
+            html += '<td>' + log.operator + '</td>';
+            html += '<td>' + (log.operatorIp || '-') + '</td>';
+            html += '<td>' + log.createdAt + '</td>';
+            html += '<td>' + (log.remark || '-') + '</td>';
+            html += '</tr>';
+        });
+        html += '</tbody></table>';
+        document.getElementById('auditList').innerHTML = html;
+    }
+
+    loadRecentLogs();
+</script>
+</body>
+</html>

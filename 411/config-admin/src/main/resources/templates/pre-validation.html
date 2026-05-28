@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置预演校验</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header h1 { color: #333; margin-bottom: 15px; }
+        .nav { margin-bottom: 20px; }
+        .nav a { color: #667eea; text-decoration: none; margin-right: 20px; }
+        .form-section { background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-section h2 { color: #333; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #555; font-weight: 500; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;
+        }
+        .form-group textarea { min-height: 150px; font-family: monospace; }
+        .form-row { display: flex; gap: 15px; }
+        .form-row .form-group { flex: 1; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #667eea; color: white; }
+        tr:hover { background: #f8f9fa; }
+        .status { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        .status-PENDING { background: #fff3cd; color: #856404; }
+        .status-RUNNING { background: #cce5ff; color: #004085; }
+        .status-PASSED { background: #d4edda; color: #155724; }
+        .status-FAILED { background: #f8d7da; color: #721c24; }
+        .actions { display: flex; gap: 8px; }
+        .alert { padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav">
+        <a href="/">← 返回首页</a>
+    </div>
+    <div class="header">
+        <h1>🧪 配置预演校验</h1>
+        <p>在测试实例上验证配置，确保变更安全后再发布到生产环境</p>
+    </div>
+
+    <div class="alert alert-info">
+        <strong>💡 使用说明:</strong>
+        <ul>
+            <li>选择测试实例进行配置预演校验</li>
+            <li>系统会自动验证YAML格式、测试实例可达性</li>
+            <li>应用配置后会执行健康检查和功能测试</li>
+            <li>验证通过后才能安全发布到生产环境</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h2>创建预演校验任务</h2>
+        <form id="validationForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>应用名称</label>
+                    <input type="text" name="application" required placeholder="例如: config-client">
+                </div>
+                <div class="form-group">
+                    <label>Profile</label>
+                    <input type="text" name="profile" value="default" required>
+                </div>
+                <div class="form-group">
+                    <label>Label</label>
+                    <input type="text" name="label" value="master" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>测试实例URL</label>
+                <input type="text" name="testInstanceUrl" required placeholder="http://test-server:8080">
+            </div>
+            <div class="form-group">
+                <label>配置内容 (YAML)</label>
+                <textarea name="configContent" required>app:
+  feature:
+    enabled: true
+  threshold:
+    max-requests: 200
+    timeout-ms: 3000</textarea>
+            </div>
+            <div class="form-group">
+                <label>创建人</label>
+                <input type="text" name="createdBy" value="admin" required>
+            </div>
+            <button type="submit" class="btn btn-primary">创建预演任务</button>
+        </form>
+    </div>
+
+    <div class="form-section">
+        <h2>预演任务历史</h2>
+        <div class="form-group">
+            <label>应用名称</label>
+            <input type="text" id="queryApp" placeholder="输入应用名称查询">
+        </div>
+        <button onclick="loadValidations()" class="btn btn-info">查询</button>
+        <div id="validationList" style="margin-top: 20px;"></div>
+    </div>
+</div>
+<script>
+    const API_BASE = /*[[${configServerUrl}]]*/ 'http://localhost:8888';
+
+    document.getElementById('validationForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
+        try {
+            const response = await fetch(`${API_BASE}/api/config/pre-validation`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            alert('预演任务创建成功! 版本号: ' + result.version);
+            e.target.reset();
+            loadValidations();
+        } catch (err) {
+            alert('创建失败: ' + err.message);
+        }
+    });
+
+    async function loadValidations() {
+        const app = document.getElementById('queryApp').value;
+        if (!app) { alert('请输入应用名称'); return; }
+        try {
+            const response = await fetch(`${API_BASE}/api/config/pre-validation/application/${app}`);
+            const validations = await response.json();
+            renderValidations(validations);
+        } catch (err) {
+            alert('查询失败: ' + err.message);
+        }
+    }
+
+    function renderValidations(validations) {
+        if (!validations.length) {
+            document.getElementById('validationList').innerHTML = '<p>暂无数据</p>';
+            return;
+        }
+        let html = '<table><thead><tr>';
+        html += '<th>ID</th><th>版本号</th><th>应用</th><th>测试实例</th>';
+        html += '<th>状态</th><th>开始时间</th><th>结束时间</th><th>创建人</th><th>操作</th>';
+        html += '</tr></thead><tbody>';
+        validations.forEach(v => {
+            html += '<tr>';
+            html += '<td>' + v.id + '</td>';
+            html += '<td>' + v.version + '</td>';
+            html += '<td>' + v.application + '</td>';
+            html += '<td>' + v.testInstanceUrl + '</td>';
+            html += '<td><span class="status status-' + v.status + '">' + v.status + '</span></td>';
+            html += '<td>' + v.startTime + '</td>';
+            html += '<td>' + (v.endTime || '-') + '</td>';
+            html += '<td>' + v.createdBy + '</td>';
+            html += '<td class="actions">';
+            if (v.status === 'PENDING') {
+                html += '<button onclick="executeValidation(' + v.id + ')" class="btn btn-success">执行</button>';
+                html += '<button onclick="cancelValidation(' + v.id + ')" class="btn btn-danger">取消</button>';
+            }
+            if (v.status === 'RUNNING') {
+                html += '<button onclick="cancelValidation(' + v.id + ')" class="btn btn-danger">取消</button>';
+            }
+            html += '</td></tr>';
+        });
+        html += '</tbody></table>';
+        document.getElementById('validationList').innerHTML = html;
+    }
+
+    async function executeValidation(id) {
+        if (!confirm('确认执行该预演任务?')) return;
+        try {
+            await fetch(`${API_BASE}/api/config/pre-validation/${id}/execute`, { method: 'POST' });
+            alert('任务已开始执行!');
+            loadValidations();
+        } catch (err) {
+            alert('执行失败: ' + err.message);
+        }
+    }
+
+    async function cancelValidation(id) {
+        if (!confirm('确认取消该预演任务?')) return;
+        try {
+            await fetch(`${API_BASE}/api/config/pre-validation/${id}/cancel`, { method: 'POST' });
+            alert('任务已取消!');
+            loadValidations();
+        } catch (err) {
+            alert('取消失败: ' + err.message);
+        }
+    }
+</script>
+</body>
+</html>

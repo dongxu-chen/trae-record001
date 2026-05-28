@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时间点回溯</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header h1 { color: #333; margin-bottom: 15px; }
+        .nav { margin-bottom: 20px; }
+        .nav a { color: #667eea; text-decoration: none; margin-right: 20px; }
+        .form-section { background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-section h2 { color: #333; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #555; font-weight: 500; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;
+        }
+        .form-group textarea { min-height: 150px; font-family: monospace; }
+        .form-row { display: flex; gap: 15px; }
+        .form-row .form-group { flex: 1; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #667eea; color: white; }
+        tr:hover { background: #f8f9fa; }
+        .actions { display: flex; gap: 8px; }
+        .alert { padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav">
+        <a href="/">← 返回首页</a>
+    </div>
+    <div class="header">
+        <h1>⏪ 时间点回溯</h1>
+        <p>配置快照管理，支持秒级恢复到任意历史时刻</p>
+    </div>
+
+    <div class="alert alert-info">
+        <strong>💡 使用说明:</strong>
+        <ul>
+            <li>每次配置发布时系统会自动创建快照</li>
+            <li>可以选择任意时间点进行恢复，系统会自动找到该时间点之前的最新配置</li>
+            <li>恢复操作会自动提交到Git并触发配置刷新</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h2>创建快照</h2>
+        <form id="snapshotForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>应用名称</label>
+                    <input type="text" name="application" required placeholder="例如: config-client">
+                </div>
+                <div class="form-group">
+                    <label>Profile</label>
+                    <input type="text" name="profile" value="default" required>
+                </div>
+                <div class="form-group">
+                    <label>Label</label>
+                    <input type="text" name="label" value="master" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>配置内容 (YAML)</label>
+                <textarea name="configContent" required>app:
+  feature:
+    enabled: false
+  threshold:
+    max-requests: 100</textarea>
+            </div>
+            <div class="form-group">
+                <label>描述</label>
+                <input type="text" name="description" placeholder="快照描述">
+            </div>
+            <div class="form-group">
+                <label>创建人</label>
+                <input type="text" name="createdBy" value="admin" required>
+            </div>
+            <button type="submit" class="btn btn-primary">创建快照</button>
+        </form>
+    </div>
+
+    <div class="form-section">
+        <h2>时间点回溯恢复</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label>应用名称</label>
+                <input type="text" id="restoreApp" placeholder="例如: config-client">
+            </div>
+            <div class="form-group">
+                <label>Profile</label>
+                <input type="text" id="restoreProfile" value="default">
+            </div>
+            <div class="form-group">
+                <label>Label</label>
+                <input type="text" id="restoreLabel" value="master">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>目标时间点</label>
+                <input type="datetime-local" id="restoreTime">
+            </div>
+            <div class="form-group">
+                <label>操作人</label>
+                <input type="text" id="restoreOperator" value="admin">
+            </div>
+        </div>
+        <button onclick="restoreToTimePoint()" class="btn btn-warning">⏪ 恢复到指定时间点</button>
+    </div>
+
+    <div class="form-section">
+        <h2>快照历史</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label>应用名称</label>
+                <input type="text" id="queryApp" placeholder="输入应用名称查询">
+            </div>
+        </div>
+        <button onclick="loadSnapshots()" class="btn btn-info">查询</button>
+        <div id="snapshotList" style="margin-top: 20px;"></div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = /*[[${configServerUrl}]]*/ 'http://localhost:8888';
+
+    document.getElementById('snapshotForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
+        try {
+            const response = await fetch(`${API_BASE}/api/config/snapshots`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            alert('快照创建成功! 版本号: ' + result.version);
+            e.target.reset();
+            loadSnapshots();
+        } catch (err) {
+            alert('创建失败: ' + err.message);
+        }
+    });
+
+    async function restoreToTimePoint() {
+        const app = document.getElementById('restoreApp').value;
+        const profile = document.getElementById('restoreProfile').value;
+        const label = document.getElementById('restoreLabel').value;
+        const time = document.getElementById('restoreTime').value;
+        const operator = document.getElementById('restoreOperator').value;
+
+        if (!app || !time) {
+            alert('请填写应用名称和目标时间点');
+            return;
+        }
+
+        if (!confirm('确认恢复到时间点: ' + time + '?')) return;
+
+        const targetTime = time.replace('T', 'T') + ':00';
+        const url = `${API_BASE}/api/config/snapshots/restore/time-point?application=${app}&profile=${profile}&label=${label}&targetTime=${encodeURIComponent(targetTime)}&operator=${operator}`;
+
+        try {
+            const response = await fetch(url, { method: 'POST' });
+            const result = await response.json();
+            alert('恢复成功! 已恢复到快照: ' + result.version + '\n快照时间: ' + result.snapshotTime);
+            loadSnapshots();
+        } catch (err) {
+            alert('恢复失败: ' + err.message);
+        }
+    }
+
+    async function loadSnapshots() {
+        const app = document.getElementById('queryApp').value;
+        if (!app) { alert('请输入应用名称'); return; }
+
+        try {
+            const response = await fetch(`${API_BASE}/api/config/snapshots/application/${app}`);
+            const snapshots = await response.json();
+            renderSnapshots(snapshots);
+        } catch (err) {
+            alert('查询失败: ' + err.message);
+        }
+    }
+
+    function renderSnapshots(snapshots) {
+        if (!snapshots.length) {
+            document.getElementById('snapshotList').innerHTML = '<p>暂无快照</p>';
+            return;
+        }
+
+        let html = '<table><thead><tr>';
+        html += '<th>ID</th><th>版本号</th><th>应用</th><th>快照时间</th>';
+        html += '<th>描述</th><th>创建人</th><th>Git Commit</th><th>操作</th>';
+        html += '</tr></thead><tbody>';
+
+        snapshots.forEach(s => {
+            html += '<tr>';
+            html += '<td>' + s.id + '</td>';
+            html += '<td>' + s.version + '</td>';
+            html += '<td>' + s.application + '</td>';
+            html += '<td>' + s.snapshotTime + '</td>';
+            html += '<td>' + (s.description || '-') + '</td>';
+            html += '<td>' + s.createdBy + '</td>';
+            html += '<td>' + (s.gitCommitId ? s.gitCommitId.substring(0, 8) + '...' : '-') + '</td>';
+            html += '<td class="actions">';
+            html += '<button onclick="restoreSnapshot(' + s.id + ')" class="btn btn-warning">恢复</button>';
+            html += '</td></tr>';
+        });
+
+        html += '</tbody></table>';
+        document.getElementById('snapshotList').innerHTML = html;
+    }
+
+    async function restoreSnapshot(id) {
+        if (!confirm('确认恢复到此快照?')) return;
+        try {
+            const response = await fetch(`${API_BASE}/api/config/snapshots/${id}/restore`, { method: 'POST' });
+            const result = await response.json();
+            alert('恢复成功! 已恢复到快照: ' + result.version);
+            loadSnapshots();
+        } catch (err) {
+            alert('恢复失败: ' + err.message);
+        }
+    }
+
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('restoreTime').value = now.toISOString().slice(0, 16);
+</script>
+</body>
+</html>
