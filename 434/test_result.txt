@@ -1,0 +1,36 @@
+Initializing NLP models...
+NLP models loaded successfully
+
+Scoring resume...
+Candidate: 张三
+Overall Score: 0.722
+Skill Score: 1.0
+Experience Score: 0.6667
+Education Score: 1.0
+Project Score: 0.0909
+  [技能匹配] 已匹配技能: python, django, fastapi, mysql, redis, docker (score=1.0)
+  [经验匹配] 工作经验约 6.0 年，岗位经验相关度: 0.33 (score=0.6666666666666666)
+  [学历匹配]  本科 (score=1.0)
+  [项目匹配] 共 1 个项目经验，相关度: 0.09 (score=0.09090909090909091)
+  [语义匹配] 简历与岗位描述语义相似度: 0.42 (score=0.4166666666666667)
+
+Generating interview questions...
+Interview Questions (8):
+  [技能深度 - python] Python中装饰器的作用是什么？请举一个实际应用场景。
+    Reason: 岗位要求python技能，考察技术深度
+  [技能深度 - go] 请描述Go的内存逃逸分析。
+    Reason: 岗位要求go技能，考察技术深度
+  [技能深度 - mysql] 如何优化慢查询？请列举几种方法。
+    Reason: 岗位要求mysql技能，考察技术深度
+  [技能深度 - redis] 请解释Redis的缓存淘汰策略。
+    Reason: 岗位要求redis技能，考察技术深度
+  [技能深度 - docker] Docker容器间如何进行通信？
+    Reason: 岗位要求docker技能，考察技术深度
+  [经验深挖] 在上一家公司担任该职位期间，你最引以为豪的成就是什么？请详细描述技术实现。
+    Reason: 深入了解候选人在过往工作中的实际贡献
+  [项目经验] 请详细介绍一下电商平台这个项目，包括技术栈、架构设计和你个人的贡献。
+    Reason: 考察候选人项目经验的真实性和技术深度
+  [行为面试] 当你的方案被上级或团队否定时，你会如何应对？
+    Reason: 考察候选人综合素质和软技能
+
+=== Test PASSED ===

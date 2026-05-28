@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.datasync</groupId>
+        <artifactId>multi-datacenter-sync</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>sync-conflict</artifactId>
+    <name>Sync Conflict Module</name>
+    <description>冲突处理引擎模块 - 基于时间戳和业务主键的冲突检测和解决</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.datasync</groupId>
+            <artifactId>sync-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+    </dependencies>
+</project>

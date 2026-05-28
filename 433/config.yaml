@@ -1,0 +1,52 @@
+server:
+  port: 8080
+
+kubernetes:
+  kubeconfig: ""
+  inCluster: false
+
+prometheus:
+  address: "http://localhost:9090"
+
+cost:
+  cpuPerCoreHour: 0.05
+  memoryPerGBHour: 0.01
+  storagePerGBHour: 0.001
+  networkPerGB: 0.02
+  idleThreshold: 0.3
+  customFactors:
+    production: 1.2
+    staging: 1.0
+    development: 0.5
+
+budgets:
+  defaultMonthlyBudget: 1000.0
+  namespaces:
+    production: 5000.0
+    staging: 2000.0
+    development: 500.0
+  alertThreshold: 0.8
+  criticalThreshold: 1.0
+
+pricing:
+  onDemand:
+    cpuPerCoreHour: 0.05
+    memoryPerGBHour: 0.01
+  reserved:
+    cpuPerCoreHour: 0.03
+    memoryPerGBHour: 0.006
+    upfrontFeePerCore: 100.0
+    upfrontFeePerGB: 20.0
+    contractTermMonths: 12
+  spot:
+    cpuPerCoreHour: 0.015
+    memoryPerGBHour: 0.003
+    discountThreshold: 0.5
+    interruptionRiskThreshold: 0.1
+
+cloud:
+  provider: "aws"
+  region: "us-east-1"
+  aws:
+    accessKey: ""
+    secretKey: ""

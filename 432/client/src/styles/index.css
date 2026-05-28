@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f7fa;
+  color: #1d2129;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.pdf-canvas-container {
+  background-color: #e8e8e8;
+  background-image: radial-gradient(#d0d0d0 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.annotation-highlight {
+  mix-blend-mode: multiply;
+}
+
+.toolbar-btn {
+  @apply p-2 rounded-lg transition-all duration-200;
+  @apply hover:bg-gray-100 active:bg-gray-200;
+}
+
+.toolbar-btn.active {
+  @apply bg-primary-100 text-primary-600;
+}
+
+.upload-zone {
+  @apply border-2 border-dashed border-gray-300 rounded-2xl p-12;
+  @apply transition-all duration-300 ease-in-out;
+  @apply hover:border-primary-500 hover:bg-primary-50/50;
+}
+
+.upload-zone.dragging {
+  @apply border-primary-500 bg-primary-50 scale-105;
+}
+
+.outline-item {
+  @apply px-3 py-2 cursor-pointer rounded-lg transition-colors;
+  @apply hover:bg-gray-100 text-sm;
+}
+
+.outline-item.active {
+  @apply bg-primary-100 text-primary-700;
+}
+
+.sidebar-tab {
+  @apply flex-1 py-2 text-sm font-medium transition-colors;
+  @apply border-b-2 border-transparent;
+}
+
+.sidebar-tab.active {
+  @apply text-primary-600 border-primary-600;
+}
+
+.color-swatch {
+  @apply w-6 h-6 rounded-full cursor-pointer transition-transform;
+  @apply hover:scale-110 border-2 border-white shadow-sm;
+}
+
+.color-swatch.active {
+  @apply ring-2 ring-primary-500 ring-offset-2;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}

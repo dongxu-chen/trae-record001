@@ -1,0 +1,35 @@
+[
+  {
+    "image_id": "sample_1",
+    "method": "ResNet-GAN",
+    "rain_intensity": "light",
+    "overall_quality": 3.334337241245705,
+    "rain_removal": 3.196952020105727,
+    "detail_preservation": 3.403809221334054,
+    "naturalness": 3.251039125933006,
+    "artifacts": 1.4499246673764437,
+    "timestamp": "2026-05-27T04:21:40.178335"
+  },
+  {
+    "image_id": "sample_2",
+    "method": "ResNet-GAN",
+    "rain_intensity": "medium",
+    "overall_quality": 3.9920484517147803,
+    "rain_removal": 3.870580276577972,
+    "detail_preservation": 4.1754241898372575,
+    "naturalness": 3.9971550098780306,
+    "artifacts": 1.0682783583418247,
+    "timestamp": "2026-05-27T04:21:40.178932"
+  },
+  {
+    "image_id": "sample_3",
+    "method": "ResNet-GAN",
+    "rain_intensity": "heavy",
+    "overall_quality": 2.2678041294262883,
+    "rain_removal": 2.25701951335498,
+    "detail_preservation": 2.4519444645233572,
+    "naturalness": 2.4065553588218744,
+    "artifacts": 2.7931447553741897,
+    "timestamp": "2026-05-27T04:21:40.179502"
+  }
+]

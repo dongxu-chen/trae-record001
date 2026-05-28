@@ -1,0 +1,380 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "uid": "sentinel-dashboard",
+  "title": "Sentinel限流监控大盘",
+  "tags": ["sentinel", "rate-limit", "监控"],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 2,
+  "refresh": "10s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "type": "query",
+        "datasource": "Prometheus",
+        "refresh": 1,
+        "options": [],
+        "query": "label_values(sentinel_pass_total, service)",
+        "includeAll": true,
+        "multi": false
+      },
+      {
+        "name": "resource",
+        "type": "query",
+        "datasource": "Prometheus",
+        "refresh": 1,
+        "options": [],
+        "query": "label_values(sentinel_pass_total{service=~\"$service\"}, resource)",
+        "includeAll": true,
+        "multi": true
+      },
+      {
+        "name": "interval",
+        "type": "query",
+        "datasource": null,
+        "options": [
+          {"text": "1分钟", "value": "1m"},
+          {"text": "5分钟", "value": "5m"},
+          {"text": "15分钟", "value": "15m"},
+          {"text": "1小时", "value": "1h"}
+        ],
+        "refresh": 1,
+        "includeAll": false,
+        "multi": false
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "总请求数",
+      "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(increase(sentinel_pass_total{service=~\"$service\", resource=~\"$resource\"}[$interval]))",
+          "legendFormat": "Pass",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "拦截请求数",
+      "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(increase(sentinel_block_total{service=~\"$service\", resource=~\"$resource\"}[$interval]))",
+          "legendFormat": "Block",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "fieldOptions": {
+          "defaults": {
+            "color": {"mode": "fixed", "fixedColor": "red"}
+          }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "拦截率",
+      "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(increase(sentinel_block_total{service=~\"$service\", resource=~\"$resource\"}[$interval])) / (sum(increase(sentinel_pass_total{service=~\"$service\", resource=~\"$resource\"}[$interval])) + sum(increase(sentinel_block_total{service=~\"$service\", resource=~\"$resource\"}[$interval]))) * 100",
+          "legendFormat": "Block Rate",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "fieldOptions": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"},
+                {"value": 1, "color": "yellow"},
+                {"value": 5, "color": "red"}
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "平均响应时间",
+      "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "avg(sentinel_rt_avg{service=~\"$service\", resource=~\"$resource\"})",
+          "legendFormat": "Avg RT",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "fieldOptions": {
+          "defaults": {
+            "unit": "ms"
+          }
+        }
+      }
+    },
+    {
+      "type": "graph",
+      "title": "QPS趋势 (降采样: $interval)",
+      "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(sentinel_pass_total{service=~\"$service\", resource=~\"$resource\"}[$interval]))",
+          "legendFormat": "Pass - {{resource}}",
+          "refId": "A",
+          "interval": "$interval"
+        },
+        {
+          "expr": "sum(rate(sentinel_block_total{service=~\"$service\", resource=~\"$resource\"}[$interval]))",
+          "legendFormat": "Block - {{resource}}",
+          "refId": "B",
+          "interval": "$interval"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "QPS",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        }
+      ],
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": true,
+        "values": true
+      }
+    },
+    {
+      "type": "graph",
+      "title": "响应时间分布 (降采样: $interval)",
+      "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sentinel_rt_avg{service=~\"$service\", resource=~\"$resource\"}",
+          "legendFormat": "Avg RT - {{resource}}",
+          "refId": "A",
+          "interval": "$interval"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "ms",
+          "label": "Response Time",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        }
+      ],
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "show": true,
+        "values": true
+      }
+    },
+    {
+      "type": "graph",
+      "title": "拦截请求分布 (按规则类型, 降采样: $interval)",
+      "gridPos": {"x": 0, "y": 12, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(increase(sentinel_block_total{service=~\"$service\"}[$interval])) by (rule_type)",
+          "legendFormat": "{{rule_type}}",
+          "refId": "A",
+          "interval": "$interval"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Count",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "异常请求数 (降采样: $interval)",
+      "gridPos": {"x": 12, "y": 12, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(increase(sentinel_exception_total{service=~\"$service\", resource=~\"$resource\"}[$interval]))",
+          "legendFormat": "Exception - {{resource}}",
+          "refId": "A",
+          "interval": "$interval"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Count",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "DC配额使用率",
+      "gridPos": {"x": 0, "y": 20, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sentinel_dc_quota_used{service=~\"$service\"} / sentinel_dc_quota_total{service=~\"$service\"} * 100",
+          "legendFormat": "DC: {{dc}} - {{node}}",
+          "refId": "A",
+          "interval": "$interval"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "percent",
+          "label": "Quota Usage",
+          "logBase": 1,
+          "max": 100,
+          "min": 0,
+          "show": true
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "TOP 10 拦截最多的资源",
+      "gridPos": {"x": 0, "y": 28, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "topk(10, sum(increase(sentinel_block_total{service=~\"$service\"}[$interval])) by (resource))",
+          "legendFormat": "{{resource}}",
+          "refId": "A",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "transform": "table",
+      "sort": {"col": 1, "desc": true},
+      "columns": [
+        {"text": "Resource", "value": "resource"},
+        {"text": "Block Count", "value": "Value"}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "TOP 10 响应最慢的资源",
+      "gridPos": {"x": 12, "y": 28, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "topk(10, sentinel_rt_avg{service=~\"$service\"})",
+          "legendFormat": "{{resource}}",
+          "refId": "A",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "transform": "table",
+      "sort": {"col": 1, "desc": true},
+      "columns": [
+        {"text": "Resource", "value": "resource"},
+        {"text": "Avg RT (ms)", "value": "Value"}
+      ]
+    }
+  ]
+}

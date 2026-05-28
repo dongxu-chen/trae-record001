@@ -1,0 +1,140 @@
+server:
+  port: 8090
+  servlet:
+    context-path: /rate-limit
+
+spring:
+  application:
+    name: rate-limit-center
+  profiles:
+    active: dev
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/rate_limit_center?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password:
+      database: 0
+      timeout: 5000
+      lettuce:
+        pool:
+          max-active: 64
+          max-idle: 16
+          min-idle: 8
+          max-wait: 3000
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: non_null
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.ratelimit.center.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+sentinel:
+  transport:
+    port: 8719
+    dashboard: 127.0.0.1:8858
+  eager: true
+  datasource:
+    flow:
+      redis:
+        server-addr: 127.0.0.1:6379
+        rule-key: sentinel:flow:rules
+        channel: sentinel:flow:channel
+    degrade:
+      redis:
+        server-addr: 127.0.0.1:6379
+        rule-key: sentinel:degrade:rules
+        channel: sentinel:degrade:channel
+    param-flow:
+      redis:
+        server-addr: 127.0.0.1:6379
+        rule-key: sentinel:param:flow:rules
+        channel: sentinel:param:flow:channel
+    system:
+      redis:
+        server-addr: 127.0.0.1:6379
+        rule-key: sentinel:system:rules
+        channel: sentinel:system:channel
+
+rate-limit:
+  cluster:
+    enabled: true
+    server-port: 18730
+    token-server-host: 127.0.0.1
+    datacenter: default
+    total-quota: 10000
+  warm-up:
+    enabled: true
+    default-warm-up-period-seconds: 10
+    default-curve: linear
+    default-exponential-factor: 3.0
+  log:
+    enabled: true
+    retain-days: 30
+    batch-size: 100
+  apollo:
+    enabled: false
+    namespace: application
+  metric:
+    pre-aggregate:
+      enabled: true
+      minute-flush-interval: 60000
+      hour-flush-interval: 3600000
+      retain-minutes: 120
+      retain-hours: 168
+  adaptive:
+    enabled: true
+    adjust-interval-seconds: 30
+    max-reduce-ratio: 0.5
+    max-increase-ratio: 0.3
+    cpu-weight: 0.35
+    memory-weight: 0.35
+    rt-weight: 0.2
+    block-rate-weight: 0.1
+    high-load-threshold: 0.7
+    low-load-threshold: 0.3
+    history-retain-size: 1000
+  gateway:
+    enabled: true
+    block-response-code: 429
+    exclude-paths: /actuator/**,/health
+  sandbox:
+    enabled: true
+    max-concurrent-tasks: 10
+    default-duration-seconds: 30
+    max-duration-seconds: 300
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+        step: 1m
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    com.ratelimit.center: info
+    com.alibaba.csp.sentinel: info
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

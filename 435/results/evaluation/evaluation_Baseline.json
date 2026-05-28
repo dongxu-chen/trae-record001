@@ -1,0 +1,104 @@
+{
+  "evaluations": [
+    {
+      "image_id": "sample",
+      "method": "Baseline",
+      "rain_intensity": "light",
+      "objective": {
+        "psnr": 4.142634391784668,
+        "ssim": 0.3571780025959015,
+        "psnr_gain": -27.957180976867676,
+        "ssim_gain": -0.5414609611034393,
+        "edge_similarity": 0.8783998961033371
+      },
+      "subjective": {
+        "image_id": "sample",
+        "method": "Baseline",
+        "rain_intensity": "light",
+        "overall_quality": 2.935715312908916,
+        "rain_removal": 2.8892284498970184,
+        "detail_preservation": 3.0430272299611096,
+        "naturalness": 3.0349548118436145,
+        "artifacts": 2.070487491219057,
+        "timestamp": "2026-05-27T04:21:51.535319"
+      },
+      "combined_score": 0.3755421717314211
+    },
+    {
+      "image_id": "sample",
+      "method": "Baseline",
+      "rain_intensity": "medium",
+      "objective": {
+        "psnr": 4.143877983093262,
+        "ssim": 0.3568548262119293,
+        "psnr_gain": -15.714390754699707,
+        "ssim_gain": -0.26219597458839417,
+        "edge_similarity": 0.8776167391585656
+      },
+      "subjective": {
+        "image_id": "sample",
+        "method": "Baseline",
+        "rain_intensity": "medium",
+        "overall_quality": 5.053295399322936,
+        "rain_removal": 5.075927045038657,
+        "detail_preservation": 4.891351621366927,
+        "naturalness": 4.818533604821694,
+        "artifacts": 0.06672393455985803,
+        "timestamp": "2026-05-27T04:21:51.535500"
+      },
+      "combined_score": 0.5344936725126239
+    },
+    {
+      "image_id": "sample",
+      "method": "Baseline",
+      "rain_intensity": "heavy",
+      "objective": {
+        "psnr": 4.142391204833984,
+        "ssim": 0.35697081685066223,
+        "psnr_gain": -7.382180213928223,
+        "ssim_gain": -0.004158079624176025,
+        "edge_similarity": 0.8766867082652472
+      },
+      "subjective": {
+        "image_id": "sample",
+        "method": "Baseline",
+        "rain_intensity": "heavy",
+        "overall_quality": 3.1941260720408535,
+        "rain_removal": 2.9103158287398325,
+        "detail_preservation": 3.2153202279152073,
+        "naturalness": 3.320507450708135,
+        "artifacts": 2.0981566378504435,
+        "timestamp": "2026-05-27T04:21:51.535649"
+      },
+      "combined_score": 0.3868329861563109
+    }
+  ],
+  "method_rankings": {
+    "Baseline": {
+      "mean_score": 0.43228961013345196,
+      "std_score": 0.07241603596671377,
+      "count": 3
+    }
+  },
+  "intensity_breakdown": {
+    "light": {
+      "mean_combined": 0.3755421717314211,
+      "mean_psnr": 4.142634391784668,
+      "mean_ssim": 0.3571780025959015,
+      "count": 1
+    },
+    "medium": {
+      "mean_combined": 0.5344936725126239,
+      "mean_psnr": 4.143877983093262,
+      "mean_ssim": 0.3568548262119293,
+      "count": 1
+    },
+    "heavy": {
+      "mean_combined": 0.3868329861563109,
+      "mean_psnr": 4.142391204833984,
+      "mean_ssim": 0.35697081685066223,
+      "count": 1
+    }
+  },
+  "timestamp": "2026-05-27T04:21:52.612892"
+}

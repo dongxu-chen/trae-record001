@@ -1,0 +1,169 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: rate-limit-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: rate_limit_center
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+      - --max-connections=500
+    networks:
+      - rate-limit-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: rate-limit-redis
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/data:/data
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    networks:
+      - rate-limit-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  sentinel-dashboard:
+    image: bladex/sentinel-dashboard:1.8.6
+    container_name: rate-limit-sentinel-dashboard
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      JAVA_OPTS: "-Dserver.port=8858 -Dcsp.sentinel.dashboard.server=localhost:8858 -Dproject.name=sentinel-dashboard -Dauth.enabled=false"
+    ports:
+      - "8858:8858"
+    networks:
+      - rate-limit-network
+    depends_on:
+      - redis
+
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: rate-limit-prometheus
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./grafana/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=7d
+      - --web.enable-lifecycle
+    networks:
+      - rate-limit-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: rate-limit-grafana
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+      - ./grafana/dashboard.json:/etc/grafana/provisioning/dashboards/dashboard.json:ro
+    networks:
+      - rate-limit-network
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  rate-limit-center:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rate-limit-center-dc1
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      SPRING_PROFILES_ACTIVE: docker
+      JAVA_OPTS: "-Xms512m -Xmx1024m -XX:+UseG1GC"
+      RATE_LIMIT_CLUSTER_DATACENTER: dc1
+      RATE_LIMIT_CLUSTER_TOTAL_QUOTA: 10000
+    ports:
+      - "8090:8090"
+      - "8719:8719"
+      - "18730:18730"
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - rate-limit-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      sentinel-dashboard:
+        condition: service_started
+
+  rate-limit-center-dc2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rate-limit-center-dc2
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      SPRING_PROFILES_ACTIVE: docker
+      JAVA_OPTS: "-Xms512m -Xmx1024m -XX:+UseG1GC"
+      RATE_LIMIT_CLUSTER_DATACENTER: dc2
+      RATE_LIMIT_CLUSTER_TOTAL_QUOTA: 8000
+    ports:
+      - "8091:8090"
+      - "8720:8719"
+      - "18731:18730"
+    volumes:
+      - ./logs-dc2:/app/logs
+    networks:
+      - rate-limit-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      sentinel-dashboard:
+        condition: service_started
+
+networks:
+  rate-limit-network:
+    driver: bridge

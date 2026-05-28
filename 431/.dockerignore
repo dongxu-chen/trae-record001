@@ -1,0 +1,15 @@
+**/target/**
+**/logs/**
+**/.git/**
+**/.idea/**
+**/*.md
+**/docker/**
+**/sql/**
+**/grafana/**
+**/*.iml
+**/*.ipr
+**/*.iws
+**/.classpath
+**/.project
+**/.settings/**
+**/node_modules/**

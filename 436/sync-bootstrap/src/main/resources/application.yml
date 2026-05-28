@@ -1,0 +1,124 @@
+spring:
+  application:
+    name: multi-datacenter-sync
+
+logging:
+  level:
+    com.datasync: INFO
+    org.apache.zookeeper: WARN
+    org.apache.kafka: WARN
+
+datasync:
+  datacenter-id: ${DATACENTER_ID:dc1}
+  node-id: ${NODE_ID:}
+
+  zookeeper:
+    connect-string: ${ZK_CONNECT_STRING:localhost:2181}
+    session-timeout-ms: 30000
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    topic-prefix: datasync_
+    producer:
+      acks: all
+      retries: 3
+      batch-size: 16384
+      linger-ms: 1
+      buffer-memory: 33554432
+    consumer:
+      group-id: datasync-group
+      max-poll-records: 500
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+
+  channel:
+    enabled: true
+    large-table-threshold-rows: 1000000
+    per-table-channel: true
+    channels:
+      - table-name: orders
+        is-large-table: true
+        partition-count: 6
+      - table-name: users
+        is-large-table: false
+        partition-count: 3
+
+  conflict:
+    strategy: HLC_VERSION
+    cache-expire-minutes: 10
+    cache-max-size: 100000
+    conflict-window-ms: 60000
+
+  transaction:
+    gtx-cache-expire-minutes: 60
+    gtx-cache-max-size: 100000
+    enable-loopback-detection: true
+
+  hlc:
+    max-clock-offset-ms: 5000
+
+  lag-monitor:
+    enabled: true
+    high-watermark-threshold: 10000
+    low-watermark-threshold: 1000
+    switch-wait-timeout-ms: 60000
+
+  monitor:
+    latency-alert-threshold-ms: 5000
+    error-rate-alert-threshold: 5
+    metrics-report-interval-ms: 60000
+
+  validation:
+    enabled: true
+    default-sample-size: 1000
+    validation-interval-minutes: 60
+    alert-threshold-percent: 99.0
+    tables:
+      - orders
+      - users
+      - products
+
+  checkpoint:
+    enabled: true
+    interval-seconds: 30
+    auto-restore-on-startup: true
+
+  cdc:
+    connectors:
+      - type: canal
+        connector-id: canal-mysql-1
+        database-id: mysql-db1
+        enabled: true
+        hostname: ${CANAL_HOST:localhost}
+        port: ${CANAL_PORT:11111}
+        destination: example
+        username: canal
+        password: canal
+        subscribe-filter: .*\..*
+        batch-size: 1000
+        poll-timeout-ms: 1000
+
+  writer:
+    type: mysql
+    database-id: mysql-local
+    host: ${DB_HOST:localhost}
+    port: ${DB_PORT:3306}
+    database: ${DB_NAME:sync_db}
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:root}
+    max-pool-size: 20
+    min-idle: 5
+
+  topology:
+    peer-datacenters:
+      - dc2
+      - dc3
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always

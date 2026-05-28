@@ -1,0 +1,104 @@
+{
+  "evaluations": [
+    {
+      "image_id": "sample",
+      "method": "With-Edge-Loss",
+      "rain_intensity": "light",
+      "objective": {
+        "psnr": 5.203938961029053,
+        "ssim": 0.39437493681907654,
+        "psnr_gain": -26.65556573867798,
+        "ssim_gain": -0.4903840124607086,
+        "edge_similarity": 0.8962397312389165
+      },
+      "subjective": {
+        "image_id": "sample",
+        "method": "With-Edge-Loss",
+        "rain_intensity": "light",
+        "overall_quality": 3.6810182187982625,
+        "rain_removal": 3.675550493852954,
+        "detail_preservation": 3.737258794119732,
+        "naturalness": 3.70266866571908,
+        "artifacts": 1.313335707883537,
+        "timestamp": "2026-05-27T04:21:51.540025"
+      },
+      "combined_score": 0.45307259068714467
+    },
+    {
+      "image_id": "sample",
+      "method": "With-Edge-Loss",
+      "rain_intensity": "medium",
+      "objective": {
+        "psnr": 5.204012393951416,
+        "ssim": 0.3943628966808319,
+        "psnr_gain": -15.539388179779053,
+        "ssim_gain": -0.2530951201915741,
+        "edge_similarity": 0.8961507304306264
+      },
+      "subjective": {
+        "image_id": "sample",
+        "method": "With-Edge-Loss",
+        "rain_intensity": "medium",
+        "overall_quality": 3.0374746242471513,
+        "rain_removal": 2.8582737553255275,
+        "detail_preservation": 2.9368521442240554,
+        "naturalness": 2.858597171593722,
+        "artifacts": 1.9684785646830045,
+        "timestamp": "2026-05-27T04:21:51.540221"
+      },
+      "combined_score": 0.39290246805020446
+    },
+    {
+      "image_id": "sample",
+      "method": "With-Edge-Loss",
+      "rain_intensity": "heavy",
+      "objective": {
+        "psnr": 5.204120635986328,
+        "ssim": 0.39432573318481445,
+        "psnr_gain": -5.7924346923828125,
+        "ssim_gain": 0.03715738654136658,
+        "edge_similarity": 0.8960990183877597
+      },
+      "subjective": {
+        "image_id": "sample",
+        "method": "With-Edge-Loss",
+        "rain_intensity": "heavy",
+        "overall_quality": 3.228064297004618,
+        "rain_removal": 3.6021662993003045,
+        "detail_preservation": 3.4515477166434287,
+        "naturalness": 3.265237748300522,
+        "artifacts": 1.7177337296571409,
+        "timestamp": "2026-05-27T04:21:51.540392"
+      },
+      "combined_score": 0.42659714203080945
+    }
+  ],
+  "method_rankings": {
+    "With-Edge-Loss": {
+      "mean_score": 0.4241907335893862,
+      "std_score": 0.024623214192117177,
+      "count": 3
+    }
+  },
+  "intensity_breakdown": {
+    "light": {
+      "mean_combined": 0.45307259068714467,
+      "mean_psnr": 5.203938961029053,
+      "mean_ssim": 0.39437493681907654,
+      "count": 1
+    },
+    "medium": {
+      "mean_combined": 0.39290246805020446,
+      "mean_psnr": 5.204012393951416,
+      "mean_ssim": 0.3943628966808319,
+      "count": 1
+    },
+    "heavy": {
+      "mean_combined": 0.42659714203080945,
+      "mean_psnr": 5.204120635986328,
+      "mean_ssim": 0.39432573318481445,
+      "count": 1
+    }
+  },
+  "timestamp": "2026-05-27T04:21:52.614780"
+}

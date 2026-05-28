@@ -1,0 +1,80 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: rate-limit-center
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://mysql:3306/rate_limit_center?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+      password:
+      database: 0
+      timeout: 5000
+      lettuce:
+        pool:
+          max-active: 64
+          max-idle: 16
+          min-idle: 8
+          max-wait: 3000
+
+sentinel:
+  transport:
+    port: 8719
+    dashboard: sentinel-dashboard:8858
+  eager: true
+  datasource:
+    flow:
+      redis:
+        server-addr: redis:6379
+        rule-key: sentinel:flow:rules
+        channel: sentinel:flow:channel
+    degrade:
+      redis:
+        server-addr: redis:6379
+        rule-key: sentinel:degrade:rules
+        channel: sentinel:degrade:channel
+    param-flow:
+      redis:
+        server-addr: redis:6379
+        rule-key: sentinel:param:flow:rules
+        channel: sentinel:param:flow:channel
+    system:
+      redis:
+        server-addr: redis:6379
+        rule-key: sentinel:system:rules
+        channel: sentinel:system:channel
+
+rate-limit:
+  cluster:
+    enabled: true
+    server-port: 18730
+    token-server-host: rate-limit-center
+    datacenter: ${RATE_LIMIT_CLUSTER_DATACENTER:default}
+    total-quota: ${RATE_LIMIT_CLUSTER_TOTAL_QUOTA:10000}
+  warm-up:
+    enabled: true
+    default-warm-up-period-seconds: 10
+    default-curve: ${RATE_LIMIT_WARM_UP_DEFAULT_CURVE:linear}
+    default-exponential-factor: ${RATE_LIMIT_WARM_UP_EXPONENTIAL_FACTOR:3.0}
+  log:
+    enabled: true
+    retain-days: 30
+    batch-size: 100
+  apollo:
+    enabled: false
+    namespace: application
+  metric:
+    pre-aggregate:
+      enabled: true
+      minute-flush-interval: 60000
+      hour-flush-interval: 3600000
+      retain-minutes: 120
+      retain-hours: 168

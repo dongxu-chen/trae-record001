@@ -1,0 +1,35 @@
+[
+  {
+    "image_id": "sample",
+    "method": "Baseline",
+    "rain_intensity": "light",
+    "overall_quality": 2.935715312908916,
+    "rain_removal": 2.8892284498970184,
+    "detail_preservation": 3.0430272299611096,
+    "naturalness": 3.0349548118436145,
+    "artifacts": 2.070487491219057,
+    "timestamp": "2026-05-27T04:21:51.535319"
+  },
+  {
+    "image_id": "sample",
+    "method": "Baseline",
+    "rain_intensity": "medium",
+    "overall_quality": 5.053295399322936,
+    "rain_removal": 5.075927045038657,
+    "detail_preservation": 4.891351621366927,
+    "naturalness": 4.818533604821694,
+    "artifacts": 0.06672393455985803,
+    "timestamp": "2026-05-27T04:21:51.535500"
+  },
+  {
+    "image_id": "sample",
+    "method": "Baseline",
+    "rain_intensity": "heavy",
+    "overall_quality": 3.1941260720408535,
+    "rain_removal": 2.9103158287398325,
+    "detail_preservation": 3.2153202279152073,
+    "naturalness": 3.320507450708135,
+    "artifacts": 2.0981566378504435,
+    "timestamp": "2026-05-27T04:21:51.535649"
+  }
+]
