@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>匿名投票系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.2/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/dist/stomp.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102,126,234,0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+
+        .vote-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .vote-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .vote-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .vote-item h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .vote-item .type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .vote-item .type-badge.rating {
+            background: #f093fb;
+        }
+
+        .vote-item .type-badge.multiple {
+            background: #4facfe;
+        }
+
+        .vote-item p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .options-list {
+            margin: 20px 0;
+        }
+
+        .option-item {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .option-item:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .option-item.selected {
+            border-color: #667eea;
+            background: #eef2ff;
+        }
+
+        .option-item input[type="radio"],
+        .option-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #667eea;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .star {
+            font-size: 3rem;
+            cursor: pointer;
+            color: #ddd;
+            transition: all 0.3s;
+        }
+
+        .star.active,
+        .star:hover {
+            color: #ffd700;
+            transform: scale(1.2);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+
+        .result-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .result-item .option-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar {
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #11998e;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .option-input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .option-input-row input {
+            flex: 1;
+        }
+
+        .option-input-row button {
+            padding: 12px 20px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .alert {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .vote-code-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f0f9ff;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .checkbox-inline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-inline input {
+            width: 20px;
+            height: 20px;
+            accent-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗳️ 匿名投票系统</h1>
+            <p>安全、匿名、实时的投票平台</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('list')">投票列表</button>
+            <button class="tab-btn" onclick="switchTab('create')">创建投票</button>
+            <button class="tab-btn" onclick="switchTab('result')">查看结果</button>
+            <button class="tab-btn" onclick="switchTab('verify')">结果验证</button>
+            <button class="tab-btn" onclick="switchTab('blockchain')">区块链</button>
+        </div>
+
+        <div id="tab-list" class="tab-content active">
+            <div class="card">
+                <h2 style="margin-bottom: 20px;">📋 投票列表</h2>
+                <div id="voteList" class="vote-list"></div>
+            </div>
+        </div>
+
+        <div id="tab-create" class="tab-content">
+            <div class="card">
+                <h2 style="margin-bottom: 20px;">✏️ 创建新投票</h2>
+                <form id="createVoteForm">
+                    <div class="form-group">
+                        <label>投票标题 *</label>
+                        <input type="text" id="voteTitle" required placeholder="请输入投票标题">
+                    </div>
+
+                    <div class="form-group">
+                        <label>投票描述</label>
+                        <textarea id="voteDescription" rows="3" placeholder="请输入投票描述"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>投票类型 *</label>
+                        <select id="voteType" required onchange="onTypeChange()">
+                            <option value="SINGLE">单选</option>
+                            <option value="MULTIPLE">多选</option>
+                            <option value="RATING">评分</option>
+                        </select>
+                    </div>
+
+                    <div id="multipleSettings" style="display: none;">
+                        <div class="form-group">
+                            <label>最少选择数</label>
+                            <input type="number" id="minSelect" value="1" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>最多选择数</label>
+                            <input type="number" id="maxSelect" value="3" min="1">
+                        </div>
+                    </div>
+
+                    <div id="ratingSettings" style="display: none;">
+                        <div class="form-group">
+                            <label>最低分</label>
+                            <input type="number" id="minScore" value="1" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>最高分</label>
+                            <input type="number" id="maxScore" value="5" min="1">
+                        </div>
+                    </div>
+
+                    <div class="checkbox-inline">
+                        <input type="checkbox" id="requireVoteCode">
+                        <label for="requireVoteCode">需要投票码才能参与</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>投票选项 *</label>
+                        <div id="optionsContainer">
+                            <div class="option-input-row">
+                                <input type="text" class="option-input" placeholder="选项 1" required>
+                                <button type="button" class="btn btn-danger" onclick="removeOption(this)">×</button>
+                            </div>
+                            <div class="option-input-row">
+                                <input type="text" class="option-input" placeholder="选项 2" required>
+                                <button type="button" class="btn btn-danger" onclick="removeOption(this)">×</button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary" style="margin-top: 10px;" onclick="addOption()">+ 添加选项</button>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">创建投票</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="tab-result" class="tab-content">
+            <div class="card">
+                <h2 style="margin-bottom: 20px;">📊 投票结果</h2>
+                <div id="resultContent">
+                    <p style="color: #999; text-align: center; padding: 40px;">请从投票列表选择一个投票查看结果</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-verify" class="tab-content">
+            <div class="card">
+                <h2 style="margin-bottom: 20px;">🔍 结果验证</h2>
+                <div class="form-group">
+                    <label>选择投票</label>
+                    <select id="verifyVoteSelect" onchange="loadVerificationData()">
+                        <option value="">请选择投票</option>
+                    </select>
+                </div>
+                <div id="verificationContent" style="margin-top: 20px;">
+                    <p style="color: #999; text-align: center; padding: 40px;">选择投票后查看验证数据</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-blockchain" class="tab-content">
+            <div class="card">
+                <h2 style="margin-bottom: 20px;">⛓️ 区块链信息</h2>
+                <div id="blockchainInfo" style="margin-bottom: 20px;">
+                    <p style="color: #999; text-align: center; padding: 20px;">点击刷新按钮加载区块链信息</p>
+                </div>
+                <button class="btn btn-primary" onclick="loadBlockchainInfo()">刷新区块链信息</button>
+
+                <div style="margin-top: 30px;">
+                    <h3 style="margin-bottom: 15px;">验证投票收据</h3>
+                    <div class="form-group">
+                        <label>输入记录哈希 (Record Hash)</label>
+                        <input type="text" id="receiptHashInput" placeholder="请输入记录哈希">
+                    </div>
+                    <button class="btn btn-primary" onclick="verifyReceipt()">验证收据</button>
+                    <div id="receiptVerifyResult" style="margin-top: 15px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="voteModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">参与投票</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let currentVoteId = null;
+        let stompClient = null;
+        let resultChart = null;
+        let selectedRating = 0;
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+
+            if (tabName === 'list') {
+                loadVoteList();
+            }
+        }
+
+        function onTypeChange() {
+            const type = document.getElementById('voteType').value;
+            document.getElementById('multipleSettings').style.display = type === 'MULTIPLE' ? 'block' : 'none';
+            document.getElementById('ratingSettings').style.display = type === 'RATING' ? 'block' : 'none';
+        }
+
+        function addOption() {
+            const container = document.getElementById('optionsContainer');
+            const count = container.children.length + 1;
+            const div = document.createElement('div');
+            div.className = 'option-input-row';
+            div.innerHTML = `
+                <input type="text" class="option-input" placeholder="选项 ${count}" required>
+                <button type="button" class="btn btn-danger" onclick="removeOption(this)">×</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function removeOption(btn) {
+            const container = document.getElementById('optionsContainer');
+            if (container.children.length > 2) {
+                btn.parentElement.remove();
+            } else {
+                alert('至少需要两个选项');
+            }
+        }
+
+        async function loadVoteList() {
+            try {
+                const response = await fetch(`${API_BASE}/votes`);
+                const data = await response.json();
+                const votes = data.data;
+
+                const container = document.getElementById('voteList');
+                if (votes.length === 0) {
+                    container.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">暂无投票，点击"创建投票"开始</p>';
+                    return;
+                }
+
+                container.innerHTML = votes.map(vote => `
+                    <div class="vote-item" onclick="viewVoteDetail(${vote.id})">
+                        <span class="type-badge ${vote.type.toLowerCase()}">${getTypeName(vote.type)}</span>
+                        <h3>${vote.title}</h3>
+                        <p>${vote.description || '暂无描述'}</p>
+                        <p style="margin-top: 10px; color: #999; font-size: 0.85rem;">
+                            ${vote.options ? vote.options.length + ' 个选项' : ''}
+                        </p>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('加载投票列表失败', e);
+            }
+        }
+
+        function getTypeName(type) {
+            const types = { 'SINGLE': '单选', 'MULTIPLE': '多选', 'RATING': '评分' };
+            return types[type] || type;
+        }
+
+        async function viewVoteDetail(id) {
+            currentVoteId = id;
+            try {
+                const response = await fetch(`${API_BASE}/votes/${id}`);
+                const data = await response.json();
+                const vote = data.data;
+
+                showVoteModal(vote);
+            } catch (e) {
+                console.error('获取投票详情失败', e);
+            }
+        }
+
+        function showVoteModal(vote) {
+            document.getElementById('modalTitle').textContent = vote.title;
+            const content = document.getElementById('modalContent');
+
+            let html = `<p style="margin-bottom: 20px; color: #666;">${vote.description || '暂无描述'}</p>`;
+
+            if (vote.requireVoteCode) {
+                html += `
+                    <div class="vote-code-section">
+                        <label>投票码 *</label>
+                        <input type="text" id="voteCodeInput" placeholder="请输入投票码" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; margin-top: 10px;">
+                    </div>
+                `;
+            }
+
+            html += '<div class="options-list">';
+
+            if (vote.type === 'RATING') {
+                vote.options.forEach(option => {
+                    html += `
+                        <div class="option-item" onclick="selectRatingOption(${option.id})" data-option-id="${option.id}">
+                            <div style="flex: 1;">${option.content}</div>
+                        </div>
+                    `;
+                });
+                html += `
+                    <div id="ratingStarsContainer" style="display: none; margin-top: 20px;">
+                        <div class="rating-stars">
+                            ${[1,2,3,4,5].map(i => `<span class="star" onclick="setRating(${i})">★</span>`).join('')}
+                        </div>
+                        <p style="text-align: center; color: #666;">点击星星进行评分</p>
+                    </div>
+                `;
+            } else if (vote.type === 'MULTIPLE') {
+                vote.options.forEach(option => {
+                    html += `
+                        <label class="option-item">
+                            <input type="checkbox" value="${option.id}" class="multi-option">
+                            <span>${option.content}</span>
+                        </label>
+                    `;
+                });
+            } else {
+                vote.options.forEach(option => {
+                    html += `
+                        <label class="option-item">
+                            <input type="radio" name="singleOption" value="${option.id}">
+                            <span>${option.content}</span>
+                        </label>
+                    `;
+                });
+            }
+
+            html += '</div>';
+            html += '<button class="btn btn-primary" style="width: 100%;" onclick="submitVote()">提交投票</button>';
+
+            content.innerHTML = html;
+            document.getElementById('voteModal').classList.add('active');
+        }
+
+        let selectedRatingOptionId = null;
+
+        function selectRatingOption(optionId) {
+            selectedRatingOptionId = optionId;
+            document.querySelectorAll('.option-item').forEach(item => {
+                item.classList.remove('selected');
+                if (item.dataset.optionId == optionId) {
+                    item.classList.add('selected');
+                }
+            });
+            document.getElementById('ratingStarsContainer').style.display = 'block';
+            selectedRating = 0;
+            updateStars();
+        }
+
+        function setRating(rating) {
+            selectedRating = rating;
+            updateStars();
+        }
+
+        function updateStars() {
+            document.querySelectorAll('.star').forEach((star, index) => {
+                star.classList.toggle('active', index < selectedRating);
+            });
+        }
+
+        async function submitVote() {
+            if (!currentVoteId) return;
+
+            const voteCode = document.getElementById('voteCodeInput')?.value;
+
+            let requestData = {
+                voteId: currentVoteId,
+                voteCode: voteCode
+            };
+
+            try {
+                const voteResponse = await fetch(`${API_BASE}/votes/${currentVoteId}`);
+                const voteData = await voteResponse.json();
+                const vote = voteData.data;
+
+                if (vote.type === 'SINGLE') {
+                    const selected = document.querySelector('input[name="singleOption"]:checked');
+                    if (!selected) {
+                        alert('请选择一个选项');
+                        return;
+                    }
+                    requestData.optionId = parseInt(selected.value);
+                } else if (vote.type === 'MULTIPLE') {
+                    const selected = document.querySelectorAll('.multi-option:checked');
+                    if (selected.length === 0) {
+                        alert('请至少选择一个选项');
+                        return;
+                    }
+                    if (selected.length < vote.minSelect) {
+                        alert(`至少需要选择 ${vote.minSelect} 个选项`);
+                        return;
+                    }
+                    if (selected.length > vote.maxSelect) {
+                        alert(`最多只能选择 ${vote.maxSelect} 个选项`);
+                        return;
+                    }
+                    requestData.optionIds = Array.from(selected).map(el => parseInt(el.value));
+                } else if (vote.type === 'RATING') {
+                    if (!selectedRatingOptionId) {
+                        alert('请选择要评分的项目');
+                        return;
+                    }
+                    if (selectedRating === 0) {
+                        alert('请进行评分');
+                        return;
+                    }
+                    requestData.optionId = selectedRatingOptionId;
+                    requestData.score = selectedRating;
+                }
+
+                const response = await fetch(`${API_BASE}/votes/submit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+
+                const data = await response.json();
+                if (data.code === 200) {
+                    alert('投票成功！');
+                    closeModal();
+                    viewResult(currentVoteId);
+                } else {
+                    alert('投票失败: ' + data.message);
+                }
+            } catch (e) {
+                console.error('提交投票失败', e);
+                alert('提交失败，请重试');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('voteModal').classList.remove('active');
+            selectedRatingOptionId = null;
+            selectedRating = 0;
+        }
+
+        async function viewResult(id) {
+            currentVoteId = id;
+            switchTab('result');
+
+            try {
+                const response = await fetch(`${API_BASE}/votes/${id}/result`);
+                const data = await response.json();
+                const result = data.data;
+
+                renderResult(result);
+                connectWebSocket(id);
+            } catch (e) {
+                console.error('获取结果失败', e);
+            }
+        }
+
+        function renderResult(result) {
+            const container = document.getElementById('resultContent');
+
+            let html = `
+                <div class="live-indicator">
+                    <span class="live-dot"></span>
+                    <span>实时更新中</span>
+                </div>
+                <h3>${result.title}</h3>
+                <p style="color: #666; margin-bottom: 20px;">总投票数: ${result.totalVotes}</p>
+                <div class="chart-container">
+                    <canvas id="resultChart"></canvas>
+                </div>
+                <div id="resultBars"></div>
+                <div class="export-buttons">
+                    <button class="btn btn-primary" onclick="exportResult()">导出结果</button>
+                    <button class="btn btn-success" onclick="exportRecords()">导出记录</button>
+                </div>
+            `;
+
+            container.innerHTML = html;
+            renderChart(result);
+            renderBars(result);
+        }
+
+        function renderChart(result) {
+            const ctx = document.getElementById('resultChart').getContext('2d');
+
+            if (resultChart) {
+                resultChart.destroy();
+            }
+
+            const isRating = result.type === 'RATING';
+            const labels = result.options.map(o => o.content);
+            const data = isRating
+                ? result.options.map(o => o.avgScore || 0)
+                : result.options.map(o => o.percentage || 0);
+
+            resultChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: isRating ? '平均得分' : '占比 (%)',
+                        data: data,
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(118, 75, 162, 0.8)',
+                            'rgba(240, 147, 251, 0.8)',
+                            'rgba(79, 172, 254, 0.8)',
+                            'rgba(0, 242, 254, 0.8)',
+                            'rgba(64, 224, 208, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(102, 126, 234)',
+                            'rgb(118, 75, 162)',
+                            'rgb(240, 147, 251)',
+                            'rgb(79, 172, 254)',
+                            'rgb(0, 242, 254)',
+                            'rgb(64, 224, 208)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: isRating ? 5 : 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderBars(result) {
+            const container = document.getElementById('resultBars');
+            const isRating = result.type === 'RATING';
+
+            container.innerHTML = result.options.map(option => `
+                <div class="result-item">
+                    <div class="option-name">
+                        <span>${option.content}</span>
+                        <span>
+                            ${option.voteCount} 票
+                            ${isRating && option.avgScore ? ` / 平均 ${option.avgScore.toFixed(2)} 分` : ''}
+                            ${!isRating ? ` (${option.percentage.toFixed(2)}%)` : ''}
+                        </span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${isRating ? (option.avgScore || 0) * 20 : option.percentage}%">
+                            ${!isRating ? option.percentage.toFixed(1) + '%' : (option.avgScore || 0).toFixed(2) + ' 分'}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function connectWebSocket(voteId) {
+            if (stompClient) {
+                stompClient.disconnect();
+            }
+
+            const socket = new SockJS('/ws-voting');
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function(frame) {
+                console.log('WebSocket Connected');
+                stompClient.subscribe('/topic/vote-result/' + voteId, function(message) {
+                    const result = JSON.parse(message.body);
+                    console.log('收到实时更新:', result);
+                    renderResult(result);
+                });
+            }, function(error) {
+                console.log('WebSocket Error: ' + error);
+            });
+        }
+
+        function exportResult() {
+            if (!currentVoteId) return;
+            window.location.href = `${API_BASE}/export/result/${currentVoteId}`;
+        }
+
+        function exportRecords() {
+            if (!currentVoteId) return;
+            window.location.href = `${API_BASE}/export/records/${currentVoteId}`;
+        }
+
+        document.getElementById('createVoteForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const options = Array.from(document.querySelectorAll('.option-input'))
+                .map(input => input.value.trim())
+                .filter(v => v);
+
+            if (options.length < 2) {
+                alert('至少需要两个选项');
+                return;
+            }
+
+            const data = {
+                title: document.getElementById('voteTitle').value,
+                description: document.getElementById('voteDescription').value,
+                type: document.getElementById('voteType').value,
+                minSelect: parseInt(document.getElementById('minSelect').value) || 1,
+                maxSelect: parseInt(document.getElementById('maxSelect').value) || 1,
+                minScore: parseInt(document.getElementById('minScore').value) || 1,
+                maxScore: parseInt(document.getElementById('maxScore').value) || 5,
+                requireVoteCode: document.getElementById('requireVoteCode').checked,
+                options: options
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/votes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.code === 200) {
+                    alert('投票创建成功！');
+                    document.getElementById('createVoteForm').reset();
+                    document.getElementById('optionsContainer').innerHTML = `
+                        <div class="option-input-row">
+                            <input type="text" class="option-input" placeholder="选项 1" required>
+                            <button type="button" class="btn btn-danger" onclick="removeOption(this)">×</button>
+                        </div>
+                        <div class="option-input-row">
+                            <input type="text" class="option-input" placeholder="选项 2" required>
+                            <button type="button" class="btn btn-danger" onclick="removeOption(this)">×</button>
+                        </div>
+                    `;
+                    switchTab('list');
+                } else {
+                    alert('创建失败: ' + result.message);
+                }
+            } catch (e) {
+                console.error('创建投票失败', e);
+                alert('创建失败，请重试');
+            }
+        });
+
+        async function loadVerificationOptions() {
+            try {
+                const response = await fetch(`${API_BASE}/votes`);
+                const data = await response.json();
+                const votes = data.data;
+
+                const select = document.getElementById('verifyVoteSelect');
+                select.innerHTML = '<option value="">请选择投票</option>' +
+                    votes.map(v => `<option value="${v.id}">${v.title}</option>`).join('');
+            } catch (e) {
+                console.error('加载投票列表失败', e);
+            }
+        }
+
+        async function loadVerificationData() {
+            const voteId = document.getElementById('verifyVoteSelect').value;
+            if (!voteId) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/verification/data/${voteId}`);
+                const data = await response.json();
+                const result = data.data;
+
+                const container = document.getElementById('verificationContent');
+
+                let html = '';
+
+                html += `<div class="alert ${result.overallValid ? 'alert-success' : 'alert-error'}" style="margin-bottom: 20px;">
+                    <strong>${result.overallValid ? '✅ 所有验证通过' : '❌ 存在验证失败项'}</strong>
+                </div>`;
+
+                html += `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                        <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                            <div style="font-size: 0.9rem; color: #666;">总记录数</div>
+                            <div style="font-size: 1.5rem; font-weight: bold;">${result.totalRecords}</div>
+                        </div>
+                        <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                            <div style="font-size: 0.9rem; color: #666;">上链收据数</div>
+                            <div style="font-size: 1.5rem; font-weight: bold;">${result.totalReceipts}</div>
+                        </div>
+                        <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                            <div style="font-size: 0.9rem; color: #666;">计数匹配</div>
+                            <div style="font-size: 1.5rem; font-weight: bold; color: ${result.allCountsMatch ? '#155724' : '#721c24'};">${result.allCountsMatch ? '✅' : '❌'}</div>
+                        </div>
+                        <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                            <div style="font-size: 0.9rem; color: #666;">区块链完整</div>
+                            <div style="font-size: 1.5rem; font-weight: bold; color: ${result.blockchainValid ? '#155724' : '#721c24'};">${result.blockchainValid ? '✅' : '❌'}</div>
+                        </div>
+                    </div>
+                `;
+
+                html += '<h4 style="margin-bottom: 15px;">选项验证详情</h4>';
+                result.verification.forEach(v => {
+                    const countMatch = v.countMatch;
+                    const scoreMatch = v.avgScoreMatch;
+                    html += `
+                        <div class="result-item">
+                            <div class="option-name">
+                                <span>${v.optionContent}</span>
+                                <span>
+                                    ${countMatch ? '✅' : '❌'} 计数
+                                    ${scoreMatch ? '✅' : '❌'} 得分
+                                </span>
+                            </div>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 5px;">
+                                存储计数: ${v.storedCount} | 重新计算: ${v.recalculatedCount}
+                                ${v.storedAvgScore !== undefined ? `| 存储平均分: ${v.storedAvgScore.toFixed(2)} | 重新计算: ${v.recalculatedAvgScore.toFixed(2)}` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                if (result.invalidReceipts && result.invalidReceipts.length > 0) {
+                    html += `<div class="alert alert-error" style="margin-top: 20px;">
+                        <strong>无效收据 (${result.invalidReceipts.length}):</strong><br>
+                        ${result.invalidReceipts.map(h => h.substring(0, 20) + '...').join(', ')}
+                    </div>`;
+                }
+
+                html += `<div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 8px; font-family: monospace; font-size: 0.8rem; word-break: break-all;">
+                    <strong>结果哈希:</strong> ${result.resultHash}
+                </div>`;
+
+                container.innerHTML = html;
+            } catch (e) {
+                console.error('加载验证数据失败', e);
+                document.getElementById('verificationContent').innerHTML =
+                    '<p style="color: #dc3545; text-align: center; padding: 40px;">加载失败，请重试</p>';
+            }
+        }
+
+        async function loadBlockchainInfo() {
+            try {
+                const response = await fetch(`${API_BASE}/blockchain/info`);
+                const data = await response.json();
+                const info = data.data;
+
+                const container = document.getElementById('blockchainInfo');
+
+                if (info.latestBlockHeight === null) {
+                    container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">暂无区块数据</p>';
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                            <div style="font-size: 0.9rem; color: #666;">最新区块高度</div>
+                            <div style="font-size: 1.5rem; font-weight: bold;">${info.latestBlockHeight}</div>
+                        </div>
+                        <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                            <div style="font-size: 0.9rem; color: #666;">区块交易数</div>
+                            <div style="font-size: 1.5rem; font-weight: bold;">${info.latestBlockTransactions}</div>
+                        </div>
+                        <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                            <div style="font-size: 0.9rem; color: #666;">区块链完整性</div>
+                            <div style="font-size: 1.5rem; font-weight: bold; color: ${info.blockchainValid ? '#155724' : '#721c24'};">${info.blockchainValid ? '✅' : '❌'}</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; padding: 10px; background: #f0f9ff; border-radius: 8px; font-family: monospace; font-size: 0.75rem; word-break: break-all;">
+                        <strong>最新区块哈希:</strong> ${info.latestBlockHash}
+                    </div>
+                `;
+            } catch (e) {
+                console.error('加载区块链信息失败', e);
+            }
+        }
+
+        async function verifyReceipt() {
+            const hash = document.getElementById('receiptHashInput').value.trim();
+            if (!hash) {
+                alert('请输入记录哈希');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/blockchain/verify-receipt/${hash}`);
+                const data = await response.json();
+                const valid = data.data;
+
+                const container = document.getElementById('receiptVerifyResult');
+                container.innerHTML = `
+                    <div class="alert ${valid ? 'alert-success' : 'alert-error'}">
+                        ${valid ? '✅ 收据有效！该记录已成功上链且未被篡改。' : '❌ 收据无效！该记录不存在或已被篡改。'}
+                    </div>
+                `;
+            } catch (e) {
+                console.error('验证收据失败', e);
+            }
+        }
+
+        const originalSwitchTab = switchTab;
+        switchTab = function(tabName) {
+            originalSwitchTab(tabName);
+            if (tabName === 'verify') {
+                loadVerificationOptions();
+            } else if (tabName === 'blockchain') {
+                loadBlockchainInfo();
+            }
+        };
+
+        loadVoteList();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL查询性能分析工具</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            min-height: 100vh;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header h1 { font-size: 22px; font-weight: 600; }
+        .header .subtitle { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+        .nav-tabs {
+            display: flex;
+            background: #fff;
+            border-bottom: 1px solid #e8e8e8;
+            padding: 0 30px;
+            overflow-x: auto;
+        }
+        .nav-tab {
+            padding: 14px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-size: 14px;
+            color: #666;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .nav-tab:hover { color: #1890ff; }
+        .nav-tab.active {
+            color: #1890ff;
+            border-bottom-color: #1890ff;
+            font-weight: 500;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .panel {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        .panel.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1a1a2e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title::before {
+            content: '';
+            width: 4px;
+            height: 18px;
+            background: #1890ff;
+            border-radius: 2px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: #1890ff;
+        }
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary {
+            background: #1890ff;
+            color: white;
+        }
+        .btn-primary:hover { background: #40a9ff; }
+        .btn-success {
+            background: #52c41a;
+            color: white;
+        }
+        .btn-success:hover { background: #73d13d; }
+        .btn-warning {
+            background: #faad14;
+            color: white;
+        }
+        .btn-warning:hover { background: #ffc53d; }
+        .btn-danger {
+            background: #f5222d;
+            color: white;
+        }
+        .btn-danger:hover { background: #ff4d4f; }
+        .btn-default {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .btn-default:hover { background: #e0e0e0; }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .sql-editor {
+            width: 100%;
+            min-height: 150px;
+            padding: 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            resize: vertical;
+            outline: none;
+            line-height: 1.6;
+        }
+        .sql-editor:focus { border-color: #1890ff; }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .badge-high { background: #fff1f0; color: #f5222d; }
+        .badge-medium { background: #fff7e6; color: #fa8c16; }
+        .badge-low { background: #e6f7ff; color: #1890ff; }
+        .badge-success { background: #f6ffed; color: #52c41a; }
+        .result-section {
+            margin-top: 20px;
+        }
+        .result-section h3 {
+            font-size: 15px;
+            color: #1a1a2e;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        table th, table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        table th {
+            background: #fafafa;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+        table tbody tr:hover { background: #fafafa; }
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin-top: 12px;
+        }
+        .tree-chart {
+            width: 100%;
+            height: 500px;
+        }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        .metric-card {
+            background: #fafafa;
+            border-radius: 6px;
+            padding: 16px;
+            border-left: 4px solid #1890ff;
+        }
+        .metric-card.warning { border-left-color: #faad14; }
+        .metric-card.danger { border-left-color: #f5222d; }
+        .metric-card.success { border-left-color: #52c41a; }
+        .metric-label { font-size: 12px; color: #999; }
+        .metric-value { font-size: 24px; font-weight: 600; color: #1a1a2e; margin-top: 4px; }
+        .metric-unit { font-size: 13px; color: #999; margin-left: 4px; }
+        .suggestion-item {
+            padding: 12px 16px;
+            border-left: 4px solid;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background: #fafafa;
+        }
+        .suggestion-item.high { border-left-color: #f5222d; background: #fff1f0; }
+        .suggestion-item.medium { border-left-color: #fa8c16; background: #fff7e6; }
+        .suggestion-item.low { border-left-color: #1890ff; background: #e6f7ff; }
+        .suggestion-title { font-weight: 600; margin-bottom: 4px; }
+        .suggestion-desc { font-size: 13px; color: #666; }
+        .suggestion-example {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        .tab-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .tab-btn {
+            padding: 6px 14px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .tab-btn.active {
+            background: #1890ff;
+            color: white;
+            border-color: #1890ff;
+        }
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f0f0f0;
+            border-top-color: #1890ff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .status-indicator.connected { background: #f6ffed; color: #52c41a; }
+        .status-indicator.disconnected { background: #fff1f0; color: #f5222d; }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        .tree-node-table {
+            font-size: 11px;
+        }
+        .tree-node-table td { padding: 2px 4px; }
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 1200px) {
+            .two-column { grid-template-columns: 1fr; }
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+        .rating-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+        .transform-card {
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+        .transform-card:hover {
+            border-color: #1890ff;
+            box-shadow: 0 2px 8px rgba(24,144,255,0.15);
+        }
+        .transform-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .transform-name { font-weight: 600; color: #1a1a2e; }
+        .transform-improvement { padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+        .improvement-high { background: #f6ffed; color: #52c41a; }
+        .improvement-medium { background: #fff7e6; color: #fa8c16; }
+        .improvement-low { background: #e6f7ff; color: #1890ff; }
+        .transform-content {
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 8px 0;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .transform-hint { font-size: 12px; color: #666; margin-top: 8px; }
+        .cost-breakdown { margin-top: 12px; }
+        .cost-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e8e8e8; }
+        .cost-factor { color: #666; }
+        .cost-penalty { color: #f5222d; font-weight: 500; }
+        .view-switch { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+        .view-switch label { font-size: 13px; color: #666; }
+        .granularity-buttons { display: inline-flex; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
+        .granularity-btn { padding: 6px 14px; border: none; background: transparent; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+        .granularity-btn.active { background: #1890ff; color: white; }
+        .tree-controls { display: flex; gap: 8px; margin-bottom: 12px; }
+        .tree-view-btn { padding: 6px 12px; border: 1px solid #d9d9d9; border-radius: 4px; background: #fff; cursor: pointer; font-size: 12px; }
+        .tree-view-btn.active { background: #1890ff; color: white; border-color: #1890ff; }
+        .group-legend { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+        .legend-color { width: 12px; height: 12px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>🔍 SQL查询性能分析工具</h1>
+            <div class="subtitle">Query Performance Analyzer - 慢查询捕获 · 执行计划分析 · 优化建议</div>
+        </div>
+        <div class="status-indicator disconnected" id="dbStatus">
+            <span class="status-dot"></span>
+            <span id="dbStatusText">未连接</span>
+        </div>
+    </div>
+
+    <div class="nav-tabs">
+        <div class="nav-tab active" data-tab="config">数据库配置</div>
+        <div class="nav-tab" data-tab="analyze">SQL分析</div>
+        <div class="nav-tab" data-tab="explain">执行计划</div>
+        <div class="nav-tab" data-tab="slow">慢查询监控</div>
+        <div class="nav-tab" data-tab="trends">趋势分析</div>
+        <div class="nav-tab" data-tab="cluster">SQL聚类</div>
+        <div class="nav-tab" data-tab="calibrate">代价校准</div>
+        <div class="nav-tab" data-tab="index">索引验证</div>
+        <div class="nav-tab" data-tab="database">数据库信息</div>
+    </div>
+
+    <div class="container">
+        <div class="panel active" id="panel-config">
+            <div class="card">
+                <div class="card-title">数据库连接配置</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>主机地址</label>
+                        <input type="text" id="dbHost" value="127.0.0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>端口</label>
+                        <input type="number" id="dbPort" value="3306">
+                    </div>
+                    <div class="form-group">
+                        <label>用户名</label>
+                        <input type="text" id="dbUser" value="root">
+                    </div>
+                    <div class="form-group">
+                        <label>密码</label>
+                        <input type="password" id="dbPassword" value="">
+                    </div>
+                    <div class="form-group">
+                        <label>数据库名</label>
+                        <input type="text" id="dbName" value="">
+                    </div>
+                </div>
+                <div style="margin-top: 16px;" class="btn-group">
+                    <button class="btn btn-primary" onclick="testConnection()">测试连接</button>
+                    <button class="btn btn-success" onclick="saveConfig()">保存并连接</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">慢查询日志配置</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>慢查询阈值（秒）</label>
+                        <input type="number" id="slowThreshold" value="1" step="0.1" min="0.1">
+                    </div>
+                </div>
+                <div style="margin-top: 16px;" class="btn-group">
+                    <button class="btn btn-success" onclick="enableSlowLog()">启用慢查询日志</button>
+                    <button class="btn btn-danger" onclick="disableSlowLog()">禁用慢查询日志</button>
+                    <button class="btn btn-default" onclick="getSlowLogStatus()">查看日志状态</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" id="panel-analyze">
+            <div class="card">
+                <div class="card-title">SQL语句分析</div>
+                <textarea class="sql-editor" id="sqlInput" placeholder="在此输入SQL语句进行分析...&#10;&#10;示例:&#10;SELECT * FROM users WHERE age > 18 ORDER BY created_at DESC"></textarea>
+                <div style="margin-top: 12px;" class="btn-group">
+                    <button class="btn btn-primary" onclick="analyzeSQL()">分析SQL</button>
+                    <button class="btn btn-default" onclick="formatSQL()">格式化</button>
+                    <button class="btn btn-default" onclick="validateSQL()">语法检查</button>
+                    <button class="btn btn-warning" onclick="optimizeSQL()">生成优化建议</button>
+                    <button class="btn btn-success" onclick="showTransforms()">等价变换</button>
+                    <button class="btn btn-default" onclick="rewriteSQL()">查询改写</button>
+                </div>
+            </div>
+            <div id="analysisResult"></div>
+        </div>
+
+        <div class="panel" id="panel-explain">
+            <div class="card">
+                <div class="card-title">执行计划分析</div>
+                <textarea class="sql-editor" id="explainSQLInput" placeholder="输入要分析的SQL语句..."></textarea>
+                <div style="margin-top: 12px;" class="btn-group">
+                    <button class="btn btn-primary" onclick="analyzeExplain()">生成执行计划</button>
+                </div>
+            </div>
+            <div id="explainResult"></div>
+        </div>
+
+        <div class="panel" id="panel-slow">
+            <div class="card">
+                <div class="card-title">慢查询捕获</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>开始时间</label>
+                        <input type="datetime-local" id="slowStartTime">
+                    </div>
+                    <div class="form-group">
+                        <label>结束时间</label>
+                        <input type="datetime-local" id="slowEndTime">
+                    </div>
+                    <div class="form-group">
+                        <label>最小查询时间（秒）</label>
+                        <input type="number" id="minQueryTime" value="1" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>返回条数</label>
+                        <input type="number" id="slowLimit" value="100">
+                    </div>
+                </div>
+                <div style="margin-top: 12px;" class="btn-group">
+                    <button class="btn btn-primary" onclick="captureSlowQueries()">捕获慢查询</button>
+                    <button class="btn btn-default" onclick="showSlowHistory()">查看历史记录</button>
+                    <button class="btn btn-default" onclick="showGroupedSlowQueries()">相似查询分组</button>
+                </div>
+            </div>
+            <div id="slowResult"></div>
+        </div>
+
+        <div class="panel" id="panel-trends">
+            <div class="card">
+                <div class="card-title">趋势分析</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>分析天数</label>
+                        <select id="trendDays">
+                            <option value="7">最近7天</option>
+                            <option value="14">最近14天</option>
+                            <option value="30">最近30天</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="view-switch">
+                    <label>时间粒度:</label>
+                    <div class="granularity-buttons">
+                        <button class="granularity-btn active" data-granularity="hour" onclick="switchGranularity('hour')">小时</button>
+                        <button class="granularity-btn" data-granularity="day" onclick="switchGranularity('day')">日</button>
+                        <button class="granularity-btn" data-granularity="week" onclick="switchGranularity('week')">周</button>
+                    </div>
+                </div>
+                <div style="margin-top: 12px;" class="btn-group">
+                    <button class="btn btn-primary" onclick="loadTrends()">加载趋势数据</button>
+                </div>
+            </div>
+            <div id="trendsResult"></div>
+        </div>
+
+        <div class="panel" id="panel-cluster">
+            <div class="card">
+                <div class="card-title">SQL指纹聚类分析</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>聚类方法</label>
+                        <select id="clusterMethod">
+                            <option value="fingerprint">指纹聚类</option>
+                            <option value="advanced">高级聚类(TF-IDF)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>相似度阈值</label>
+                        <input type="number" id="clusterThreshold" value="0.85" step="0.05" min="0" max="1">
+                    </div>
+                </div>
+                <div style="margin-top: 12px;" class="btn-group">
+                    <button class="btn btn-primary" onclick="clusterFromHistory()">从历史记录聚类</button>
+                    <button class="btn btn-default" onclick="showClusterPatterns()">提取查询模式</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">SQL指纹生成</div>
+                <textarea class="sql-editor" id="fingerprintInput" placeholder="输入SQL生成指纹..."></textarea>
+                <div style="margin-top: 12px;" class="btn-group">
+                    <button class="btn btn-primary" onclick="generateFingerprint()">生成指纹</button>
+                </div>
+                <div id="fingerprintResult"></div>
+            </div>
+            <div id="clusterResult"></div>
+        </div>
+
+        <div class="panel" id="panel-calibrate">
+            <div class="card">
+                <div class="card-title">代价模型校准</div>
+                <div style="margin-bottom: 12px;" class="btn-group">
+                    <button class="btn btn-primary" onclick="loadCalibrationAccuracy()">查看校准精度</button>
+                    <button class="btn btn-success" onclick="runCalibration()">执行校准</button>
+                    <button class="btn btn-danger" onclick="resetCalibration()">重置校准</button>
+                </div>
+                <div id="calibrationAccuracy"></div>
+            </div>
+            <div class="card">
+                <div class="card-title">预估偏差对比</div>
+                <textarea class="sql-editor" id="calibrationSqlInput" placeholder="每行一条SQL，用于对比预估与实际耗时..."></textarea>
+                <div style="margin-top: 12px;" class="btn-group">
+                    <button class="btn btn-primary" onclick="compareEstimates()">对比预估与实际</button>
+                </div>
+                <div id="comparisonResult"></div>
+            </div>
+        </div>
+
+        <div class="panel" id="panel-index">
+            <div class="card">
+                <div class="card-title">自动索引验证</div>
+                <textarea class="sql-editor" id="indexValidateInput" placeholder="输入SQL用于索引建议和验证..."></textarea>
+                <div class="form-grid" style="margin-top: 12px;">
+                    <div class="form-group">
+                        <label>表名</label>
+                        <input type="text" id="indexTableName" placeholder="例如: users">
+                    </div>
+                    <div class="form-group">
+                        <label>自动清理</label>
+                        <select id="autoCleanup">
+                            <option value="true">是</option>
+                            <option value="false">否</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-top: 12px;" class="btn-group">
+                    <button class="btn btn-primary" onclick="suggestIndexes()">建议索引</button>
+                    <button class="btn btn-success" onclick="autoValidateIndexes()">自动验证所有</button>
+                    <button class="btn btn-default" onclick="loadExistingIndexes()">查看现有索引</button>
+                </div>
+            </div>
+            <div id="indexResult"></div>
+        </div>
+
+        <div class="panel" id="panel-database">
+            <div class="card">
+                <div class="card-title">数据库信息</div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="loadDatabaseInfo()">刷新数据库信息</button>
+                    <button class="btn btn-default" onclick="showProcesslist()">查看进程列表</button>
+                </div>
+            </div>
+            <div id="databaseResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let charts = {};
+        let currentGranularity = 'day';
+        let currentTreeView = 'force';
+
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById('panel-' + tabId).classList.add('active');
+            });
+        });
+
+        async function apiCall(url, method = 'GET', data = null) {
+            const options = { method, headers: { 'Content-Type': 'application/json' } };
+            if (data) options.body = JSON.stringify(data);
+            try {
+                const response = await fetch(url, options);
+                return await response.json();
+            } catch (e) {
+                return { success: false, error: e.message };
+            }
+        }
+
+        async function testConnection() {
+            const config = {
+                host: document.getElementById('dbHost').value,
+                port: parseInt(document.getElementById('dbPort').value),
+                user: document.getElementById('dbUser').value,
+                password: document.getElementById('dbPassword').value,
+                database: document.getElementById('dbName').value
+            };
+            const result = await apiCall('/api/test_connection', 'POST', config);
+            alert(result.message);
+            if (result.success) updateDbStatus(true);
+        }
+
+        async function saveConfig() {
+            const config = {
+                host: document.getElementById('dbHost').value,
+                port: parseInt(document.getElementById('dbPort').value),
+                user: document.getElementById('dbUser').value,
+                password: document.getElementById('dbPassword').value,
+                database: document.getElementById('dbName').value
+            };
+            const result = await apiCall('/api/config', 'POST', config);
+            alert(result.message);
+            if (result.success) updateDbStatus(true);
+        }
+
+        async function enableSlowLog() {
+            const threshold = parseFloat(document.getElementById('slowThreshold').value);
+            const result = await apiCall('/api/slow_log/enable', 'POST', { long_query_time: threshold });
+            alert(JSON.stringify(result));
+        }
+
+        async function disableSlowLog() {
+            const result = await apiCall('/api/slow_log/disable', 'POST');
+            alert(JSON.stringify(result));
+        }
+
+        async function getSlowLogStatus() {
+            const result = await apiCall('/api/slow_log/status', 'GET');
+            if (result.success && result.data) {
+                alert(result.data.map(r => `${r.Variable_name}: ${r.Value}`).join('\n'));
+            }
+        }
+
+        function updateDbStatus(connected) {
+            const el = document.getElementById('dbStatus');
+            const textEl = document.getElementById('dbStatusText');
+            el.className = 'status-indicator ' + (connected ? 'connected' : 'disconnected');
+            textEl.textContent = connected ? '已连接' : '未连接';
+        }
+
+        async function analyzeSQL() {
+            const sql = document.getElementById('sqlInput').value.trim();
+            if (!sql) { alert('请输入SQL语句'); return; }
+            const result = await apiCall('/api/analyze', 'POST', { sql });
+            renderAnalysisResult(result);
+        }
+
+        async function formatSQL() {
+            const sql = document.getElementById('sqlInput').value.trim();
+            if (!sql) { alert('请输入SQL语句'); return; }
+            const result = await apiCall('/api/format_sql', 'POST', { sql });
+            if (result.success) document.getElementById('sqlInput').value = result.formatted;
+        }
+
+        async function validateSQL() {
+            const sql = document.getElementById('sqlInput').value.trim();
+            if (!sql) { alert('请输入SQL语句'); return; }
+            const result = await apiCall('/api/validate_sql', 'POST', { sql });
+            alert(result.valid ? `✅ ${result.message}` : `❌ ${result.message}`);
+        }
+
+        async function optimizeSQL() {
+            const sql = document.getElementById('sqlInput').value.trim();
+            if (!sql) { alert('请输入SQL语句'); return; }
+            const result = await apiCall('/api/optimize', 'POST', { sql });
+            renderOptimizationResult(result);
+        }
+
+        async function rewriteSQL() {
+            const sql = document.getElementById('sqlInput').value.trim();
+            if (!sql) { alert('请输入SQL语句'); return; }
+            const result = await apiCall('/api/rewrite', 'POST', { sql });
+            renderRewriteResult(result);
+        }
+
+        async function showTransforms() {
+            const sql = document.getElementById('sqlInput').value.trim();
+            if (!sql) { alert('请输入SQL语句'); return; }
+            const result = await apiCall('/api/transforms', 'POST', { sql });
+            renderTransformsResult(result);
+        }
+
+        function renderAnalysisResult(data) {
+            const container = document.getElementById('analysisResult');
+            if (!data.success) {
+                container.innerHTML = `<div class="card"><div class="empty-state">❌ ${data.error || '分析失败'}</div></div>`;
+                return;
+            }
+
+            const sqlAnalysis = data.sql_analysis || {};
+            const optimization = data.optimization || {};
+
+            let html = '<div class="card"><div class="card-title">SQL解析结果</div>';
+            html += '<div class="metric-grid">';
+            html += `<div class="metric-card"><div class="metric-label">查询类型</div><div class="metric-value">${sqlAnalysis.query_type || 'N/A'}</div></div>`;
+            html += `<div class="metric-card"><div class="metric-label">涉及表</div><div class="metric-value">${(sqlAnalysis.tables || []).length}</div></div>`;
+            html += `<div class="metric-card"><div class="metric-label">WHERE条件</div><div class="metric-value">${(sqlAnalysis.where_conditions || []).length}</div></div>`;
+            html += `<div class="metric-card ${sqlAnalysis.has_subquery ? 'warning' : ''}"><div class="metric-label">子查询</div><div class="metric-value">${sqlAnalysis.has_subquery ? '有' : '无'}</div></div>`;
+            html += `<div class="metric-card ${sqlAnalysis.has_union ? 'warning' : ''}"><div class="metric-label">UNION</div><div class="metric-value">${sqlAnalysis.has_union ? '有' : '无'}</div></div>`;
+            html += `<div class="metric-card ${sqlAnalysis.uses_select_star ? 'danger' : ''}"><div class="metric-label">SELECT *</div><div class="metric-value">${sqlAnalysis.uses_select_star ? '是' : '否'}</div></div>`;
+            html += '</div>';
+
+            if (sqlAnalysis.tables && sqlAnalysis.tables.length) {
+                html += '<div style="margin-top:12px"><strong>涉及表：</strong>' + sqlAnalysis.tables.join(', ') + '</div>';
+            }
+
+            if (sqlAnalysis.where_conditions && sqlAnalysis.where_conditions.length) {
+                html += '<div style="margin-top:12px"><strong>WHERE条件：</strong><ul style="margin-top:8px">';
+                sqlAnalysis.where_conditions.forEach(c => {
+                    html += `<li>${c.full}</li>`;
+                });
+                html += '</ul></div>';
+            }
+
+            html += '</div>';
+
+            if (optimization.suggestions && optimization.suggestions.length) {
+                html += '<div class="card"><div class="card-title">优化建议</div>';
+                optimization.suggestions.forEach(s => {
+                    html += `<div class="suggestion-item ${s.priority}">`;
+                    html += `<div class="suggestion-title"><span class="badge badge-${s.priority}">${s.priority.toUpperCase()}</span> ${s.message}</div>`;
+                    html += `<div class="suggestion-desc">${s.suggestion}</div>`;
+                    if (s.example) html += `<div class="suggestion-example">${s.example}</div>`;
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
+
+            if (optimization.index_suggestions && optimization.index_suggestions.length) {
+                html += '<div class="card"><div class="card-title">索引建议</div>';
+                html += '<table><thead><tr><th>表</th><th>建议索引列</th><th>类型</th><th>原因</th></tr></thead><tbody>';
+                optimization.index_suggestions.forEach(idx => {
+                    html += `<tr><td>${idx.table}</td><td>${idx.columns.join(', ')}</td><td>${idx.index_type}</td><td>${idx.reason}</td></tr>`;
+                });
+                html += '</tbody></table></div>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        function renderOptimizationResult(data) {
+            const container = document.getElementById('analysisResult');
+            if (!data.success) {
+                container.innerHTML = `<div class="card"><div class="empty-state">❌ ${data.error || '分析失败'}</div></div>`;
+                return;
+            }
+
+            const opt = data.optimization || {};
+            let html = '';
+
+            if (opt.summary) {
+                html += '<div class="card"><div class="card-title">优化概览</div>';
+                html += '<div class="metric-grid">';
+                html += `<div class="metric-card"><div class="metric-label">总建议数</div><div class="metric-value">${opt.summary.total_suggestions}</div></div>`;
+                html += `<div class="metric-card danger"><div class="metric-label">高优先级</div><div class="metric-value">${opt.summary.high_priority}</div></div>`;
+                html += `<div class="metric-card warning"><div class="metric-label">中优先级</div><div class="metric-value">${opt.summary.medium_priority}</div></div>`;
+                html += `<div class="metric-card"><div class="metric-label">低优先级</div><div class="metric-value">${opt.summary.low_priority}</div></div>`;
+                html += `<div class="metric-card success"><div class="metric-label">索引建议</div><div class="metric-value">${opt.summary.index_suggestions_count}</div></div>`;
+                html += '</div></div>';
+            }
+
+            if (opt.suggestions && opt.suggestions.length) {
+                html += '<div class="card"><div class="card-title">查询改写建议</div>';
+                opt.suggestions.forEach(s => {
+                    html += `<div class="suggestion-item ${s.priority}">`;
+                    html += `<div class="suggestion-title"><span class="badge badge-${s.priority}">${s.priority.toUpperCase()}</span> ${s.message}</div>`;
+                    html += `<div class="suggestion-desc">${s.suggestion}</div>`;
+                    if (s.example) html += `<div class="suggestion-example">示例: ${s.example}</div>`;
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
+
+            if (opt.index_suggestions && opt.index_suggestions.length) {
+                html += '<div class="card"><div class="card-title">索引建议</div>';
+                html += '<table><thead><tr><th>表</th><th>建议索引列</th><th>类型</th><th>原因</th></tr></thead><tbody>';
+                opt.index_suggestions.forEach(idx => {
+                    html += `<tr><td><strong>${idx.table}</strong></td><td><code>${idx.columns.join(', ')}</code></td><td>${idx.index_type}</td><td>${idx.reason}</td></tr>`;
+                });
+                html += '</tbody></table></div>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        function renderTransformsResult(data) {
+            const container = document.getElementById('analysisResult');
+            if (!data.success) {
+                container.innerHTML = `<div class="card"><div class="empty-state">❌ ${data.error || '分析失败'}</div></div>`;
+                return;
+            }
+
+            const transforms = data.transforms || [];
+            const costEstimate = data.cost_estimate || {};
+
+            let html = '';
+
+            if (costEstimate.base_cost) {
+                html += '<div class="card"><div class="card-title">当前查询代价评估</div>';
+                html += '<div class="metric-grid">';
+                html += `<div class="metric-card"><div class="metric-label">基础代价</div><div class="metric-value">${costEstimate.base_cost}</div></div>`;
+                if (costEstimate.rating) {
+                    const rating = costEstimate.rating;
+                    html += `<div class="metric-card" style="border-left-color:${rating.color || '#1890ff'}"><div class="metric-label">综合评级</div><div class="metric-value">${rating.grade || rating} <span style="font-size:14px">${rating.label || ''}</span></div></div>`;
+                }
+                if (costEstimate.estimated_rows) {
+                    html += `<div class="metric-card"><div class="metric-label">预估行数</div><div class="metric-value">${costEstimate.estimated_rows.toLocaleString()}</div></div>`;
+                }
+                html += '</div>';
+
+                if (costEstimate.cost_factors && costEstimate.cost_factors.length) {
+                    html += '<div class="cost-breakdown"><strong>代价分解：</strong>';
+                    costEstimate.cost_factors.forEach(f => {
+                        html += `<div class="cost-item"><span class="cost-factor">${f.factor}</span><span class="cost-penalty">+${f.penalty}</span></div>`;
+                    });
+                    html += '</div>';
+                }
+                html += '</div>';
+            }
+
+            if (transforms.length === 0) {
+                html += '<div class="card"><div class="empty-state">未找到可用的等价变换</div></div>';
+            } else {
+                html += '<div class="card"><div class="card-title">等价变换选项</div>';
+                transforms.forEach(t => {
+                    const imp = t.estimated_improvement || 'low';
+                    html += '<div class="transform-card">';
+                    html += '<div class="transform-header">';
+                    html += `<span class="transform-name">${t.name}</span>`;
+                    html += `<span class="transform-improvement improvement-${imp}">预估提升: ${imp === 'high' ? '高' : imp === 'medium' ? '中' : '低'}</span>`;
+                    html += '</div>';
+                    if (t.reason) html += `<div style="font-size:13px;color:#666;margin-bottom:8px">${t.reason}</div>`;
+                    if (t.transformed) {
+                        html += '<div style="margin:8px 0"><strong>变换后SQL:</strong></div>';
+                        html += `<div class="transform-content">${t.transformed}</div>`;
+                    }
+                    if (t.hint) {
+                        html += `<div class="transform-hint">💡 ${t.hint}</div>`;
+                    }
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        function renderRewriteResult(data) {
+            const container = document.getElementById('analysisResult');
+            if (!data.success) {
+                container.innerHTML = `<div class="card"><div class="empty-state">❌ ${data.error || '分析失败'}</div></div>`;
+                return;
+            }
+
+            const rewrite = data.rewrite || {};
+            let html = '<div class="card"><div class="card-title">查询改写</div>';
+
+            if (rewrite.has_changes) {
+                html += '<div style="color:#52c41a;margin-bottom:12px">✅ 已自动进行改写</div>';
+            } else {
+                html += '<div style="color:#666;margin-bottom:12px">未发现需要自动改写的内容</div>';
+            }
+
+            if (rewrite.actions && rewrite.actions.length) {
+                html += '<div><strong>改写操作：</strong><ul>';
+                rewrite.actions.forEach(a => {
+                    html += `<li>[${a.action}] ${a.detail}</li>`;
+                });
+                html += '</ul></div>';
+            }
+
+            html += '<div style="margin-top:16px"><strong>改写后SQL：</strong></div>';
+            html += `<div class="suggestion-example" style="margin-top:8px">${rewrite.rewritten || ''}</div>`;
+            html += '</div>';
+
+            container.innerHTML = html;
+        }
+
+        async function analyzeExplain() {
+            const sql = document.getElementById('explainSQLInput').value.trim();
+            if (!sql) { alert('请输入SQL语句'); return; }
+            const result = await apiCall('/api/explain', 'POST', { sql });
+            renderExplainResult(result);
+        }
+
+        function renderExplainResult(data) {
+            const container = document.getElementById('explainResult');
+            if (!data.success) {
+                container.innerHTML = `<div class="card"><div class="empty-state">❌ ${data.error || '分析失败'}</div></div>`;
+                return;
+            }
+
+            const analysis = data.analysis || {};
+            const explainData = data.explain_data || [];
+
+            let html = '';
+
+            if (analysis.cost_estimate) {
+                html += '<div class="card"><div class="card-title">执行代价评估</div>';
+                html += '<div class="metric-grid">';
+                const rating = analysis.cost_estimate.rating || {};
+                html += `<div class="metric-card" style="border-left-color:${rating.color}"><div class="metric-label">综合评级</div><div class="metric-value">${rating.grade} <span style="font-size:14px">${rating.label}</span></div></div>`;
+                html += `<div class="metric-card"><div class="metric-label">总代价</div><div class="metric-value">${Math.round(analysis.cost_estimate.total_cost)}</div></div>`;
+                html += `<div class="metric-card"><div class="metric-label">预计扫描行数</div><div class="metric-value">${analysis.total_rows_examined.toLocaleString()}</div></div>`;
+                html += '</div></div>';
+            }
+
+            html += '<div class="card"><div class="card-title">关键指标检测</div>';
+            html += '<div class="metric-grid">';
+            html += `<div class="metric-card ${analysis.has_full_table_scan ? 'danger' : 'success'}"><div class="metric-label">全表扫描</div><div class="metric-value">${analysis.has_full_table_scan ? '❌ 存在' : '✅ 无'}</div></div>`;
+            html += `<div class="metric-card ${analysis.has_temporary ? 'danger' : 'success'}"><div class="metric-label">临时表</div><div class="metric-value">${analysis.has_temporary ? '❌ Using temporary' : '✅ 无'}</div></div>`;
+            html += `<div class="metric-card ${analysis.has_filesort ? 'warning' : 'success'}"><div class="metric-label">文件排序</div><div class="metric-value">${analysis.has_filesort ? '⚠️ Using filesort' : '✅ 无'}</div></div>`;
+            html += `<div class="metric-card ${analysis.has_index_merge ? 'warning' : ''}"><div class="metric-label">索引合并</div><div class="metric-value">${analysis.has_index_merge ? '⚠️ Index Merge' : '无'}</div></div>`;
+            html += '</div></div>';
+
+            if (analysis.warnings && analysis.warnings.length) {
+                html += '<div class="card"><div class="card-title">⚠️ 警告信息</div>';
+                analysis.warnings.forEach(w => {
+                    html += `<div class="suggestion-item ${w.level}">`;
+                    html += `<div class="suggestion-title"><span class="badge badge-${w.level}">${w.level.toUpperCase()}</span> ${w.message}</div>`;
+                    html += `<div class="suggestion-desc">建议: ${w.suggestion}</div>`;
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
+
+            html += '<div class="card"><div class="card-title">执行计划详情</div>';
+            html += '<table><thead><tr><th>表</th><th>类型</th><th>可能索引</th><th>实际索引</th><th>行数</th><th>Extra</th></tr></thead><tbody>';
+            explainData.forEach(row => {
+                const typeClass = {'ALL':'color:#f5222d','index':'color:#fa8c16','range':'color:#1890ff','ref':'color:#52c41a','eq_ref':'color:#52c41a','const':'color:#52c41a','system':'color:#52c41a'}[row.type] || '';
+                html += `<tr><td><strong>${row.table}</strong></td><td style="${typeClass}">${row.type}</td><td>${row.possible_keys || '-'}</td><td>${row.key || '-'}</td><td>${(row.rows||0).toLocaleString()}</td><td>${row.Extra || '-'}</td></tr>`;
+            });
+            html += '</tbody></table></div>';
+
+            html += '<div class="card"><div class="card-title">执行计划可视化</div>';
+            html += '<div class="tree-controls">';
+            html += '<button class="tree-view-btn active" data-view="force" onclick="switchTreeView(\'force\')">力导向图</button>';
+            html += '<button class="tree-view-btn" data-view="tree" onclick="switchTreeView(\'tree\')">树形图</button>';
+            html += '<button class="tree-view-btn" data-view="grouped" onclick="switchTreeView(\'grouped\')">分组视图</button>';
+            html += '</div>';
+
+            html += '<div class="group-legend">';
+            html += '<div class="legend-item"><div class="legend-color" style="background:#52c41a"></div>最优访问</div>';
+            html += '<div class="legend-item"><div class="legend-color" style="background:#1890ff"></div>索引使用</div>';
+            html += '<div class="legend-item"><div class="legend-color" style="background:#faad14"></div>索引扫描</div>';
+            html += '<div class="legend-item"><div class="legend-color" style="background:#f5222d"></div>全表扫描/临时表</div>';
+            html += '</div>';
+
+            html += '<div id="explainTreeChart" class="tree-chart"></div>';
+            html += '</div>';
+
+            container.innerHTML = html;
+
+            if (analysis.tree_data && analysis.tree_data.nodes && analysis.tree_data.nodes.length) {
+                window._lastTreeData = analysis.tree_data;
+                renderExplainTreeChart(analysis.tree_data, 'force');
+            }
+        }
+
+        function switchTreeView(view) {
+            currentTreeView = view;
+            document.querySelectorAll('.tree-view-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-view') === view) btn.classList.add('active');
+            });
+            const chartData = window._lastTreeData;
+            if (chartData) renderExplainTreeChart(chartData, view);
+        }
+
+        function renderExplainTreeChart(treeData, view) {
+            const chartDom = document.getElementById('explainTreeChart');
+            if (!chartDom) return;
+            if (charts.explainTree) charts.explainTree.dispose();
+            charts.explainTree = echarts.init(chartDom);
+
+            if (view === 'force') {
+                renderForceView(treeData);
+            } else if (view === 'tree') {
+                renderTreeView(treeData);
+            } else if (view === 'grouped') {
+                renderGroupedView(treeData);
+            }
+
+            window.addEventListener('resize', () => charts.explainTree && charts.explainTree.resize());
+        }
+
+        function renderForceView(treeData) {
+            const nodes = treeData.nodes || [];
+            const links = treeData.links || [];
+            const groups = treeData.groups || [];
+
+            const categories = groups.length ? groups.map(g => ({ name: g.name })) : [{ name: '默认' }];
+
+            const graphNodes = nodes.map(n => {
+                const categoryIndex = groups.findIndex(g => g.id === n.group);
+                return {
+                    id: n.id,
+                    name: n.name,
+                    value: n.rows,
+                    category: categoryIndex >= 0 ? categoryIndex : 0,
+                    symbolSize: n.symbolSize || Math.min(Math.max(Math.sqrt(n.rows || 1) * 3, 30), 80),
+                    itemStyle: n.itemStyle,
+                    label: {
+                        formatter: `${n.name}\n${n.access_type || ''} | ${(n.rows || 0).toLocaleString()}行`,
+                        fontSize: 11
+                    }
+                };
+            });
+
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function(params) {
+                        if (params.dataType === 'edge') return '';
+                        const d = params.data;
+                        return `${d.name}<br/>访问类型: ${d.access_type || 'N/A'}<br/>行数: ${d.value}<br/>索引: ${d.key || '无'}`;
+                    }
+                },
+                legend: [{
+                    data: categories.map(c => c.name),
+                    top: 10
+                }],
+                series: [{
+                    type: 'graph',
+                    layout: 'force',
+                    data: graphNodes,
+                    links: links,
+                    categories: categories,
+                    roam: true,
+                    draggable: true,
+                    force: {
+                        repulsion: 400,
+                        edgeLength: [100, 200],
+                        gravity: 0.1,
+                        friction: 0.6
+                    },
+                    label: {
+                        show: true,
+                        position: 'bottom',
+                        fontSize: 11
+                    },
+                    lineStyle: {
+                        color: '#999',
+                        width: 2,
+                        curveness: 0.1
+                    },
+                    emphasis: {
+                        focus: 'adjacency',
+                        lineStyle: { width: 4 }
+                    }
+                }]
+            };
+
+            charts.explainTree.setOption(option);
+        }
+
+        function renderTreeView(treeData) {
+            const nodes = treeData.nodes || [];
+            if (!nodes.length) return;
+
+            const root = {
+                name: nodes[0].name,
+                value: nodes[0].rows,
+                itemStyle: nodes[0].itemStyle,
+                children: []
+            };
+
+            let current = root;
+            for (let i = 1; i < nodes.length; i++) {
+                const n = nodes[i];
+                const child = {
+                    name: `${n.name} (${n.access_type || ''}, ${(n.rows || 0).toLocaleString()}行)`,
+                    value: n.rows,
+                    itemStyle: n.itemStyle,
+                    children: []
+                };
+                current.children.push(child);
+                current = child;
+            }
+
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}<br/>扫描行数: {c}'
+                },
+                series: [{
+                    type: 'tree',
+                    data: [root],
+                    top: '5%',
+                    left: '10%',
+                    bottom: '5%',
+                    right: '20%',
+                    symbolSize: 15,
+                    orient: 'LR',
+                    label: {
+                        position: 'left',
+                        verticalAlign: 'middle',
+                        align: 'right',
+                        fontSize: 11
+                    },
+                    leaves: {
+                        label: {
+                            position: 'right',
+                            verticalAlign: 'middle',
+                            align: 'left'
+                        }
+                    },
+                    expandAndCollapse: true,
+                    initialTreeDepth: 3,
+                    animationDuration: 550,
+                    animationDurationUpdate: 750
+                }]
+            };
+
+            charts.explainTree.setOption(option);
+        }
+
+        function renderGroupedView(treeData) {
+            const groups = treeData.groups || [];
+            if (!groups.length) return;
+
+            const pieData = groups.map(g => ({
+                name: g.name,
+                value: g.count,
+                members: g.members || []
+            }));
+
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function(params) {
+                        const members = params.data.members || [];
+                        const memberList = members.map(m => m.table || m).join('<br/>');
+                        return `<b>${params.name}</b><br/>数量: ${params.value}<br/>成员:<br/>${memberList}`;
+                    }
+                },
+                series: [{
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    data: pieData,
+                    label: {
+                        show: true,
+                        formatter: '{b}\n{c}个'
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            };
+
+            charts.explainTree.setOption(option);
+        }
+
+        async function captureSlowQueries() {
+            const config = {
+                start_time: document.getElementById('slowStartTime').value || null,
+                end_time: document.getElementById('slowEndTime').value || null,
+                min_query_time: parseFloat(document.getElementById('minQueryTime').value) || 1,
+                limit: parseInt(document.getElementById('slowLimit').value) || 100
+            };
+            const result = await apiCall('/api/slow_queries/capture', 'POST', config);
+            renderSlowResult(result);
+        }
+
+        async function showSlowHistory() {
+            const result = await apiCall('/api/slow_queries/history', 'GET');
+            const container = document.getElementById('slowResult');
+            if (!result.success) {
+                container.innerHTML = `<div class="card"><div class="empty-state">❌ ${result.error || '获取失败'}</div></div>`;
+                return;
+            }
+            let html = '';
+            if (result.stats) {
+                html += '<div class="card"><div class="card-title">历史统计</div>';
+                html += '<div class="metric-grid">';
+                html += `<div class="metric-card"><div class="metric-label">总捕获数</div><div class="metric-value">${result.stats.total_captured}</div></div>`;
+                html += `<div class="metric-card"><div class="metric-label">平均耗时</div><div class="metric-value">${result.stats.avg_query_time.toFixed(4)}<span class="metric-unit">秒</span></div></div>`;
+                html += `<div class="metric-card"><div class="metric-label">涉及表</div><div class="metric-value">${(result.stats.unique_tables || []).length}</div></div>`;
+                html += '</div></div>';
+            }
+            container.innerHTML = html;
+        }
+
+        async function showGroupedSlowQueries() {
+            const result = await apiCall('/api/slow_queries/grouped', 'GET');
+            const container = document.getElementById('slowResult');
+            if (!result.success) {
+                container.innerHTML = `<div class="card"><div class="empty-state">❌ ${result.error || '获取失败'}</div></div>`;
+                return;
+            }
+            let html = '<div class="card"><div class="card-title">相似查询分组</div>';
+            if (result.grouped && result.grouped.length) {
+                html += '<table><thead><tr><th>指纹</th><th>次数</th><th>平均耗时(秒)</th><th>总耗时(秒)</th></tr></thead><tbody>';
+                result.grouped.forEach(g => {
+                    html += `<tr><td style="max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${g.fingerprint}">${g.fingerprint}</td><td>${g.count}</td><td>${g.avg_time.toFixed(4)}</td><td>${g.total_time.toFixed(4)}</td></tr>`;
+                });
+                html += '</tbody></table>';
+            } else {
+                html += '<div class="empty-state">暂无数据</div>';
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderSlowResult(data) {
+            const container = document.getElementById('slowResult');
+            if (!data.success) {
+                container.innerHTML = `<div class="card"><div class="empty-state">❌ ${data.error || '捕获失败'}</div></div>`;
+                return;
+            }
+
+            const queries = data.queries || [];
+            let html = '<div class="card"><div class="card-title">捕获结果</div>';
+            html += `<div style="margin-bottom:12px">共捕获 <strong>${data.count}</strong> 条慢查询</div>`;
+
+            if (queries.length) {
+                html += '<div style="max-height:400px;overflow-y:auto"><table><thead><tr><th>时间</th><th>SQL语句</th><th>耗时(秒)</th><th>扫描行数</th></tr></thead><tbody>';
+                queries.slice(0, 50).forEach(q => {
+                    const queryText = q.sql_text || q.argument || '';
+                    html += `<tr><td style="font-size:12px">${q.start_time || '-'}</td><td style="max-width:500px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${queryText}">${queryText.substring(0, 100)}${queryText.length > 100 ? '...' : ''}</td><td>${q.query_time || '-'}</td><td>${q.rows_examined || '-'}</td></tr>`;
+                });
+                html += '</tbody></table></div>';
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function switchGranularity(granularity) {
+            currentGranularity = granularity;
+            document.querySelectorAll('.granularity-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-granularity') === granularity) btn.classList.add('active');
+            });
+        }
+
+        async function loadTrends() {
+            const days = parseInt(document.getElementById('trendDays').value);
+            const result = await apiCall(`/api/trends/chart_data?days=${days}&granularity=${currentGranularity}`, 'GET');
+            renderTrendsResult(result);
+        }
+
+        function renderTrendsResult(data) {
+            const container = document.getElementById('trendsResult');
+            if (!data.success) {
+                container.innerHTML = `<div class="card"><div class="empty-state">❌ ${data.error || '加载失败'}</div></div>`;
+                return;
+            }
+
+            let html = '';
+            const granularityLabel = data.granularity_label || '日';
+
+            if (data.performance_summary) {
+                html += `<div class="card"><div class="card-title">性能概览 (${granularityLabel}粒度)</div>`;
+                html += '<div class="metric-grid">';
+                const p = data.performance_summary;
+                html += `<div class="metric-card"><div class="metric-label">总查询数</div><div class="metric-value">${p.total_count.toLocaleString()}</div></div>`;
+                html += `<div class="metric-card"><div class="metric-label">总耗时</div><div class="metric-value">${p.total_time.toFixed(2)}<span class="metric-unit">秒</span></div></div>`;
+                html += `<div class="metric-card"><div class="metric-label">平均耗时</div><div class="metric-value">${p.avg_time.toFixed(4)}<span class="metric-unit">秒</span></div></div>`;
+                html += `<div class="metric-card warning"><div class="metric-label">P95耗时</div><div class="metric-value">${p.p95_time.toFixed(4)}<span class="metric-unit">秒</span></div></div>`;
+                html += `<div class="metric-card danger"><div class="metric-label">P99耗时</div><div class="metric-value">${p.p99_time.toFixed(4)}<span class="metric-unit">秒</span></div></div>`;
+                html += `<div class="metric-card"><div class="metric-label">中位数</div><div class="metric-value">${p.median_time.toFixed(4)}<span class="metric-unit">秒</span></div></div>`;
+                html += '</div></div>';
+            }
+
+            if (data.time_trend) {
+                html += `<div class="card"><div class="card-title">${granularityLabel}趋势</div>`;
+                html += '<div id="timeTrendChart" class="chart-container"></div></div>';
+            } else if (data.daily_trend) {
+                html += '<div class="card"><div class="card-title">每日趋势</div>';
+                html += '<div id="timeTrendChart" class="chart-container"></div></div>';
+                data.time_trend = { periods: data.daily_trend.dates, counts: data.daily_trend.counts, avg_times: data.daily_trend.avg_times, max_times: data.daily_trend.max_times };
+            }
+
+            if (data.table_stats) {
+                html += '<div class="card"><div class="card-title">表级统计</div>';
+                html += '<div id="tableStatsChart" class="chart-container"></div></div>';
+            }
+
+            if (data.query_type_stats) {
+                html += '<div class="card"><div class="card-title">查询类型分布</div>';
+                html += '<div id="queryTypeChart" class="chart-container"></div></div>';
+            }
+
+            if (data.anomalies && data.anomalies.length) {
+                html += '<div class="card"><div class="card-title">⚠️ 异常检测</div>';
+                data.anomalies.forEach(a => {
+                    html += `<div class="suggestion-item ${a.severity}"><div class="suggestion-title">${a.period || a.date} - ${a.message}</div></div>`;
+                });
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
+
+            if (data.time_trend) renderTimeTrendChart(data.time_trend);
+            if (data.table_stats) renderTableStatsChart(data.table_stats);
+            if (data.query_type_stats) renderQueryTypeChart(data.query_type_stats);
+        }
+
+        function renderTimeTrendChart(trend) {
+            const dom = document.getElementById('timeTrendChart');
+            if (!dom) return;
+            if (charts.time) charts.time.dispose();
+            charts.time = echarts.init(dom);
+            charts.time.setOption({
+                tooltip: { trigger: 'axis' },
+                legend: { data: ['查询数量', '平均耗时', '最大耗时'] },
+                grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                xAxis: { type: 'category', data: trend.periods || trend.dates, boundaryGap: false },
+                yAxis: [
+                    { type: 'value', name: '数量', position: 'left' },
+                    { type: 'value', name: '耗时(秒)', position: 'right', splitLine: { show: false } }
+                ],
+                series: [
+                    { name: '查询数量', type: 'bar', data: trend.counts, itemStyle: { color: '#1890ff' } },
+                    { name: '平均耗时', type: 'line', yAxisIndex: 1, data: trend.avg_times, itemStyle: { color: '#faad14' } },
+                    { name: '最大耗时', type: 'line', yAxisIndex: 1, data: trend.max_times, itemStyle: { color: '#f5222d' } }
+                ]
+            });
+            window.addEventListener('resize', () => charts.time && charts.time.resize());
+        }
+
+        function renderHourlyTrendChart(trend) {
+            const dom = document.getElementById('hourlyTrendChart');
+            if (!dom) return;
+            if (charts.hourly) charts.hourly.dispose();
+            charts.hourly = echarts.init(dom);
+            charts.hourly.setOption({
+                tooltip: { trigger: 'axis' },
+                grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                xAxis: { type: 'category', data: trend.hours, axisLabel: { rotate: 45 } },
+                yAxis: { type: 'value', name: '查询数' },
+                series: [{ type: 'bar', data: trend.counts, itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#1890ff' }, { offset: 1, color: '#52c41a' }]) } }]
+            });
+            window.addEventListener('resize', () => charts.hourly && charts.hourly.resize());
+        }
+
+        function renderTableStatsChart(stats) {
+            const dom = document.getElementById('tableStatsChart');
+            if (!dom) return;
+            if (charts.table) charts.table.dispose();
+            charts.table = echarts.init(dom);
+            charts.table.setOption({
+                tooltip: { trigger: 'axis' },
+                legend: { data: ['查询次数', '平均耗时'] },
+                grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
+                xAxis: { type: 'category', data: stats.tables, axisLabel: { rotate: 45 } },
+                yAxis: [
+                    { type: 'value', name: '次数' },
+                    { type: 'value', name: '耗时(秒)', splitLine: { show: false } }
+                ],
+                series: [
+                    { name: '查询次数', type: 'bar', data: stats.counts, itemStyle: { color: '#1890ff' } },
+                    { name: '平均耗时', type: 'line', yAxisIndex: 1, data: stats.avg_times, itemStyle: { color: '#f5222d' } }
+                ]
+            });
+            window.addEventListener('resize', () => charts.table && charts.table.resize());
+        }
+
+        function renderQueryTypeChart(stats) {
+            const dom = document.getElementById('queryTypeChart');
+            if (!dom) return;
+            if (charts.qtype) charts.qtype.dispose();
+            charts.qtype = echarts.init(dom);
+            charts.qtype.setOption({
+                tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+                legend: { orient: 'vertical', left: 'left' },
+                series: [{
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: { borderRadius: 10, borderColor: '#fff', borderWidth: 2 },
+                    label: { show: true, formatter: '{b}\n{c}次' },
+                    data: stats.types.map((t, i) => ({ value: stats.counts[i], name: t }))
+                }]
+            });
+            window.addEventListener('resize', () => charts.qtype && charts.qtype.resize());
+        }
+
+        async function loadDatabaseInfo() {
+            const [sizeResult, tablesResult] = await Promise.all([
+                apiCall('/api/database/size', 'GET'),
+                apiCall('/api/database/top_tables?limit=20', 'GET')
+            ]);
+            renderDatabaseInfo(sizeResult, tablesResult);
+        }
+
+        function renderDatabaseInfo(sizeResult, tablesResult) {
+            const container = document.getElementById('databaseResult');
+            let html = '';
+
+            if (sizeResult.success && sizeResult.data) {
+                html += '<div class="card"><div class="card-title">数据库大小</div>';
+                html += '<table><thead><tr><th>数据库</th><th>大小(MB)</th><th>表数量</th></tr></thead><tbody>';
+                sizeResult.data.forEach(d => {
+                    html += `<tr><td><strong>${d.database_name}</strong></td><td>${d.size_mb}</td><td>${d.table_count}</td></tr>`;
+                });
+                html += '</tbody></table></div>';
+            }
+
+            if (tablesResult.success && tablesResult.data) {
+                html += '<div class="card"><div class="card-title">大表TOP20</div>';
+                html += '<div id="tableSizeChart" class="chart-container"></div>';
+                html += '<table style="margin-top:16px"><thead><tr><th>数据库</th><th>表名</th><th>数据(MB)</th><th>索引(MB)</th><th>行数</th></tr></thead><tbody>';
+                tablesResult.data.forEach(t => {
+                    html += `<tr><td>${t.table_schema}</td><td><strong>${t.table_name}</strong></td><td>${t.data_mb}</td><td>${t.index_mb}</td><td>${(t.table_rows||0).toLocaleString()}</td></tr>`;
+                });
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+                renderTableSizeChart(tablesResult.data);
+            } else {
+                container.innerHTML = html;
+            }
+        }
+
+        function renderTableSizeChart(data) {
+            const dom = document.getElementById('tableSizeChart');
+            if (!dom) return;
+            if (charts.tables) charts.tables.dispose();
+            charts.tables = echarts.init(dom);
+            charts.tables.setOption({
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                legend: { data: ['数据大小', '索引大小'] },
+                grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
+                xAxis: { type: 'category', data: data.map(d => d.table_name), axisLabel: { rotate: 45 } },
+                yAxis: { type: 'value', name: 'MB' },
+                series: [
+                    { name: '数据大小', type: 'bar', data: data.map(d => d.data_mb), itemStyle: { color: '#1890ff' } },
+                    { name: '索引大小', type: 'bar', data: data.map(d => d.index_mb), itemStyle: { color: '#52c41a' } }
+                ]
+            });
+            window.addEventListener('resize', () => charts.tables && charts.tables.resize());
+        }
+
+        async function showProcesslist() {
+            const result = await apiCall('/api/processlist', 'GET');
+            const container = document.getElementById('databaseResult');
+            if (!result.success) {
+                container.innerHTML = `<div class="card"><div class="empty-state">❌ ${result.error || '获取失败'}</div></div>`;
+                return;
+            }
+            let html = '<div class="card"><div class="card-title">进程列表</div>';
+            html += '<div style="max-height:500px;overflow-y:auto"><table><thead><tr><th>ID</th><th>用户</th><th>主机</th><th>数据库</th><th>状态</th><th>时间</th><th>SQL</th></tr></thead><tbody>';
+            result.data.forEach(p => {
+                html += `<tr><td>${p.Id}</td><td>${p.User}</td><td>${p.Host}</td><td>${p.db || '-'}</td><td>${p.Command}</td><td>${p.Time}s</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.Info || ''}">${(p.Info || '').substring(0, 80)}</td></tr>`;
+            });
+            html += '</tbody></table></div></div>';
+            container.innerHTML = html;
+        }
+
+        async function clusterFromHistory() {
+            const historyResult = await apiCall('/api/slow_queries/history', 'GET');
+            if (!historyResult.success) {
+                document.getElementById('clusterResult').innerHTML = `<div class="card"><div class="empty-state">❌ ${historyResult.error}</div></div>`;
+                return;
+            }
+            const queries = historyResult.history || [];
+            const method = document.getElementById('clusterMethod').value;
+            const threshold = parseFloat(document.getElementById('clusterThreshold').value);
+            const result = await apiCall('/api/cluster/queries', 'POST', { queries, method, threshold });
+            renderClusterResult(result);
+        }
+
+        function renderClusterResult(data) {
+            const container = document.getElementById('clusterResult');
+            if (!data.success) {
+                container.innerHTML = `<div class="card"><div class="empty-state">❌ ${data.error}</div></div>`;
+                return;
+            }
+            const clusters = data.clusters || [];
+            let html = '<div class="card"><div class="card-title">聚类结果</div>';
+            html += `<div style="margin-bottom:12px">共聚类 <strong>${clusters.length}</strong> 组，使用方法: ${data.method}</div>`;
+            if (clusters.length) {
+                clusters.forEach((c, idx) => {
+                    html += '<div class="transform-card">';
+                    html += '<div class="transform-header">';
+                    html += `<span class="transform-name">聚类 #${idx + 1} (${c.count}条)</span>`;
+                    html += `<span class="transform-improvement improvement-${c.avg_time > 1 ? 'high' : c.avg_time > 0.1 ? 'medium' : 'low'}">平均: ${c.avg_time.toFixed(4)}s</span>`;
+                    html += '</div>';
+                    html += `<div style="font-size:13px;color:#666;margin-bottom:8px">总耗时: ${c.total_time.toFixed(4)}s · 指纹: <code style="font-size:11px">${c.fingerprint_hash || c.fingerprint.substring(0, 50)}...</code></div>`;
+                    html += `<div class="transform-content">${c.sample_query}</div>`;
+                    html += '</div>';
+                });
+            } else {
+                html += '<div class="empty-state">暂无聚类结果</div>';
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        async function generateFingerprint() {
+            const sql = document.getElementById('fingerprintInput').value.trim();
+            if (!sql) return;
+            const result = await apiCall('/api/cluster/fingerprint', 'POST', { sql, version: 'v1' });
+            const container = document.getElementById('fingerprintResult');
+            if (result.success) {
+                container.innerHTML = `
+                    <div class="metric-grid" style="margin-top:12px">
+                        <div class="metric-card"><div class="metric-label">指纹V1</div><div class="metric-value" style="font-size:12px;font-family:Consolas">${result.fingerprint}</div></div>
+                        <div class="metric-card"><div class="metric-label">MD5哈希</div><div class="metric-value" style="font-size:12px;font-family:Consolas">${result.hash}</div></div>
+                        <div class="metric-card"><div class="metric-label">结构指纹</div><div class="metric-value" style="font-size:12px;font-family:Consolas">${result.structural}</div></div>
+                    </div>
+                `;
+            }
+        }
+
+        async function showClusterPatterns() {
+            const historyResult = await apiCall('/api/slow_queries/history', 'GET');
+            const queries = historyResult.history || [];
+            const result = await apiCall('/api/cluster/patterns', 'POST', { queries });
+            const container = document.getElementById('clusterResult');
+            if (result.success) {
+                let html = '<div class="card"><div class="card-title">查询模式分析</div>';
+                html += '<div class="two-column">';
+                if (result.patterns.operations) {
+                    html += '<div><strong>操作类型分布:</strong><table><thead><tr><th>类型</th><th>数量</th></tr></thead><tbody>';
+                    for (const [op, cnt] of Object.entries(result.patterns.operations)) {
+                        html += `<tr><td>${op}</td><td>${cnt}</td></tr>`;
+                    }
+                    html += '</tbody></table></div>';
+                }
+                if (result.patterns.tables) {
+                    html += '<div><strong>高频表:</strong><table><thead><tr><th>表名</th><th>出现次数</th></tr></thead><tbody>';
+                    for (const [tbl, cnt] of Object.entries(result.patterns.tables)) {
+                        html += `<tr><td>${tbl}</td><td>${cnt}</td></tr>`;
+                    }
+                    html += '</tbody></table></div>';
+                }
+                html += '</div></div>';
+                container.innerHTML = html;
+            }
+        }
+
+        async function loadCalibrationAccuracy() {
+            const result = await apiCall('/api/calibrate/accuracy', 'GET');
+            const container = document.getElementById('calibrationAccuracy');
+            if (result.success) {
+                let html = '<div class="metric-grid">';
+                const m = result.metrics;
+                html += `<div class="metric-card"><div class="metric-label">训练样本</div><div class="metric-value">${result.total_samples}</div></div>`;
+                html += `<div class="metric-card"><div class="metric-label">MAE</div><div class="metric-value">${m.mae}</div></div>`;
+                html += `<div class="metric-card"><div class="metric-label">RMSE</div><div class="metric-value">${m.rmse}</div></div>`;
+                html += `<div class="metric-card"><div class="metric-label">MAPE(%)</div><div class="metric-value">${m.mape}</div></div>`;
+                html += `<div class="metric-card"><div class="metric-label">R²</div><div class="metric-value">${m.r_squared}</div></div>`;
+                html += '</div>';
+                if (result.factor_weights) {
+                    html += '<div style="margin-top:16px"><strong>因子权重:</strong>';
+                    html += '<div class="cost-breakdown">';
+                    for (const [k, v] of Object.entries(result.factor_weights)) {
+                        html += `<div class="cost-item"><span class="cost-factor">${k}</span><span class="cost-penalty">${v.toFixed(1)}</span></div>`;
+                    }
+                    html += '</div></div>';
+                }
+                container.innerHTML = html;
+            }
+        }
+
+        async function runCalibration() {
+            const historyResult = await apiCall('/api/slow_queries/history', 'GET');
+            const queries = historyResult.history || [];
+            if (!queries.length) {
+                alert('没有历史查询数据');
+                return;
+            }
+            const result = await apiCall('/api/calibrate/calibrate', 'POST', { queries });
+            if (result.success) {
+                alert(`校准完成！样本数: ${result.samples}`);
+                loadCalibrationAccuracy();
+            } else {
+                alert('校准失败: ' + (result.message || '未知错误'));
+            }
+        }
+
+        async function resetCalibration() {
+            if (confirm('确定要重置所有校准数据吗？')) {
+                const result = await apiCall('/api/calibrate/reset', 'POST');
+                if (result.success) {
+                    alert('校准数据已重置');
+                    loadCalibrationAccuracy();
+                }
+            }
+        }
+
+        async function compareEstimates() {
+            const sqlText = document.getElementById('calibrationSqlInput').value.trim();
+            if (!sqlText) return;
+            const sqlList = sqlText.split('\n').filter(s => s.trim());
+            const result = await apiCall('/api/calibrate/compare', 'POST', { sql_list: sqlList });
+            const container = document.getElementById('comparisonResult');
+            if (result.success) {
+                let html = '<div class="card"><div class="card-title">对比结果</div>';
+                if (result.summary) {
+                    const s = result.summary;
+                    html += '<div class="metric-grid">';
+                    html += `<div class="metric-card"><div class="metric-label">准确率</div><div class="metric-value">${s.accuracy_rate.toFixed(1)}%</div></div>`;
+                    html += `<div class="metric-card success"><div class="metric-label">准确</div><div class="metric-value">${s.accurate_count}</div></div>`;
+                    html += `<div class="metric-card warning"><div class="metric-label">低估</div><div class="metric-value">${s.under_count}</div></div>`;
+                    html += `<div class="metric-card danger"><div class="metric-label">高估</div><div class="metric-value">${s.over_count}</div></div>`;
+                    html += '</div>';
+                }
+                if (result.comparisons) {
+                    html += '<table style="margin-top:16px"><thead><tr><th>SQL</th><th>预估代价</th><th>实际耗时</th><th>偏差(%)</th><th>评级</th></tr></thead><tbody>';
+                    result.comparisons.forEach(c => {
+                        const deviationClass = Math.abs(c.deviation_percent) < 20 ? 'color:#52c41a' : c.deviation_percent > 50 ? 'color:#f5222d' : 'color:#faad14';
+                        html += `<tr><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.sql}">${c.sql.substring(0, 50)}...</td><td>${c.estimated_cost}</td><td>${c.actual_time.toFixed(4)}</td><td style="${deviationClass}">${c.deviation_percent > 0 ? '+' : ''}${c.deviation_percent.toFixed(1)}%</td><td>${c.rating || '-'}</td></tr>`;
+                    });
+                    html += '</tbody></table>';
+                }
+                html += '</div>';
+                container.innerHTML = html;
+            }
+        }
+
+        async function suggestIndexes() {
+            const sql = document.getElementById('indexValidateInput').value.trim();
+            if (!sql) { alert('请输入SQL'); return; }
+            const result = await apiCall('/api/index/suggest', 'POST', { sql });
+            const container = document.getElementById('indexResult');
+            if (result.success) {
+                let html = '<div class="card"><div class="card-title">索引建议</div>';
+                if (result.suggestions.length) {
+                    html += '<table><thead><tr><th>表</th><th>索引列</th><th>类型</th><th>原因</th><th>操作</th></tr></thead><tbody>';
+                    result.suggestions.forEach((s, idx) => {
+                        html += `<tr><td><strong>${s.table}</strong></td><td><code>${s.columns.join(', ')}</code></td><td>${s.type}</td><td>${s.reason}</td><td><button class="btn btn-primary btn-sm" onclick="validateOneIndex('${s.table}', '${s.columns.join(',')}', ${idx})">验证</button></td></tr>`;
+                    });
+                    html += '</tbody></table>';
+                } else {
+                    html += '<div class="empty-state">没有索引建议</div>';
+                }
+                html += '</div>';
+                container.innerHTML = html;
+                window._lastSuggestions = result.suggestions;
+            }
+        }
+
+        async function validateOneIndex(table, columnsStr, idx) {
+            const sql = document.getElementById('indexValidateInput').value.trim();
+            const columns = columnsStr.split(',');
+            const autoCleanup = document.getElementById('autoCleanup').value === 'true';
+            const result = await apiCall('/api/index/validate', 'POST', { sql, table, columns, auto_cleanup: autoCleanup });
+            let html = '<div class="card" style="margin-top:16px"><div class="card-title">验证结果</div>';
+            if (result.success) {
+                const imp = result.improvement || {};
+                html += '<div class="metric-grid">';
+                html += `<div class="metric-card"><div class="metric-label">时间提升</div><div class="metric-value">${imp.time_improvement_percent > 0 ? '+' : ''}${imp.time_improvement_percent}%</div></div>`;
+                html += `<div class="metric-card"><div class="metric-label">行数减少</div><div class="metric-value">${imp.row_improvement_percent > 0 ? '+' : ''}${imp.row_improvement_percent}%</div></div>`;
+                html += `<div class="metric-card"><div class="metric-label">访问类型</div><div class="metric-value">${imp.baseline_access_type} → ${imp.new_access_type}</div></div>`;
+                html += `<div class="metric-card success"><div class="metric-label">是否值得</div><div class="metric-value">${imp.is_worthwhile ? '是' : '否'}</div></div>`;
+                html += '</div>';
+                html += '<div style="margin-top:12px"><strong>效果评级:</strong> <span class="badge badge-' + (imp.rating === 'excellent' ? 'success' : imp.rating === 'good' ? 'low' : imp.rating === 'moderate' ? 'medium' : 'high') + '">' + imp.rating + '</span></div>';
+                if (imp.filesort_eliminated) html += '<div style="color:#52c41a">✅ 已消除文件排序</div>';
+                if (imp.temporary_eliminated) html += '<div style="color:#52c41a">✅ 已消除临时表</div>';
+                if (result.index_cleaned) html += '<div style="color:#999">测试索引已自动清理</div>';
+            } else {
+                html += `<div class="empty-state">❌ ${result.error}</div>`;
+            }
+            html += '</div>';
+            document.getElementById('indexResult').innerHTML += html;
+        }
+
+        async function autoValidateIndexes() {
+            const sql = document.getElementById('indexValidateInput').value.trim();
+            if (!sql) { alert('请输入SQL'); return; }
+            const autoCleanup = document.getElementById('autoCleanup').value === 'true';
+            const result = await apiCall('/api/index/auto_validate', 'POST', { sql, auto_cleanup: autoCleanup });
+            const container = document.getElementById('indexResult');
+            if (result.success) {
+                let html = '<div class="card"><div class="card-title">自动验证结果</div>';
+                html += `<div style="margin-bottom:12px">共验证 <strong>${result.total_suggestions}</strong> 个建议，其中 <strong>${result.worthwhile_count}</strong> 个值得创建</div>`;
+                if (result.validations) {
+                    result.validations.forEach((v, idx) => {
+                        const imp = v.improvement || {};
+                        const s = v.suggestion || {};
+                        html += '<div class="transform-card">';
+                        html += '<div class="transform-header">';
+                        html += `<span class="transform-name">${s.table} (${s.columns.join(', ')})</span>`;
+                        html += `<span class="transform-improvement improvement-${imp.is_worthwhile ? 'high' : 'low'}">${imp.rating || '-'}</span>`;
+                        html += '</div>';
+                        html += `<div style="font-size:13px;color:#666">${s.type} - ${s.reason}</div>`;
+                        html += `<div style="margin-top:8px">时间提升: <strong>${imp.time_improvement_percent}%</strong> · 行数减少: <strong>${imp.row_improvement_percent}%</strong></div>`;
+                        html += '</div>';
+                    });
+                }
+                if (result.cleanup_performed) html += '<div style="color:#999;margin-top:12px">所有测试索引已自动清理</div>';
+                html += '</div>';
+                container.innerHTML = html;
+            }
+        }
+
+        async function loadExistingIndexes() {
+            const table = document.getElementById('indexTableName').value.trim();
+            if (!table) { alert('请输入表名'); return; }
+            const result = await apiCall(`/api/index/existing/${table}`, 'GET');
+            const container = document.getElementById('indexResult');
+            if (result.success) {
+                let html = '<div class="card"><div class="card-title">现有索引</div>';
+                if (result.indexes.length) {
+                    html += '<table><thead><tr><th>索引名</th><th>列</th><th>唯一</th><th>基数</th><th>操作</th></tr></thead><tbody>';
+                    result.indexes.forEach(idx => {
+                        html += `<tr><td><strong>${idx.name}</strong></td><td><code>${idx.columns.join(', ')}</code></td><td>${idx.unique ? '是' : '否'}</td><td>${idx.cardinality.toLocaleString()}</td><td><button class="btn btn-danger btn-sm" onclick="dropIndex('${table}', '${idx.name}')">删除</button></td></tr>`;
+                    });
+                    html += '</tbody></table>';
+                } else {
+                    html += '<div class="empty-state">该表暂无索引</div>';
+                }
+                html += '</div>';
+                container.innerHTML = html;
+            }
+        }
+
+        async function dropIndex(table, indexName) {
+            if (confirm(`确定删除索引 ${indexName} 吗？`)) {
+                const result = await apiCall('/api/index/drop', 'POST', { table, index_name: indexName });
+                if (result.success) {
+                    alert('删除成功');
+                    loadExistingIndexes();
+                }
+            }
+        }
+
+        window.addEventListener('load', async () => {
+            try {
+                const result = await apiCall('/api/health', 'GET');
+                if (result.database === 'connected') {
+                    updateDbStatus(true);
+                }
+            } catch(e) {}
+        });
+    </script>
+</body>
+</html>

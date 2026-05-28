@@ -1,0 +1,409 @@
+server:
+  port: 8080
+  metrics_port: 9090
+  admin_port: 8081
+  enable_pprof: true
+
+probe_pool:
+  min_workers: 10
+  max_workers: 100
+  queue_size: 1000
+
+window:
+  duration: 60
+  slots: 60
+
+scheduling:
+  enabled: true
+  auto_adjust: true
+  min_interval: 5
+  max_interval: 300
+  weight_factor: 0.5
+  health_factor: 0.5
+  adjust_interval: 60
+
+prediction:
+  enabled: true
+  algorithm: linear
+  history_size: 100
+  prediction_window: 5
+  warning_threshold: 90
+  critical_threshold: 75
+
+tracing:
+  enabled: true
+  global_trace_id: false
+  trace_header: X-Trace-ID
+
+alert:
+  enabled: true
+  webhook_url: http://localhost:8080/webhook
+  smtp:
+    host: smtp.example.com
+    port: 587
+    username: alerts@example.com
+    password: your_password
+    from: alerts@example.com
+    to:
+      - admin@example.com
+  dingtalk:
+    webhook_url: https://oapi.dingtalk.com/robot/send?access_token=xxx
+    secret: your_secret
+
+shadow:
+  enabled: true
+  default_shadow: false
+  shadow_header: X-Shadow-Request
+  shadow_value: "true"
+  record_only: true
+
+chaos:
+  enabled: false
+  endpoints:
+    - endpoint_id: api_user_service
+      fault_type: delay
+      duration: 300
+      start_hour: 2
+      end_hour: 4
+      rate: 0.5
+      shadow: true
+
+alert_rules:
+  - id: rule_availability_low
+    name: Availability Below 95%
+    condition: availability_lt
+    threshold: 95.0
+    duration: 60
+    severity: critical
+    notification_type: email
+    notification_target: admin@example.com
+
+  - id: rule_error_rate_high
+    name: Error Rate Above 5%
+    condition: error_rate_gt
+    threshold: 5.0
+    duration: 60
+    severity: warning
+    notification_type: dingtalk
+    notification_target: https://oapi.dingtalk.com/robot/send
+
+  - id: rule_latency_high
+    name: P95 Latency Above 2s
+    condition: latency_gt_ms
+    threshold: 2000.0
+    duration: 120
+    severity: warning
+    notification_type: webhook
+    notification_target: http://localhost:8080/alert
+
+  - id: rule_service_down
+    name: Service Down
+    condition: status_down
+    threshold: 1
+    duration: 30
+    severity: critical
+    notification_type: email
+    notification_target: admin@example.com
+
+endpoints:
+  - id: api_user_service
+    name: User Service API
+    protocol: http
+    address: http://localhost:8080
+    interval: 10
+    timeout: 5
+    weight: 10
+    priority: critical
+    dependencies:
+      - api_auth_service
+      - api_database_service
+    rate_limit:
+      enabled: true
+      strategy: token_bucket
+      rate: 10
+      capacity: 20
+      delay:
+        strategy: random
+        min_delay_ms: 100
+        max_delay_ms: 500
+    tracing:
+      enabled: true
+      service_name: user-service
+      trace_header: X-Trace-ID
+    prediction:
+      enabled: true
+      algorithm: linear
+      prediction_window: 5
+      warning_threshold: 90
+      critical_threshold: 75
+    http:
+      method: GET
+      path: /health
+      expected_code: 200
+      expected_body: "status"
+      assertions:
+        - type: jsonpath
+          path: "$.status"
+          operator: "=="
+          value: "ok"
+        - type: jsonpath
+          path: "$.code"
+          operator: "=="
+          value: "200"
+        - type: contains
+          path: ""
+          operator: contains
+          value: "success"
+    alert_rules:
+      - rule_availability_low
+      - rule_error_rate_high
+      - rule_latency_high
+      - rule_service_down
+    tags:
+      service: user
+      env: production
+
+  - id: api_auth_service
+    name: Auth Service API
+    protocol: http
+    address: http://localhost:8083
+    interval: 12
+    timeout: 5
+    weight: 8
+    priority: high
+    dependencies:
+      - api_database_service
+    rate_limit:
+      enabled: true
+      strategy: token_bucket
+      rate: 8
+      capacity: 16
+      delay:
+        strategy: fixed
+        fixed_delay_ms: 100
+    tracing:
+      enabled: true
+      service_name: auth-service
+      trace_header: X-Trace-ID
+    prediction:
+      enabled: true
+      algorithm: ema
+      prediction_window: 5
+      warning_threshold: 90
+      critical_threshold: 75
+    http:
+      method: GET
+      path: /health
+      expected_code: 200
+      assertions:
+        - type: jsonpath
+          path: "$.status"
+          operator: "=="
+          value: "healthy"
+    alert_rules:
+      - rule_availability_low
+      - rule_service_down
+    tags:
+      service: auth
+      env: production
+
+  - id: api_database_service
+    name: Database Service API
+    protocol: http
+    address: http://localhost:8084
+    interval: 8
+    timeout: 5
+    weight: 10
+    priority: critical
+    rate_limit:
+      enabled: true
+      strategy: token_bucket
+      rate: 12
+      capacity: 24
+      delay:
+        strategy: random
+        min_delay_ms: 50
+        max_delay_ms: 200
+    tracing:
+      enabled: true
+      service_name: database-service
+      trace_header: X-Trace-ID
+    prediction:
+      enabled: true
+      algorithm: linear
+      prediction_window: 10
+      warning_threshold: 95
+      critical_threshold: 80
+    http:
+      method: GET
+      path: /health
+      expected_code: 200
+      assertions:
+        - type: jsonpath
+          path: "$.connections.active"
+          operator: "<"
+          value: "100"
+        - type: jsonpath
+          path: "$.replication.status"
+          operator: "=="
+          value: "synced"
+    alert_rules:
+      - rule_availability_low
+      - rule_latency_high
+      - rule_service_down
+    tags:
+      service: database
+      env: production
+
+  - id: api_order_service
+    name: Order Service API
+    protocol: http
+    address: http://localhost:8081
+    interval: 15
+    timeout: 5
+    weight: 7
+    priority: high
+    dependencies:
+      - api_user_service
+      - api_payment_service
+    rate_limit:
+      enabled: true
+      strategy: fixed_window
+      rate: 5
+      capacity: 10
+      delay:
+        strategy: fixed
+        fixed_delay_ms: 200
+    tracing:
+      enabled: true
+      service_name: order-service
+      trace_header: X-Trace-ID
+    http:
+      method: POST
+      path: /api/v1/orders/check
+      headers:
+        Content-Type: application/json
+      body: '{"order_id": "test_001"}'
+      expected_code: 200
+      assertions:
+        - type: jsonpath
+          path: "$.data.valid"
+          operator: "=="
+          value: "true"
+    alert_rules:
+      - rule_availability_low
+      - rule_service_down
+    tags:
+      service: order
+      env: production
+
+  - id: api_payment_service
+    name: Payment Service API
+    protocol: dubbo
+    address: localhost:20880
+    interval: 15
+    timeout: 5
+    weight: 9
+    priority: critical
+    dependencies:
+      - api_database_service
+    dubbo:
+      interface: com.example.payment.PaymentService
+      method: healthCheck
+      group: default
+      version: 1.0.0
+    tracing:
+      enabled: true
+      service_name: payment-service
+      trace_header: X-Trace-ID
+    alert_rules:
+      - rule_availability_low
+      - rule_service_down
+    tags:
+      service: payment
+      env: production
+
+  - id: api_xml_service
+    name: XML Service API
+    protocol: http
+    address: http://localhost:8082
+    interval: 20
+    timeout: 5
+    weight: 4
+    priority: medium
+    rate_limit:
+      enabled: false
+    http:
+      method: GET
+      path: /api/xml/status
+      expected_code: 200
+      assertions:
+        - type: xpath
+          path: "/response/status"
+          operator: "=="
+          value: "healthy"
+        - type: regex
+          path: ""
+          operator: matches
+          value: "<code>200</code>"
+    alert_rules:
+      - rule_availability_low
+    tags:
+      service: xml_service
+      env: production
+
+  - id: grpc_order_service
+    name: Order Service gRPC
+    protocol: grpc
+    address: localhost:50051
+    interval: 15
+    timeout: 5
+    weight: 6
+    priority: medium
+    grpc:
+      service: com.example.order.OrderService
+      method: HealthCheck
+      tls: false
+    alert_rules:
+      - rule_availability_low
+      - rule_service_down
+    tags:
+      service: order
+      env: production
+
+  - id: api_external_third_party
+    name: Third Party API
+    protocol: http
+    address: https://api.example.com
+    interval: 30
+    timeout: 10
+    weight: 2
+    priority: low
+    rate_limit:
+      enabled: true
+      strategy: token_bucket
+      rate: 3
+      capacity: 5
+      delay:
+        strategy: exponential
+        min_delay_ms: 500
+        max_delay_ms: 5000
+    http:
+      method: POST
+      path: /api/v1/check
+      headers:
+        Authorization: Bearer your_token
+        Content-Type: application/json
+      body: '{"check": "ping"}'
+      expected_code: 200
+      assertions:
+        - type: jsonpath
+          path: "$.result"
+          operator: exists
+          value: ""
+    alert_rules:
+      - rule_availability_low
+      - rule_latency_high
+    tags:
+      service: third_party
+      env: production

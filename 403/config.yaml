@@ -1,0 +1,59 @@
+redis:
+  # 集群种子节点（任一节点）
+  host: 127.0.0.1
+  port: 6379
+  password: ""
+  # 连接参数
+  socket_timeout: 2.0
+  socket_connect_timeout: 2.0
+  retry_on_timeout: true
+  # 复制延迟连续采样
+  replication_lag_sample:
+    # 采样总时长（秒）
+    duration_sec: 1.0
+    # 采样间隔（秒），默认 100ms
+    interval_sec: 0.1
+  # 槽位平衡参数
+  slot_balance:
+    # 是否使用节点性能评分做权重分配
+    use_performance_weight: true
+  # 热点 key 采样
+  hotkey_sample:
+    # 每个 master 采样的最大 key 数量
+    max_keys_per_node: 500
+    # SCAN 每次迭代的 COUNT 参数
+    scan_count: 500
+  # 巡检阈值
+  threshold:
+    # 复制延迟（秒）- 与连续采样的 max 值比较
+    replication_lag_sec: 5.0
+    # 内存碎片率（默认值，当无法识别版本时使用）
+    mem_fragmentation_ratio: 1.5
+    # 按 Redis 版本差异化的碎片阈值（可覆盖）
+    mem_fragmentation_by_version:
+      ge_7_4: 2.0
+      ge_7_0: 1.8
+      ge_6_0: 1.5
+      lt_6_0: 1.3
+    # 槽位不均衡度（stddev 系数）
+    slot_unbalance_ratio: 0.1
+    # 慢查询阈值（微秒）
+    slowlog_usec: 10000
+    # 节点 CPU 使用率告警
+    cpu_usage_percent: 80.0
+    # 节点内存使用率告警
+    mem_usage_percent: 85.0
+
+clickhouse:
+  host: 127.0.0.1
+  port: 9000
+  user: default
+  password: ""
+  database: redis_inspect
+  # 如无需写入 CH，设置 enabled=false
+  enabled: false
+
+report:
+  output_dir: ./reports
+  format: text   # text | json | markdown
+  top_n_slowlog: 20
