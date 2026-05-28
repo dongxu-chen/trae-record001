@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #0F172A;
+  --bg-secondary: #1E293B;
+  --bg-tertiary: #334155;
+  --accent: #10B981;
+  --accent-hover: #34D399;
+  --accent-glow: rgba(16, 185, 129, 0.3);
+  --highlight: #38BDF8;
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --border: #334155;
+  --border-active: #10B981;
+  --danger: #EF4444;
+  --warning: #F59E0B;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 8px var(--accent-glow); }
+  50% { box-shadow: 0 0 20px var(--accent-glow); }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
+}
+
+.mathquill-editable {
+  border: none !important;
+  background: transparent !important;
+  min-width: 400px;
+  min-height: 80px;
+  padding: 16px 20px;
+  font-size: 20px;
+  color: var(--text-primary) !important;
+}
+
+.mathquill-editable .mq-editable-field {
+  border: none !important;
+  background: transparent !important;
+}
+
+.mathquill-editable .mq-root-block {
+  color: var(--text-primary) !important;
+}
+
+.mathquill-editable .mq-cursor {
+  border-left-color: var(--accent) !important;
+}
+
+.mathquill-editable .mq-selection {
+  background: rgba(16, 185, 129, 0.2) !important;
+}
+
+.mathquill-editable .mq-text-mode,
+.mathquill-editable .mq-written {
+  color: var(--text-primary) !important;
+}
+
+.mathquill-editable .mq-fraction .mq-numerator,
+.mathquill-editable .mq-fraction .mq-denominator {
+  color: var(--text-primary) !important;
+}
+
+.mathquill-editable .mq-non-leaf,
+.mathquill-editable .mq-sqrt-stem,
+.mathquill-editable .mq-nthroot {
+  color: var(--text-primary) !important;
+}
+
+.mathquill-editable .mq-array {
+  color: var(--text-primary) !important;
+}
+
+.katex-preview .katex {
+  color: var(--text-primary) !important;
+  font-size: 1.8em;
+}
+
+.katex-preview .katex .mord,
+.katex-preview .katex .mbin,
+.katex-preview .katex .mrel,
+.katex-preview .katex .mopen,
+.katex-preview .katex .mclose,
+.katex-preview .katex .mpunct,
+.katex-preview .katex .minner,
+.katex-preview .katex .mop {
+  color: var(--text-primary) !important;
+}

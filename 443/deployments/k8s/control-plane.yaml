@@ -1,0 +1,138 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cross-cloud-lb-control-plane
+  labels:
+    app: cross-cloud-lb
+    component: control-plane
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cross-cloud-lb
+      component: control-plane
+  template:
+    metadata:
+      labels:
+        app: cross-cloud-lb
+        component: control-plane
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      serviceAccountName: cross-cloud-lb
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - cross-cloud-lb
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: control-plane
+        image: cross-cloud-lb:latest
+        ports:
+        - name: xds-grpc
+          containerPort: 18000
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        - name: admin
+          containerPort: 9901
+          protocol: TCP
+        env:
+        - name: AWS_REGION
+          value: "us-east-1"
+        - name: AZURE_SUBSCRIPTION_ID
+          valueFrom:
+            secretKeyRef:
+              name: cloud-credentials
+              key: azure-subscription-id
+        - name: GCP_PROJECT_ID
+          valueFrom:
+            secretKeyRef:
+              name: cloud-credentials
+              key: gcp-project-id
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "2"
+            memory: "1Gi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9090
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 9090
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: config
+          mountPath: /app/config.yaml
+          subPath: config.yaml
+      volumes:
+      - name: config
+        configMap:
+          name: cross-cloud-lb-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cross-cloud-lb-control-plane
+  labels:
+    app: cross-cloud-lb
+    component: control-plane
+spec:
+  type: ClusterIP
+  ports:
+  - name: xds-grpc
+    port: 18000
+    targetPort: xds-grpc
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: metrics
+    protocol: TCP
+  selector:
+    app: cross-cloud-lb
+    component: control-plane
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cross-cloud-lb
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cross-cloud-lb
+rules:
+- apiGroups: [""]
+  resources: ["services", "endpoints", "pods"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["discovery.k8s.io"]
+  resources: ["endpointslices"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cross-cloud-lb
+subjects:
+- kind: ServiceAccount
+  name: cross-cloud-lb
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: cross-cloud-lb
+  apiGroup: rbac.authorization.k8s.io

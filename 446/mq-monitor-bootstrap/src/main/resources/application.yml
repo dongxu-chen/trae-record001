@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: mq-monitor-platform
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health, info, metrics
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+        step: 1m
+
+logging:
+  level:
+    com.mqmonitor: INFO
+    org.springframework: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+mq:
+  monitor:
+    collection:
+      interval-ms: 5000
+    alert:
+      evaluation-interval-seconds: 30
+    prediction:
+      enabled: true
+      horizon-minutes: 30

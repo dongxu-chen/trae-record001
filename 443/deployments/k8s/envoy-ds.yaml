@@ -1,0 +1,139 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cross-cloud-lb-envoy
+  labels:
+    app: cross-cloud-lb
+    component: envoy
+spec:
+  selector:
+    matchLabels:
+      app: cross-cloud-lb
+      component: envoy
+  template:
+    metadata:
+      labels:
+        app: cross-cloud-lb
+        component: envoy
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9901"
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: envoy
+        image: envoyproxy/envoy:v1.29.0
+        ports:
+        - name: http
+          containerPort: 8080
+          hostPort: 8080
+          protocol: TCP
+        - name: https
+          containerPort: 8443
+          hostPort: 8443
+          protocol: TCP
+        - name: admin
+          containerPort: 9901
+          protocol: TCP
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "1"
+            memory: "512Mi"
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: 9901
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 9901
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        volumeMounts:
+        - name: config
+          mountPath: /etc/envoy/envoy.yaml
+          subPath: envoy.yaml
+        args:
+        - "-c"
+        - "/etc/envoy/envoy.yaml"
+        - "--log-level"
+        - "info"
+      volumes:
+      - name: config
+        configMap:
+          name: cross-cloud-lb-envoy-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cross-cloud-lb-envoy-config
+data:
+  envoy.yaml: |
+    node:
+      id: cross-cloud-lb-envoy
+      cluster: cross-cloud-lb-envoy-cluster
+
+    admin:
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 9901
+
+    dynamic_resources:
+      ads_config:
+        api_type: GRPC
+        transport_api_version: V3
+        grpc_services:
+        - envoy_grpc:
+            cluster_name: xds_cluster
+      cds_config:
+        resource_api_version: V3
+        ads: {}
+      lds_config:
+        resource_api_version: V3
+        ads: {}
+
+    static_resources:
+      clusters:
+      - name: xds_cluster
+        connect_timeout: 1s
+        type: STRICT_DNS
+        typed_extension_protocol_options:
+          envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+            "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+            explicit_http_config:
+              http2_protocol_options: {}
+        load_assignment:
+          cluster_name: xds_cluster
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: cross-cloud-lb-control-plane.default.svc.cluster.local
+                    port_value: 18000
+
+    overload_manager:
+      refresh_interval: 0.25s
+      resource_monitors:
+      - name: envoy.resource_monitors.fixed_heap
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.resource_monitors.fixed_heap.v3.FixedHeapConfig
+          max_heap_size_bytes: 1073741824
+      actions:
+      - name: envoy.overload_actions.shrink_heap
+        triggers:
+        - name: envoy.resource_monitors.fixed_heap
+          threshold:
+            value: 0.95
+      - name: envoy.overload_actions.stop_accepting_requests
+        triggers:
+        - name: envoy.resource_monitors.fixed_heap
+          threshold:
+            value: 0.98

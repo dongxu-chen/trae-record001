@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  control-plane:
+    build:
+      context: ../..
+      dockerfile: deployments/docker/Dockerfile
+    ports:
+      - "18000:18000"
+      - "9090:9090"
+    environment:
+      - AWS_REGION=us-east-1
+      - AZURE_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID:-}
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID:-}
+    volumes:
+      - ../../config.yaml:/app/config.yaml
+    networks:
+      - cross-cloud-lb
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  envoy:
+    image: envoyproxy/envoy:v1.29.0
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+      - "9901:9901"
+    volumes:
+      - ../envoy/envoy.yaml:/etc/envoy/envoy.yaml
+    command: ["-c", "/etc/envoy/envoy.yaml", "--log-level", "info"]
+    depends_on:
+      control-plane:
+        condition: service_healthy
+    networks:
+      - cross-cloud-lb
+    extra_hosts:
+      - "control-plane:host-gateway"
+
+networks:
+  cross-cloud-lb:
+    driver: bridge

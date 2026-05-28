@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.mqmonitor</groupId>
+        <artifactId>mq-monitor-platform</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>mq-monitor-mq-clients</artifactId>
+    <packaging>pom</packaging>
+    <name>MQ Monitor MQ Clients</name>
+    <description>Multi-MQ client implementations</description>
+
+    <modules>
+        <module>mq-monitor-kafka</module>
+        <module>mq-monitor-rabbitmq</module>
+        <module>mq-monitor-rocketmq</module>
+    </modules>
+</project>

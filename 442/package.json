@@ -1,0 +1,23 @@
+{
+  "name": "color-scheme-recommender",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "chroma-js": "^2.4.2",
+    "colorbrewer": "^1.5.8",
+    "echarts": "^5.4.3",
+    "echarts-for-react": "^3.0.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.8"
+  }
+}

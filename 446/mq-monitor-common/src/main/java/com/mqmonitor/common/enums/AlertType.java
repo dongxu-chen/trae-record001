@@ -1,0 +1,13 @@
+package com.mqmonitor.common.enums;
+
+public enum AlertType {
+    LATENCY_THRESHOLD,
+    LATENCY_ANOMALY,
+    BACKLOG_THRESHOLD,
+    BACKLOG_GROWTH,
+    THROUGHPUT_DROP,
+    CONSUMER_LAG,
+    CONNECTION_ERROR,
+    P99_LATENCY_THRESHOLD,
+    LONG_TAIL_LATENCY
+}

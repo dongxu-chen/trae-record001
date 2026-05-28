@@ -1,0 +1,99 @@
+name: cross-cloud-lb
+
+listeners:
+  - port: 8080
+    protocol: http
+  - port: 8443
+    protocol: https
+
+clusters:
+  - id: aws-us-east-1
+    name: aws-us-east-1-cluster
+    provider: aws
+    region: us-east-1
+    weight: 50
+    min_weight: 10
+    max_weight: 100
+    labels:
+      environment: production
+      tier: frontend
+
+  - id: azure-eastus
+    name: azure-eastus-cluster
+    provider: azure
+    region: eastus
+    weight: 30
+    min_weight: 10
+    max_weight: 100
+    labels:
+      environment: production
+      tier: frontend
+
+  - id: gcp-us-central1
+    name: gcp-us-central1-cluster
+    provider: gcp
+    region: us-central1
+    weight: 20
+    min_weight: 10
+    max_weight: 100
+    labels:
+      environment: production
+      tier: frontend
+
+health_check:
+  type: cloud_provider
+  interval: 15s
+  timeout: 5s
+  unhealthy_threshold: 3
+  healthy_threshold: 2
+
+session_affinity:
+  enabled: true
+  type: header
+  ttl: 3600s
+  header_name: X-Gateway-ID
+
+traffic_mirroring:
+  enabled: true
+  target_cluster: gcp-us-central1
+  base_percent: 10.0
+  min_percent: 1.0
+  max_percent: 50.0
+  circuit_breaker:
+    enabled: true
+    failure_threshold: 10
+    error_rate_threshold: 0.20
+    slow_response_threshold: 2000
+    open_duration: 30s
+
+weight_adjustment:
+  enabled: true
+  adjust_interval: 30s
+  response_time_weight: 0.7
+  error_rate_weight: 0.3
+  step_size: 5
+
+failover:
+  enabled: true
+  failover_threshold: 3
+  recovery_threshold: 5
+  check_interval: 10s
+
+cost:
+  enabled: true
+  weight_influence: 0.3
+  budget_limit: 1000.0
+
+prediction:
+  enabled: true
+  prediction_interval: 5m
+  prediction_horizon: 30m
+  adjust_weights: true
+  weight_influence: 0.2
+  min_history_samples: 12
+
+proximity:
+  enabled: true
+  weight_influence: 0.3
+  prefer_rtt: true
+  geoip_provider: local

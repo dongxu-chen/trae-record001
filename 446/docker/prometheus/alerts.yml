@@ -1,0 +1,191 @@
+groups:
+  - name: mq_monitoring_alerts
+    rules:
+      - alert: HighLatency
+        expr: mq_latency_end_to_end_ms > 3000
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High message latency detected"
+          description: "End-to-end latency is {{ $value }}ms on {{ $labels.topic }} in cluster {{ $labels.cluster }}"
+
+      - alert: CriticalLatency
+        expr: mq_latency_end_to_end_ms > 10000
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical message latency detected"
+          description: "End-to-end latency is {{ $value }}ms on {{ $labels.topic }}"
+
+      - alert: HighBacklog
+        expr: mq_backlog_size > 10000
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High backlog detected"
+          description: "Backlog size is {{ $value }} on {{ $labels.topic }}"
+
+      - alert: CriticalBacklog
+        expr: mq_backlog_size > 50000
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical backlog detected"
+          description: "Backlog size is {{ $value }} on {{ $labels.topic }}"
+
+      - alert: ConsumerLagGrowing
+        expr: avg_over_time(mq_consumer_lag[5m]) > 5000 and rate(mq_consumer_lag[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Consumer lag is growing"
+          description: "Consumer group {{ $labels.consumer_group }} lag is {{ $value }}"
+
+      - alert: ThroughputDrop
+        expr: rate(mq_messages_consumed_total[5m]) < 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Throughput drop detected"
+          description: "Consume throughput dropped below 10 msg/s on {{ $labels.topic }}"
+
+      - alert: ConnectionError
+        expr: sum(increase(mq_connection_errors_total[5m])) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MQ connection errors detected"
+          description: "{{ $value }} connection errors in last 5 minutes"
+
+      - alert: HighP99Latency
+        expr: mq_latency_p99_ms > 15000
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High P99 latency detected"
+          description: "P99 latency is {{ $value }}ms on {{ $labels.topic }}, indicating slow consumers"
+
+      - alert: CriticalP99Latency
+        expr: mq_latency_p99_ms > 30000
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical P99 latency detected"
+          description: "P99 latency is {{ $value }}ms on {{ $labels.topic }}, consumer group {{ $labels.consumer_group }} may be stuck"
+
+      - alert: LongTailLatency
+        expr: mq_latency_p99_ms / mq_latency_p50_ms > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Long tail latency detected"
+          description: "P99/P50 ratio is {{ $value }} on {{ $labels.topic }}, indicating some consumers are much slower than others"
+
+      - alert: BurstDetected
+        expr: rate(mq_backlog_size[5m]) > 2 * avg_over_time(rate(mq_backlog_size[1h])[5m:1m])
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Traffic burst detected"
+          description: "Backlog is growing {{ $value }}x faster than historical average on {{ $labels.topic }}"
+
+      - alert: MonotonicClockNotUsed
+        expr: mq_monotonic_clock_enabled == 0
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "Monotonic clock not enabled"
+          description: "End-to-end latency measurement falling back to wall clock on {{ $labels.topic }}"
+
+      - alert: HighTraceFailureRate
+        expr: mq_trace_success_rate < 0.95
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High message trace failure rate"
+          description: "Message trace success rate is {{ $value | printf \"%.2f\" }}, indicating high message processing failures"
+
+      - alert: StuckMessagesDetected
+        expr: mq_trace_active > 100 and mq_trace_avg_latency_ms > 300000
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Stuck messages detected"
+          description: "{{ $value }} active traces with average latency {{ $value }}ms, messages may be stuck in processing"
+
+      - alert: CriticalMessageTypeAnomaly
+        expr: mq_analysis_type_anomaly_score >= 0.8
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical message type anomaly detected"
+          description: "Message type {{ $labels.message_type }} has anomaly score {{ $value }}, processing is significantly slower than normal"
+
+      - alert: WarningMessageTypeAnomaly
+        expr: mq_analysis_type_anomaly_score >= 0.5 and mq_analysis_type_anomaly_score < 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Warning message type anomaly detected"
+          description: "Message type {{ $labels.message_type }} has anomaly score {{ $value }}, investigation recommended"
+
+      - alert: HighSlowMessageRatio
+        expr: mq_analysis_type_slow_ratio > 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High slow message ratio"
+          description: "{{ $value | printf \"%.0f\" }}% of messages for type {{ $labels.message_type }} are slow (exceeding threshold)"
+
+      - alert: CriticalSlowMessageRatio
+        expr: mq_analysis_type_slow_ratio > 0.5
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical slow message ratio"
+          description: "{{ $value | printf \"%.0f\" }}% of messages for type {{ $labels.message_type }} are slow, action required immediately"
+
+      - alert: AutoScalerHighAnomaly
+        expr: mq_analysis_critical_types > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Critical message types detected"
+          description: "{{ $value }} message type(s) in CRITICAL state, consider scaling up consumers for affected topics"
+
+      - alert: MessageTracingDisabled
+        expr: mq_trace_enabled == 0
+        for: 30m
+        labels:
+          severity: info
+        annotations:
+          summary: "Message tracing is disabled"
+          description: "Message trace collection is not enabled, consider enabling for better observability"
+
+      - alert: MessageAnalysisDisabled
+        expr: mq_analysis_enabled == 0
+        for: 30m
+        labels:
+          severity: info
+        annotations:
+          summary: "Message type analysis is disabled"
+          description: "Message type analysis is not enabled, consider enabling for slow message detection"
