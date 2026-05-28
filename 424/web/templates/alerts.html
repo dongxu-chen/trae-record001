@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}告警中心 - 竞品价格监控系统{% endblock %}
+
+{% block content %}
+<div class="alerts-page">
+    <h1 class="page-title">告警中心</h1>
+
+    <div class="filter-bar">
+        <form method="GET" action="{{ url_for('alerts') }}" class="filter-form">
+            <div class="filter-group">
+                <label>类型:</label>
+                <select name="alert_type">
+                    <option value="">全部</option>
+                    <option value="price_drop" {% if alert_type == 'price_drop' %}selected{% endif %}>价格下跌</option>
+                    <option value="price_rise" {% if alert_type == 'price_rise' %}selected{% endif %}>价格上涨</option>
+                    <option value="stock_out" {% if alert_type == 'stock_out' %}selected{% endif %}>缺货</option>
+                    <option value="promotion" {% if alert_type == 'promotion' %}selected{% endif %}>促销</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>状态:</label>
+                <select name="status">
+                    <option value="">全部</option>
+                    <option value="unread" {% if status == 'unread' %}selected{% endif %}>未读</option>
+                    <option value="read" {% if status == 'read' %}selected{% endif %}>已读</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">筛选</button>
+        </form>
+        <div class="export-group">
+            <a href="{{ url_for('export_alerts', alert_type=alert_type, format='xlsx') }}" class="btn btn-success">导出Excel</a>
+            <button onclick="sendTestAlert()" class="btn btn-warning">测试告警</button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>类型</th>
+                    <th>商品</th>
+                    <th>来源</th>
+                    <th>价格变动</th>
+                    <th>详情</th>
+                    <th>状态</th>
+                    <th>时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alert in alerts %}
+                <tr class="{{ 'alert-unread' if alert.status == 'unread' }}">
+                    <td>
+                        <span class="badge badge-{{ alert.alert_type }}">
+                            {{ alert.alert_type }}
+                        </span>
+                    </td>
+                    <td>{{ alert.product_name }}</td>
+                    <td><span class="badge badge-source">{{ alert.source }}</span></td>
+                    <td>
+                        {% if alert.old_price is not none and alert.new_price is not none %}
+                        ¥{{ alert.old_price }} → ¥{{ alert.new_price }}
+                        {% if alert.change_ratio is not none %}
+                        <span class="change-ratio {{ 'positive' if alert.change_ratio < 0 else 'negative' }}">
+                            {{ (alert.change_ratio * 100)|round(1) }}%
+                        </span>
+                        {% endif %}
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td>{{ alert.message }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'unread' if alert.status == 'unread' else 'read' }}">
+                            {{ '未读' if alert.status == 'unread' else '已读' }}
+                        </span>
+                    </td>
+                    <td>{{ alert.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        {% if alert.status == 'unread' %}
+                        <button onclick="markAsRead('{{ alert._id }}')" class="btn btn-sm btn-info">标记已读</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not alerts %}
+                <tr>
+                    <td colspan="8" class="empty-cell">暂无告警记录</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="{{ url_for('alerts', page=1, alert_type=alert_type, status=status) }}" class="btn btn-sm">首页</a>
+        <a href="{{ url_for('alerts', page=page-1, alert_type=alert_type, status=status) }}" class="btn btn-sm">上一页</a>
+        {% endif %}
+        <span class="page-info">第 {{ page }} / {{ total_pages }} 页，共 {{ total }} 条</span>
+        {% if page < total_pages %}
+        <a href="{{ url_for('alerts', page=page+1, alert_type=alert_type, status=status) }}" class="btn btn-sm">下一页</a>
+        <a href="{{ url_for('alerts', page=total_pages, alert_type=alert_type, status=status) }}" class="btn btn-sm">末页</a>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function markAsRead(alertId) {
+    fetch(`/api/alerts/${alertId}/read`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            }
+        });
+}
+
+function sendTestAlert() {
+    fetch('/api/alerts/send_test', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            alert('测试告警已发送: ' + JSON.stringify(data.results));
+        });
+}
+</script>
+{% endblock %}

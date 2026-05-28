@@ -1,0 +1,17 @@
+neo4j:
+  uri: bolt://localhost:7687
+  user: neo4j
+  password: topology123
+
+jaeger:
+  query_endpoint: http://localhost:16686/api/traces
+  collector_endpoint: http://localhost:14268/api/traces
+
+flask:
+  host: 0.0.0.0
+  port: 5000
+
+analysis:
+  time_window_minutes: 60
+  error_rate_threshold: 0.05
+  latency_threshold_ms: 500

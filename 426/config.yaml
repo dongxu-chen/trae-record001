@@ -1,0 +1,83 @@
+prometheus:
+  address: "http://prometheus-server:9090"
+  query_range: "168h"
+  step_size: "5m"
+  timeout: "30s"
+
+kubernetes:
+  kubeconfig_path: ""
+  namespace: "default"
+
+scaling:
+  cpu_percentile_threshold: 95
+  memory_percentile_threshold: 95
+  min_cpu_limit_m: 100
+  max_cpu_limit_m: 4000
+  min_memory_limit_mi: 128
+  max_memory_limit_mi: 8192
+  cpu_request_ratio: 0.75
+  memory_request_ratio: 0.75
+  utilization_high_threshold: 0.85
+  utilization_low_threshold: 0.2
+  cooldown_period: "5m"
+  max_adjustment_percent: 0.5
+
+analysis:
+  min_data_points: 10
+  percentiles_to_compute:
+    - 50
+    - 95
+    - 99
+  confidence_level: 0.95
+  moving_average_window: 5
+  outlier_removal_enabled: true
+  outlier_sigma_threshold: 3.0
+
+prediction:
+  enabled: true
+  prediction_window: "15m"
+  training_data_ratio: 0.8
+  arima_order:
+    - 1
+    - 1
+    - 1
+  seasonal_period: 288
+  cyclic_prediction_enabled: true
+  cyclic_periods:
+    - 12
+    - 24
+    - 48
+    - 96
+    - 168
+    - 288
+  pre_adjustment_lead_minutes: 30
+  hourly_prediction_enabled: true
+  hourly_prediction_hours: 24
+  peak_pre_allocation: 0.2
+
+backtest:
+  enabled: false
+  days_to_simulate: 7
+  step_minutes: 15
+  cooldown_minutes: 60
+  show_chart: false
+
+audit:
+  enabled: true
+  log_path: "logs/audit.json"
+  retention_days: 30
+  report_interval: "24h"
+  include_metrics: true
+
+node_pressure:
+  enabled: true
+  check_interval: "5m"
+  cpu_threshold: 0.85
+  memory_threshold: 0.85
+  max_concurrent_upscales: 3
+  stagger_delay: "2m"
+  avoid_peak_hours: true
+
+dry_run: false
+log_level: "info"
+check_interval: "15m"

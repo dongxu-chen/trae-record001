@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:5.14-community
+    container_name: topology-neo4j
+    environment:
+      - NEO4J_AUTH=neo4j/topology123
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "topology123", "RETURN 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - topology-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.52
+    container_name: topology-jaeger
+    environment:
+      - COLLECTOR_QUEUE_SIZE=2000
+      - COLLECTOR_MAX_PACKET_SIZE=65000
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"
+      - "4317:4317"
+      - "4318:4318"
+      - "9411:9411"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:14269/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - topology-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: topology-backend
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=topology123
+      - JAEGER_QUERY_ENDPOINT=http://jaeger:16686/api/traces
+      - JAEGER_COLLECTOR_ENDPOINT=http://jaeger:14268/api/traces
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=5000
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./frontend:/app/frontend:ro
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      jaeger:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - topology-network
+
+  demo-generator:
+    build:
+      context: ./demo-services
+      dockerfile: Dockerfile
+    container_name: topology-demo
+    environment:
+      - JAEGER_COLLECTOR=http://jaeger:14268/api/traces
+    depends_on:
+      jaeger:
+        condition: service_healthy
+    profiles:
+      - demo
+    networks:
+      - topology-network
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+
+networks:
+  topology-network:
+    driver: bridge

@@ -1,0 +1,158 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: mysql-to-clickhouse-sync
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      batch-size: 16384
+      linger-ms: 10
+      buffer-memory: 33554432
+      properties:
+        max.in.flight.requests.per.connection: 5
+        enable.idempotence: true
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group-id: mysql-ch-sync-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      max-poll-records: 500
+      properties:
+        spring.json.trusted.packages: "*"
+    listener:
+      ack-mode: MANUAL_IMMEDIATE
+      concurrency: 4
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+
+sync:
+  mode: INCREMENTAL
+  canal:
+    host: ${CANAL_HOST:localhost}
+    port: ${CANAL_PORT:11111}
+    destination: ${CANAL_DESTINATION:example}
+    username: ${CANAL_USERNAME:canal}
+    password: ${CANAL_PASSWORD:canal}
+    batch-size: 1000
+    subscribe-filter: ".*\\..*"
+  kafka:
+    enabled: true
+    topic-prefix: "mysql_ch_sync_"
+
+  auto-discover:
+    enabled: false
+    schemas:
+      - "test_db"
+      - "analytics"
+  clickhouse:
+    url: ${CLICKHOUSE_URL:jdbc:clickhouse://localhost:8123/default}
+    username: ${CLICKHOUSE_USERNAME:default}
+    password: ${CLICKHOUSE_PASSWORD:}
+    database: ${CLICKHOUSE_DATABASE:default}
+    batch-size: 1000
+    flush-interval-ms: 5000
+    max-retries: 3
+    retry-delay-ms: 1000
+    connection-pool:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 60000
+  mysql:
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306?useSSL=false&serverTimezone=Asia/Shanghai}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:root}
+    fetch-size: 1000
+  checkpoint:
+    enabled: true
+    type: FILE
+    file-path: ./checkpoint
+    interval-ms: 5000
+  tables:
+    - source-schema: "test_db"
+      source-table: "users"
+      target-database: "analytics"
+      target-table: "users"
+      sync-mode: FULL_INCREMENTAL
+      conflict-strategy: UPDATE
+      column-mapping:
+        - source: "id"
+          target: "user_id"
+          type: "BIGINT"
+        - source: "name"
+          target: "user_name"
+          type: "STRING"
+        - source: "email"
+          target: "email"
+          type: "STRING"
+        - source: "profile"
+          target: "profile_json"
+          type: "STRING"
+        - source: "profile"
+          target: "user_age"
+          type: "INT"
+          expression: "JSON_PATH(profile, 'age')"
+        - source: "profile"
+          target: "user_city"
+          type: "STRING"
+          expression: "JSON_PATH(profile, 'address.city')"
+        - source: "first_name"
+          target: "full_name"
+          type: "STRING"
+          expression: "CONCAT(first_name, ' ', last_name)"
+        - source: "created_at"
+          target: "create_time"
+          type: "DATETIME"
+        - source: "created_at"
+          target: "create_date"
+          type: "DATE"
+          expression: "DATE_FORMAT(created_at, 'yyyy-MM-dd')"
+        - source: "status"
+          target: "status_desc"
+          type: "STRING"
+          expression: "IF(status = 1, 'ACTIVE', 'INACTIVE')"
+        - source: "phone"
+          target: "phone"
+          type: "STRING"
+          expression: "COALESCE(phone, mobile, 'N/A')"
+      partition-key: "toYYYYMM(create_time)"
+      primary-keys:
+        - "user_id"
+    - source-schema: "test_db"
+      source-table: "orders"
+      target-database: "analytics"
+      target-table: "orders"
+      sync-mode: INCREMENTAL
+      conflict-strategy: IGNORE
+      partition-key: "toYYYYMM(order_date)"
+      primary-keys:
+        - "order_id"

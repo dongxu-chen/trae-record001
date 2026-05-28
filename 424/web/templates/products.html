@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}商品管理 - 竞品价格监控系统{% endblock %}
+
+{% block content %}
+<div class="products-page">
+    <h1 class="page-title">商品管理</h1>
+
+    <div class="filter-bar">
+        <form method="GET" action="{{ url_for('products') }}" class="filter-form">
+            <div class="filter-group">
+                <label>来源:</label>
+                <select name="source">
+                    <option value="">全部</option>
+                    {% for s in sources %}
+                    <option value="{{ s }}" {% if source == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>搜索:</label>
+                <input type="text" name="search" value="{{ search or '' }}" placeholder="商品名称/品牌/ID">
+            </div>
+            <button type="submit" class="btn btn-primary">搜索</button>
+            <a href="{{ url_for('products') }}" class="btn btn-secondary">重置</a>
+        </form>
+        <div class="export-group">
+            <a href="{{ url_for('export_products', source=source, format='xlsx') }}" class="btn btn-success">导出Excel</a>
+            <a href="{{ url_for('export_products', source=source, format='csv') }}" class="btn btn-info">导出CSV</a>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>商品名称</th>
+                    <th>品牌</th>
+                    <th>来源</th>
+                    <th>当前价格</th>
+                    <th>原价</th>
+                    <th>促销</th>
+                    <th>库存</th>
+                    <th>更新时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.brand or '-' }}</td>
+                    <td><span class="badge badge-source">{{ product.source }}</span></td>
+                    <td class="price">¥{{ product.current_price or '-' }}</td>
+                    <td class="price-original">¥{{ product.original_price or '-' }}</td>
+                    <td>
+                        {% if product.is_on_promotion %}
+                        <span class="badge badge-promotion">促销中</span>
+                        {% else %}
+                        <span class="badge badge-normal">无</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if product.in_stock %}
+                        <span class="badge badge-stock">有货</span>
+                        {% else %}
+                        <span class="badge badge-out">缺货</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ product.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <a href="{{ url_for('product_detail', product_id=product.product_id) }}" class="btn btn-sm btn-info">详情</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not products %}
+                <tr>
+                    <td colspan="9" class="empty-cell">暂无商品数据</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="{{ url_for('products', page=1, source=source, search=search) }}" class="btn btn-sm">首页</a>
+        <a href="{{ url_for('products', page=page-1, source=source, search=search) }}" class="btn btn-sm">上一页</a>
+        {% endif %}
+        <span class="page-info">第 {{ page }} / {{ total_pages }} 页，共 {{ total }} 条</span>
+        {% if page < total_pages %}
+        <a href="{{ url_for('products', page=page+1, source=source, search=search) }}" class="btn btn-sm">下一页</a>
+        <a href="{{ url_for('products', page=total_pages, source=source, search=search) }}" class="btn btn-sm">末页</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

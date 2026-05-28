@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}仪表盘 - 竞品价格监控系统{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h1 class="page-title">仪表盘</h1>
+
+    <div class="stats-grid">
+        <div class="stat-card stat-blue">
+            <div class="stat-icon">📦</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ products_count }}</div>
+                <div class="stat-label">监控商品数</div>
+            </div>
+        </div>
+        <div class="stat-card stat-red">
+            <div class="stat-icon">🔔</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ alerts_count }}</div>
+                <div class="stat-label">待处理告警</div>
+            </div>
+        </div>
+        <div class="stat-card stat-green">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ promotions_count }}</div>
+                <div class="stat-label">进行中促销</div>
+            </div>
+        </div>
+        <div class="stat-card stat-orange">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ price_records }}</div>
+                <div class="stat-label">价格记录数</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h3>价格趋势</h3>
+            <canvas id="priceTrendChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>告警分布</h3>
+            <canvas id="alertDistributionChart"></canvas>
+        </div>
+    </div>
+
+    <div class="recent-section">
+        <h2>最近告警</h2>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>类型</th>
+                        <th>商品</th>
+                        <th>来源</th>
+                        <th>详情</th>
+                        <th>时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alert in recent_alerts %}
+                    <tr>
+                        <td>
+                            <span class="badge badge-{{ alert.alert_type }}">
+                                {{ alert.alert_type }}
+                            </span>
+                        </td>
+                        <td>{{ alert.product_name }}</td>
+                        <td>{{ alert.source }}</td>
+                        <td>{{ alert.message }}</td>
+                        <td>{{ alert.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not recent_alerts %}
+                    <tr>
+                        <td colspan="5" class="empty-cell">暂无告警记录</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+fetch('/api/summary')
+    .then(r => r.json())
+    .then(data => {
+        const trendData = data.price_trend.reverse();
+        new Chart(document.getElementById('priceTrendChart'), {
+            type: 'line',
+            data: {
+                labels: trendData.map(d => d._id),
+                datasets: [{
+                    label: '平均价格',
+                    data: trendData.map(d => d.avg_price.toFixed(2)),
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false }},
+                scales: { y: { beginAtZero: false } }
+            }
+        });
+    });
+
+new Chart(document.getElementById('alertDistributionChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['价格下跌', '价格上涨', '缺货', '促销'],
+        datasets: [{
+            data: [30, 20, 15, 35],
+            backgroundColor: ['#27ae60', '#e74c3c', '#f39c12', '#9b59b6']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+    }
+});
+</script>
+{% endblock %}

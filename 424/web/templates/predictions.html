@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block title %}价格预测 - 竞品价格监控系统{% endblock %}
+
+{% block content %}
+<div class="predictions-page">
+    <h1 class="page-title">价格预测</h1>
+
+    <div class="filter-bar">
+        <form method="GET" action="{{ url_for('predictions') }}" class="filter-form">
+            <div class="filter-group">
+                <label>预警级别:</label>
+                <select name="alert_level">
+                    <option value="">全部</option>
+                    <option value="high" {% if alert_level == 'high' %}selected{% endif %}>高风险</option>
+                    <option value="medium" {% if alert_level == 'medium' %}selected{% endif %}>中风险</option>
+                    <option value="low" {% if alert_level == 'low' %}selected{% endif %}>低风险</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">筛选</button>
+            <a href="{{ url_for('predictions') }}" class="btn btn-secondary">重置</a>
+        </form>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card stat-blue">
+            <div class="stat-icon">📈</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ total }}</div>
+                <div class="stat-label">总预测数</div>
+            </div>
+        </div>
+        <div class="stat-card stat-red">
+            <div class="stat-icon">🔴</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ predictions|selectattr('alert_level', 'equalto', 'high')|list|length }}</div>
+                <div class="stat-label">高风险预警</div>
+            </div>
+        </div>
+        <div class="stat-card stat-orange">
+            <div class="stat-icon">🟠</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ predictions|selectattr('alert_level', 'equalto', 'medium')|list|length }}</div>
+                <div class="stat-label">中风险预警</div>
+            </div>
+        </div>
+        <div class="stat-card stat-green">
+            <div class="stat-icon">🟢</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ predictions|selectattr('alert_level', 'equalto', 'low')|list|length }}</div>
+                <div class="stat-label">低风险预警</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>商品名称</th>
+                    <th>来源</th>
+                    <th>当前价格</th>
+                    <th>预测价格</th>
+                    <th>预计变动</th>
+                    <th>置信度</th>
+                    <th>预警级别</th>
+                    <th>预测趋势</th>
+                    <th>更新时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pred in predictions %}
+                <tr>
+                    <td>{{ pred.product_name }}</td>
+                    <td><span class="badge badge-source">{{ pred.source }}</span></td>
+                    <td class="price">¥{{ pred.current_price or '-' }}</td>
+                    <td class="price">¥{{ pred.predicted_price or '-' }}</td>
+                    <td>
+                        {% if pred.predicted_change is not none %}
+                        <span class="change-ratio {{ 'negative' if pred.predicted_change > 0 else 'positive' }}">
+                            {{ '+' if pred.predicted_change > 0 }}{{ (pred.predicted_change * 100)|round(1) }}%
+                        </span>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if pred.confidence is not none %}
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: {{ (pred.confidence * 100)|round(0) }}%;"></div>
+                            <span class="confidence-text">{{ (pred.confidence * 100)|round(0) }}%</span>
+                        </div>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-{% if pred.alert_level == 'high' %}price_rise{% elif pred.alert_level == 'medium' %}promotion{% else %}success{% endif %}">
+                            {% if pred.alert_level == 'high' %}高风险{% elif pred.alert_level == 'medium' %}中风险{% else %}低风险{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        {% if pred.trend == 'up' %}
+                        <span style="color: #e74c3c;">📈 上涨趋势</span>
+                        {% elif pred.trend == 'down' %}
+                        <span style="color: #27ae60;">📉 下跌趋势</span>
+                        {% else %}
+                        <span style="color: #95a5a6;">➡️ 稳定</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ pred.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <button onclick="showPredictionDetail('{{ pred.product_id }}')" class="btn btn-sm btn-info">详情</button>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not predictions %}
+                <tr>
+                    <td colspan="10" class="empty-cell">暂无预测数据</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="{{ url_for('predictions', page=1, alert_level=alert_level) }}" class="btn btn-sm">首页</a>
+        <a href="{{ url_for('predictions', page=page-1, alert_level=alert_level) }}" class="btn btn-sm">上一页</a>
+        {% endif %}
+        <span class="page-info">第 {{ page }} / {{ total_pages }} 页，共 {{ total }} 条</span>
+        {% if page < total_pages %}
+        <a href="{{ url_for('predictions', page=page+1, alert_level=alert_level) }}" class="btn btn-sm">下一页</a>
+        <a href="{{ url_for('predictions', page=total_pages, alert_level=alert_level) }}" class="btn btn-sm">末页</a>
+        {% endif %}
+    </div>
+</div>
+
+<div id="predictionModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>预测详情</h2>
+        <div id="predictionDetail">
+            <div class="loading">加载中...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showPredictionDetail(productId) {
+    fetch(`/api/predictions/${productId}`)
+        .then(r => r.json())
+        .then(data => {
+            const modal = document.getElementById('predictionModal');
+            const detail = document.getElementById('predictionDetail');
+            
+            let html = `
+                <div class="detail-info">
+                    <h3>${data.product_name}</h3>
+                    <p><strong>来源:</strong> ${data.source}</p>
+                    <p><strong>当前价格:</strong> ¥${data.current_price}</p>
+                    <p><strong>预测价格:</strong> ¥${data.predicted_price}</p>
+                    <p><strong>预计变动:</strong> ${data.predicted_change > 0 ? '+' : ''}${(data.predicted_change * 100).toFixed(1)}%</p>
+                    <p><strong>置信度:</strong> ${(data.confidence * 100).toFixed(0)}%</p>
+                    <p><strong>趋势:</strong> ${data.trend}</p>
+                    <p><strong>预警级别:</strong> ${data.alert_level}</p>
+                    <p><strong>预测周期:</strong> ${data.prediction_days || 7}天</p>
+                    <p><strong>预测方法:</strong> ${data.method || '多模型融合'}</p>
+                </div>
+                <div class="detail-chart">
+                    <h3>预测说明</h3>
+                    <p>${data.reasoning || '基于历史价格数据的多模型融合预测结果'}</p>
+                    ${data.price_points ? `
+                    <h4>预测价格区间:</h4>
+                    <ul>
+                        <li>最低价: ¥${data.price_points.min}</li>
+                        <li>最高价: ¥${data.price_points.max}</li>
+                        <li>均价: ¥${data.price_points.avg}</li>
+                    </ul>
+                    ` : ''}
+                </div>
+            `;
+            detail.innerHTML = html;
+            modal.style.display = 'block';
+        });
+}
+
+function closeModal() {
+    document.getElementById('predictionModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('predictionModal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

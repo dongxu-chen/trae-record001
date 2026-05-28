@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}竞品价格监控系统{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="nav-brand">价格监控</a>
+            <ul class="nav-menu">
+                <li><a href="{{ url_for('index') }}">仪表盘</a></li>
+                <li><a href="{{ url_for('products') }}">商品管理</a></li>
+                <li><a href="{{ url_for('predictions') }}">价格预测</a></li>
+                <li><a href="{{ url_for('cross_promotions') }}">交叉促销</a></li>
+                <li><a href="{{ url_for('compliance') }}">合规检查</a></li>
+                <li><a href="{{ url_for('alerts') }}">告警中心</a></li>
+                <li><a href="{{ url_for('promotions') }}">促销活动</a></li>
+                <li><a href="{{ url_for('settings') }}">系统设置</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>竞品价格监控系统 &copy; {{ now.year }}</p>
+    </footer>
+
+    <script>
+        document.querySelectorAll('.alert').forEach(alert => {
+            setTimeout(() => alert.remove(), 5000);
+        });
+    </script>
+</body>
+</html>

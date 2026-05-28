@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}合规检查 - 竞品价格监控系统{% endblock %}
+
+{% block content %}
+<div class="compliance-page">
+    <h1 class="page-title">合规检查</h1>
+
+    <div class="filter-bar">
+        <form method="GET" action="{{ url_for('compliance') }}" class="filter-form">
+            <div class="filter-group">
+                <label>风险级别:</label>
+                <select name="risk_level">
+                    <option value="">全部</option>
+                    <option value="high" {% if risk_level == 'high' %}selected{% endif %}>高风险</option>
+                    <option value="medium" {% if risk_level == 'medium' %}selected{% endif %}>中风险</option>
+                    <option value="low" {% if risk_level == 'low' %}selected{% endif %}>低风险</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">筛选</button>
+            <a href="{{ url_for('compliance') }}" class="btn btn-secondary">重置</a>
+        </form>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card stat-blue">
+            <div class="stat-icon">📋</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ total }}</div>
+                <div class="stat-label">总检查次数</div>
+            </div>
+        </div>
+        <div class="stat-card stat-red">
+            <div class="stat-icon">🚨</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ checks|selectattr('compliance_level', 'equalto', 'high')|list|length }}</div>
+                <div class="stat-label">高风险违规</div>
+            </div>
+        </div>
+        <div class="stat-card stat-orange">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ checks|selectattr('compliance_level', 'equalto', 'medium')|list|length }}</div>
+                <div class="stat-label">中风险违规</div>
+            </div>
+        </div>
+        <div class="stat-card stat-green">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ checks|selectattr('compliance_level', 'equalto', 'low')|list|length }}</div>
+                <div class="stat-label">合规商品</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>商品名称</th>
+                    <th>来源</th>
+                    <th>当前价格</th>
+                    <th>宣称原价</th>
+                    <th>违规类型</th>
+                    <th>风险级别</th>
+                    <th>检测时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for check in checks %}
+                <tr class="{{ 'high-risk' if check.compliance_level == 'high' }}">
+                    <td>{{ check.product_name }}</td>
+                    <td><span class="badge badge-source">{{ check.source }}</span></td>
+                    <td class="price">¥{{ check.current_price or '-' }}</td>
+                    <td class="price-original">¥{{ check.original_price or '-' }}</td>
+                    <td>
+                        {% if check.violations %}
+                            {% for violation in check.violations %}
+                            <span class="violation-tag violation-{{ violation.type }}">{{ violation.label }}</span>
+                            {% endfor %}
+                        {% else %}
+                        <span class="badge badge-success">合规</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-{% if check.compliance_level == 'high' %}price_rise{% elif check.compliance_level == 'medium' %}promotion{% else %}success{% endif %}">
+                            {% if check.compliance_level == 'high' %}高风险{% elif check.compliance_level == 'medium' %}中风险{% else %}合规{% endif %}
+                        </span>
+                    </td>
+                    <td>{{ check.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <button onclick="showComplianceDetail('{{ check.product_id }}')" class="btn btn-sm btn-info">详情</button>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not checks %}
+                <tr>
+                    <td colspan="8" class="empty-cell">暂无合规检查数据</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="{{ url_for('compliance', page=1, risk_level=risk_level) }}" class="btn btn-sm">首页</a>
+        <a href="{{ url_for('compliance', page=page-1, risk_level=risk_level) }}" class="btn btn-sm">上一页</a>
+        {% endif %}
+        <span class="page-info">第 {{ page }} / {{ total_pages }} 页，共 {{ total }} 条</span>
+        {% if page < total_pages %}
+        <a href="{{ url_for('compliance', page=page+1, risk_level=risk_level) }}" class="btn btn-sm">下一页</a>
+        <a href="{{ url_for('compliance', page=total_pages, risk_level=risk_level) }}" class="btn btn-sm">末页</a>
+        {% endif %}
+    </div>
+</div>
+
+<div id="complianceModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeComplianceModal()">&times;</span>
+        <h2>合规检查详情</h2>
+        <div id="complianceDetail">
+            <div class="loading">加载中...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showComplianceDetail(productId) {
+    fetch(`/api/compliance/${productId}`)
+        .then(r => r.json())
+        .then(data => {
+            const modal = document.getElementById('complianceModal');
+            const detail = document.getElementById('complianceDetail');
+            
+            let violationsHtml = '';
+            if (data.violations && data.violations.length > 0) {
+                violationsHtml = '<h4>违规详情:</h4><ul class="violation-list">';
+                data.violations.forEach(v => {
+                    violationsHtml += `
+                        <li class="violation-item">
+                            <span class="violation-title">${v.label}</span>
+                            <p>${v.description}</p>
+                            ${v.evidence ? `<p class="violation-evidence">证据: ${v.evidence}</p>` : ''}
+                        </li>
+                    `;
+                });
+                violationsHtml += '</ul>';
+            } else {
+                violationsHtml = '<p style="color: #27ae60;">✅ 未检测到违规行为</p>';
+            }
+            
+            let html = `
+                <div class="detail-info">
+                    <h3>${data.product_name}</h3>
+                    <p><strong>来源:</strong> ${data.source}</p>
+                    <p><strong>当前价格:</strong> ¥${data.current_price}</p>
+                    <p><strong>宣称原价:</strong> ¥${data.original_price || '未标注'}</p>
+                    <p><strong>风险级别:</strong> ${data.compliance_level}</p>
+                    <p><strong>检测时间:</strong> ${new Date(data.created_at).toLocaleString()}</p>
+                </div>
+                <div class="detail-chart">
+                    <h3>合规分析</h3>
+                    ${violationsHtml}
+                    ${data.price_analysis ? `
+                    <h4>价格分析:</h4>
+                    <ul>
+                        <li>历史最低价: ¥${data.price_analysis.min_price}</li>
+                        <li>历史最高价: ¥${data.price_analysis.max_price}</li>
+                        <li>历史均价: ¥${data.price_analysis.avg_price}</li>
+                        <li>价格波动率: ${(data.price_analysis.volatility * 100).toFixed(1)}%</li>
+                    </ul>
+                    ` : ''}
+                </div>
+            `;
+            detail.innerHTML = html;
+            modal.style.display = 'block';
+        });
+}
+
+function closeComplianceModal() {
+    document.getElementById('complianceModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('complianceModal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

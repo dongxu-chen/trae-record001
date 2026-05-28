@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}商品详情 - 竞品价格监控系统{% endblock %}
+
+{% block content %}
+<div class="product-detail">
+    <div class="detail-header">
+        <h1>{{ product.name }}</h1>
+        <div class="detail-actions">
+            <a href="{{ url_for('export_price_history', product_id=product.product_id, format='xlsx') }}" class="btn btn-success">导出价格历史</a>
+            <a href="{{ url_for('products') }}" class="btn btn-secondary">返回列表</a>
+        </div>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-info">
+            <h3>商品信息</h3>
+            <div class="info-row">
+                <span class="info-label">商品ID:</span>
+                <span class="info-value">{{ product.product_id }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">品牌:</span>
+                <span class="info-value">{{ product.brand or '-' }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">分类:</span>
+                <span class="info-value">{{ product.category or '-' }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">来源:</span>
+                <span class="info-value">{{ product.source }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">当前价格:</span>
+                <span class="info-value price-highlight">¥{{ product.current_price or '-' }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">原价:</span>
+                <span class="info-value">¥{{ product.original_price or '-' }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">库存状态:</span>
+                <span class="info-value">
+                    {% if product.in_stock %}
+                    <span class="badge badge-stock">有货</span>
+                    {% else %}
+                    <span class="badge badge-out">缺货</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">促销状态:</span>
+                <span class="info-value">
+                    {% if product.is_on_promotion %}
+                    <span class="badge badge-promotion">促销中</span>
+                    {% else %}
+                    <span class="badge badge-normal">无</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">评分:</span>
+                <span class="info-value">{{ product.rating or '-' }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">评论数:</span>
+                <span class="info-value">{{ product.review_count or '-' }}</span>
+            </div>
+            {% if product.url %}
+            <div class="info-row">
+                <span class="info-label">原链接:</span>
+                <span class="info-value"><a href="{{ product.url }}" target="_blank">{{ product.url }}</a></span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="detail-chart">
+            <h3>价格历史曲线</h3>
+            <canvas id="priceHistoryChart"></canvas>
+            <div class="chart-legend">
+                <div class="legend-item"><span class="legend-color" style="background:#3498db"></span>当前价格</div>
+                <div class="legend-item"><span class="legend-color" style="background:#e74c3c"></span>原价</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="history-section">
+        <h3>价格历史记录</h3>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>价格</th>
+                        <th>原价</th>
+                        <th>库存</th>
+                        <th>促销</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in history_data[-30:]|reverse %}
+                    <tr>
+                        <td>{{ h.timestamp }}</td>
+                        <td class="price">¥{{ h.price or '-' }}</td>
+                        <td class="price-original">¥{{ h.original_price or '-' }}</td>
+                        <td>
+                            {% if h.in_stock %}
+                            <span class="badge badge-stock">有货</span>
+                            {% else %}
+                            <span class="badge badge-out">缺货</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if h.is_on_promotion %}
+                            <span class="badge badge-promotion">是</span>
+                            {% else %}
+                            <span class="badge badge-normal">否</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not history_data %}
+                    <tr>
+                        <td colspan="5" class="empty-cell">暂无历史数据</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+const historyData = {{ history_data | tojson }};
+const labels = historyData.map(d => d.timestamp);
+const prices = historyData.map(d => d.price);
+const originalPrices = historyData.map(d => d.original_price);
+
+new Chart(document.getElementById('priceHistoryChart'), {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [
+            {
+                label: '当前价格',
+                data: prices,
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                tension: 0.3,
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            },
+            {
+                label: '原价',
+                data: originalPrices,
+                borderColor: '#e74c3c',
+                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                tension: 0.3,
+                fill: false,
+                borderDash: [5, 5],
+                pointRadius: 3
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            legend: { position: 'top' }
+        },
+        scales: {
+            y: {
+                beginAtZero: false,
+                ticks: {
+                    callback: v => '¥' + v
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

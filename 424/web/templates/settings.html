@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+
+{% block title %}系统设置 - 竞品价格监控系统{% endblock %}
+
+{% block content %}
+<div class="settings-page">
+    <h1 class="page-title">系统设置</h1>
+
+    <div class="settings-section">
+        <h2>竞品源配置</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>名称</th>
+                    <th>域名</th>
+                    <th>动态渲染</th>
+                    <th>抓取间隔(秒)</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for comp in spider_config.competitors %}
+                <tr>
+                    <td>{{ comp.name }}</td>
+                    <td>{{ comp.domain }}</td>
+                    <td>{{ '是' if comp.use_playwright else '否' }}</td>
+                    <td>{{ comp.schedule_interval }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if comp.enabled else 'disabled' }}">
+                            {{ '启用' if comp.enabled else '禁用' }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="settings-section">
+        <h2>告警规则配置</h2>
+        <div class="config-info-row">
+            <span class="config-label">同比分析:</span>
+            <span class="config-value">
+                {% if alert_config.enable_yoy_analysis %}
+                <span class="badge badge-success">已启用 (对比{{ alert_config.yoy_days_back }}天前)</span>
+                {% else %}
+                <span class="badge badge-disabled">已禁用</span>
+                {% endif %}
+            </span>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>类型</th>
+                    <th>阈值</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rule in alert_config.alert_rules %}
+                <tr>
+                    <td>{{ rule.type }}</td>
+                    <td>
+                        {% if rule.threshold is defined %}
+                        {{ (rule.threshold * 100)|round(1) }}%
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if rule.enabled else 'disabled' }}">
+                            {{ '启用' if rule.enabled else '禁用' }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="settings-section">
+        <h2>分析模块配置</h2>
+        <div class="config-info-row">
+            <span class="config-label">价格预测:</span>
+            <span class="config-value">
+                {% if analysis_config.enable_price_prediction %}
+                <span class="badge badge-success">已启用 (预测{{ analysis_config.prediction_days }}天)</span>
+                {% else %}
+                <span class="badge badge-disabled">已禁用</span>
+                {% endif %}
+            </span>
+        </div>
+        <div class="config-info-row">
+            <span class="config-label">交叉促销识别:</span>
+            <span class="config-value">
+                {% if analysis_config.enable_cross_promo %}
+                <span class="badge badge-success">已启用</span>
+                {% else %}
+                <span class="badge badge-disabled">已禁用</span>
+                {% endif %}
+            </span>
+        </div>
+        <div class="config-info-row">
+            <span class="config-label">价格欺诈检测:</span>
+            <span class="config-value">
+                {% if analysis_config.enable_fraud_detection %}
+                <span class="badge badge-success">已启用</span>
+                {% else %}
+                <span class="badge badge-disabled">已禁用</span>
+                {% endif %}
+            </span>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>配置项</th>
+                    <th>值</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>价格预测最小数据点</td>
+                    <td>{{ analysis_config.min_data_points }}个</td>
+                    <td>进行价格预测所需的最少历史数据点</td>
+                </tr>
+                <tr>
+                    <td>移动平均窗口</td>
+                    <td>{{ analysis_config.moving_avg_window }}天</td>
+                    <td>移动平均法使用的历史数据窗口大小</td>
+                </tr>
+                <tr>
+                    <td>趋势检测阈值</td>
+                    <td>{{ (analysis_config.trend_threshold * 100)|round(1) }}%</td>
+                    <td>判定价格趋势的灵敏度</td>
+                </tr>
+                <tr>
+                    <td>高风险下跌阈值</td>
+                    <td>{{ (analysis_config.prediction_alert_thresholds.high_drop * 100)|round(0) }}%</td>
+                    <td>触发高风险预警的价格跌幅</td>
+                </tr>
+                <tr>
+                    <td>高风险上涨阈值</td>
+                    <td>{{ (analysis_config.prediction_alert_thresholds.high_rise * 100)|round(0) }}%</td>
+                    <td>触发高风险预警的价格涨幅</td>
+                </tr>
+                <tr>
+                    <td>欺诈检测窗口</td>
+                    <td>{{ analysis_config.fraud_window_days }}天</td>
+                    <td>价格欺诈检测的历史数据范围</td>
+                </tr>
+                <tr>
+                    <td>先涨后降检测</td>
+                    <td>涨{{ (analysis_config.min_rise_ratio * 100)|round(0) }}% / 降{{ (analysis_config.min_drop_ratio * 100)|round(0) }}%</td>
+                    <td>先涨后降模式的检测阈值</td>
+                </tr>
+                <tr>
+                    <td>虚构原价偏差</td>
+                    <td>{{ (analysis_config.min_original_price_deviation * 100)|round(0) }}%</td>
+                    <td>宣称原价与历史均价偏差阈值</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="settings-section">
+        <h2>代理IP池状态</h2>
+        <div id="proxyStatus" class="proxy-status">
+            <div class="status-loading">加载中...</div>
+        </div>
+        <div style="margin-top: 10px; display: flex; gap: 10px;">
+            <button onclick="refreshProxy()" class="btn btn-primary">刷新代理池</button>
+            <button onclick="forceHealthCheck()" class="btn btn-info">主动健康检查</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function loadProxyStatus() {
+    fetch('/api/proxy_status')
+        .then(r => r.json())
+        .then(data => {
+            const container = document.getElementById('proxyStatus');
+            container.innerHTML = `
+                <div class="status-item">
+                    <span class="status-label">代理池启用:</span>
+                    <span class="status-value">${data.enabled ? '是' : '否'}</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">总代理数:</span>
+                    <span class="status-value">${data.size}</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">健康代理数:</span>
+                    <span class="status-value" style="color: #27ae60;">${data.healthy_size}</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">待查代理数:</span>
+                    <span class="status-value" style="color: #f39c12;">${data.probation_size}</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">最小阈值:</span>
+                    <span class="status-value">${data.min_size}</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">健康检查:</span>
+                    <span class="status-value">
+                        ${data.health_check_running ? '<span style="color:#27ae60;">运行中</span>' : '<span style="color:#95a5a6;">未运行</span>'}
+                    </span>
+                </div>
+            `;
+        });
+}
+
+function refreshProxy() {
+    fetch('/api/proxy/refresh', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            alert(`代理池已刷新，当前代理数: ${data.pool_size}`);
+            loadProxyStatus();
+        });
+}
+
+function forceHealthCheck() {
+    fetch('/api/proxy/health_check', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            alert(`主动健康检查完成: 移除 ${data.removed} 个, 剩余 ${data.remaining} 个`);
+            loadProxyStatus();
+        });
+}
+
+loadProxyStatus();
+</script>
+{% endblock %}

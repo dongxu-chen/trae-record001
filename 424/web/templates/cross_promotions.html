@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}交叉促销 - 竞品价格监控系统{% endblock %}
+
+{% block content %}
+<div class="cross-promotions-page">
+    <h1 class="page-title">交叉促销识别</h1>
+
+    <div class="stats-grid">
+        <div class="stat-card stat-blue">
+            <div class="stat-icon">🎁</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ total }}</div>
+                <div class="stat-label">总促销活动</div>
+            </div>
+        </div>
+        <div class="stat-card stat-green">
+            <div class="stat-icon">🛒</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ promotions|selectattr('promo_type', 'equalto', 'buy_x_get_y')|list|length }}</div>
+                <div class="stat-label">买赠活动</div>
+            </div>
+        </div>
+        <div class="stat-card stat-orange">
+            <div class="stat-icon">📦</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ promotions|selectattr('promo_type', 'equalto', 'package_deal')|list|length }}</div>
+                <div class="stat-label">套餐优惠</div>
+            </div>
+        </div>
+        <div class="stat-card stat-red">
+            <div class="stat-icon">💰</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ promotions|selectattr('promo_type', 'equalto', 'conditional_discount')|list|length }}</div>
+                <div class="stat-label">满减活动</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="promo-grid">
+        {% for promo in promotions %}
+        <div class="cross-promo-card promo-type-{{ promo.promo_type }}">
+            <div class="cross-promo-header">
+                <span class="promo-type-badge">
+                    {% if promo.promo_type == 'buy_x_get_y' %}
+                    🎁 买赠
+                    {% elif promo.promo_type == 'package_deal' %}
+                    📦 套餐
+                    {% elif promo.promo_type == 'conditional_discount' %}
+                    💰 满减
+                    {% else %}
+                    🏷️ 其他
+                    {% endif %}
+                </span>
+                <span class="cross-promo-source">{{ promo.source }}</span>
+            </div>
+
+            <div class="cross-promo-title">{{ promo.product_name }}</div>
+
+            <div class="cross-promo-desc">{{ promo.description }}</div>
+
+            <div class="cross-promo-products">
+                <h4>关联商品:</h4>
+                <ul>
+                    {% for product in promo.related_products %}
+                    <li>
+                        <span class="product-name">{{ product.name }}</span>
+                        {% if product.price %}
+                        <span class="product-price">¥{{ product.price }}</span>
+                        {% endif %}
+                        {% if product.discount %}
+                        <span class="product-discount">-{{ (product.discount * 100)|round(0) }}%</span>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            {% if promo.savings %}
+            <div class="cross-promo-savings">
+                <span>预计节省: <strong>¥{{ promo.savings }}</strong>
+            </div>
+            {% endif %}
+
+            {% if promo.valid_until %}
+            <div class="cross-promo-footer">
+                <span class="promo-expiry">有效期至: {{ promo.valid_until }}</span>
+            </div>
+            {% endif %}
+
+            <div class="cross-promo-actions">
+                <a href="{{ promo.url or '#' }}" target="_blank" class="btn btn-sm btn-primary">查看详情</a>
+                <span class="promo-time">{{ promo.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% if not promotions %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #95a5a6;">
+            暂无交叉促销数据
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="{{ url_for('cross_promotions', page=1) }}" class="btn btn-sm">首页</a>
+        <a href="{{ url_for('cross_promotions', page=page-1) }}" class="btn btn-sm">上一页</a>
+        {% endif %}
+        <span class="page-info">第 {{ page }} / {{ total_pages }} 页，共 {{ total }} 条</span>
+        {% if page < total_pages %}
+        <a href="{{ url_for('cross_promotions', page=page+1) }}" class="btn btn-sm">下一页</a>
+        <a href="{{ url_for('cross_promotions', page=total_pages) }}" class="btn btn-sm">末页</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}促销活动 - 竞品价格监控系统{% endblock %}
+
+{% block content %}
+<div class="promotions-page">
+    <h1 class="page-title">促销活动</h1>
+
+    <div class="filter-bar">
+        <div class="export-group">
+            <a href="{{ url_for('export_promotions', format='xlsx') }}" class="btn btn-success">导出Excel</a>
+            <a href="{{ url_for('export_promotions', format='csv') }}" class="btn btn-info">导出CSV</a>
+        </div>
+    </div>
+
+    <div class="promo-grid">
+        {% for promo in promotions %}
+        <div class="promo-card">
+            <div class="promo-header">
+                <span class="badge badge-{{ promo.promo_type }}">{{ promo.promo_type }}</span>
+                <span class="promo-source">{{ promo.source }}</span>
+            </div>
+            <h3 class="promo-name">{{ promo.product_name }}</h3>
+            <div class="promo-price">
+                <span class="current-price">¥{{ promo.price }}</span>
+                {% if promo.original_price %}
+                <span class="original-price">¥{{ promo.original_price }}</span>
+                {% endif %}
+            </div>
+            {% if promo.promo_info %}
+            <p class="promo-info">{{ promo.promo_info }}</p>
+            {% endif %}
+            <div class="promo-footer">
+                <span>开始: {{ promo.start_date.strftime('%Y-%m-%d %H:%M') if promo.start_date else '-' }}</span>
+            </div>
+        </div>
+        {% endfor %}
+        {% if not promotions %}
+        <div class="empty-cell" style="grid-column: 1/-1;">暂无进行中的促销活动</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
