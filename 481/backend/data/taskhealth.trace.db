@@ -1,0 +1,384 @@
+2026-05-29 01:16:00.869227+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:16:00.950184+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:17:00.281198+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:17:00.366068+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:19:00.964495+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:19:01.076121+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:20:00.175407+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:20:00.206698+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:21:00.333881+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:21:00.394363+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:25:00.368006+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:25:00.424989+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:26:00.259211+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:26:00.286424+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:27:00.608580+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:27:00.676729+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:28:00.111310+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:28:00.134138+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:29:00.475699+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:29:00.542422+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:30:00.285761+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:30:00.342701+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:31:00.269887+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:31:00.320827+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:32:00.083946+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:32:00.104174+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:33:00.087070+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:33:00.110777+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:34:00.193257+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:34:00.219502+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:35:00.607452+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:35:00.672263+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:36:00.397150+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:36:00.438731+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:37:00.129033+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:37:00.151920+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:38:00.102360+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:38:00.123421+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:39:00.307546+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:39:00.394511+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:40:00.052965+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:40:00.061520+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:41:00.115202+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:41:00.145860+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:42:00.122524+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:42:00.147580+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:43:01.408540+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:43:02.276390+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:44:00.065837+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 01:44:00.083941+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:05:00.302879+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:05:00.343208+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:08:00.743018+08:00 jdbc[6]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:08:00.863294+08:00 jdbc[6]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:09:00.238569+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:09:00.253729+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:10:00.152714+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:10:00.180927+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:10:40.258910+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:10:40.296314+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:11:00.142880+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:11:00.171630+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:12:00.225291+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:12:00.248083+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:13:00.079366+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:13:00.086936+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:14:00.075867+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:14:00.084446+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:15:00.153930+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:15:00.170087+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:16:00.070711+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:16:00.079828+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:17:00.171148+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:17:00.196197+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:17:11.993349+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:17:12.003457+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:18:00.073487+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:18:00.081722+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:18:39.016266+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:18:39.027444+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:19:00.095150+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:19:00.114150+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:20:00.107767+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:20:00.118844+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:21:00.047239+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:21:00.058852+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:22:00.112749+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:22:00.129353+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:23:00.094232+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:23:00.107928+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:24:00.067391+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:24:00.079479+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:25:00.116240+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:25:00.131503+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:26:00.062347+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:26:00.068421+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:27:00.053615+08:00 jdbc[6]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:27:00.062606+08:00 jdbc[6]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:28:00.136711+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:28:00.153970+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:29:00.087282+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:29:00.096455+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:30:00.081803+08:00 jdbc[6]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:30:00.091327+08:00 jdbc[6]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:31:00.285725+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:31:00.310383+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:32:00.117216+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:32:00.150099+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:33:00.040485+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:33:00.046016+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:34:00.071782+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:34:00.077819+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:35:00.179464+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:35:00.216799+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:36:00.080813+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:36:00.094862+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:37:00.072108+08:00 jdbc[23]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:37:00.079358+08:00 jdbc[23]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:44:00.689641+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:44:01.028391+08:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:44:29.279431+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:44:29.312526+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:45:00.173957+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:45:00.217821+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:46:00.148583+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:46:00.182725+08:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:47:00.397335+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Review error logs for recurring patterns; improve error handling; Profile slow ... (351)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2026-05-29 02:47:00.441793+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "SUGGESTION CHARACTER VARYING(255)": "'Investigate and fix error causes; add retry mechanism and circuit breaker; Prof... (274)"; SQL statement:
+insert into health_score (calculated_at,diagnosis,duration_score,frequency_score,overall_score,resource_score,success_rate_score,suggestion,task_group,task_name,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]

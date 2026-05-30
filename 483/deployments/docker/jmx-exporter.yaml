@@ -1,0 +1,55 @@
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+rules:
+  - pattern: kafka.server<type=(.+), name=(.+), clientId=(.+), topic=(.+), partition=(.*)><>Value
+    name: kafka_server_$1_$2
+    type: GAUGE
+    labels:
+      clientId: "$3"
+      topic: "$4"
+      partition: "$5"
+
+  - pattern: kafka.server<type=(.+), name=(.+), clientId=(.+), brokerHost=(.+), brokerPort=(.+)><>Value
+    name: kafka_server_$1_$2
+    type: GAUGE
+    labels:
+      clientId: "$3"
+      broker: "$4:$5"
+
+  - pattern: kafka.server<type=(.+), name=(.+)><>(Count|Value)
+    name: kafka_server_$1_$2
+    type: GAUGE
+
+  - pattern: kafka.consumer<type=(.+), name=(.+)><>(Count|Value)
+    name: kafka_consumer_$1_$2
+    type: GAUGE
+
+  - pattern: kafka.producer<type=(.+), name=(.+)><>(Count|Value)
+    name: kafka_producer_$1_$2
+    type: GAUGE
+
+  - pattern: java.lang<type=OperatingSystem><>(.+): (.*)
+    name: os_$1
+    value: $2
+    type: GAUGE
+
+  - pattern: java.lang<type=Memory><>HeapMemoryUsage
+    name: jvm_memory_bytes_used
+    labels:
+      area: "heap"
+    type: GAUGE
+    attrNameSnakeCase: true
+
+  - pattern: java.lang<type=Memory><>NonHeapMemoryUsage
+    name: jvm_memory_bytes_used
+    labels:
+      area: "nonheap"
+    type: GAUGE
+    attrNameSnakeCase: true
+
+  - pattern: java.lang<type=GarbageCollector, name=(.+)><>(.+): (\d+)
+    name: jvm_gc_$2
+    labels:
+      collector: "$1"
+    value: $3
+    type: COUNTER

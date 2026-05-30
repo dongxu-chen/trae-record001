@@ -1,0 +1,31 @@
+kafka:
+  brokers:
+    - "localhost:9092"
+  consumer_groups: []
+  topics: []
+  username: ""
+  password: ""
+  tls_enabled: false
+  timeout: 30s
+  scrape_interval: 15s
+  rtt_warning_threshold: 50
+  rtt_critical_threshold: 200
+  enable_rtt_probe: true
+  rtt_probe_interval: 10s
+
+analyzer:
+  lag_threshold: 1000
+  hotspot_threshold: 0.5
+  slow_processing_threshold: 100.0
+  network_latency_threshold: 500.0
+  imbalance_threshold: 0.3
+  history_retention: 100
+  message_size_weight: 0.5
+
+metrics:
+  enable_prometheus: true
+  path: "/metrics"
+
+server:
+  host: "0.0.0.0"
+  port: 8080

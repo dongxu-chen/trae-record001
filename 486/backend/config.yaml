@@ -1,0 +1,33 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  read_timeout: "30s"
+  write_timeout: "30s"
+
+kubernetes:
+  kubeconfig: "~/.kube/config"
+  in_cluster: false
+
+istio:
+  namespace: "istio-system"
+
+opa:
+  url: "http://localhost:8181"
+  timeout: 10
+
+kiali:
+  url: "http://localhost:20001"
+  username: ""
+  password: ""
+
+database:
+  type: "sqlite"
+  host: "localhost"
+  port: 3306
+  user: "root"
+  password: ""
+  dbname: "mesh_security"
+
+log:
+  level: "info"
+  format: "json"

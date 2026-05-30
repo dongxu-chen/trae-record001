@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>气象要素空间插值系统</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#f0f2f5;color:#333}
+.header{background:linear-gradient(135deg,#1a237e 0%,#283593 50%,#1565c0 100%);color:#fff;padding:20px 32px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.header h1{font-size:22px;font-weight:700;letter-spacing:1px}
+.header .subtitle{font-size:13px;opacity:.8;margin-top:2px}
+.container{display:flex;gap:20px;padding:20px 24px;max-width:1600px;margin:0 auto}
+.sidebar{width:340px;flex-shrink:0;display:flex;flex-direction:column;gap:16px}
+.main{flex:1;display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden}
+.card-header{padding:12px 16px;font-size:14px;font-weight:600;border-bottom:1px solid #eee;display:flex;align-items:center;gap:8px}
+.card-header .icon{width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff}
+.card-body{padding:14px 16px}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:4px}
+.form-group select,.form-group input[type="text"],.form-group input[type="number"]{
+    width:100%;padding:7px 10px;border:1px solid #d0d5dd;border-radius:6px;font-size:13px;
+    background:#fafafa;transition:border .2s}
+.form-group select:focus,.form-group input:focus{outline:none;border-color:#1565c0;background:#fff}
+.form-row{display:flex;gap:10px}
+.form-row .form-group{flex:1}
+.checkbox-row{display:flex;align-items:center;gap:8px;padding:6px 0}
+.checkbox-row input[type="checkbox"]{width:16px;height:16px;cursor:pointer}
+.checkbox-row label{margin:0;font-size:12px;font-weight:500;cursor:pointer}
+.btn{padding:9px 18px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:#1565c0;color:#fff}
+.btn-primary:hover{background:#0d47a1;box-shadow:0 2px 6px rgba(21,101,192,.3)}
+.btn-success{background:#2e7d32;color:#fff}
+.btn-success:hover{background:#1b5e20}
+.btn-warning{background:#e65100;color:#fff}
+.btn-warning:hover{background:#bf360c}
+.btn-purple{background:#7b1fa2;color:#fff}
+.btn-purple:hover{background:#4a148c}
+.btn-outline{background:transparent;color:#1565c0;border:1px solid #1565c0}
+.btn-outline:hover{background:#e3f2fd}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-item{background:#f5f7fa;border-radius:6px;padding:10px 12px;text-align:center}
+.stat-item .value{font-size:20px;font-weight:700;color:#1a237e}
+.stat-item .label{font-size:11px;color:#888;margin-top:2px}
+.image-container{width:100%;text-align:center}
+.image-container img{max-width:100%;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.tab-bar{display:flex;border-bottom:2px solid #e0e0e0}
+.tab-item{padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;color:#888;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
+.tab-item.active{color:#1565c0;border-bottom-color:#1565c0}
+.tab-item:hover{color:#1565c0}
+.tab-content{display:none;padding:16px}
+.tab-content.active{display:block}
+.params-panel{max-height:320px;overflow-y:auto}
+.loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.3);display:none;align-items:center;justify-content:center;z-index:9999}
+.loading-overlay.show{display:flex}
+.spinner{width:48px;height:48px;border:4px solid #e0e0e0;border-top-color:#1565c0;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:8px;color:#fff;font-size:13px;z-index:10000;animation:slideIn .3s;max-width:400px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.toast.error{background:#c62828}
+.toast.success{background:#2e7d32}
+@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.badge-blue{background:#e3f2fd;color:#1565c0}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-orange{background:#fff3e0;color:#e65100}
+.badge-purple{background:#f3e5f5;color:#7b1fa2}
+.cv-result-table{width:100%;border-collapse:collapse;font-size:12px}
+.cv-result-table th,.cv-result-table td{padding:6px 10px;border:1px solid #eee;text-align:center}
+.cv-result-table th{background:#f5f7fa;font-weight:600;color:#555}
+.file-upload{border:2px dashed #d0d5dd;border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.file-upload:hover{border-color:#1565c0;background:#f5f9ff}
+.file-upload input{position:absolute;opacity:0;width:100%;height:100%;left:0;top:0;cursor:pointer}
+.file-upload .hint{font-size:12px;color:#888;margin-top:4px}
+.param-grid-result{max-height:400px;overflow-y:auto}
+.param-grid-result table{width:100%;border-collapse:collapse;font-size:11px}
+.param-grid-result th,.param-grid-result td{padding:4px 8px;border:1px solid #eee;text-align:center}
+.param-grid-result th{background:#f5f7fa;font-weight:600}
+.param-grid-result tr.best{background:#e8f5e9;font-weight:700}
+.slider-container{display:flex;align-items:center;gap:10px}
+.slider-container input[type="range"]{flex:1}
+.slider-value{min-width:40px;text-align:right;font-weight:600;color:#1565c0;font-size:12px}
+.info-box{background:#e3f2fd;border-left:3px solid #1565c0;padding:10px 12px;border-radius:4px;font-size:12px;color:#1a237e;margin-top:8px}
+.info-box b{color:#1565c0}
+.side-tabs{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.side-tab{padding:10px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;color:#555;transition:all .2s;border:1px solid #e0e0e0}
+.side-tab.active{background:#1565c0;color:#fff;border-color:#1565c0}
+.side-tab:hover{background:#e3f2fd;border-color:#1565c0;color:#1565c0}
+.side-panel{display:none}
+.side-panel.active{display:block}
+.uncertainty-report{background:#f5f7fa;border-radius:6px;padding:12px;font-size:12px;line-height:1.6;margin-bottom:12px}
+.uncertainty-report pre{margin:0;font-family:monospace;white-space:pre-wrap}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h1>🌍 气象要素空间插值系统</h1>
+        <div class="subtitle">Meteorological Spatial Interpolation System — Kriging / IDW / RBF</div>
+    </div>
+</div>
+
+<div class="loading-overlay" id="loading">
+    <div class="spinner"></div>
+</div>
+
+<div class="container">
+    <div class="sidebar">
+        <div class="side-tabs">
+            <div class="side-tab active" onclick="switchSideTab('spatial')">🗺️ 空间插值</div>
+            <div class="side-tab" onclick="switchSideTab('temporal')">📈 时序插值</div>
+            <div class="side-tab" onclick="switchSideTab('cokriging')">🔗 协同插值</div>
+            <div class="side-tab" onclick="switchSideTab('uncertainty')">📊 不确定性评估</div>
+        </div>
+
+        <div class="side-panel active" id="side-panel-spatial">
+            <div class="card">
+                <div class="card-header">
+                    <div class="icon" style="background:#1565c0">📊</div>
+                    数据源
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>变量类型</label>
+                        <select id="variable">
+                            <option value="temperature">温度 (temperature)</option>
+                            <option value="precipitation">降水 (precipitation)</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>经度列名</label>
+                            <input type="text" id="lon_col" value="lon">
+                        </div>
+                        <div class="form-group">
+                            <label>纬度列名</label>
+                            <input type="text" id="lat_col" value="lat">
+                        </div>
+                    </div>
+                    <div class="file-upload" id="fileUpload">
+                        <div>📁 上传数据文件</div>
+                        <div class="hint">支持 CSV / Excel / GeoJSON（留空使用示例数据）</div>
+                        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.geojson">
+                    </div>
+                    <div id="fileName" style="font-size:12px;color:#1565c0;margin-top:6px"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="icon" style="background:#e65100">⚙️</div>
+                    插值算法与参数
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>插值算法</label>
+                        <select id="algorithm" onchange="toggleParams()">
+                            <option value="ordinary_kriging">普通克里金 (Ordinary Kriging)</option>
+                            <option value="universal_kriging">泛克里金 (Universal Kriging)</option>
+                            <option value="idw">反距离加权 (IDW)</option>
+                            <option value="rbf">径向基函数 (RBF)</option>
+                        </select>
+                    </div>
+
+                    <div class="params-panel" id="paramsPanel">
+                        <div id="params-idw" style="display:none">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>幂参数 (power)</label>
+                                    <input type="number" id="idw_power" value="2" step="0.5" min="0.5" max="10">
+                                </div>
+                                <div class="form-group">
+                                    <label>最大邻居数</label>
+                                    <input type="number" id="idw_max_neighbors" value="12" min="1" max="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="params-ordinary_kriging">
+                            <div class="checkbox-row">
+                                <input type="checkbox" id="ok_auto_variogram" onchange="toggleVariogramSelect()">
+                                <label for="ok_auto_variogram">🔄 自动选择变异函数模型（网格搜索+交叉验证）</label>
+                            </div>
+                            <div class="form-group" id="ok_variogram_group">
+                                <label>变异函数模型</label>
+                                <select id="ok_variogram_model">
+                                    <option value="linear">linear</option>
+                                    <option value="power">power</option>
+                                    <option value="gaussian">gaussian</option>
+                                    <option value="exponential">exponential</option>
+                                    <option value="spherical">spherical</option>
+                                </select>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>滞后数 (nlags)</label>
+                                    <input type="number" id="ok_nlags" value="6" min="2" max="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>各向异性角度</label>
+                                    <input type="number" id="ok_anisotropy_angle" value="0" step="5">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>各向异性缩放</label>
+                                    <input type="number" id="ok_anisotropy_scaling" value="1" step="0.1" min="0.1">
+                                </div>
+                                <div class="form-group">
+                                    <label>权重</label>
+                                    <select id="ok_weight">
+                                        <option value="true">True</option>
+                                        <option value="false">False</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="params-universal_kriging" style="display:none">
+                            <div class="checkbox-row">
+                                <input type="checkbox" id="uk_auto_variogram" onchange="toggleVariogramSelect()">
+                                <label for="uk_auto_variogram">🔄 自动选择变异函数模型（网格搜索+交叉验证）</label>
+                            </div>
+                            <div class="form-group" id="uk_variogram_group">
+                                <label>变异函数模型</label>
+                                <select id="uk_variogram_model">
+                                    <option value="linear">linear</option>
+                                    <option value="power">power</option>
+                                    <option value="gaussian">gaussian</option>
+                                    <option value="exponential">exponential</option>
+                                    <option value="spherical">spherical</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>漂移项 (逗号分隔)</label>
+                                <input type="text" id="uk_drift_terms" value="regional_linear">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>滞后数 (nlags)</label>
+                                    <input type="number" id="uk_nlags" value="6" min="2" max="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>权重</label>
+                                    <select id="uk_weight">
+                                        <option value="true">True</option>
+                                        <option value="false">False</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="params-rbf" style="display:none">
+                            <div class="form-group">
+                                <label>RBF 函数</label>
+                                <select id="rbf_function">
+                                    <option value="multiquadric">multiquadric</option>
+                                    <option value="inverse">inverse</option>
+                                    <option value="gaussian">gaussian</option>
+                                    <option value="linear">linear</option>
+                                    <option value="cubic">cubic</option>
+                                    <option value="quintic">quintic</option>
+                                    <option value="thin_plate_spline">thin_plate_spline</option>
+                                </select>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>epsilon (空=自动)</label>
+                                    <input type="text" id="rbf_epsilon" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label>平滑参数</label>
+                                    <input type="number" id="rbf_smooth" value="0" step="0.1" min="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row" style="margin-top:4px">
+                        <div class="form-group">
+                            <label>网格列数 (nx)</label>
+                            <input type="number" id="nx" value="100" min="20" max="500">
+                        </div>
+                        <div class="form-group">
+                            <label>网格行数 (ny)</label>
+                            <input type="number" id="ny" value="100" min="20" max="500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="icon" style="background:#7b1fa2">🎨</div>
+                    高级可视化选项
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>等值线自适应平滑度</label>
+                        <div class="slider-container">
+                            <input type="range" id="adaptive_smooth_level" min="0" max="5" step="0.1" value="0" oninput="updateSmoothValue()">
+                            <span class="slider-value" id="smoothValue">0</span>
+                        </div>
+                        <div style="font-size:11px;color:#888;margin-top:4px">0 = 无平滑，数值越大平滑度越高</div>
+                    </div>
+
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="preserve_extrema" checked>
+                        <label for="preserve_extrema">🔺 保留局部极值点</label>
+                    </div>
+
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="show_error_heatmap">
+                        <label for="show_error_heatmap">📊 输出误差分布热力图</label>
+                    </div>
+
+                    <div class="info-box">
+                        <b>💡 提示：</b> 误差热力图通过 LOOCV 计算各站点插值误差，再插值到全区域，帮助识别误差高发区域。
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="icon" style="background:#2e7d32">▶️</div>
+                    操作
+                </div>
+                <div class="card-body">
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="doInterpolate()">🗺️ 插值绘图</button>
+                        <button class="btn btn-success" onclick="doCrossValidate()">✅ 交叉验证</button>
+                    </div>
+                    <div class="btn-group" style="margin-top:8px">
+                        <button class="btn btn-warning" onclick="doGridSearch()">🔧 参数调优</button>
+                        <button class="btn btn-outline" onclick="doExport()">📤 导出GeoJSON</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="side-panel" id="side-panel-temporal">
+            <div class="card">
+                <div class="card-header">
+                    <div class="icon" style="background:#7b1fa2">📈</div>
+                    时序插值/预测
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>变量类型</label>
+                        <select id="temp_variable">
+                            <option value="temperature">温度 (temperature)</option>
+                            <option value="precipitation">降水 (precipitation)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>日期列名</label>
+                        <input type="text" id="date_col" value="date">
+                    </div>
+                    <div class="form-group">
+                        <label>插值方法</label>
+                        <select id="temporal_method">
+                            <option value="linear">线性插值</option>
+                            <option value="spline">样条插值</option>
+                            <option value="polynomial">多项式</option>
+                            <option value="rolling_mean">滚动均值</option>
+                            <option value="gaussian">高斯加权</option>
+                            <option value="akima">Akima 插值</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>预测方法</label>
+                        <select id="forecast_method">
+                            <option value="drift">趋势漂移</option>
+                            <option value="mean">均值预测</option>
+                            <option value="last">最近值</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>预测步数</label>
+                            <input type="number" id="forecast_steps" value="10" min="1" max="50">
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-purple" onclick="doTemporalInterpolate()">📈 时序插值</button>
+                        <button class="btn btn-success" onclick="doForecast()">🔮 趋势预测</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="side-panel" id="side-panel-cokriging">
+            <div class="card">
+                <div class="card-header">
+                    <div class="icon" style="background:#e65100">🔗</div>
+                    多要素协同插值
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>主变量</label>
+                        <select id="co_primary">
+                            <option value="temperature">温度 (temperature)</option>
+                            <option value="precipitation">降水 (precipitation)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>辅助变量</label>
+                        <select id="co_secondary">
+                            <option value="precipitation">降水 (precipitation)</option>
+                            <option value="temperature">温度 (temperature)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>协同方法</label>
+                        <select id="co_method">
+                            <option value="collocated_cokriging">同位协同克里金</option>
+                            <option value="regression_kriging">回归克里金</option>
+                            <option value="cokriging_simple">简单协同克里金</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>变异函数模型</label>
+                        <select id="co_variogram">
+                            <option value="linear">linear</option>
+                            <option value="power">power</option>
+                            <option value="gaussian">gaussian</option>
+                            <option value="exponential">exponential</option>
+                            <option value="spherical">spherical</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>网格列数</label>
+                            <input type="number" id="co_nx" value="50" min="20" max="200">
+                        </div>
+                        <div class="form-group">
+                            <label>网格行数</label>
+                            <input type="number" id="co_ny" value="50" min="20" max="200">
+                        </div>
+                    </div>
+                    <div class="info-box">
+                        <b>💡 协同克里金：</b> 利用主变量（如温度）和辅助变量（如降水）的空间相关性，提高主变量的插值精度。尤其适合变量间相关性强的场景。
+                    </div>
+                    <div class="btn-group" style="margin-top:8px">
+                        <button class="btn btn-warning" onclick="doCokriging()">🔗 协同插值</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="side-panel" id="side-panel-uncertainty">
+            <div class="card">
+                <div class="card-header">
+                    <div class="icon" style="background:#00796b">📊</div>
+                    不确定性评估
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>插值算法</label>
+                        <select id="uc_algorithm">
+                            <option value="ordinary_kriging">普通克里金</option>
+                            <option value="universal_kriging">泛克里金</option>
+                            <option value="idw">反距离加权</option>
+                            <option value="rbf">径向基函数</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>变量类型</label>
+                        <select id="uc_variable">
+                            <option value="temperature">温度 (temperature)</option>
+                            <option value="precipitation">降水 (precipitation)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>置信水平</label>
+                        <select id="uc_confidence">
+                            <option value="0.68">68% (±1σ)</option>
+                            <option value="0.90">90%</option>
+                            <option value="0.95" selected>95% (±1.96σ)</option>
+                            <option value="0.99">99% (±2.58σ)</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>网格列数</label>
+                            <input type="number" id="uc_nx" value="50" min="20" max="200">
+                        </div>
+                        <div class="form-group">
+                            <label>网格行数</label>
+                            <input type="number" id="uc_ny" value="50" min="20" max="200">
+                        </div>
+                    </div>
+                    <div class="info-box">
+                        <b>💡 不确定分析：</b> 计算插值结果的标准差、置信区间和概率分布图，帮助识别高不确定性区域和评估插值结果的可靠性。
+                    </div>
+                    <div class="btn-group" style="margin-top:8px">
+                        <button class="btn btn-success" onclick="doUncertainty()">📊 评估</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="card">
+            <div class="tab-bar">
+                <div class="tab-item active" onclick="switchTab('result')">插值结果</div>
+                <div class="tab-item" onclick="switchTab('cv')">交叉验证</div>
+                <div class="tab-item" onclick="switchTab('tuning')">参数调优</div>
+                <div class="tab-item" onclick="switchTab('data')">数据预览</div>
+            </div>
+
+            <div class="tab-content active" id="tab-result">
+                <div id="autoModelInfo" style="display:none;margin-bottom:12px">
+                    <div class="info-box" id="autoModelInfoBox"></div>
+                </div>
+                <div id="resultStats" class="stats-grid" style="display:none;margin-bottom:16px">
+                    <div class="stat-item"><div class="value" id="statMin">-</div><div class="label">最小值</div></div>
+                    <div class="stat-item"><div class="value" id="statMax">-</div><div class="label">最大值</div></div>
+                    <div class="stat-item"><div class="value" id="statMean">-</div><div class="label">均值</div></div>
+                    <div class="stat-item"><div class="value" id="statStd">-</div><div class="label">标准差</div></div>
+                </div>
+                <div class="image-container" id="contourImage">
+                    <div style="padding:60px;color:#bbb;font-size:15px">请选择算法和参数后点击「插值绘图」</div>
+                </div>
+                <div class="image-container" id="varianceImage" style="margin-top:12px"></div>
+                <div class="image-container" id="errorImage" style="margin-top:12px"></div>
+                <div class="image-container" id="temporalImage" style="margin-top:12px"></div>
+                <div class="image-container" id="forecastImage" style="margin-top:12px"></div>
+                <div class="image-container" id="cokrigingImage" style="margin-top:12px"></div>
+                <div id="uncertaintyReport" style="margin-top:12px"></div>
+                <div class="image-container" id="uncertaintyImage" style="margin-top:12px"></div>
+                <div class="image-container" id="probabilityImage" style="margin-top:12px"></div>
+            </div>
+
+            <div class="tab-content" id="tab-cv">
+                <div id="cvStats" style="display:none;margin-bottom:16px">
+                    <div class="stats-grid">
+                        <div class="stat-item"><div class="value" id="cvRmse">-</div><div class="label">RMSE</div></div>
+                        <div class="stat-item"><div class="value" id="cvMae">-</div><div class="label">MAE</div></div>
+                        <div class="stat-item"><div class="value" id="cvBias">-</div><div class="label">Bias</div></div>
+                        <div class="stat-item"><div class="value" id="cvR2">-</div><div class="label">R²</div></div>
+                    </div>
+                </div>
+                <div class="image-container" id="cvScatterImage">
+                    <div style="padding:60px;color:#bbb;font-size:15px">请点击「交叉验证」查看结果</div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-tuning">
+                <div class="form-group" style="margin-bottom:12px">
+                    <label>参数搜索空间 (JSON)</label>
+                    <textarea id="paramGridJson" rows="5" style="width:100%;padding:8px;border:1px solid #d0d5dd;border-radius:6px;font-size:12px;font-family:monospace">{
+  "variogram_model": ["linear", "gaussian", "exponential", "spherical"],
+  "nlags": [4, 6, 8, 10]
+}</textarea>
+                </div>
+                <div class="form-group" style="margin-bottom:12px">
+                    <label>验证方式</label>
+                    <select id="cv_method">
+                        <option value="loocv">留一交叉验证 (LOOCV)</option>
+                        <option value="kfold">K折交叉验证</option>
+                    </select>
+                </div>
+                <div class="param-grid-result" id="tuningResult">
+                    <div style="padding:40px;color:#bbb;font-size:15px;text-align:center">请点击「参数调优」开始搜索</div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-data">
+                <div id="dataPreview" style="overflow-x:auto;max-height:500px">
+                    <div style="padding:40px;color:#bbb;font-size:15px;text-align:center">加载中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateSmoothValue(){
+    document.getElementById('smoothValue').textContent=document.getElementById('adaptive_smooth_level').value;
+}
+
+function toggleVariogramSelect(){
+    var alg=document.getElementById('algorithm').value;
+    var autoEl=document.getElementById(alg==='ordinary_kriging'?'ok_auto_variogram':'uk_auto_variogram');
+    var groupEl=document.getElementById(alg==='ordinary_kriging'?'ok_variogram_group':'uk_variogram_group');
+    if(autoEl && groupEl){
+        var auto=autoEl.checked;
+        groupEl.style.opacity=auto?'0.4':'1';
+        groupEl.style.pointerEvents=auto?'none':'auto';
+    }
+}
+
+function toggleParams(){
+    var alg=document.getElementById('algorithm').value;
+    ['idw','ordinary_kriging','universal_kriging','rbf'].forEach(function(k){
+        var el=document.getElementById('params-'+k);
+        if(el) el.style.display=k===alg?'block':'none';
+    });
+    toggleVariogramSelect();
+}
+
+function switchSideTab(name){
+    document.querySelectorAll('.side-tab').forEach(function(t){t.classList.remove('active')});
+    document.querySelectorAll('.side-panel').forEach(function(p){p.classList.remove('active')});
+    event.target.classList.add('active');
+    document.getElementById('side-panel-'+name).classList.add('active');
+}
+
+function switchTab(name){
+    document.querySelectorAll('.tab-item').forEach(function(t){t.classList.remove('active')});
+    document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active')});
+    event.target.classList.add('active');
+    document.getElementById('tab-'+name).classList.add('active');
+}
+
+function showLoading(){document.getElementById('loading').classList.add('show')}
+function hideLoading(){document.getElementById('loading').classList.remove('show')}
+
+function showToast(msg,type){
+    var t=document.createElement('div');
+    t.className='toast '+(type||'error');
+    t.textContent=msg;
+    document.body.appendChild(t);
+    setTimeout(function(){t.remove()},4000);
+}
+
+function clearAllImages(){
+    ['contourImage','varianceImage','errorImage','temporalImage','forecastImage',
+     'cokrigingImage','uncertaintyImage','probabilityImage','uncertaintyReport'].forEach(function(id){
+        var el=document.getElementById(id);
+        if(el) el.innerHTML='';
+    });
+}
+
+function buildFormData(){
+    var fd=new FormData();
+    var fileInput=document.getElementById('fileInput');
+    if(fileInput.files.length>0) fd.append('file',fileInput.files[0]);
+
+    var alg=document.getElementById('algorithm').value;
+    fd.append('algorithm',alg);
+    fd.append('variable',document.getElementById('variable').value);
+    fd.append('lon_col',document.getElementById('lon_col').value);
+    fd.append('lat_col',document.getElementById('lat_col').value);
+    fd.append('nx',document.getElementById('nx').value);
+    fd.append('ny',document.getElementById('ny').value);
+
+    fd.append('adaptive_smooth_level',document.getElementById('adaptive_smooth_level').value);
+    fd.append('preserve_extrema',document.getElementById('preserve_extrema').checked);
+    fd.append('show_error_heatmap',document.getElementById('show_error_heatmap').checked);
+
+    if(alg==='idw'){
+        fd.append('power',document.getElementById('idw_power').value);
+        fd.append('max_neighbors',document.getElementById('idw_max_neighbors').value);
+    }else if(alg==='ordinary_kriging'){
+        fd.append('auto_variogram',document.getElementById('ok_auto_variogram').checked);
+        fd.append('variogram_model',document.getElementById('ok_variogram_model').value);
+        fd.append('nlags',document.getElementById('ok_nlags').value);
+        fd.append('weight',document.getElementById('ok_weight').value);
+        fd.append('anisotropy_angle',document.getElementById('ok_anisotropy_angle').value);
+        fd.append('anisotropy_scaling',document.getElementById('ok_anisotropy_scaling').value);
+    }else if(alg==='universal_kriging'){
+        fd.append('auto_variogram',document.getElementById('uk_auto_variogram').checked);
+        fd.append('variogram_model',document.getElementById('uk_variogram_model').value);
+        fd.append('drift_terms',document.getElementById('uk_drift_terms').value);
+        fd.append('nlags',document.getElementById('uk_nlags').value);
+        fd.append('weight',document.getElementById('uk_weight').value);
+    }else if(alg==='rbf'){
+        fd.append('rbf_function',document.getElementById('rbf_function').value);
+        fd.append('epsilon',document.getElementById('rbf_epsilon').value);
+        fd.append('smooth',document.getElementById('rbf_smooth').value);
+    }
+    return fd;
+}
+
+function doInterpolate(){
+    showLoading();
+    clearAllImages();
+    fetch('/api/interpolate',{method:'POST',body:buildFormData()})
+        .then(function(r){return r.json()})
+        .then(function(d){
+            hideLoading();
+            if(d.error){showToast(d.error);return}
+            document.getElementById('resultStats').style.display='grid';
+            document.getElementById('statMin').textContent=d.statistics.min;
+            document.getElementById('statMax').textContent=d.statistics.max;
+            document.getElementById('statMean').textContent=d.statistics.mean;
+            document.getElementById('statStd').textContent=d.statistics.std;
+            document.getElementById('contourImage').innerHTML='<img src="data:image/png;base64,'+d.contour_image+'">';
+            if(d.variance_image){
+                document.getElementById('varianceImage').innerHTML='<img src="data:image/png;base64,'+d.variance_image+'">';
+            }else{
+                document.getElementById('varianceImage').innerHTML='';
+            }
+            if(d.error_image){
+                document.getElementById('errorImage').innerHTML='<img src="data:image/png;base64,'+d.error_image+'">';
+            }else{
+                document.getElementById('errorImage').innerHTML='';
+            }
+            if(d.auto_variogram_result){
+                document.getElementById('autoModelInfo').style.display='block';
+                var info=d.auto_variogram_result;
+                var html='<b>🤖 自动选择变异函数模型：</b> 最优模型为 <span class="badge badge-green">'+info.best_model+'</span>';
+                if(info.best_rmse!==null) html+='，交叉验证 RMSE: <b>'+info.best_rmse+'</b>';
+                if(info.all_results && info.all_results.length>1){
+                    html+='<br><span style="font-size:11px;color:#555">测试了 '+info.all_results.length+' 个模型：';
+                    info.all_results.forEach(function(r,i){
+                        if(i>0) html+='，';
+                        html+=r.params.variogram_model+' ('+(r.rmse||'-')+')';
+                    });
+                    html+='</span>';
+                }
+                document.getElementById('autoModelInfoBox').innerHTML=html;
+            }else{
+                document.getElementById('autoModelInfo').style.display='none';
+            }
+            document.querySelector('.tab-item').click();
+            showToast('插值完成！','success');
+        })
+        .catch(function(e){hideLoading();showToast('请求失败: '+e)});
+}
+
+function doCrossValidate(){
+    showLoading();
+    var fd=buildFormData();
+    fd.append('cv_method',document.getElementById('cv_method').value);
+    fetch('/api/cross-validate',{method:'POST',body:fd})
+        .then(function(r){return r.json()})
+        .then(function(d){
+            hideLoading();
+            if(d.error){showToast(d.error);return}
+            document.getElementById('cvStats').style.display='block';
+            document.getElementById('cvRmse').textContent=d.rmse;
+            document.getElementById('cvMae').textContent=d.mae;
+            document.getElementById('cvBias').textContent=d.bias;
+            document.getElementById('cvR2').textContent=d.r2;
+            document.getElementById('cvScatterImage').innerHTML='<img src="data:image/png;base64,'+d.scatter_image+'">';
+            if(d.auto_variogram_result){
+                var info=d.auto_variogram_result;
+                var msg=' 自动选择模型: '+info.best_model;
+                showToast('交叉验证完成！'+msg,'success');
+            }else{
+                showToast('交叉验证完成！','success');
+            }
+            document.querySelectorAll('.tab-item')[1].click();
+        })
+        .catch(function(e){hideLoading();showToast('请求失败: '+e)});
+}
+
+function doGridSearch(){
+    showLoading();
+    var fd=buildFormData();
+    fd.append('cv_method',document.getElementById('cv_method').value);
+    fd.append('param_grid',document.getElementById('paramGridJson').value);
+    fetch('/api/grid-search',{method:'POST',body:fd})
+        .then(function(r){return r.json()})
+        .then(function(d){
+            hideLoading();
+            if(d.error){showToast(d.error);return}
+            var html='<h4 style="margin-bottom:8px">🏆 最优参数</h4>';
+            html+='<p style="font-size:13px;margin-bottom:12px">RMSE: <b>'+d.best_rmse+'</b> — '+JSON.stringify(d.best_params)+'</p>';
+            html+='<table><tr><th>#</th>';
+            var keys=Object.keys(d.all_results[0].params);
+            keys.forEach(function(k){html+='<th>'+k+'</th>'});
+            html+='<th>RMSE</th><th>MAE</th><th>R²</th></tr>';
+            d.all_results.forEach(function(r,i){
+                var cls=r.params && d.best_params && JSON.stringify(r.params)===JSON.stringify(d.best_params)?' class="best"':'';
+                html+='<tr'+cls+'>';
+                html+='<td>'+(i+1)+'</td>';
+                keys.forEach(function(k){html+='<td>'+r.params[k]+'</td>'});
+                html+='<td>'+(r.rmse||'-')+'</td><td>'+(r.mae||'-')+'</td><td>'+(r.r2||'-')+'</td>';
+                html+='</tr>';
+            });
+            html+='</table>';
+            document.getElementById('tuningResult').innerHTML=html;
+            document.querySelectorAll('.tab-item')[2].click();
+            showToast('参数调优完成！','success');
+        })
+        .catch(function(e){hideLoading();showToast('请求失败: '+e)});
+}
+
+function doExport(){
+    showLoading();
+    fetch('/api/export-geojson',{method:'POST',body:buildFormData()})
+        .then(function(r){return r.json()})
+        .then(function(d){
+            hideLoading();
+            if(d.error){showToast(d.error);return}
+            var blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+            var url=URL.createObjectURL(blob);
+            var a=document.createElement('a');
+            a.href=url;a.download='interpolation_result.geojson';
+            a.click();URL.revokeObjectURL(url);
+            showToast('GeoJSON 导出成功！','success');
+        })
+        .catch(function(e){hideLoading();showToast('导出失败: '+e)});
+}
+
+function doTemporalInterpolate(){
+    showLoading();
+    clearAllImages();
+    var fd=new FormData();
+    var fileInput=document.getElementById('fileInput');
+    if(fileInput.files.length>0) fd.append('file',fileInput.files[0]);
+    fd.append('variable',document.getElementById('temp_variable').value);
+    fd.append('date_col',document.getElementById('date_col').value);
+    fd.append('temporal_method',document.getElementById('temporal_method').value);
+    fd.append('steps',document.getElementById('forecast_steps').value);
+    fetch('/api/temporal-interpolate',{method:'POST',body:fd})
+        .then(function(r){return r.json()})
+        .then(function(d){
+            hideLoading();
+            if(d.error){showToast(d.error);return}
+            document.getElementById('temporalImage').innerHTML='<img src="data:image/png;base64,'+d.plot_image+'">';
+            document.querySelector('.tab-item').click();
+            showToast('时序插值完成！','success');
+        })
+        .catch(function(e){hideLoading();showToast('请求失败: '+e)});
+}
+
+function doForecast(){
+    showLoading();
+    clearAllImages();
+    var fd=new FormData();
+    var fileInput=document.getElementById('fileInput');
+    if(fileInput.files.length>0) fd.append('file',fileInput.files[0]);
+    fd.append('variable',document.getElementById('temp_variable').value);
+    fd.append('date_col',document.getElementById('date_col').value);
+    fd.append('forecast_method',document.getElementById('forecast_method').value);
+    fd.append('steps',document.getElementById('forecast_steps').value);
+    fetch('/api/forecast',{method:'POST',body:fd})
+        .then(function(r){return r.json()})
+        .then(function(d){
+            hideLoading();
+            if(d.error){showToast(d.error);return}
+            document.getElementById('forecastImage').innerHTML='<img src="data:image/png;base64,'+d.plot_image+'">';
+            document.querySelector('.tab-item').click();
+            showToast('趋势预测完成！','success');
+        })
+        .catch(function(e){hideLoading();showToast('请求失败: '+e)});
+}
+
+function doCokriging(){
+    showLoading();
+    clearAllImages();
+    var fd=new FormData();
+    var fileInput=document.getElementById('fileInput');
+    if(fileInput.files.length>0) fd.append('file',fileInput.files[0]);
+    fd.append('primary_variable',document.getElementById('co_primary').value);
+    fd.append('secondary_variable',document.getElementById('co_secondary').value);
+    fd.append('cokriging_method',document.getElementById('co_method').value);
+    fd.append('variogram_model',document.getElementById('co_variogram').value);
+    fd.append('nx',document.getElementById('co_nx').value);
+    fd.append('ny',document.getElementById('co_ny').value);
+    fetch('/api/cokriging',{method:'POST',body:fd})
+        .then(function(r){return r.json()})
+        .then(function(d){
+            hideLoading();
+            if(d.error){showToast(d.error);return}
+            document.getElementById('cokrigingImage').innerHTML='<img src="data:image/png;base64,'+d.comparison_image+'">';
+            document.querySelector('.tab-item').click();
+            var msg='协同插值完成！相关性: '+d.correlation;
+            showToast(msg,'success');
+        })
+        .catch(function(e){hideLoading();showToast('请求失败: '+e)});
+}
+
+function doUncertainty(){
+    showLoading();
+    clearAllImages();
+    var fd=new FormData();
+    var fileInput=document.getElementById('fileInput');
+    if(fileInput.files.length>0) fd.append('file',fileInput.files[0]);
+    fd.append('algorithm',document.getElementById('uc_algorithm').value);
+    fd.append('variable',document.getElementById('uc_variable').value);
+    fd.append('confidence',document.getElementById('uc_confidence').value);
+    fd.append('nx',document.getElementById('uc_nx').value);
+    fd.append('ny',document.getElementById('uc_ny').value);
+    fetch('/api/uncertainty',{method:'POST',body:fd})
+        .then(function(r){return r.json()})
+        .then(function(d){
+            hideLoading();
+            if(d.error){showToast(d.error);return}
+            var reportHtml='<div class="uncertainty-report"><pre>'+d.report+'</pre></div>';
+            document.getElementById('uncertaintyReport').innerHTML=reportHtml;
+            document.getElementById('uncertaintyImage').innerHTML='<img src="data:image/png;base64,'+d.uncertainty_image+'">';
+            document.getElementById('probabilityImage').innerHTML='<img src="data:image/png;base64,'+d.probability_image+'">';
+            document.querySelector('.tab-item').click();
+            showToast('不确定性评估完成！','success');
+        })
+        .catch(function(e){hideLoading();showToast('请求失败: '+e)});
+}
+
+function loadSampleData(){
+    fetch('/api/sample-data')
+        .then(function(r){return r.json()})
+        .then(function(data){
+            if(!data||!data.length){document.getElementById('dataPreview').innerHTML='<p>无数据</p>';return}
+            var html='<table style="width:100%;border-collapse:collapse;font-size:12px"><tr>';
+            Object.keys(data[0]).forEach(function(k){html+='<th style="padding:6px 10px;border:1px solid #eee;background:#f5f7fa;font-weight:600">'+k+'</th>'});
+            html+='</tr>';
+            data.forEach(function(row){
+                html+='<tr>';
+                Object.values(row).forEach(function(v){html+='<td style="padding:5px 10px;border:1px solid #eee;text-align:center">'+v+'</td>'});
+                html+='</tr>';
+            });
+            html+='</table>';
+            document.getElementById('dataPreview').innerHTML=html;
+        });
+}
+
+document.getElementById('fileInput').addEventListener('change',function(){
+    var name=this.files.length?this.files[0].name:'';
+    document.getElementById('fileName').textContent=name?'已选择: '+name:'';
+});
+
+toggleParams();
+loadSampleData();
+</script>
+</body>
+</html>
