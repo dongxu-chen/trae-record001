@@ -1,0 +1,188 @@
+global:
+  log_level: info
+  namespace: downsampled
+
+prometheus:
+  address: "http://localhost:9090"
+  timeout: 30s
+  query_concurrency: 5
+
+thanos:
+  enabled: true
+  address: "localhost:10901"
+  timeout: 30s
+  batch_size: 1000
+  use_tls: false
+  external_labels:
+    cluster: production
+    environment: prod
+
+scheduler:
+  interval: 5m
+  lookback: 1h
+  max_retries: 3
+  retry_interval: 10s
+
+proxy:
+  enabled: true
+  listen_address: ":9091"
+  cache_ttl: 5m
+  auto_select_level: true
+
+metric_rules:
+  - name: http_requests
+    match: '{__name__=~"http_requests_.*"}'
+    aggregations:
+      - avg
+      - sum
+      - max
+      - p99
+    downsampling_levels:
+      - 1m
+      - 5m
+      - 15m
+      - 1h
+    align_to_boundary: true
+    retention_policies:
+      - level: raw
+        retention: 72h
+      - level: 1m
+        retention: 7d
+      - level: 5m
+        retention: 30d
+      - level: 15m
+        retention: 90d
+      - level: 1h
+        retention: 365d
+    preserve_labels:
+      - method
+      - status
+      - handler
+    preserve_peaks:
+      enabled: true
+      zscore_threshold: 3.0
+      percentile: 99.0
+      min_absolute_deviation: 10.0
+    preserve_outliers:
+      enabled: true
+      iqr_multiplier: 1.5
+      preserve_count: 5
+    adaptive_downsampling:
+      enabled: true
+      volatility_threshold: 0.5
+      min_window: 1m
+      max_window: 1h
+      volatility_window_size: 10
+      high_volatility_level: 1m
+      low_volatility_level: 15m
+      adaptation_rate: 0.1
+    error_analysis:
+      enabled: true
+      calculate_mae: true
+      calculate_rmse: true
+      calculate_mape: true
+      calculate_smape: true
+      calculate_correlation: true
+      sample_interval: 5m
+      store_metrics: true
+      alert_threshold: 0.1
+    strategy_recommendation:
+      enabled: true
+      analyze_period: 24h
+      min_samples: 100
+      target_error_threshold: 0.05
+      storage_cost_weight: 0.6
+      accuracy_weight: 0.4
+      auto_apply: false
+
+  - name: cpu_usage
+    match: '{__name__=~"container_cpu_usage_seconds_total"}'
+    aggregations:
+      - avg
+      - max
+      - p90
+      - p99
+    downsampling_levels:
+      - 1m
+      - 5m
+      - 1h
+      - 6h
+    align_to_boundary: true
+    raw_retention: 48h
+    preserve_labels:
+      - pod
+      - namespace
+      - container
+    preserve_peaks:
+      enabled: true
+      zscore_threshold: 2.5
+      percentile: 95.0
+      min_absolute_deviation: 0.1
+
+  - name: memory_usage
+    match: '{__name__=~"container_memory_usage_bytes"}'
+    aggregations:
+      - avg
+      - max
+      - min
+    downsampling_levels:
+      - 1m
+      - 15m
+      - 1h
+      - 1d
+    align_to_boundary: true
+    drop_labels:
+      - id
+      - image
+    preserve_outliers:
+      enabled: true
+      iqr_multiplier: 1.5
+      preserve_count: 3
+
+  - name: rpc_latency
+    match: '{__name__=~"grpc_server_handling_seconds.*"}'
+    aggregations:
+      - avg
+      - p50
+      - p90
+      - p95
+      - p99
+    downsampling_levels:
+      - 1m
+      - 5m
+      - 15m
+      - 1h
+    align_to_boundary: true
+    preserve_labels:
+      - grpc_service
+      - grpc_method
+      - grpc_code
+    preserve_peaks:
+      enabled: true
+      zscore_threshold: 3.5
+      percentile: 99.5
+      min_absolute_deviation: 0.001
+    preserve_outliers:
+      enabled: true
+      iqr_multiplier: 2.0
+      preserve_count: 10
+
+  - name: business_metrics
+    match: '{__name__=~"business_.*"}'
+    aggregations:
+      - sum
+      - avg
+      - count
+    downsampling_levels:
+      - 1m
+      - 1h
+      - 1d
+    align_to_boundary: true
+    preserve_labels:
+      - service
+      - tenant
+    preserve_peaks:
+      enabled: true
+      zscore_threshold: 3.0
+      percentile: 99.0
+      min_absolute_deviation: 100.0

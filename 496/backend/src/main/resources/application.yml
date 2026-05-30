@@ -1,0 +1,24 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: rate-limit-recommender
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 3000
+
+logging:
+  level:
+    com.ratelimit.recommender: DEBUG
+    org.springframework: INFO
+
+rate-limit:
+  default:
+    service-qps: 1000
+    api-qps: 100
+    queue-timeout: 500
+    target-utilization: 0.7

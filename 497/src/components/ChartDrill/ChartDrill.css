@@ -1,0 +1,7 @@
+.echarts-for-react {
+  transition: all 0.3s ease;
+}
+
+.echarts-for-react canvas {
+  border-radius: 12px;
+}
