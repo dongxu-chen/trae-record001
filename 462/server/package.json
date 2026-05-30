@@ -1,0 +1,20 @@
+{
+  "name": "captcha-server",
+  "version": "1.0.0",
+  "description": "验证码服务端 - 提供验证码生成、验证、语音验证接口",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "jimp": "^0.22.12",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

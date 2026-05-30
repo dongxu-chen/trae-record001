@@ -1,0 +1,151 @@
+================================================================================
+  E-Commerce Search Relevance Ranking - Full Features
+================================================================================
+
+[1/9] Generating sample products with time-series and freshness data...
+  Generated 200 products
+  Pre-tokenizing product titles (caching jieba results)...
+  Tokenization cache warmed up!
+
+[2/9] Building training data with annotation consistency check...
+    total_pairs: 483
+    consistent_initial: 276
+    relabeled_success: 207
+    still_inconsistent: 0
+    avg_agreement: 0.8944099378881988
+  Built 483 query-product pairs, 34 groups
+
+[3/9] Computing features (time-decay + user personalization)...
+  Generating synthetic user profiles for personalization demo...
+  Sample user (user_0) preferences:
+    Top categories: [('游戏主机', 4.0), ('数码相机', 1.5)]
+    Top brands: [('雅诗兰黛', 4.0), ('阿迪达斯', 1.5)]
+  Feature dimension: 28
+  Personalization features added: user_category_match, user_brand_match, ...
+  Train: 396 samples, 27 groups
+  Val:   87 samples, 7 groups
+
+[4/9] Training LambdaMART model (LightGBM)...
+  Training complete!
+  Model saved to: D:\Trae\project\record001\464\saved_models\lambdamart_model.txt
+
+  Feature Importance (top 20):
+    title_match_score             : 183.86
+    review_score_norm             : 86.87
+    title_term_overlap            : 52.97
+    conversion_rate               : 41.84
+    time_decayed_conversion       : 27.55
+    title_bm25_score              : 24.32
+    title_exact_match             : 23.42
+    return_rate                   : 22.83
+    click_rate                    : 17.80
+    ctr_7d                        : 15.21
+    title_length                  : 13.31
+    price_percentile              : 9.99
+    sales_recency_ratio           : 8.80
+    query_title_length_ratio      : 8.46
+    ctr_30d                       : 8.33
+    sales_volume_norm             : 6.39
+    user_price_similarity         : 5.75
+    cart_rate                     : 5.63
+    user_brand_match              : 5.62
+    query_length                  : 2.98
+
+[5/9] Evaluating model (overall)...
+  MAP         : 0.8612
+  NDCG@1      : 0.9804
+  NDCG@3      : 0.9083
+  NDCG@5      : 0.8732
+  NDCG@10     : 0.9153
+
+  Validation Set Evaluation:
+  MAP         : 0.8159
+  NDCG@1      : 1.0000
+  NDCG@3      : 0.8178
+  NDCG@5      : 0.8029
+  NDCG@10     : 0.8987
+
+[6/9] Fine-grained evaluation by query type...
+  Query type distribution: 23 popular, 11 longtail
+
+  Query Group Evaluation Results:
+
+  POPULAR (23 queries):
+    MAP       : 0.8711
+    NDCG@1    : 1.0000
+    NDCG@3    : 0.9381
+    NDCG@5    : 0.9091
+    NDCG@10   : 0.9304
+
+  LONGTAIL (11 queries):
+    MAP       : 0.8407
+    NDCG@1    : 0.9394
+    NDCG@3    : 0.8459
+    NDCG@5    : 0.7980
+    NDCG@10   : 0.8837
+
+  OVERALL (34 queries):
+    MAP       : 0.8612
+    NDCG@1    : 0.9804
+    NDCG@3    : 0.9083
+    NDCG@5    : 0.8732
+    NDCG@10   : 0.9153
+
+[7/9] Multi-Objective Ranking Demo...
+  Objectives: Relevance (0.5) + Conversion (0.3) + Freshness (0.2)
+
+  Query: '苹果手机'
+  User: user_0 (prefers 游戏主机)
+
+  Multi-Objective Ranking (Top 10):
+  Rank   Product                             Rel      Conv     Fresh    Final   
+  --------------------------------------------------------------------------------
+  1      阿迪达斯太阳镜Pro16偏光                      0.802    0.790    0.260    0.690   
+  2      联想手机Pro20大内存版                       1.000    0.526    0.112    0.680   
+  3      格力耳机Pro9运动版                         0.669    0.406    0.926    0.642   
+  4      耐克曲面屏Pro3                           0.405    1.000    0.490    0.600   
+  5      索尼显示器Pro14K高清                       0.426    0.501    1.000    0.563   
+  6      联想Pro2降噪耳机                          0.515    0.514    0.641    0.540   
+  7      兰蔻Pro18电竞显示器                        0.275    0.915    0.511    0.514   
+  8      小米洗衣机Pro16迷你                        0.033    0.944    0.276    0.354   
+  9      戴尔护肤套装Pro17保湿                       0.180    0.405    0.570    0.325   
+  10     美的Pro13空调挂机                         0.091    0.288    0.617    0.255   
+
+  Weighted vs Pareto comparison:
+    Weighted top: 阿迪达斯太阳镜Pro16偏光
+    Pareto top:   小米洗衣机Pro16迷你
+
+[8/9] Online Learning with Click Feedback Simulation...
+  Simulating 100 search sessions with click feedback...
+  Feedback stats: 1000 total, 25 clicks (2.50% CTR)
+
+[9/9] Personalization Effect Demo...
+  Comparing ranking for user_user_0 vs generic ranking...
+
+  Rank   Generic                        Personalized                  
+  ----------------------------------------------------------------------
+  1      联想手机Pro20大内存版                  联想手机Pro20大内存版                 
+  2      阿迪达斯太阳镜Pro16偏光                 阿迪达斯太阳镜Pro16偏光                
+  3      格力耳机Pro9运动版                    格力耳机Pro9运动版                   
+  4      联想Pro2降噪耳机                     联想Pro2降噪耳机                    
+  5      索尼显示器Pro14K高清                  耐克曲面屏Pro3                     
+  6      耐克曲面屏Pro3                      索尼显示器Pro14K高清                 
+  7      兰蔻Pro18电竞显示器                   小米Pro10单反相机                   
+  8      戴尔护肤套装Pro17保湿                  阿迪达斯洗衣机Pro12滚筒                
+  9      海尔背包Pro13双肩包                   兰蔻Pro18电竞显示器                  
+  10     美的Pro13空调挂机                    戴尔护肤套装Pro17保湿                 
+
+================================================================================
+  FULL PIPELINE COMPLETED SUCCESSFULLY!
+================================================================================
+
+  Features Implemented:
+    ✓ Annotation consistency check + re-labeling
+    ✓ Time-decayed behavior features
+    ✓ Query-type evaluation (popular vs longtail)
+    ✓ Personalized ranking (user preferences)
+    ✓ Online learning (click feedback)
+    ✓ Multi-objective ranking (relevance + conversion + freshness)
+
+  To start the Flask API, run: python api/app.py
+================================================================================

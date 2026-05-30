@@ -1,0 +1,28 @@
+server:
+  port: 8091
+  servlet:
+    context-path: /api/v1
+
+spring:
+  application:
+    name: business-service-v1
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        namespace: public
+        group: DEFAULT_GROUP
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  group-configs:
+    - group: v1
+      paths-to-match: /**
+      packages-to-scan: com.apiversion.business.v1.controller

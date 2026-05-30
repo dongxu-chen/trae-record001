@@ -1,0 +1,19 @@
+{
+  "name": "captcha-system",
+  "version": "1.0.0",
+  "description": "Web端图形验证码组件系统 - 拼图滑块、旋转图片、点选文字",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "build": "cd client && npm run build"
+  },
+  "keywords": ["captcha", "react", "nodejs", "canvas"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

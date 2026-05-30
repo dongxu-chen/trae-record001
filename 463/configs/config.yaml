@@ -1,0 +1,88 @@
+databases:
+  primary_mysql:
+    type: mysql
+    host: localhost
+    port: 3306
+    user: root
+    password: your_password
+    dbname: your_database
+
+  replica_postgres:
+    type: postgresql
+    host: localhost
+    port: 5432
+    user: postgres
+    password: your_password
+    dbname: your_database
+
+monitor:
+  interval: 100ms
+  default_kill_mode: connection
+  dry_run: true
+
+  threshold:
+    max_execution_time: 30s
+    max_rows_examined: 1000000
+    max_lock_time: 5s
+
+  transaction_wait:
+    enabled: true
+    wait_duration: 5s
+    check_interval: 100ms
+
+  prediction:
+    enabled: true
+    confidence_threshold: 0.7
+    report_interval: 1h
+
+  indexer:
+    enabled: true
+    min_kill_count: 3
+    auto_suggest_threshold: 10
+    report_interval: 2h
+
+  audit:
+    enabled: true
+    log_path: logs/audit.jsonl
+    rotate_daily: true
+
+  whitelist:
+    users:
+      - admin
+      - backup
+    databases:
+      - system
+    query_prefix:
+      - SHOW
+      - SET
+    sql_fingerprints:
+      - "a1b2c3d4e5f67890"
+      - "098765fedc4b3a21"
+
+  rules:
+    - name: long_running_select
+      enabled: true
+      threshold: 60s
+      query_regex: "(?i)^SELECT"
+      kill_mode: query
+      notify_only: false
+
+    - name: dangerous_ddl
+      enabled: true
+      threshold: 10s
+      query_regex: "(?i)^(ALTER|DROP|CREATE)"
+      kill_mode: connection
+      notify_only: true
+
+    - name: huge_join_query
+      enabled: true
+      threshold: 45s
+      query_regex: "(?i)JOIN.*JOIN"
+      kill_mode: query
+      notify_only: false
+
+log:
+  level: info
+  format: text
+  output: stdout
+  kill_log: killed_queries.log

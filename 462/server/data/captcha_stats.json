@@ -1,0 +1,188 @@
+{
+  "stats": {
+    "slide": {
+      "total": 7,
+      "success": 0,
+      "failed": 2,
+      "firstTimeSuccess": 0,
+      "avgAttempts": 1,
+      "totalAttempts": 2,
+      "avgDuration": 425,
+      "totalDuration": 850,
+      "avgBehaviorRisk": 85.06353884371937,
+      "totalBehaviorRisk": 170.12707768743874,
+      "highRiskCount": 2,
+      "mediumRiskCount": 0,
+      "lowRiskCount": 0,
+      "difficultyBreakdown": {
+        "easy": {
+          "total": 2,
+          "success": 0,
+          "failed": 1
+        },
+        "medium": {
+          "total": 3,
+          "success": 0,
+          "failed": 0
+        },
+        "hard": {
+          "total": 2,
+          "success": 0,
+          "failed": 1
+        }
+      }
+    },
+    "rotate": {
+      "total": 2,
+      "success": 0,
+      "failed": 0,
+      "firstTimeSuccess": 0,
+      "avgAttempts": 0,
+      "totalAttempts": 0,
+      "avgDuration": 0,
+      "totalDuration": 0,
+      "avgBehaviorRisk": 0,
+      "totalBehaviorRisk": 0,
+      "highRiskCount": 0,
+      "mediumRiskCount": 0,
+      "lowRiskCount": 0,
+      "difficultyBreakdown": {
+        "easy": {
+          "total": 0,
+          "success": 0,
+          "failed": 0
+        },
+        "medium": {
+          "total": 0,
+          "success": 0,
+          "failed": 0
+        },
+        "hard": {
+          "total": 2,
+          "success": 0,
+          "failed": 0
+        }
+      }
+    },
+    "click": {
+      "total": 2,
+      "success": 0,
+      "failed": 0,
+      "firstTimeSuccess": 0,
+      "avgAttempts": 0,
+      "totalAttempts": 0,
+      "avgDuration": 0,
+      "totalDuration": 0,
+      "avgBehaviorRisk": 0,
+      "totalBehaviorRisk": 0,
+      "highRiskCount": 0,
+      "mediumRiskCount": 0,
+      "lowRiskCount": 0,
+      "difficultyBreakdown": {
+        "easy": {
+          "total": 0,
+          "success": 0,
+          "failed": 0
+        },
+        "medium": {
+          "total": 2,
+          "success": 0,
+          "failed": 0
+        },
+        "hard": {
+          "total": 0,
+          "success": 0,
+          "failed": 0
+        }
+      }
+    },
+    "voice": {
+      "total": 2,
+      "success": 0,
+      "failed": 0,
+      "firstTimeSuccess": 0,
+      "avgAttempts": 0,
+      "totalAttempts": 0,
+      "avgDuration": 0,
+      "totalDuration": 0,
+      "avgBehaviorRisk": 0,
+      "totalBehaviorRisk": 0,
+      "highRiskCount": 0,
+      "mediumRiskCount": 0,
+      "lowRiskCount": 0,
+      "difficultyBreakdown": {
+        "easy": {
+          "total": 0,
+          "success": 0,
+          "failed": 0
+        },
+        "medium": {
+          "total": 0,
+          "success": 0,
+          "failed": 0
+        },
+        "hard": {
+          "total": 2,
+          "success": 0,
+          "failed": 0
+        }
+      }
+    }
+  },
+  "hourlyStats": {
+    "494416": {
+      "timestamp": 1779900926660,
+      "total": {
+        "generate": 5,
+        "success": 0,
+        "failed": 2
+      },
+      "types": {
+        "slide": {
+          "generate": 5,
+          "success": 0,
+          "failed": 2
+        }
+      }
+    },
+    "494417": {
+      "timestamp": 1779901265534,
+      "total": {
+        "generate": 8,
+        "success": 0,
+        "failed": 0
+      },
+      "types": {
+        "slide": {
+          "generate": 2,
+          "success": 0,
+          "failed": 0
+        },
+        "rotate": {
+          "generate": 2,
+          "success": 0,
+          "failed": 0
+        },
+        "click": {
+          "generate": 2,
+          "success": 0,
+          "failed": 0
+        },
+        "voice": {
+          "generate": 2,
+          "success": 0,
+          "failed": 0
+        }
+      }
+    }
+  },
+  "ipRiskMap": {
+    "::ffff:127.0.0.1": {
+      "count": 2,
+      "totalRisk": 170.12707768743874,
+      "lastSeen": 1779900945291,
+      "avgRisk": 85.06353884371937
+    }
+  },
+  "savedAt": 1779901313367
+}

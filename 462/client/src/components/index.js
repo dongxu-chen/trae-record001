@@ -1,0 +1,5 @@
+export { default as SlideCaptcha } from './SlideCaptcha'
+export { default as RotateCaptcha } from './RotateCaptcha'
+export { default as ClickCaptcha } from './ClickCaptcha'
+export { default as VoiceCaptcha } from './VoiceCaptcha'
+export { CaptchaProvider, useCaptcha } from '../contexts/CaptchaContext'

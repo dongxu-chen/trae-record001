@@ -1,0 +1,230 @@
+.rotate-captcha-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 350px;
+}
+
+.rotate-canvas {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  user-select: none;
+}
+
+.angle-display {
+  margin-top: 12px;
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+}
+
+.angle-value {
+  color: #667eea;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.rotate-slider-container {
+  position: relative;
+  width: 100%;
+  margin-top: 16px;
+  padding: 0 10px;
+}
+
+.rotate-slider-track {
+  position: relative;
+  height: 8px;
+  background: linear-gradient(90deg, #e0e0e0 0%, #667eea 50%, #e0e0e0 100%);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.rotate-slider {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: translateY(-50%);
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.rotate-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 50%;
+  cursor: grab;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.rotate-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.rotate-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.15);
+}
+
+.rotate-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 50%;
+  cursor: grab;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.rotate-slider::-moz-range-thumb:active {
+  cursor: grabbing;
+}
+
+.rotate-slider:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.rotate-slider:disabled::-webkit-slider-thumb {
+  cursor: not-allowed;
+}
+
+.rotate-handle {
+  position: absolute;
+  top: -30px;
+  transform: translateX(-50%);
+  font-size: 20px;
+  color: #667eea;
+  pointer-events: none;
+  transition: left 0.05s linear;
+}
+
+.rotate-handle-icon {
+  display: inline-block;
+  animation: rotate-hint 2s linear infinite;
+}
+
+@keyframes rotate-hint {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.captcha-canvas-wrapper {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.captcha-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  z-index: 20;
+  border-radius: 8px;
+}
+
+.captcha-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.captcha-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 12px;
+  padding: 0 4px;
+}
+
+.captcha-status {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-right: 12px;
+}
+
+.status-idle {
+  background: #f8f9fa;
+  color: #6c757d;
+}
+
+.status-dragging {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.status-verifying {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.status-success {
+  background: #d4edda;
+  color: #28a745;
+}
+
+.status-error {
+  background: #f8d7da;
+  color: #dc3545;
+}
+
+.captcha-refresh-btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.captcha-refresh-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.captcha-refresh-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.captcha-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

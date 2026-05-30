@@ -1,0 +1,303 @@
+.captcha-stats-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.stats-header h2 {
+  margin: 0;
+  color: #333;
+}
+
+.refresh-btn {
+  padding: 8px 16px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.refresh-btn:hover {
+  background: #5a6fd6;
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.stats-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  color: #667eea;
+}
+
+.tab-btn.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+}
+
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+.stat-value.success {
+  color: #28a745;
+}
+
+.stat-value.error {
+  color: #dc3545;
+}
+
+.crack-risk-high {
+  color: #dc3545;
+}
+
+.crack-risk-medium {
+  color: #ffc107;
+}
+
+.crack-risk-low {
+  color: #28a745;
+}
+
+.breakdown-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.type-stats {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.type-stats h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.type-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.risk-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.risk-stats {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.risk-stats h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+}
+
+.risk-type {
+  margin-bottom: 25px;
+}
+
+.risk-type h4 {
+  margin: 0 0 10px 0;
+  color: #555;
+}
+
+.risk-bar {
+  height: 24px;
+  background: #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+}
+
+.risk-bar-low,
+.risk-bar-medium,
+.risk-bar-high {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.risk-bar-low {
+  background: linear-gradient(90deg, #28a745, #34ce57);
+}
+
+.risk-bar-medium {
+  background: linear-gradient(90deg, #ffc107, #ffda6a);
+}
+
+.risk-bar-high {
+  background: linear-gradient(90deg, #dc3545, #f05463);
+}
+
+.risk-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.risk-low {
+  color: #28a745;
+}
+
+.risk-medium {
+  color: #ffc107;
+}
+
+.risk-high {
+  color: #dc3545;
+}
+
+.high-risk-ips {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.high-risk-ips h3 {
+  margin: 0 0 15px 0;
+  color: #dc3545;
+}
+
+.risk-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.risk-table th,
+.risk-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.risk-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #555;
+}
+
+.difficulty-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.difficulty-section h3 {
+  margin: 0;
+  color: #333;
+}
+
+.diff-type {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.diff-type h4 {
+  margin: 0 0 15px 0;
+  color: #555;
+}
+
+.diff-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.diff-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.diff-label {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.diff-rate {
+  font-size: 24px;
+  font-weight: bold;
+  color: #667eea;
+}
+
+.diff-count {
+  font-size: 12px;
+  color: #999;
+}

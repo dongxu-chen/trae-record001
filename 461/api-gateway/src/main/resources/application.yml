@@ -1,0 +1,98 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        namespace: public
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+          lower-case-service-id: true
+      routes:
+        - id: version-manager
+          uri: lb://version-manager
+          predicates:
+            - Path=/api/version/**
+        - id: compare-service
+          uri: lb://compare-service
+          predicates:
+            - Path=/api/compare/**
+        - id: business-service-v1
+          uri: lb://business-service-v1
+          predicates:
+            - Path=/api/business/v1/**
+        - id: business-service-v2
+          uri: lb://business-service-v2
+          predicates:
+            - Path=/api/business/v2/**
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password:
+      database: 0
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: version-manager
+        url: /v3/api-docs/version-manager
+      - name: compare-service
+        url: /v3/api-docs/compare-service
+      - name: business-service-v1
+        url: /v3/api-docs/business-service-v1
+      - name: business-service-v2
+        url: /v3/api-docs/business-service-v2
+  api-docs:
+    path: /v3/api-docs
+
+api:
+  version:
+    header:
+      rules:
+        - headerName: X-API-Version
+          parseStrategy: DIRECT
+          pattern:
+          defaultValue: v1
+          priority: 1
+        - headerName: Accept
+          parseStrategy: REGEX
+          pattern: version=([^;]+)
+          defaultValue: v1
+          priority: 2
+        - headerName: X-Client-Version
+          parseStrategy: PREFIX
+          pattern: v
+          defaultValue: v1
+          priority: 3
+        - headerName: User-Agent
+          parseStrategy: SEMVER
+          pattern:
+          defaultValue: v1
+          priority: 4
+    rate-limit:
+      enabled: true
+      max-requests-per-second: 1000
+      burst-capacity: 2000
+      batch-size: 100
+      batch-interval-ms: 1000
+      warm-up-period-sec: 60
+
+logging:
+  level:
+    com.apiversion.gateway: debug
+    org.springframework.cloud.gateway: debug
