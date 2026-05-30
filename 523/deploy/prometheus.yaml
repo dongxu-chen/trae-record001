@@ -1,0 +1,39 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+rule_files:
+  - "escape-detector-rules.yaml"
+
+scrape_configs:
+  - job_name: 'escape-detector'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 10s
+    metrics_path: /metrics
+    params:
+      format: ['prometheus']
+
+  - job_name: 'escape-detector-health'
+    metrics_path: /health
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 30s
+
+  - job_name: 'escape-detector-alerts'
+    metrics_path: /alerts
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 5s
+
+  - job_name: 'escape-detector-risk'
+    metrics_path: /risk
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 15s

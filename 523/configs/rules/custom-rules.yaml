@@ -1,0 +1,103 @@
+version: "1.0"
+rules:
+  - id: CUSTOM-001
+    name: "Custom - Sensitive Proc File Access"
+    description: "Container attempts to access sensitive /proc filesystem entries"
+    severity: critical
+    score: 75.0
+    tags: ["custom", "file-access", "security"]
+    mitigation: "Review and restrict container filesystem access using security profiles"
+    condition:
+      and:
+        - field: event_type
+          operator: eq
+          value: openat
+        - or:
+            - field: file_name
+              operator: prefix
+              value: /proc/sys
+            - field: file_name
+              operator: contains
+              value: /proc/kcore
+            - field: file_name
+              operator: regex
+              value: /proc/[0-9]+/mem
+
+  - id: CUSTOM-002
+    name: "Custom - Unusual Network Tools Execution"
+    description: "Network scanning or exploitation tools executed in container"
+    severity: high
+    score: 60.0
+    tags: ["custom", "exec", "network", "scanning"]
+    mitigation: "Restrict execution of network tools in production containers"
+    condition:
+      and:
+        - field: event_type
+          operator: eq
+          value: execve
+        - or:
+            - field: comm
+              operator: in
+              value:
+                - nmap
+                - masscan
+                - nc
+                - netcat
+                - telnet
+                - curl
+                - wget
+            - field: file_name
+              operator: regex
+              value: /tmp/.*(nc|ncat|socat|msfconsole|msfvenom)
+
+  - id: CUSTOM-003
+    name: "Custom - Privileged Container Escape via Docker Run"
+    description: "Container started with excessive privileges detected"
+    severity: critical
+    score: 85.0
+    tags: ["custom", "privileged", "container"]
+    mitigation: "Avoid running containers in privileged mode"
+    condition:
+      and:
+        - field: event_type
+          operator: eq
+          value: execve
+        - field: comm
+          operator: contains
+          value: docker
+        - or:
+            - field: file_name
+              operator: contains
+              value: --privileged
+            - field: file_name
+              operator: contains
+              value: privileged=true
+
+  - id: CUSTOM-004
+    name: "Custom - Reverse Shell Pattern"
+    description: "Potential reverse shell command pattern detected"
+    severity: critical
+    score: 90.0
+    tags: ["custom", "reverse-shell", "malware"]
+    mitigation: "Monitor for suspicious shell activity and implement egress filtering"
+    condition:
+      and:
+        - field: event_type
+          operator: eq
+          value: execve
+        - or:
+            - field: file_name
+              operator: regex
+              value: .*(bash|sh|zsh).*>&.*/dev/tcp/.*
+            - field: file_name
+              operator: regex
+              value: nc.*-e.*(bash|sh)
+            - field: file_name
+              operator: contains
+              value: python.*socket.*connect
+            - field: file_name
+              operator: contains
+              value: python.*subprocess.*shell=True
+            - field: file_name
+              operator: contains
+              value: bash.*-i.*>&

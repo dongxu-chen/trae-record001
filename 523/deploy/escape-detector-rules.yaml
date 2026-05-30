@@ -1,0 +1,122 @@
+groups:
+  - name: container-escape-detector
+    rules:
+      - alert: ContainerEscapeCritical
+        expr: sum by (container_id, container_name, severity) (increase(container_escape_detector_escape_attempts_total{severity="critical"}[5m])) > 0
+        for: 1m
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "CRITICAL Container Escape Attempt Detected"
+          description: "Critical escape attempt detected on container {{ $labels.container_name }} ({{ $labels.container_id }})"
+          container: "{{ $labels.container_name }}"
+          container_id: "{{ $labels.container_id }}"
+          attack_type: "{{ $labels.attack_type }}"
+          severity: "{{ $labels.severity }}"
+          value: "{{ $value }}"
+
+      - alert: ContainerEscapeHigh
+        expr: sum by (container_id, container_name, severity) (increase(container_escape_detector_escape_attempts_total{severity="high"}[5m])) > 0
+        for: 2m
+        labels:
+          severity: high
+          category: security
+        annotations:
+          summary: "HIGH Container Escape Attempt Detected"
+          description: "High severity escape attempt detected on container {{ $labels.container_name }} ({{ $labels.container_id }})"
+          container: "{{ $labels.container_name }}"
+          container_id: "{{ $labels.container_id }}"
+          attack_type: "{{ $labels.attack_type }}"
+          severity: "{{ $labels.severity }}"
+
+      - alert: ContainerSuspiciousMount
+        expr: sum by (container_id, container_name) (increase(container_escape_detector_mount_events_total{suspicious="true"}[5m])) > 0
+        for: 1m
+        labels:
+          severity: high
+          category: security
+        annotations:
+          summary: "Suspicious Mount Operation Detected"
+          description: "Suspicious mount operation in container {{ $labels.container_name }}"
+          container: "{{ $labels.container_name }}"
+
+      - alert: ContainerHighRiskScore
+        expr: max by (container_id, container_name) (container_escape_detector_container_risk_score) > 70
+        for: 5m
+        labels:
+          severity: high
+          category: security
+        annotations:
+          summary: "Container Has High Risk Score"
+          description: "Container {{ $labels.container_name }} has risk score {{ $value }}/100"
+          container: "{{ $labels.container_name }}"
+          risk_score: "{{ $value }}"
+
+      - alert: ContainerCriticalRiskScore
+        expr: max by (container_id, container_name) (container_escape_detector_container_risk_score) > 90
+        for: 2m
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "Container Has Critical Risk Score"
+          description: "Container {{ $labels.container_name }} has critical risk score {{ $value }}/100"
+          container: "{{ $labels.container_name }}"
+          risk_score: "{{ $value }}"
+
+      - alert: HighAlertRate
+        expr: sum(rate(container_escape_detector_alerts_total[5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High Alert Rate"
+          description: "High rate of alerts detected: {{ $value }} alerts per second"
+
+      - alert: DetectorNotRunning
+        expr: up{job="escape-detector"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "Container Escape Detector Is Down"
+          description: "The escape detector service is not running"
+
+      - alert: PrivilegedCapabilityUsage
+        expr: sum by (capability, container_id, container_name) (increase(container_escape_detector_capability_usage_total{capability=~"CAP_SYS_ADMIN|CAP_SYS_MODULE|CAP_SYS_RAWIO"}[10m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "Frequent Privileged Capability Usage"
+          description: "Frequent usage of {{ $labels.capability }} in container {{ $labels.container_name }}"
+          capability: "{{ $labels.capability }}"
+          container: "{{ $labels.container_name }}"
+
+      - alert: SuspiciousProcessCount
+        expr: sum by (container_id, container_name) (increase(container_escape_detector_suspicious_processes_total[10m])) > 3
+        for: 5m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "Multiple Suspicious Processes"
+          description: "Multiple suspicious processes detected in container {{ $labels.container_name }}"
+          container: "{{ $labels.container_name }}"
+          count: "{{ $value }}"
+
+      - alert: AttackChainDetected
+        expr: sum by (attack_type, container_id, container_name) (increase(container_escape_detector_attack_chains_total[15m])) > 0
+        for: 1m
+        labels:
+          severity: high
+          category: security
+        annotations:
+          summary: "Attack Chain Detected"
+          description: "Attack chain '{{ $labels.attack_type }}' detected in container {{ $labels.container_name }}"
+          attack_type: "{{ $labels.attack_type }}"
+          container: "{{ $labels.container_name }}"

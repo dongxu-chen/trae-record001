@@ -1,0 +1,36 @@
+[Unit]
+Description=Container Escape Detector - Security Monitoring System
+Documentation=https://github.com/security/container-escape-detector
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+Environment=GODEBUG=cgocheck=0
+ExecStart=/usr/local/bin/escape-detector --config /etc/escape-detector/config.yaml
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5s
+
+LimitNOFILE=65536
+LimitMEMLOCK=infinity
+LimitNPROC=4096
+
+CapabilityBoundingSet=CAP_SYS_ADMIN CAP_SYS_PTRACE CAP_SYS_MODULE CAP_DAC_READ_SEARCH CAP_NET_ADMIN
+AmbientCapabilities=CAP_SYS_ADMIN CAP_SYS_PTRACE CAP_SYS_MODULE CAP_DAC_READ_SEARCH CAP_NET_ADMIN
+
+SecurityOptions=apparmor=unconfined
+SecurityOptions=seccomp=unconfined
+
+StandardOutput=journal+console
+StandardError=journal+console
+SyslogIdentifier=escape-detector
+
+CPUQuota=200%
+MemoryMax=1G
+MemoryHigh=800M
+
+[Install]
+WantedBy=multi-user.target

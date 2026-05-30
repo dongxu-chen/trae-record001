@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  escape-detector:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: escape-detector
+    restart: unless-stopped
+    privileged: true
+    pid: host
+    network_mode: host
+    environment:
+      - ESCAPE_DETECTOR_LOG_LEVEL=info
+      - ESCAPE_DETECTOR_BPF_ENABLED=true
+    volumes:
+      - /sys/kernel/debug:/sys/kernel/debug:rw
+      - /sys/fs/bpf:/sys/fs/bpf:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc:/host/proc:ro
+      - ./configs:/etc/escape-detector:ro
+      - escape-detector-data:/var/lib/escape-detector
+    ports:
+      - "9090:9090"
+    cap_add:
+      - ALL
+    security_opt:
+      - apparmor=unconfined
+      - seccomp=unconfined
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    depends_on:
+      - prometheus
+
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: escape-detector-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+      - ./escape-detector-rules.yaml:/etc/prometheus/escape-detector-rules.yaml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9091:9090"
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: escape-detector-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-dashboard.json:/etc/grafana/provisioning/dashboards/escape-detector.json:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: escape-detector-alertmanager
+    restart: unless-stopped
+    volumes:
+      - ./alertmanager.yaml:/etc/alertmanager/alertmanager.yaml:ro
+      - alertmanager-data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yaml'
+    ports:
+      - "9093:9093"
+
+volumes:
+  escape-detector-data:
+  prometheus-data:
+  grafana-data:
+  alertmanager-data:

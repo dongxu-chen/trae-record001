@@ -1,0 +1,150 @@
+log_level: info
+
+bpf:
+  enabled: true
+  perf_buffer_size: 1024
+  fallback_mode: false
+  events:
+    - mount
+    - umount
+    - chroot
+    - pivot_root
+    - setns
+    - unshare
+    - ptrace
+    - init_module
+    - delete_module
+    - execve
+    - openat
+    - mknod
+    - cap_capable
+    - commit_creds
+
+container:
+  refresh_interval: 30
+  docker_socket: /var/run/docker.sock
+  use_procfs: true
+  use_docker_api: true
+
+behavior:
+  baseline_mode: false
+  baseline_duration: 300
+  anomaly_threshold: 2.0
+  process_tree_depth: 10
+  max_history_size: 10000
+  mount_whitelist:
+    enabled: true
+    container_patterns: []
+    paths:
+      - source: /dev/null
+        target: /dev/null
+        fs_type: devtmpfs
+        description: Standard null device
+      - source: /dev/urandom
+        target: /dev/urandom
+        fs_type: devtmpfs
+        description: Random device
+      - source: /dev/random
+        target: /dev/random
+        fs_type: devtmpfs
+        description: Random device
+      - source: /dev/zero
+        target: /dev/zero
+        fs_type: devtmpfs
+        description: Zero device
+      - source: proc
+        target: /proc
+        fs_type: proc
+        description: Standard proc filesystem
+      - source: sysfs
+        target: /sys
+        fs_type: sysfs
+        description: Standard sys filesystem
+      - source: tmpfs
+        target: /dev/shm
+        fs_type: tmpfs
+        description: Shared memory
+      - source: tmpfs
+        target: /run
+        fs_type: tmpfs
+        description: Runtime data
+      - source: tmpfs
+        target: /tmp
+        fs_type: tmpfs
+        description: Temp directory
+      - source: cgroup
+        target: /sys/fs/cgroup
+        fs_type: cgroup
+        description: Cgroup filesystem
+      - source: mqueue
+        target: /dev/mqueue
+        fs_type: mqueue
+        description: POSIX message queues
+      - source: /etc/resolv.conf
+        target: /etc/resolv.conf
+        fs_type: bind
+        description: DNS resolver config
+      - source: /etc/hosts
+        target: /etc/hosts
+        fs_type: bind
+        description: Hosts file
+      - source: /etc/hostname
+        target: /etc/hostname
+        fs_type: bind
+        description: Hostname file
+
+rules:
+  custom_rules_dir: /etc/escape-detector/rules
+  load_builtin: true
+
+alert:
+  log_level: info
+  webhook_url: ""
+  webhook_token: ""
+  rate_limit: 60
+  aggregation:
+    enabled: true
+    window_seconds: 300
+    max_events_per_group: 100
+    send_interval: 60
+  slack:
+    webhook_url: ""
+    channel: "#security-alerts"
+
+metrics:
+  enabled: true
+  listen_addr: ":9090"
+
+analysis:
+  enable_attack_chain: true
+  enable_risk_score: true
+  risk_window_minutes: 60
+
+simulator:
+  enabled: false
+  mode: "passive"
+  interval_seconds: 3600
+  max_attempts_per_run: 10
+  enable_dangerous: false
+
+protection:
+  enabled: false
+  mode: "monitor"
+  auto_block_severity: "HIGH"
+  network_isolation: true
+  kill_process: true
+  quarantine_container: false
+  whitelist_pids: []
+  alert_only_rules: []
+  blocked_actions:
+    - "docker.sock"
+    - "release_agent"
+    - "kernel module"
+
+threat_intel:
+  enabled: true
+  update_urls: []
+  update_interval_hours: 24
+  cache_dir: "/var/lib/escape-detector/threatintel"
+  auto_update: true
+  custom_signatures: []
