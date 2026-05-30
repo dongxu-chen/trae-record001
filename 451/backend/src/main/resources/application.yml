@@ -1,0 +1,45 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: risk-control-engine
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 20
+        max-idle: 10
+        min-idle: 5
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: risk-engine-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: false
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+    listener:
+      concurrency: 3
+      ack-mode: manual_immediate
+
+risk:
+  engine:
+    kafka:
+      input-topic: risk-events
+      output-topic: risk-decisions
+    rule:
+      version-max-history: 20
+    groovy:
+      classloader:
+        unused-timeout-minutes: 60
+        cleanup-interval-ms: 300000
+      script-base-path: rules/groovy/
+      auto-reload-interval: 5000

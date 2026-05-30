@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f7fa;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+.dragging {
+  opacity: 0.5;
+}
+
+.drop-target {
+  border: 2px dashed #165DFF !important;
+  background-color: #E8F3FF !important;
+}
+
+.pivot-table th,
+.pivot-table td {
+  border: 1px solid #e5e7eb;
+  padding: 8px 12px;
+  text-align: right;
+}
+
+.pivot-table th {
+  background-color: #f8fafc;
+  font-weight: 600;
+  text-align: center;
+}
+
+.pivot-table td:first-child,
+.pivot-table th:first-child {
+  text-align: left;
+}
+
+.pivot-table tr:hover td:not(:first-child) {
+  background-color: #f0f7ff;
+}
+
+.pivot-table .total-row {
+  background-color: #f1f5f9;
+  font-weight: 600;
+}
+
+.pivot-table .total-col {
+  background-color: #f1f5f9;
+  font-weight: 600;
+}
+
+.pivot-table .cell-value {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pivot-table .cell-value:hover {
+  background-color: #dbeafe;
+  transform: scale(1.02);
+}

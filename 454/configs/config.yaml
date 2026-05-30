@@ -1,0 +1,154 @@
+project:
+  name: ctr-prediction-platform
+  version: 1.0.0
+  environment: development
+
+feature_store:
+  repo_path: ./feature_store
+  offline_store:
+    type: file
+  online_store:
+    type: sqlite
+  entity_names:
+    - user
+    - ad
+    - context
+
+models:
+  deepfm:
+    hidden_units: [256, 128, 64]
+    dropout_rates: [0.3, 0.3, 0.2]
+    embedding_dim: 32
+    learning_rate: 0.001
+    batch_size: 1024
+    epochs: 10
+  mmoe:
+    num_experts: 3
+    expert_hidden_units: [128, 64]
+    tower_hidden_units: [64, 32]
+    num_tasks: 2
+    embedding_dim: 32
+    learning_rate: 0.001
+    batch_size: 1024
+    epochs: 10
+
+kafka:
+  bootstrap_servers:
+    - localhost:9092
+  topics:
+    impressions: ctr_impressions
+    clicks: ctr_clicks
+    predictions: ctr_predictions
+  consumer_group_id: ctr-platform-group
+  producer_config:
+    acks: all
+    retries: 3
+  consumer_config:
+    auto_offset_reset: earliest
+    enable_auto_commit: true
+
+ab_testing:
+  traffic_split:
+    control: 0.5
+    treatment: 0.5
+  metrics:
+    - ctr
+    - conversion_rate
+    - auc
+    - log_loss
+  significance_level: 0.05
+  min_impressions: 10000
+
+model_selection:
+  metrics:
+    primary: auc
+    secondary:
+      - log_loss
+      - precision
+      - recall
+  threshold:
+    auc: 0.75
+    log_loss: 0.5
+  auto_deploy: true
+
+validation_sampling:
+  enabled: true
+  sampling_rate: 0.05
+  buffer_size: 100000
+  time_window_hours: 24
+  use_importance_weighting: true
+  alignment_features:
+    - user_age
+    - user_gender
+    - user_level
+    - ad_category
+    - ad_price
+    - context_hour
+  target_validation_size: 10000
+  min_alignment_score: 0.8
+
+async_evaluation:
+  enabled: true
+  max_queue_size: 100000
+  num_workers: 4
+  buffer_flush_interval: 60
+  buffer_max_size: 1000
+  prediction_output_dir: ./data/online_predictions
+
+embedding:
+  use_adaptive: true
+  min_dim: 4
+  max_dim: 64
+  scale_factor: 0.25
+
+shap:
+  enabled: true
+  nsamples: 50
+  cache_size: 10000
+  num_async_workers: 2
+  background_sample_size: 100
+
+distillation:
+  enabled: true
+  temperature: 5.0
+  alpha: 0.3
+  compression_ratio: 0.25
+  student_model_type: deepfm
+  epochs: 10
+
+drift_detection:
+  enabled: true
+  ks_threshold: 0.05
+  js_threshold: 0.1
+  psi_threshold: 0.2
+  wasserstein_threshold: 0.5
+  window_size: 10000
+  check_interval_seconds: 300
+  auto_retrain: true
+  monitored_features:
+    - user_age
+    - user_gender
+    - user_level
+    - user_ctr_7d
+    - ad_category
+    - ad_price
+    - ad_ctr_history
+    - context_hour
+
+deployment:
+  seldon:
+    model_storage_path: ./models/saved
+    namespace: seldon
+    replicas: 2
+    resources:
+      requests:
+        cpu: "1"
+        memory: "2Gi"
+      limits:
+        cpu: "2"
+        memory: "4Gi"
+
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_path: ./logs/platform.log

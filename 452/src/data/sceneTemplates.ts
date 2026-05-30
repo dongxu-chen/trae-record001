@@ -1,0 +1,146 @@
+import type { SceneTemplate } from '../types/scene';
+
+export const sceneTemplates: SceneTemplate[] = [
+  {
+    id: 'empty-room',
+    name: '空房间',
+    description: '基础室内房间，含地板、墙壁和天花板',
+    icon: '🏠',
+    category: 'indoor',
+    data: {
+      backgroundColor: '#2a2a3a',
+      fog: { enabled: false, color: '#2a2a3a', near: 10, far: 50 },
+      lights: [
+        { id: '', type: 'ambient', color: '#fff5e6', intensity: 0.3 },
+        { id: '', type: 'point', color: '#ffeedd', intensity: 1.2, position: [0, 3, 0] },
+      ],
+      objects: [
+        { id: '', name: 'floor', type: 'box', position: [0, -0.05, 0], rotation: [0, 0, 0], scale: [8, 0.1, 8], material: { color: '#8B7355', metalness: 0.0, roughness: 0.8, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.8, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'wall-back', type: 'box', position: [0, 2, -4], rotation: [0, 0, 0], scale: [8, 4, 0.1], material: { color: '#d4c5a9', metalness: 0.0, roughness: 0.9, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.5, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'wall-left', type: 'box', position: [-4, 2, 0], rotation: [0, 0, 0], scale: [0.1, 4, 8], material: { color: '#d4c5a9', metalness: 0.0, roughness: 0.9, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.5, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'wall-right', type: 'box', position: [4, 2, 0], rotation: [0, 0, 0], scale: [0.1, 4, 8], material: { color: '#d4c5a9', metalness: 0.0, roughness: 0.9, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.5, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+      ],
+    },
+  },
+  {
+    id: 'office',
+    name: '办公室',
+    description: '现代办公空间，含桌椅和灯光',
+    icon: '💼',
+    category: 'indoor',
+    data: {
+      backgroundColor: '#1e1e2e',
+      fog: { enabled: false, color: '#1e1e2e', near: 10, far: 50 },
+      lights: [
+        { id: '', type: 'ambient', color: '#e8e0ff', intensity: 0.3 },
+        { id: '', type: 'directional', color: '#ffffff', intensity: 0.8, position: [3, 6, 4] },
+        { id: '', type: 'point', color: '#fff5e0', intensity: 0.6, position: [0, 2.5, 0] },
+      ],
+      objects: [
+        { id: '', name: 'floor', type: 'box', position: [0, -0.05, 0], rotation: [0, 0, 0], scale: [10, 0.1, 8], material: { color: '#5a5a6a', metalness: 0.1, roughness: 0.6, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.2, friction: 0.6, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'desk', type: 'box', position: [0, 0.4, -2], rotation: [0, 0, 0], scale: [2.4, 0.08, 1.2], material: { color: '#4a3728', metalness: 0.05, roughness: 0.7, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.2, friction: 0.5, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'desk-leg-1', type: 'box', position: [-1.1, 0.2, -2.5], rotation: [0, 0, 0], scale: [0.08, 0.4, 0.08], material: { color: '#3a3a3a', metalness: 0.5, roughness: 0.3, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.2, friction: 0.5, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'desk-leg-2', type: 'box', position: [1.1, 0.2, -2.5], rotation: [0, 0, 0], scale: [0.08, 0.4, 0.08], material: { color: '#3a3a3a', metalness: 0.5, roughness: 0.3, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.2, friction: 0.5, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'monitor', type: 'box', position: [0, 0.75, -2.3], rotation: [0, 0, 0], scale: [0.8, 0.5, 0.05], material: { color: '#1a1a2a', metalness: 0.8, roughness: 0.2, emissive: '#0044aa', emissiveIntensity: 0.1, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.2, friction: 0.5, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'chair-seat', type: 'box', position: [0, 0.35, -1], rotation: [0, 0, 0], scale: [0.6, 0.08, 0.6], material: { color: '#2a2a3a', metalness: 0.1, roughness: 0.8, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.2, friction: 0.5, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+      ],
+    },
+  },
+  {
+    id: 'garden',
+    name: '花园',
+    description: '室外花园场景，绿地和树丛',
+    icon: '🌳',
+    category: 'outdoor',
+    data: {
+      backgroundColor: '#87CEEB',
+      fog: { enabled: true, color: '#c8dbe6', near: 15, far: 60 },
+      lights: [
+        { id: '', type: 'ambient', color: '#aaccff', intensity: 0.5 },
+        { id: '', type: 'directional', color: '#fffbe6', intensity: 1.5, position: [8, 12, 5] },
+        { id: '', type: 'point', color: '#ffe8cc', intensity: 0.3, position: [0, 2, 3] },
+      ],
+      objects: [
+        { id: '', name: 'ground', type: 'box', position: [0, -0.25, 0], rotation: [0, 0, 0], scale: [20, 0.5, 20], material: { color: '#4a7c3f', metalness: 0.0, roughness: 0.95, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.2, friction: 0.9, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'tree-trunk-1', type: 'box', position: [-3, 1, -2], rotation: [0, 0, 0], scale: [0.3, 2, 0.3], material: { color: '#6B4226', metalness: 0.0, roughness: 0.9, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.2, friction: 0.8, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'tree-top-1', type: 'sphere', position: [-3, 2.8, -2], rotation: [0, 0, 0], scale: [2, 1.5, 2], material: { color: '#2d5a1e', metalness: 0.0, roughness: 0.9, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.2, friction: 0.8, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'tree-trunk-2', type: 'box', position: [4, 0.8, -4], rotation: [0, 0, 0], scale: [0.25, 1.6, 0.25], material: { color: '#6B4226', metalness: 0.0, roughness: 0.9, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.2, friction: 0.8, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'tree-top-2', type: 'sphere', position: [4, 2.2, -4], rotation: [0, 0, 0], scale: [1.6, 1.2, 1.6], material: { color: '#3a6b2a', metalness: 0.0, roughness: 0.9, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.2, friction: 0.8, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'bush-1', type: 'sphere', position: [2, 0.3, 1], rotation: [0, 0, 0], scale: [1, 0.6, 1], material: { color: '#3d7a2e', metalness: 0.0, roughness: 0.95, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.2, friction: 0.8, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'bush-2', type: 'sphere', position: [-2, 0.25, 2], rotation: [0, 0, 0], scale: [0.8, 0.5, 0.8], material: { color: '#4a8a38', metalness: 0.0, roughness: 0.95, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.2, friction: 0.8, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'path-stone', type: 'box', position: [0, 0.01, 2], rotation: [0, 0.3, 0], scale: [1.5, 0.05, 0.8], material: { color: '#9a9a8a', metalness: 0.0, roughness: 0.85, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.2, friction: 0.7, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+      ],
+    },
+  },
+  {
+    id: 'street',
+    name: '街道',
+    description: '城市街道场景，含路面和建筑轮廓',
+    icon: '🏙️',
+    category: 'outdoor',
+    data: {
+      backgroundColor: '#1a1a2e',
+      fog: { enabled: true, color: '#2a2a3e', near: 10, far: 40 },
+      lights: [
+        { id: '', type: 'ambient', color: '#334466', intensity: 0.3 },
+        { id: '', type: 'directional', color: '#ffeedd', intensity: 0.6, position: [5, 10, 3] },
+        { id: '', type: 'point', color: '#ffaa44', intensity: 1, position: [-2, 3, 1] },
+        { id: '', type: 'point', color: '#ffaa44', intensity: 1, position: [3, 3, 1] },
+      ],
+      objects: [
+        { id: '', name: 'road', type: 'box', position: [0, -0.05, 0], rotation: [0, 0, 0], scale: [6, 0.1, 20], material: { color: '#3a3a3a', metalness: 0.1, roughness: 0.8, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.7, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'building-1', type: 'box', position: [-4, 3, -3], rotation: [0, 0, 0], scale: [2, 6, 3], material: { color: '#4a4a5a', metalness: 0.3, roughness: 0.6, emissive: '#221100', emissiveIntensity: 0.05, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.5, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'building-2', type: 'box', position: [4, 2.5, -4], rotation: [0, 0, 0], scale: [2, 5, 4], material: { color: '#5a5a6a', metalness: 0.3, roughness: 0.6, emissive: '#221100', emissiveIntensity: 0.05, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.5, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'building-3', type: 'box', position: [-4, 4, 3], rotation: [0, 0, 0], scale: [2, 8, 3], material: { color: '#3a3a4a', metalness: 0.3, roughness: 0.6, emissive: '#221100', emissiveIntensity: 0.05, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.5, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'sidewalk-left', type: 'box', position: [-2.5, 0.05, 0], rotation: [0, 0, 0], scale: [1, 0.1, 20], material: { color: '#8a8a8a', metalness: 0.0, roughness: 0.8, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.7, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'sidewalk-right', type: 'box', position: [2.5, 0.05, 0], rotation: [0, 0, 0], scale: [1, 0.1, 20], material: { color: '#8a8a8a', metalness: 0.0, roughness: 0.8, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.7, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'lamp-post', type: 'box', position: [-2, 1.5, 1], rotation: [0, 0, 0], scale: [0.1, 3, 0.1], material: { color: '#2a2a2a', metalness: 0.7, roughness: 0.3, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.5, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+      ],
+    },
+  },
+  {
+    id: 'studio',
+    name: '摄影棚',
+    description: '专业灯光摄影棚，三灯布光方案',
+    icon: '📷',
+    category: 'indoor',
+    data: {
+      backgroundColor: '#111118',
+      fog: { enabled: false, color: '#111118', near: 10, far: 50 },
+      lights: [
+        { id: '', type: 'ambient', color: '#ffffff', intensity: 0.15 },
+        { id: '', type: 'directional', color: '#ffffff', intensity: 1.2, position: [3, 4, 4] },
+        { id: '', type: 'directional', color: '#aaccff', intensity: 0.6, position: [-4, 3, 2] },
+        { id: '', type: 'directional', color: '#ffddcc', intensity: 0.4, position: [0, 2, -4] },
+      ],
+      objects: [
+        { id: '', name: 'studio-floor', type: 'box', position: [0, -0.05, 0], rotation: [0, 0, 0], scale: [10, 0.1, 10], material: { color: '#2a2a2a', metalness: 0.1, roughness: 0.7, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.6, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'backdrop', type: 'box', position: [0, 2.5, -4], rotation: [0, 0, 0], scale: [8, 5, 0.1], material: { color: '#f0f0f0', metalness: 0.0, roughness: 1.0, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.5, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'platform', type: 'box', position: [0, 0.1, -1], rotation: [0, 0, 0], scale: [3, 0.2, 3], material: { color: '#3a3a3a', metalness: 0.05, roughness: 0.8, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.6, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+      ],
+    },
+  },
+  {
+    id: 'playground',
+    name: '游乐场',
+    description: '户外游乐场景，适合物理模拟实验',
+    icon: '🎠',
+    category: 'outdoor',
+    data: {
+      backgroundColor: '#5588cc',
+      fog: { enabled: true, color: '#88aacc', near: 20, far: 80 },
+      lights: [
+        { id: '', type: 'ambient', color: '#aaddff', intensity: 0.4 },
+        { id: '', type: 'directional', color: '#fff8e0', intensity: 1.3, position: [6, 10, 4] },
+      ],
+      objects: [
+        { id: '', name: 'ground', type: 'box', position: [0, -0.25, 0], rotation: [0, 0, 0], scale: [16, 0.5, 16], material: { color: '#5a8a4a', metalness: 0.0, roughness: 0.9, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.8, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'ramp', type: 'box', position: [2, 0.5, 0], rotation: [0, 0, 0.4], scale: [3, 0.15, 2], material: { color: '#8B4513', metalness: 0.0, roughness: 0.7, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.5, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'pillar-1', type: 'box', position: [-3, 1, -2], rotation: [0, 0, 0], scale: [0.3, 2, 0.3], material: { color: '#cc4444', metalness: 0.1, roughness: 0.6, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.5, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'pillar-2', type: 'box', position: [-2, 1, -2], rotation: [0, 0, 0], scale: [0.3, 2, 0.3], material: { color: '#4444cc', metalness: 0.1, roughness: 0.6, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'fixed', mass: 0, restitution: 0.3, friction: 0.5, linearDamping: 0, angularDamping: 0 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'ball', type: 'sphere', position: [0, 2, 1], rotation: [0, 0, 0], scale: [0.5, 0.5, 0.5], material: { color: '#ff6644', metalness: 0.1, roughness: 0.4, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'dynamic', mass: 1, restitution: 0.8, friction: 0.3, linearDamping: 0.05, angularDamping: 0.05 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+        { id: '', name: 'box', type: 'box', position: [-1, 1.5, 2], rotation: [0, 0.3, 0], scale: [0.6, 0.6, 0.6], material: { color: '#44cc66', metalness: 0.1, roughness: 0.5, emissive: '#000000', emissiveIntensity: 0, normalMapUrl: '', normalScale: 1 }, physics: { enabled: true, bodyType: 'dynamic', mass: 0.5, restitution: 0.4, friction: 0.5, linearDamping: 0.05, angularDamping: 0.05 }, animation: { enabled: false, currentClip: '', clips: [], isPlaying: false, timeScale: 1 } },
+      ],
+    },
+  },
+];

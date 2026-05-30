@@ -1,0 +1,115 @@
+user_features:
+  entity: user
+  entity_key: user_id
+  features:
+    - name: user_age
+      dtype: int32
+      description: 用户年龄
+    - name: user_gender
+      dtype: int32
+      description: 用户性别 (0:未知, 1:男, 2:女)
+    - name: user_level
+      dtype: int32
+      description: 用户等级
+    - name: user_consumption_level
+      dtype: int32
+      description: 用户消费水平 (1-5)
+    - name: user_active_days_7d
+      dtype: int32
+      description: 近7天活跃天数
+    - name: user_click_count_7d
+      dtype: int32
+      description: 近7天点击次数
+    - name: user_impression_count_7d
+      dtype: int32
+      description: 近7天曝光次数
+    - name: user_ctr_7d
+      dtype: float32
+      description: 近7天CTR
+    - name: user_category_preference
+      dtype: int32
+      description: 用户偏好类别
+    - name: user_city_level
+      dtype: int32
+      description: 用户城市等级
+    - name: user_device_type
+      dtype: int32
+      description: 设备类型 (1:iOS, 2:Android, 3:Web)
+    - name: user_registration_days
+      dtype: int32
+      description: 注册天数
+
+ad_features:
+  entity: ad
+  entity_key: ad_id
+  features:
+    - name: ad_category
+      dtype: int32
+      description: 广告类别
+    - name: ad_campaign_id
+      dtype: int32
+      description: 广告活动ID
+    - name: ad_advertiser_id
+      dtype: int32
+      description: 广告主ID
+    - name: ad_ctr_history
+      dtype: float32
+      description: 历史CTR
+    - name: ad_click_count_7d
+      dtype: int32
+      description: 近7天点击次数
+    - name: ad_impression_count_7d
+      dtype: int32
+      description: 近7天曝光次数
+    - name: ad_price
+      dtype: float32
+      description: 广告出价
+    - name: ad_position
+      dtype: int32
+      description: 广告位置
+    - name: ad_creative_type
+      dtype: int32
+      description: 创意类型
+    - name: ad_is_new
+      dtype: int32
+      description: 是否新广告 (0/1)
+
+context_features:
+  entity: context
+  entity_key: context_id
+  features:
+    - name: context_hour
+      dtype: int32
+      description: 小时 (0-23)
+    - name: context_day_of_week
+      dtype: int32
+      description: 星期几 (0-6)
+    - name: context_is_weekend
+      dtype: int32
+      description: 是否周末 (0/1)
+    - name: context_traffic_source
+      dtype: int32
+      description: 流量来源
+    - name: context_network_type
+      dtype: int32
+      description: 网络类型 (1:WiFi, 2:4G, 3:5G)
+    - name: context_app_version
+      dtype: int32
+      description: APP版本号
+    - name: context_scene_id
+      dtype: int32
+      description: 场景ID
+    - name: context_page_id
+      dtype: int32
+      description: 页面ID
+
+cross_features:
+  - name: user_ad_category_cross
+    features: [user_category_preference, ad_category]
+    description: 用户偏好与广告类别交叉
+  - name: user_time_cross
+    features: [user_active_days_7d, context_hour]
+    description: 用户活跃度与时间交叉
+  - name: price_consumption_cross
+    features: [ad_price, user_consumption_level]
+    description: 广告价格与消费水平交叉

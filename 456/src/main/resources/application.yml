@@ -1,0 +1,73 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: distributed-id-service
+  datasource:
+    url: jdbc:h2:file:./data/distid;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  redis:
+    host: ${distid.redis.host:localhost}
+    port: ${distid.redis.port:6379}
+  jackson:
+    default-property-inclusion: non_null
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    export:
+      prometheus:
+        enabled: true
+
+distid:
+  snowflake:
+    datacenter-id: ${DATACENTER_ID:0}
+    max-tolerate-backward-ms: 5
+    max-wait-backward-ms: 5000
+  zookeeper:
+    connect-string: ${ZK_CONNECT_STRING:localhost:2181}
+    session-timeout-ms: 30000
+    connection-timeout-ms: 10000
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+  ntp:
+    enabled: true
+    sync-interval-minutes: 5
+    max-offset-ms: 500
+    servers: pool.ntp.org,time.windows.com,ntp.aliyun.com,time.apple.com
+  readable:
+    enabled: true
+    time-prefix: true
+    base62: true
+    dc-code: ${DISTID_DC_CODE:dc1}
+  tracking:
+    enabled: true
+  ha:
+    dc-code: ${DISTID_DC_CODE:dc1}
+    region: ${DISTID_REGION:cn-east}
+    priority: ${DISTID_DC_PRIORITY:1}
+    segment-offset: ${DISTID_SEGMENT_OFFSET:0}
+    segment-step: ${DISTID_SEGMENT_STEP:1000000}
+
+logging:
+  level:
+    com.distid: INFO
+    org.apache.curator: WARN
+    org.springframework.data.redis: WARN

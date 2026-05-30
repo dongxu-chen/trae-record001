@@ -1,0 +1,32 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: eureka-nacos-migration-tool
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: false
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+nacos:
+  server-addr: localhost:8848
+  namespace: public
+  group: DEFAULT_GROUP
+  username: nacos
+  password: nacos
+
+migration:
+  batch-size: 50
+  retry-times: 3
+  retry-interval-ms: 2000
+  heartbeat-interval-ms: 5000
+  verify-interval-ms: 10000
+  grayscale-ratio: 0.1
+  auto-rollback-on-failure: true
+  consistency-check-timeout-ms: 30000
