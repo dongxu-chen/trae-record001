@@ -1,0 +1,12 @@
+type,factor,impact,strategy,priority
+enhance,frequency,0.6619315031217343,提升 购买频次，每提升1单位可提升忠诚度 0.66,high
+enhance,total_base_value_y,0.6406597334424475,提升 total_base_value_y，每提升1单位可提升忠诚度 0.64,high
+enhance,total_base_value_x,0.6406597334424475,提升 total_base_value_x，每提升1单位可提升忠诚度 0.64,high
+enhance,avg_nps,0.49113601427809095,提升 NPS评分，每提升1单位可提升忠诚度 0.49,high
+enhance,total_spend,0.6475247466428844,提升 总消费金额，每提升1单位可提升忠诚度 0.65,high
+mitigate,avg_discount_pct_y,-0.24892270231810656,降低 avg_discount_pct_y，每降低1单位可提升忠诚度 0.25,medium
+mitigate,promotion_purchase_rate_y,-0.288701462235309,降低 promotion_purchase_rate_y，每降低1单位可提升忠诚度 0.29,medium
+mitigate,promotion_purchase_rate_x,-0.288701462235309,降低 promotion_purchase_rate_x，每降低1单位可提升忠诚度 0.29,medium
+churn_prevention,recency_days,112.71816278594771,重点关注 最近购买天数，低忠诚度用户比高忠诚度用户高出 112.7%,high
+churn_prevention,unresolved_complaints,72.74456521739131,重点关注 未解决投诉数，低忠诚度用户比高忠诚度用户高出 72.7%,high
+churn_prevention,return_rate,57.09241767079356,重点关注 退货率，低忠诚度用户比高忠诚度用户高出 57.1%,high

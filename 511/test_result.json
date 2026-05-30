@@ -1,0 +1,870 @@
+{
+  "tables": [
+    {
+      "name": "summary",
+      "table_schema": "analytics",
+      "database": null,
+      "columns": [],
+      "node_type": "target",
+      "is_intermediate": false,
+      "alias_chain": []
+    },
+    {
+      "name": "cte2",
+      "table_schema": null,
+      "database": null,
+      "columns": [],
+      "node_type": "cte",
+      "is_intermediate": true,
+      "alias_chain": [
+        "cte2"
+      ]
+    },
+    {
+      "name": "orders",
+      "table_schema": "raw",
+      "database": null,
+      "columns": [],
+      "node_type": "source",
+      "is_intermediate": false,
+      "alias_chain": []
+    }
+  ],
+  "columns": [
+    {
+      "name": "c2_id",
+      "table": "summary",
+      "table_schema": "analytics",
+      "database": null,
+      "node_type": "target",
+      "is_intermediate": false,
+      "alias_chain": []
+    },
+    {
+      "name": "c2_id",
+      "table": "cte2",
+      "table_schema": null,
+      "database": null,
+      "node_type": "cte",
+      "is_intermediate": true,
+      "alias_chain": []
+    },
+    {
+      "name": "c1_id",
+      "table": "cte1",
+      "table_schema": null,
+      "database": null,
+      "node_type": "cte",
+      "is_intermediate": true,
+      "alias_chain": []
+    },
+    {
+      "name": "customer_id",
+      "table": "customers",
+      "table_schema": "raw",
+      "database": null,
+      "node_type": "source",
+      "is_intermediate": false,
+      "alias_chain": []
+    },
+    {
+      "name": "c1_id",
+      "table": "orders",
+      "table_schema": "raw",
+      "database": null,
+      "node_type": "source",
+      "is_intermediate": false,
+      "alias_chain": []
+    },
+    {
+      "name": "c2_name",
+      "table": "summary",
+      "table_schema": "analytics",
+      "database": null,
+      "node_type": "target",
+      "is_intermediate": false,
+      "alias_chain": []
+    },
+    {
+      "name": "c2_name",
+      "table": "cte2",
+      "table_schema": null,
+      "database": null,
+      "node_type": "cte",
+      "is_intermediate": true,
+      "alias_chain": []
+    },
+    {
+      "name": "c1_name",
+      "table": "cte1",
+      "table_schema": null,
+      "database": null,
+      "node_type": "cte",
+      "is_intermediate": true,
+      "alias_chain": []
+    },
+    {
+      "name": "customer_name",
+      "table": "customers",
+      "table_schema": "raw",
+      "database": null,
+      "node_type": "source",
+      "is_intermediate": false,
+      "alias_chain": []
+    },
+    {
+      "name": "c1_name",
+      "table": "orders",
+      "table_schema": "raw",
+      "database": null,
+      "node_type": "source",
+      "is_intermediate": false,
+      "alias_chain": []
+    },
+    {
+      "name": "total_orders",
+      "table": "summary",
+      "table_schema": "analytics",
+      "database": null,
+      "node_type": "target",
+      "is_intermediate": false,
+      "alias_chain": []
+    },
+    {
+      "name": "order_id",
+      "table": "cte2",
+      "table_schema": null,
+      "database": null,
+      "node_type": "cte",
+      "is_intermediate": true,
+      "alias_chain": []
+    },
+    {
+      "name": "order_id",
+      "table": "orders",
+      "table_schema": "raw",
+      "database": null,
+      "node_type": "source",
+      "is_intermediate": false,
+      "alias_chain": []
+    }
+  ],
+  "table_lineage": [
+    {
+      "source": {
+        "name": "cte2",
+        "table_schema": null,
+        "database": null,
+        "columns": [],
+        "node_type": "cte",
+        "is_intermediate": true,
+        "alias_chain": [
+          "cte2"
+        ]
+      },
+      "target": {
+        "name": "summary",
+        "table_schema": "analytics",
+        "database": null,
+        "columns": [],
+        "node_type": "target",
+        "is_intermediate": false,
+        "alias_chain": []
+      },
+      "query_type": "INSERT",
+      "is_direct": false,
+      "intermediate_tables": [
+        "cte2"
+      ]
+    },
+    {
+      "source": {
+        "name": "orders",
+        "table_schema": "raw",
+        "database": null,
+        "columns": [],
+        "node_type": "source",
+        "is_intermediate": false,
+        "alias_chain": []
+      },
+      "target": {
+        "name": "cte2",
+        "table_schema": null,
+        "database": null,
+        "columns": [],
+        "node_type": "cte",
+        "is_intermediate": true,
+        "alias_chain": [
+          "cte2"
+        ]
+      },
+      "query_type": "INSERT_CTE_SOURCE",
+      "is_direct": true,
+      "intermediate_tables": []
+    }
+  ],
+  "column_lineage": [
+    {
+      "source": {
+        "name": "c2_id",
+        "table": "cte2",
+        "table_schema": null,
+        "database": null,
+        "node_type": "cte",
+        "is_intermediate": true,
+        "alias_chain": []
+      },
+      "target": {
+        "name": "c2_id",
+        "table": "summary",
+        "table_schema": "analytics",
+        "database": null,
+        "node_type": "target",
+        "is_intermediate": false,
+        "alias_chain": []
+      },
+      "transformation": null,
+      "expression": "c2_id",
+      "mapping_chain": null,
+      "is_direct": false,
+      "intermediate_nodes": [
+        "cte2.c2_id"
+      ]
+    },
+    {
+      "source": {
+        "name": "c1_id",
+        "table": "cte1",
+        "table_schema": null,
+        "database": null,
+        "node_type": "cte",
+        "is_intermediate": true,
+        "alias_chain": []
+      },
+      "target": {
+        "name": "c2_id",
+        "table": "cte2",
+        "table_schema": null,
+        "database": null,
+        "node_type": "cte",
+        "is_intermediate": true,
+        "alias_chain": []
+      },
+      "transformation": null,
+      "expression": "c1_id AS c2_id",
+      "mapping_chain": null,
+      "is_direct": false,
+      "intermediate_nodes": [
+        "cte1.c1_id"
+      ]
+    },
+    {
+      "source": {
+        "name": "customer_id",
+        "table": "customers",
+        "table_schema": "raw",
+        "database": null,
+        "node_type": "source",
+        "is_intermediate": false,
+        "alias_chain": []
+      },
+      "target": {
+        "name": "c1_id",
+        "table": "cte1",
+        "table_schema": null,
+        "database": null,
+        "node_type": "cte",
+        "is_intermediate": true,
+        "alias_chain": []
+      },
+      "transformation": null,
+      "expression": "customer_id AS c1_id",
+      "mapping_chain": {
+        "target_column": "c1_id",
+        "target_table": "cte1",
+        "links": [
+          {
+            "alias": "c2_id",
+            "original_name": "c2_id",
+            "table_alias": "cte2",
+            "expression": "c2_id",
+            "level": 0
+          },
+          {
+            "alias": "c2_id",
+            "original_name": "c1_id",
+            "table_alias": "c1",
+            "expression": "c1_id AS c2_id",
+            "level": 1
+          },
+          {
+            "alias": "c2_id",
+            "original_name": "c1_id",
+            "table_alias": "o",
+            "expression": "c1_id AS c2_id",
+            "level": 1
+          },
+          {
+            "alias": "c1_id",
+            "original_name": "customer_id",
+            "table_alias": "customers",
+            "expression": "customer_id AS c1_id",
+            "level": 1
+          }
+        ],
+        "source_columns": [
+          "customer_id"
+        ],
+        "source_tables": [
+          "customers"
+        ]
+      },
+      "is_direct": false,
+      "intermediate_nodes": []
+    },
+    {
+      "source": {
+        "name": "c1_id",
+        "table": "orders",
+        "table_schema": "raw",
+        "database": null,
+        "node_type": "source",
+        "is_intermediate": false,
+        "alias_chain": []
+      },
+      "target": {
+        "name": "c2_id",
+        "table": "cte2",
+        "table_schema": null,
+        "database": null,
+        "node_type": "cte",
+        "is_intermediate": true,
+        "alias_chain": []
+      },
+      "transformation": null,
+      "expression": "c1_id AS c2_id",
+      "mapping_chain": {
+        "target_column": "c2_id",
+        "target_table": "cte2",
+        "links": [
+          {
+            "alias": "c2_id",
+            "original_name": "c2_id",
+            "table_alias": "cte2",
+            "expression": "c2_id",
+            "level": 0
+          },
+          {
+            "alias": "c2_id",
+            "original_name": "c1_id",
+            "table_alias": "c1",
+            "expression": "c1_id AS c2_id",
+            "level": 1
+          },
+          {
+            "alias": "c2_id",
+            "original_name": "c1_id",
+            "table_alias": "o",
+            "expression": "c1_id AS c2_id",
+            "level": 1
+          }
+        ],
+        "source_columns": [
+          "c1_id"
+        ],
+        "source_tables": [
+          "orders"
+        ]
+      },
+      "is_direct": false,
+      "intermediate_nodes": []
+    },
+    {
+      "source": {
+        "name": "c2_name",
+        "table": "cte2",
+        "table_schema": null,
+        "database": null,
+        "node_type": "cte",
+        "is_intermediate": true,
+        "alias_chain": []
+      },
+      "target": {
+        "name": "c2_name",
+        "table": "summary",
+        "table_schema": "analytics",
+        "database": null,
+        "node_type": "target",
+        "is_intermediate": false,
+        "alias_chain": []
+      },
+      "transformation": null,
+      "expression": "c2_name",
+      "mapping_chain": null,
+      "is_direct": false,
+      "intermediate_nodes": [
+        "cte2.c2_name"
+      ]
+    },
+    {
+      "source": {
+        "name": "c1_name",
+        "table": "cte1",
+        "table_schema": null,
+        "database": null,
+        "node_type": "cte",
+        "is_intermediate": true,
+        "alias_chain": []
+      },
+      "target": {
+        "name": "c2_name",
+        "table": "cte2",
+        "table_schema": null,
+        "database": null,
+        "node_type": "cte",
+        "is_intermediate": true,
+        "alias_chain": []
+      },
+      "transformation": null,
+      "expression": "c1_name AS c2_name",
+      "mapping_chain": null,
+      "is_direct": false,
+      "intermediate_nodes": [
+        "cte1.c1_name"
+      ]
+    },
+    {
+      "source": {
+        "name": "customer_name",
+        "table": "customers",
+        "table_schema": "raw",
+        "database": null,
+        "node_type": "source",
+        "is_intermediate": false,
+        "alias_chain": []
+      },
+      "target": {
+        "name": "c1_name",
+        "table": "cte1",
+        "table_schema": null,
+        "database": null,
+        "node_type": "cte",
+        "is_intermediate": true,
+        "alias_chain": []
+      },
+      "transformation": null,
+      "expression": "customer_name AS c1_name",
+      "mapping_chain": {
+        "target_column": "c1_name",
+        "target_table": "cte1",
+        "links": [
+          {
+            "alias": "c2_name",
+            "original_name": "c2_name",
+            "table_alias": "cte2",
+            "expression": "c2_name",
+            "level": 0
+          },
+          {
+            "alias": "c2_name",
+            "original_name": "c1_name",
+            "table_alias": "c1",
+            "expression": "c1_name AS c2_name",
+            "level": 1
+          },
+          {
+            "alias": "c2_name",
+            "original_name": "c1_name",
+            "table_alias": "o",
+            "expression": "c1_name AS c2_name",
+            "level": 1
+          },
+          {
+            "alias": "c1_name",
+            "original_name": "customer_name",
+            "table_alias": "customers",
+            "expression": "customer_name AS c1_name",
+            "level": 1
+          }
+        ],
+        "source_columns": [
+          "customer_name"
+        ],
+        "source_tables": [
+          "customers"
+        ]
+      },
+      "is_direct": false,
+      "intermediate_nodes": []
+    },
+    {
+      "source": {
+        "name": "c1_name",
+        "table": "orders",
+        "table_schema": "raw",
+        "database": null,
+        "node_type": "source",
+        "is_intermediate": false,
+        "alias_chain": []
+      },
+      "target": {
+        "name": "c2_name",
+        "table": "cte2",
+        "table_schema": null,
+        "database": null,
+        "node_type": "cte",
+        "is_intermediate": true,
+        "alias_chain": []
+      },
+      "transformation": null,
+      "expression": "c1_name AS c2_name",
+      "mapping_chain": {
+        "target_column": "c2_name",
+        "target_table": "cte2",
+        "links": [
+          {
+            "alias": "c2_name",
+            "original_name": "c2_name",
+            "table_alias": "cte2",
+            "expression": "c2_name",
+            "level": 0
+          },
+          {
+            "alias": "c2_name",
+            "original_name": "c1_name",
+            "table_alias": "c1",
+            "expression": "c1_name AS c2_name",
+            "level": 1
+          },
+          {
+            "alias": "c2_name",
+            "original_name": "c1_name",
+            "table_alias": "o",
+            "expression": "c1_name AS c2_name",
+            "level": 1
+          }
+        ],
+        "source_columns": [
+          "c1_name"
+        ],
+        "source_tables": [
+          "orders"
+        ]
+      },
+      "is_direct": false,
+      "intermediate_nodes": []
+    },
+    {
+      "source": {
+        "name": "order_id",
+        "table": "cte2",
+        "table_schema": null,
+        "database": null,
+        "node_type": "cte",
+        "is_intermediate": true,
+        "alias_chain": []
+      },
+      "target": {
+        "name": "total_orders",
+        "table": "summary",
+        "table_schema": "analytics",
+        "database": null,
+        "node_type": "target",
+        "is_intermediate": false,
+        "alias_chain": []
+      },
+      "transformation": null,
+      "expression": "COUNT(order_id) AS total_orders",
+      "mapping_chain": null,
+      "is_direct": false,
+      "intermediate_nodes": [
+        "cte2.order_id"
+      ]
+    },
+    {
+      "source": {
+        "name": "order_id",
+        "table": "orders",
+        "table_schema": "raw",
+        "database": null,
+        "node_type": "source",
+        "is_intermediate": false,
+        "alias_chain": []
+      },
+      "target": {
+        "name": "order_id",
+        "table": "cte2",
+        "table_schema": null,
+        "database": null,
+        "node_type": "cte",
+        "is_intermediate": true,
+        "alias_chain": []
+      },
+      "transformation": null,
+      "expression": "o.order_id",
+      "mapping_chain": {
+        "target_column": "order_id",
+        "target_table": "cte2",
+        "links": [
+          {
+            "alias": "total_orders",
+            "original_name": "order_id",
+            "table_alias": "cte2",
+            "expression": "COUNT(order_id) AS total_orders",
+            "level": 0
+          },
+          {
+            "alias": "order_id",
+            "original_name": "order_id",
+            "table_alias": "o",
+            "expression": "o.order_id",
+            "level": 1
+          }
+        ],
+        "source_columns": [
+          "order_id"
+        ],
+        "source_tables": [
+          "orders"
+        ]
+      },
+      "is_direct": false,
+      "intermediate_nodes": []
+    }
+  ],
+  "cte_tables": [
+    "cte1",
+    "cte2"
+  ],
+  "subquery_tables": [],
+  "intermediate_tables": [
+    "cte1",
+    "cte2"
+  ],
+  "mapping_chains": [
+    {
+      "target_column": "c1_id",
+      "target_table": "cte1",
+      "links": [
+        {
+          "alias": "c2_id",
+          "original_name": "c2_id",
+          "table_alias": "cte2",
+          "expression": "c2_id",
+          "level": 0
+        },
+        {
+          "alias": "c2_id",
+          "original_name": "c1_id",
+          "table_alias": "c1",
+          "expression": "c1_id AS c2_id",
+          "level": 1
+        },
+        {
+          "alias": "c2_id",
+          "original_name": "c1_id",
+          "table_alias": "o",
+          "expression": "c1_id AS c2_id",
+          "level": 1
+        },
+        {
+          "alias": "c1_id",
+          "original_name": "customer_id",
+          "table_alias": "customers",
+          "expression": "customer_id AS c1_id",
+          "level": 1
+        }
+      ],
+      "source_columns": [
+        "customer_id"
+      ],
+      "source_tables": [
+        "customers"
+      ]
+    },
+    {
+      "target_column": "c2_id",
+      "target_table": "cte2",
+      "links": [
+        {
+          "alias": "c2_id",
+          "original_name": "c2_id",
+          "table_alias": "cte2",
+          "expression": "c2_id",
+          "level": 0
+        },
+        {
+          "alias": "c2_id",
+          "original_name": "c1_id",
+          "table_alias": "c1",
+          "expression": "c1_id AS c2_id",
+          "level": 1
+        },
+        {
+          "alias": "c2_id",
+          "original_name": "c1_id",
+          "table_alias": "o",
+          "expression": "c1_id AS c2_id",
+          "level": 1
+        }
+      ],
+      "source_columns": [
+        "c1_id"
+      ],
+      "source_tables": [
+        "orders"
+      ]
+    },
+    {
+      "target_column": "c1_name",
+      "target_table": "cte1",
+      "links": [
+        {
+          "alias": "c2_name",
+          "original_name": "c2_name",
+          "table_alias": "cte2",
+          "expression": "c2_name",
+          "level": 0
+        },
+        {
+          "alias": "c2_name",
+          "original_name": "c1_name",
+          "table_alias": "c1",
+          "expression": "c1_name AS c2_name",
+          "level": 1
+        },
+        {
+          "alias": "c2_name",
+          "original_name": "c1_name",
+          "table_alias": "o",
+          "expression": "c1_name AS c2_name",
+          "level": 1
+        },
+        {
+          "alias": "c1_name",
+          "original_name": "customer_name",
+          "table_alias": "customers",
+          "expression": "customer_name AS c1_name",
+          "level": 1
+        }
+      ],
+      "source_columns": [
+        "customer_name"
+      ],
+      "source_tables": [
+        "customers"
+      ]
+    },
+    {
+      "target_column": "c2_name",
+      "target_table": "cte2",
+      "links": [
+        {
+          "alias": "c2_name",
+          "original_name": "c2_name",
+          "table_alias": "cte2",
+          "expression": "c2_name",
+          "level": 0
+        },
+        {
+          "alias": "c2_name",
+          "original_name": "c1_name",
+          "table_alias": "c1",
+          "expression": "c1_name AS c2_name",
+          "level": 1
+        },
+        {
+          "alias": "c2_name",
+          "original_name": "c1_name",
+          "table_alias": "o",
+          "expression": "c1_name AS c2_name",
+          "level": 1
+        }
+      ],
+      "source_columns": [
+        "c1_name"
+      ],
+      "source_tables": [
+        "orders"
+      ]
+    },
+    {
+      "target_column": "order_id",
+      "target_table": "cte2",
+      "links": [
+        {
+          "alias": "total_orders",
+          "original_name": "order_id",
+          "table_alias": "cte2",
+          "expression": "COUNT(order_id) AS total_orders",
+          "level": 0
+        },
+        {
+          "alias": "order_id",
+          "original_name": "order_id",
+          "table_alias": "o",
+          "expression": "o.order_id",
+          "level": 1
+        }
+      ],
+      "source_columns": [
+        "order_id"
+      ],
+      "source_tables": [
+        "orders"
+      ]
+    }
+  ],
+  "aggregated_lineage": [
+    {
+      "source": "cte2.c2_id",
+      "target": "analytics.summary.c2_id",
+      "intermediate_count": 1,
+      "intermediate_nodes": [
+        "cte2.c2_id"
+      ],
+      "expression": "c2_id",
+      "is_collapsed": true
+    },
+    {
+      "source": "cte1.c1_id",
+      "target": "cte2.c2_id",
+      "intermediate_count": 1,
+      "intermediate_nodes": [
+        "cte1.c1_id"
+      ],
+      "expression": "c1_id AS c2_id",
+      "is_collapsed": true
+    },
+    {
+      "source": "cte2.c2_name",
+      "target": "analytics.summary.c2_name",
+      "intermediate_count": 1,
+      "intermediate_nodes": [
+        "cte2.c2_name"
+      ],
+      "expression": "c2_name",
+      "is_collapsed": true
+    },
+    {
+      "source": "cte1.c1_name",
+      "target": "cte2.c2_name",
+      "intermediate_count": 1,
+      "intermediate_nodes": [
+        "cte1.c1_name"
+      ],
+      "expression": "c1_name AS c2_name",
+      "is_collapsed": true
+    },
+    {
+      "source": "cte2.order_id",
+      "target": "analytics.summary.total_orders",
+      "intermediate_count": 1,
+      "intermediate_nodes": [
+        "cte2.order_id"
+      ],
+      "expression": "COUNT(order_id) AS total_orders",
+      "is_collapsed": true
+    }
+  ]
+}

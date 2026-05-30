@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-autoscaler-config
+  namespace: kafka
+data:
+  config.yaml: |
+    kafka:
+      brokers:
+        - "kafka-broker-0.kafka:9092"
+        - "kafka-broker-1.kafka:9092"
+        - "kafka-broker-2.kafka:9092"
+      timeout: 30s
+
+    kubernetes:
+      inCluster: true
+      kubeConfigPath: ""
+
+    prometheus:
+      listenAddress: ":9090"
+      scrapeInterval: 30s
+      maxHistorySize: 1000
+
+    autoscalers:
+      - consumerGroupID: "order-service-consumer-group"
+        k8sDeployment: "order-service-consumer"
+        k8sNamespace: "default"
+        k8sResourceType: "deployment"
+        minReplicas: 2
+        maxReplicas: 20
+        scaleUpThreshold: 50000
+        scaleDownThreshold: 5000
+        scaleUpIncrement: 3
+        scaleDownDecrement: 1
+        cooldownPeriod: 5m
+        predictionWindow: 5m
+        usePrediction: true
+        targetLag: 10000
+        mode: "auto"
+        enablePartitionRebalance: false
+        enableRollingScale: true
+        rollingScaleInterval: 2m
+        messageProcessingLatency: 50ms
+        enableScaleDownAfterLagClear: true
+        scaleDownAfterLagDelay: 15m
+        enableSelfHealing: true
+        selfHealingThreshold: 3
+        selfHealingCooldown: 30m
+        enableSlowPartitionDetection: true
+        slowPartitionThreshold: 2m
+
+      - consumerGroupID: "payment-service-consumer-group"
+        k8sDeployment: "payment-service-consumer"
+        k8sNamespace: "default"
+        k8sResourceType: "deployment"
+        minReplicas: 1
+        maxReplicas: 10
+        scaleUpThreshold: 30000
+        scaleDownThreshold: 3000
+        scaleUpIncrement: 2
+        scaleDownDecrement: 1
+        cooldownPeriod: 10m
+        predictionWindow: 10m
+        usePrediction: true
+        targetLag: 8000
+        mode: "observation"
+        enablePartitionRebalance: false
+        enableRollingScale: true
+        rollingScaleInterval: 3m
+        messageProcessingLatency: 100ms
+        enableScaleDownAfterLagClear: true
+        scaleDownAfterLagDelay: 10m
+        enableSelfHealing: true
+        selfHealingThreshold: 3
+        selfHealingCooldown: 30m
+        enableSlowPartitionDetection: true
+        slowPartitionThreshold: 3m
+
+    rebalancer:
+      enabled: false
+      strategy: "sticky"
+      rebalanceInterval: 15m
+      dryRun: true
+      enableUnevenDetection: true
+      unevenThresholdRatio: 2.0
+      minPartitionCount: 5
+      maxConcurrentMoves: 3
+
+    log:
+      level: "info"
+      format: "json"

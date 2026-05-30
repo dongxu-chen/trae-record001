@@ -1,0 +1,574 @@
+{
+  "impact_analysis": {
+    "source_table": "raw.customers",
+    "downstream_tables": [],
+    "downstream_columns": [
+      {
+        "name": "cte1.c1_id",
+        "node_type": "column",
+        "level": 1,
+        "direct_impacts": 1,
+        "total_impacts": 3,
+        "impact_path": [
+          "raw.customers.customer_id",
+          "cte1.c1_id"
+        ]
+      },
+      {
+        "name": "cte1.c1_name",
+        "node_type": "column",
+        "level": 1,
+        "direct_impacts": 1,
+        "total_impacts": 3,
+        "impact_path": [
+          "raw.customers.customer_name",
+          "cte1.c1_name"
+        ]
+      },
+      {
+        "name": "cte2.c2_id",
+        "node_type": "column",
+        "level": 2,
+        "direct_impacts": 1,
+        "total_impacts": 2,
+        "impact_path": [
+          "raw.customers.customer_id",
+          "cte1.c1_id",
+          "cte2.c2_id"
+        ]
+      },
+      {
+        "name": "cte2.c2_name",
+        "node_type": "column",
+        "level": 2,
+        "direct_impacts": 1,
+        "total_impacts": 2,
+        "impact_path": [
+          "raw.customers.customer_name",
+          "cte1.c1_name",
+          "cte2.c2_name"
+        ]
+      },
+      {
+        "name": "cte3.customer_id",
+        "node_type": "column",
+        "level": 3,
+        "direct_impacts": 1,
+        "total_impacts": 1,
+        "impact_path": [
+          "raw.customers.customer_id",
+          "cte1.c1_id",
+          "cte2.c2_id",
+          "cte3.customer_id"
+        ]
+      },
+      {
+        "name": "cte3.customer_name",
+        "node_type": "column",
+        "level": 3,
+        "direct_impacts": 1,
+        "total_impacts": 1,
+        "impact_path": [
+          "raw.customers.customer_name",
+          "cte1.c1_name",
+          "cte2.c2_name",
+          "cte3.customer_name"
+        ]
+      },
+      {
+        "name": "analytics.customer_summary.customer_id",
+        "node_type": "column",
+        "level": 4,
+        "direct_impacts": 0,
+        "total_impacts": 0,
+        "impact_path": [
+          "raw.customers.customer_id",
+          "cte1.c1_id",
+          "cte2.c2_id",
+          "cte3.customer_id",
+          "analytics.customer_summary.customer_id"
+        ]
+      },
+      {
+        "name": "analytics.customer_summary.customer_name",
+        "node_type": "column",
+        "level": 4,
+        "direct_impacts": 0,
+        "total_impacts": 0,
+        "impact_path": [
+          "raw.customers.customer_name",
+          "cte1.c1_name",
+          "cte2.c2_name",
+          "cte3.customer_name",
+          "analytics.customer_summary.customer_name"
+        ]
+      }
+    ],
+    "total_tables_impacted": 0,
+    "total_columns_impacted": 8,
+    "max_impact_depth": 0,
+    "impact_summary": {
+      "by_table_type": {},
+      "by_level": {}
+    }
+  },
+  "data_dictionary": {
+    "tables": [
+      {
+        "name": "customer_summary",
+        "table_schema": "analytics",
+        "database": null,
+        "description": null,
+        "columns": [
+          {
+            "name": "customer_id",
+            "data_type": null,
+            "description": null,
+            "is_nullable": true,
+            "default_value": null,
+            "source_columns": [
+              "cte3.customer_id"
+            ],
+            "transformation": null,
+            "mapping_chain": null
+          },
+          {
+            "name": "customer_name",
+            "data_type": null,
+            "description": null,
+            "is_nullable": true,
+            "default_value": null,
+            "source_columns": [
+              "cte3.customer_name"
+            ],
+            "transformation": null,
+            "mapping_chain": null
+          },
+          {
+            "name": "total_orders",
+            "data_type": null,
+            "description": null,
+            "is_nullable": true,
+            "default_value": null,
+            "source_columns": [
+              "cte3.total_orders"
+            ],
+            "transformation": null,
+            "mapping_chain": null
+          },
+          {
+            "name": "total_amount",
+            "data_type": null,
+            "description": null,
+            "is_nullable": true,
+            "default_value": null,
+            "source_columns": [
+              "cte3.total_amount"
+            ],
+            "transformation": null,
+            "mapping_chain": null
+          }
+        ],
+        "node_type": "target",
+        "source_tables": [
+          "cte3"
+        ],
+        "target_tables": []
+      },
+      {
+        "name": "cte3",
+        "table_schema": null,
+        "database": null,
+        "description": null,
+        "columns": [
+          {
+            "name": "customer_id",
+            "data_type": null,
+            "description": null,
+            "is_nullable": true,
+            "default_value": null,
+            "source_columns": [
+              "cte2.c2_id"
+            ],
+            "transformation": null,
+            "mapping_chain": null
+          },
+          {
+            "name": "customer_name",
+            "data_type": null,
+            "description": null,
+            "is_nullable": true,
+            "default_value": null,
+            "source_columns": [
+              "cte2.c2_name"
+            ],
+            "transformation": null,
+            "mapping_chain": null
+          },
+          {
+            "name": "total_orders",
+            "data_type": null,
+            "description": null,
+            "is_nullable": true,
+            "default_value": null,
+            "source_columns": [
+              "cte2.order_id"
+            ],
+            "transformation": null,
+            "mapping_chain": null
+          },
+          {
+            "name": "total_amount",
+            "data_type": null,
+            "description": null,
+            "is_nullable": true,
+            "default_value": null,
+            "source_columns": [
+              "cte2.order_amount"
+            ],
+            "transformation": null,
+            "mapping_chain": null
+          }
+        ],
+        "node_type": "cte",
+        "source_tables": [],
+        "target_tables": [
+          "analytics.customer_summary"
+        ]
+      }
+    ],
+    "generated_at": "2026-05-28T02:13:52.043450",
+    "total_tables": 2,
+    "total_columns": 8
+  },
+  "lineage_document": {
+    "title": "测试血缘文档",
+    "generated_at": "2026-05-28T02:13:52.045040",
+    "summary": {
+      "total_tables": 2,
+      "total_columns": 20,
+      "source_tables_count": 0,
+      "target_tables_count": 1,
+      "cte_tables_count": 1,
+      "subquery_tables_count": 0,
+      "table_lineages_count": 1,
+      "column_lineages_count": 16,
+      "mapping_chains_count": 6,
+      "source_tables": [],
+      "target_tables": [
+        "analytics.customer_summary"
+      ]
+    },
+    "data_dictionary": {
+      "tables": [
+        {
+          "name": "customer_summary",
+          "table_schema": "analytics",
+          "database": null,
+          "description": null,
+          "columns": [
+            {
+              "name": "customer_id",
+              "data_type": null,
+              "description": null,
+              "is_nullable": true,
+              "default_value": null,
+              "source_columns": [
+                "cte3.customer_id"
+              ],
+              "transformation": null,
+              "mapping_chain": null
+            },
+            {
+              "name": "customer_name",
+              "data_type": null,
+              "description": null,
+              "is_nullable": true,
+              "default_value": null,
+              "source_columns": [
+                "cte3.customer_name"
+              ],
+              "transformation": null,
+              "mapping_chain": null
+            },
+            {
+              "name": "total_orders",
+              "data_type": null,
+              "description": null,
+              "is_nullable": true,
+              "default_value": null,
+              "source_columns": [
+                "cte3.total_orders"
+              ],
+              "transformation": null,
+              "mapping_chain": null
+            },
+            {
+              "name": "total_amount",
+              "data_type": null,
+              "description": null,
+              "is_nullable": true,
+              "default_value": null,
+              "source_columns": [
+                "cte3.total_amount"
+              ],
+              "transformation": null,
+              "mapping_chain": null
+            }
+          ],
+          "node_type": "target",
+          "source_tables": [
+            "cte3"
+          ],
+          "target_tables": []
+        },
+        {
+          "name": "cte3",
+          "table_schema": null,
+          "database": null,
+          "description": null,
+          "columns": [
+            {
+              "name": "customer_id",
+              "data_type": null,
+              "description": null,
+              "is_nullable": true,
+              "default_value": null,
+              "source_columns": [
+                "cte2.c2_id"
+              ],
+              "transformation": null,
+              "mapping_chain": null
+            },
+            {
+              "name": "customer_name",
+              "data_type": null,
+              "description": null,
+              "is_nullable": true,
+              "default_value": null,
+              "source_columns": [
+                "cte2.c2_name"
+              ],
+              "transformation": null,
+              "mapping_chain": null
+            },
+            {
+              "name": "total_orders",
+              "data_type": null,
+              "description": null,
+              "is_nullable": true,
+              "default_value": null,
+              "source_columns": [
+                "cte2.order_id"
+              ],
+              "transformation": null,
+              "mapping_chain": null
+            },
+            {
+              "name": "total_amount",
+              "data_type": null,
+              "description": null,
+              "is_nullable": true,
+              "default_value": null,
+              "source_columns": [
+                "cte2.order_amount"
+              ],
+              "transformation": null,
+              "mapping_chain": null
+            }
+          ],
+          "node_type": "cte",
+          "source_tables": [],
+          "target_tables": [
+            "analytics.customer_summary"
+          ]
+        }
+      ],
+      "generated_at": "2026-05-28T02:13:52.044971",
+      "total_tables": 2,
+      "total_columns": 8
+    },
+    "table_lineage": [
+      {
+        "source": "cte3",
+        "target": "analytics.customer_summary",
+        "query_type": "INSERT",
+        "is_direct": false,
+        "intermediate_tables": [
+          "cte3"
+        ]
+      }
+    ],
+    "column_lineage": [
+      {
+        "source": "cte3.customer_id",
+        "target": "analytics.customer_summary.customer_id",
+        "transformation": null,
+        "expression": "customer_id",
+        "is_direct": false
+      },
+      {
+        "source": "cte2.c2_id",
+        "target": "cte3.customer_id",
+        "transformation": null,
+        "expression": "c2_id AS customer_id",
+        "is_direct": false
+      },
+      {
+        "source": "cte1.c1_id",
+        "target": "cte2.c2_id",
+        "transformation": null,
+        "expression": "c1_id AS c2_id",
+        "is_direct": false
+      },
+      {
+        "source": "raw.customers.customer_id",
+        "target": "cte1.c1_id",
+        "transformation": null,
+        "expression": "customer_id AS c1_id",
+        "is_direct": false
+      },
+      {
+        "source": "raw.orders.c1_id",
+        "target": "cte2.c2_id",
+        "transformation": null,
+        "expression": "c1_id AS c2_id",
+        "is_direct": false
+      },
+      {
+        "source": "cte3.customer_name",
+        "target": "analytics.customer_summary.customer_name",
+        "transformation": null,
+        "expression": "customer_name",
+        "is_direct": false
+      },
+      {
+        "source": "cte2.c2_name",
+        "target": "cte3.customer_name",
+        "transformation": null,
+        "expression": "c2_name AS customer_name",
+        "is_direct": false
+      },
+      {
+        "source": "cte1.c1_name",
+        "target": "cte2.c2_name",
+        "transformation": null,
+        "expression": "c1_name AS c2_name",
+        "is_direct": false
+      },
+      {
+        "source": "raw.customers.customer_name",
+        "target": "cte1.c1_name",
+        "transformation": null,
+        "expression": "customer_name AS c1_name",
+        "is_direct": false
+      },
+      {
+        "source": "raw.orders.c1_name",
+        "target": "cte2.c2_name",
+        "transformation": null,
+        "expression": "c1_name AS c2_name",
+        "is_direct": false
+      },
+      {
+        "source": "cte3.total_orders",
+        "target": "analytics.customer_summary.total_orders",
+        "transformation": null,
+        "expression": "total_orders",
+        "is_direct": false
+      },
+      {
+        "source": "cte2.order_id",
+        "target": "cte3.total_orders",
+        "transformation": null,
+        "expression": "COUNT(order_id) AS total_orders",
+        "is_direct": false
+      },
+      {
+        "source": "raw.orders.order_id",
+        "target": "cte2.order_id",
+        "transformation": null,
+        "expression": "o.order_id",
+        "is_direct": false
+      },
+      {
+        "source": "cte3.total_amount",
+        "target": "analytics.customer_summary.total_amount",
+        "transformation": null,
+        "expression": "total_amount",
+        "is_direct": false
+      },
+      {
+        "source": "cte2.order_amount",
+        "target": "cte3.total_amount",
+        "transformation": null,
+        "expression": "SUM(order_amount) AS total_amount",
+        "is_direct": false
+      },
+      {
+        "source": "raw.orders.order_amount",
+        "target": "cte2.order_amount",
+        "transformation": null,
+        "expression": "o.order_amount",
+        "is_direct": false
+      }
+    ],
+    "key_mappings": [
+      {
+        "target": "cte1.c1_id",
+        "sources": [
+          "customer_id"
+        ],
+        "chain": "c1_id → customer_id → c2_id → c1_id → c1_id → customer_id",
+        "depth": 5
+      },
+      {
+        "target": "cte2.c2_id",
+        "sources": [
+          "c1_id"
+        ],
+        "chain": "c2_id → customer_id → c2_id → c1_id → c1_id",
+        "depth": 4
+      },
+      {
+        "target": "cte1.c1_name",
+        "sources": [
+          "customer_name"
+        ],
+        "chain": "c1_name → customer_name → c2_name → c1_name → c1_name → customer_name",
+        "depth": 5
+      },
+      {
+        "target": "cte2.c2_name",
+        "sources": [
+          "c1_name"
+        ],
+        "chain": "c2_name → customer_name → c2_name → c1_name → c1_name",
+        "depth": 4
+      },
+      {
+        "target": "cte2.order_id",
+        "sources": [
+          "order_id"
+        ],
+        "chain": "order_id → total_orders → order_id → order_id",
+        "depth": 3
+      },
+      {
+        "target": "cte2.order_amount",
+        "sources": [
+          "order_amount"
+        ],
+        "chain": "order_amount → total_amount → order_amount → order_amount",
+        "depth": 3
+      }
+    ]
+  },
+  "anomaly_detection": {
+    "anomalies": [],
+    "total_anomalies": 0,
+    "by_severity": {},
+    "by_type": {},
+    "summary": "共检测到 0 个异常"
+  }
+}

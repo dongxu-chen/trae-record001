@@ -1,0 +1,88 @@
+spring:
+  application:
+    name: trace-staining-service
+  server:
+    port: 8080
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        interceptor:
+          classes: com.tracing.staining.mq.kafka.KafkaTraceProducerInterceptor
+    consumer:
+      group-id: trace-staining-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        interceptor:
+          classes: com.tracing.staining.mq.kafka.KafkaTraceConsumerInterceptor
+        spring.json.trusted.packages: "*"
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+
+tracing:
+  sample:
+    rate: 1.0
+    min-rate: 0.1
+    max-rate: 1.0
+    adjust-interval-ms: 5000
+    qps-high-threshold: 1000
+    qps-low-threshold: 100
+    concurrency-high-threshold: 200
+    concurrency-low-threshold: 50
+  staining:
+    rate: 0.5
+    user-ids: user001,user002,admin
+    biz-types: ORDER,PAYMENT,VIP
+    paths: /api/trace/full-demo,/api/trace/manual
+    analysis:
+      enabled: true
+      max-records-per-key: 10000
+  biz-tag:
+    enabled: true
+    default-tag: default
+    standard-headers:
+      - X-Biz-Order-Id
+      - X-Biz-Product-Id
+      - X-Biz-Merchant-Id
+      - X-Biz-Store-Id
+      - X-Biz-Channel
+      - X-Biz-Source
+      - X-Biz-Version
+      - X-Biz-Env
+    custom-prefixes:
+      - X-Biz-
+      - X-Custom-
+  cloud:
+    provider: aliyun
+    region: cn-hangzhou
+    availability-zone: cn-hangzhou-h
+    account-id: 1234567890123456
+    service-name: trace-staining-service
+    cross-cloud:
+      enabled: true
+      trace-id-prefix: global
+  jaeger:
+    enabled: true
+    endpoint: http://localhost:14250
+
+logging:
+  level:
+    com.tracing.staining: DEBUG
+    io.opentelemetry: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - traceId=%X{traceId} spanId=%X{spanId} userId=%X{X-Staining-User-Id} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

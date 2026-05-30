@@ -1,0 +1,56 @@
+kafka:
+  brokers:
+    - "localhost:9092"
+  timeout: 30s
+
+kubernetes:
+  inCluster: false
+  kubeConfigPath: ""
+
+prometheus:
+  listenAddress: ":9090"
+  scrapeInterval: 30s
+  maxHistorySize: 1000
+
+autoscalers:
+  - consumerGroupID: "my-consumer-group"
+    k8sDeployment: "my-consumer-deployment"
+    k8sNamespace: "default"
+    k8sResourceType: "deployment"
+    minReplicas: 1
+    maxReplicas: 10
+    scaleUpThreshold: 10000
+    scaleDownThreshold: 1000
+    scaleUpIncrement: 2
+    scaleDownDecrement: 1
+    cooldownPeriod: 5m
+    predictionWindow: 5m
+    usePrediction: true
+    targetLag: 5000
+    mode: "observation"
+    enablePartitionRebalance: false
+    enableRollingScale: true
+    rollingScaleInterval: 2m
+    messageProcessingLatency: 100ms
+    enableScaleDownAfterLagClear: true
+    scaleDownAfterLagDelay: 10m
+    enableSelfHealing: true
+    selfHealingThreshold: 3
+    selfHealingCooldown: 30m
+    enableSlowPartitionDetection: true
+    slowPartitionThreshold: 2m
+
+rebalancer:
+  enabled: false
+  strategy: "key_sticky"
+  rebalanceInterval: 15m
+  dryRun: true
+  enableUnevenDetection: true
+  unevenThresholdRatio: 2.0
+  minPartitionCount: 5
+  maxConcurrentMoves: 3
+  keyPrefixDelimiter: ":"
+
+log:
+  level: "info"
+  format: "json"

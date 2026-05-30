@@ -1,0 +1,161 @@
+{
+  "overall": {
+    "price_sensitivity_by_tier": {
+      "中": 0.3707630419665018,
+      "低": 0.42144112885157864,
+      "高": 0.42128153646987776
+    },
+    "promotion_responsiveness_by_tier": {
+      "中": 0.4779294461236547,
+      "低": 0.6677580857791273,
+      "高": 0.6020990595276731
+    },
+    "promo_purchase_rate_by_tier": {
+      "中": 0.0,
+      "低": 0.0,
+      "高": 0.0
+    },
+    "avg_discount_by_tier": {
+      "中": 0.0,
+      "低": 0.0,
+      "高": 0.0
+    },
+    "only_promo_by_tier": {
+      "中": 0.0,
+      "低": 0.0,
+      "高": 0.0
+    }
+  },
+  "correlations": {
+    "loyalty_numeric": 1.0,
+    "price_sensitivity": 0.0003412684588366895,
+    "promotion_responsiveness": -0.12641897191985796,
+    "promotion_purchase_rate": NaN,
+    "avg_discount_pct": NaN,
+    "deal_hunter_score": NaN,
+    "savings_consciousness": NaN,
+    "total_spend": 0.6475247466428834,
+    "frequency": 0.6619315031217341
+  },
+  "category": {
+    "Beauty": {
+      "high_loyal_avg_discount": 0.08320717729441655,
+      "low_loyal_avg_discount": 0.11511751636904761,
+      "high_loyal_promo_rate": 0.27305770235218085,
+      "low_loyal_promo_rate": 0.37813988095238094,
+      "high_loyal_spend": 245.9623926380368,
+      "low_loyal_spend": 113.29049999999998,
+      "discount_correlation": -0.13338533105460115,
+      "promo_correlation": -0.1381258287980812
+    },
+    "Home": {
+      "high_loyal_avg_discount": 0.05098036964909665,
+      "low_loyal_avg_discount": 0.04681221726190476,
+      "high_loyal_promo_rate": 0.2364905714598966,
+      "low_loyal_promo_rate": 0.22029761904761905,
+      "high_loyal_spend": 724.3980981595091,
+      "low_loyal_spend": 361.5401875,
+      "discount_correlation": 0.032596346076830804,
+      "promo_correlation": 0.028160186165249124
+    },
+    "Clothing": {
+      "high_loyal_avg_discount": 0.17368475917237058,
+      "low_loyal_avg_discount": 0.20639356103445167,
+      "high_loyal_promo_rate": 0.40144137773247546,
+      "low_loyal_promo_rate": 0.47384852994227994,
+      "high_loyal_spend": 570.8545398773005,
+      "low_loyal_spend": 325.5303125,
+      "discount_correlation": -0.11768433394241491,
+      "promo_correlation": -0.12211606249843622
+    },
+    "Sports": {
+      "high_loyal_avg_discount": 0.06253288173142467,
+      "low_loyal_avg_discount": 0.05907198958333333,
+      "high_loyal_promo_rate": 0.245966014217548,
+      "low_loyal_promo_rate": 0.24937499999999999,
+      "high_loyal_spend": 389.7269325153374,
+      "low_loyal_spend": 199.294375,
+      "discount_correlation": 0.01941030317459246,
+      "promo_correlation": -0.0035329700057140055
+    },
+    "Food": {
+      "high_loyal_avg_discount": 0.06608199636593809,
+      "low_loyal_avg_discount": 0.07963045438762625,
+      "high_loyal_promo_rate": 0.43918457139316036,
+      "low_loyal_promo_rate": 0.5435921717171717,
+      "high_loyal_spend": 143.87730061349694,
+      "low_loyal_spend": 75.4829375,
+      "discount_correlation": -0.10156505349442127,
+      "promo_correlation": -0.12919188874334767
+    },
+    "Electronics": {
+      "high_loyal_avg_discount": 0.042896603450230754,
+      "low_loyal_avg_discount": 0.05796328348214286,
+      "high_loyal_promo_rate": 0.16841843398591866,
+      "low_loyal_promo_rate": 0.2473735119047619,
+      "high_loyal_spend": 1914.4593251533743,
+      "low_loyal_spend": 937.0103124999999,
+      "discount_correlation": -0.11909821028236636,
+      "promo_correlation": -0.15217594070765258
+    }
+  },
+  "promotion_types": {
+    "Bundle Deal": {
+      "high_loyal_usage": 1.5950920245398772,
+      "low_loyal_usage": 1.04375,
+      "correlation": 0.1968913898439686
+    },
+    "Coupon": {
+      "high_loyal_usage": 2.4294478527607364,
+      "low_loyal_usage": 1.65,
+      "correlation": 0.22032212055258305
+    },
+    "Direct Discount": {
+      "high_loyal_usage": 3.7177914110429446,
+      "low_loyal_usage": 2.34375,
+      "correlation": 0.27768302782056964
+    },
+    "Membership Discount": {
+      "high_loyal_usage": 1.5950920245398772,
+      "low_loyal_usage": 1.0125,
+      "correlation": 0.21297124898088754
+    },
+    "Seasonal Sale": {
+      "high_loyal_usage": 0.9938650306748467,
+      "low_loyal_usage": 0.7375,
+      "correlation": 0.11883760101810097
+    }
+  },
+  "segments": {
+    "High Net Worth": {
+      "avg_price_sensitivity": 0.3732022694424787,
+      "avg_promo_responsiveness": 0.5883980649354269,
+      "promo_purchase_rate": 0.0,
+      "high_loyal_ratio": 0.3170731707317073
+    },
+    "Senior": {
+      "avg_price_sensitivity": 0.40896062986726167,
+      "avg_promo_responsiveness": 0.5583804653316156,
+      "promo_purchase_rate": 0.0,
+      "high_loyal_ratio": 0.2261904761904762
+    },
+    "Student": {
+      "avg_price_sensitivity": 0.40981854273158075,
+      "avg_promo_responsiveness": 0.5786143143464606,
+      "promo_purchase_rate": 0.0,
+      "high_loyal_ratio": 0.4090909090909091
+    },
+    "Young Professional": {
+      "avg_price_sensitivity": 0.39022423852355076,
+      "avg_promo_responsiveness": 0.569755607301711,
+      "promo_purchase_rate": 0.0,
+      "high_loyal_ratio": 0.3088235294117647
+    },
+    "Family": {
+      "avg_price_sensitivity": 0.42917219868403794,
+      "avg_promo_responsiveness": 0.5965836715083193,
+      "promo_purchase_rate": 0.0,
+      "high_loyal_ratio": 0.3712121212121212
+    }
+  }
+}

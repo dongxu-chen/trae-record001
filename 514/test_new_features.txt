@@ -1,0 +1,12 @@
+ERROR: list.index(x): x not in list
+Traceback (most recent call last):
+  File "D:\Project\trae\project\record001\514\test_new_features.py", line 43, in <module>
+    cr = cg.generate_copy(sample, ar)
+  File "D:\Project\trae\project\record001\514\analysis_engine.py", line 689, in generate_copy
+    primary_copy = self._select_primary_copy(copies, user_row, tone)
+  File "D:\Project\trae\project\record001\514\analysis_engine.py", line 867, in _select_primary_copy
+    sorted_copies = sorted(copies, key=lambda c: priority_order.index(c['level']))
+  File "D:\Project\trae\project\record001\514\analysis_engine.py", line 867, in <lambda>
+    sorted_copies = sorted(copies, key=lambda c: priority_order.index(c['level']))
+                                                 ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+ValueError: list.index(x): x not in list
