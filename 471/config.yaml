@@ -1,0 +1,23 @@
+server:
+  port: "8080"
+
+database:
+  path: "./data/secrets.db"
+
+vault:
+  address: "http://localhost:8200"
+  token: "root"
+  mount_path: "secret"
+
+kms:
+  region: "us-east-1"
+  key_id: ""
+  access_key: ""
+  secret_key: ""
+
+audit:
+  retention_days: 90
+  async_enabled: true
+  buffer_size: 10000
+  batch_size: 100
+  flush_interval_seconds: 5

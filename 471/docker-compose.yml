@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  vault:
+    image: vault:1.15.0
+    container_name: keymgmt-vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: root
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.backend
+    container_name: keymgmt-backend
+    ports:
+      - "8080:8080"
+    environment:
+      VAULT_ADDRESS: http://vault:8200
+      VAULT_TOKEN: root
+    depends_on:
+      vault:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+
+  frontend:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.frontend
+    container_name: keymgmt-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  vault-init:
+    image: vault:1.15.0
+    container_name: keymgmt-vault-init
+    depends_on:
+      vault:
+        condition: service_healthy
+    environment:
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: root
+    command: >
+      sh -c "
+        vault secrets enable -path=secret kv-v2;
+        vault secrets enable transit;
+        vault write -f transit/keys/secrets-key type=aes256-gcm96;
+        echo 'Vault initialized successfully'
+      "
+
+  demo-app:
+    image: nginx:alpine
+    container_name: keymgmt-demo-app
+    profiles:
+      - demo
+    expose:
+      - "80"
+    volumes:
+      - ./demo-secrets:/secrets:ro
+
+  sidecar:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.sidecar
+    container_name: keymgmt-sidecar
+    profiles:
+      - demo
+    ports:
+      - "8081:8080"
+    depends_on:
+      - backend
+      - demo-app
+    environment:
+      API_TOKEN: "demo-token"
+    volumes:
+      - ./demo-secrets:/secrets:ro
+    command: >
+      --target=http://demo-app:80
+      --listen=:8080
+      --api-url=http://backend:8080
+      --watch-paths=/secrets
+      --inject-headers=true
+      --log-level=debug

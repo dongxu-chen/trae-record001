@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客户对话情感分析系统</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .header-links {
+            margin-top: 10px;
+        }
+
+        .header-links a {
+            color: white;
+            text-decoration: none;
+            padding: 6px 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 6px;
+            font-size: 0.85em;
+            margin: 0 5px;
+            transition: background 0.3s;
+        }
+
+        .header-links a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px 380px;
+            gap: 15px;
+        }
+
+        .chat-section, .dashboard-section, .suggestion-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 720px;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 16px;
+            font-size: 1em;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header small {
+            font-size: 0.75em;
+            opacity: 0.8;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85em;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 12px;
+            max-width: 80%;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.customer {
+            margin-left: auto;
+        }
+
+        .message.agent {
+            margin-right: auto;
+        }
+
+        .message-bubble {
+            padding: 10px 15px;
+            border-radius: 16px;
+            position: relative;
+            font-size: 0.95em;
+        }
+
+        .customer .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .agent .message-bubble {
+            background: #e9ecef;
+            color: #333;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-sentiment {
+            font-size: 0.75em;
+            margin-top: 4px;
+            padding: 3px 8px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .sentiment-satisfied { background: #d4edda; color: #155724; }
+        .sentiment-angry { background: #f8d7da; color: #721c24; }
+        .sentiment-disappointed { background: #fff3cd; color: #856404; }
+        .sentiment-anxious { background: #cce5ff; color: #004085; }
+
+        .message-scores {
+            font-size: 0.7em;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid #e9ecef;
+            background: white;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .input-group select {
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 0.9em;
+            outline: none;
+        }
+
+        .input-group select:focus {
+            border-color: #667eea;
+        }
+
+        .input-group textarea {
+            flex: 1;
+            padding: 10px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 0.9em;
+            resize: none;
+            height: 50px;
+            outline: none;
+        }
+
+        .input-group textarea:focus {
+            border-color: #667eea;
+        }
+
+        .input-group button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .input-group button:hover {
+            transform: translateY(-2px);
+        }
+
+        .session-controls {
+            display: flex;
+            gap: 8px;
+            padding: 8px 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .session-info {
+            flex: 1;
+            font-size: 0.8em;
+            color: #666;
+            align-self: center;
+        }
+
+        .session-controls button {
+            padding: 6px 12px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        .session-controls button:hover {
+            background: #5a6268;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .stat-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.75em;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .trend-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .trend-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .trend-value {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .trend-indicator {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .trend-improving { background: #d4edda; color: #155724; }
+        .trend-stable { background: #fff3cd; color: #856404; }
+        .trend-deteriorating { background: #f8d7da; color: #721c24; }
+
+        .chart-container {
+            margin-bottom: 12px;
+        }
+
+        .radar-chart { height: 200px; }
+        .line-chart { height: 160px; }
+
+        .profile-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .profile-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 0.8em;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .profile-item:last-child { border-bottom: none; }
+
+        .profile-label { color: #666; }
+        .profile-value { font-weight: 600; color: #333; }
+
+        .summary-card {
+            background: #e7f3ff;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-left: 4px solid #0d6efd;
+        }
+
+        .summary-topics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .topic-tag {
+            background: #0d6efd;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7em;
+        }
+
+        .alerts-section {
+            margin-top: 12px;
+        }
+
+        .alerts-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .alert-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .alert-high { background: #f8d7da; border-left: 4px solid #dc3545; }
+        .alert-medium { background: #fff3cd; border-left: 4px solid #ffc107; }
+
+        .alert-message {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.85em;
+        }
+
+        .alert-details {
+            font-size: 0.75em;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        .suggestion-card {
+            background: #f0f8ff;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .suggestion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .suggestion-strategy {
+            font-weight: 600;
+            color: #17a2b8;
+            font-size: 0.9em;
+        }
+
+        .suggestion-confidence {
+            font-size: 0.75em;
+            color: #666;
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .suggestion-text {
+            background: white;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .suggestion-text:hover {
+            background: #f8f9fa;
+        }
+
+        .suggestion-explanation {
+            font-size: 0.75em;
+            color: #666;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .quick-reply-btn {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .quick-reply-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .attribution-card {
+            background: #fff5f5;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid #e83e8c;
+        }
+
+        .attribution-change {
+            font-weight: 600;
+            color: #e83e8c;
+            font-size: 0.85em;
+            margin-bottom: 6px;
+        }
+
+        .attribution-cause {
+            background: white;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            margin-bottom: 6px;
+            border-left: 3px solid #e83e8c;
+        }
+
+        .attribution-evidence {
+            font-size: 0.75em;
+            color: #666;
+        }
+
+        .evidence-tag {
+            display: inline-block;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 4px;
+            margin-top: 3px;
+        }
+
+        .quality-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .quality-score {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .quality-grade {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: white;
+        }
+
+        .grade-A { background: #28a745; }
+        .grade-B { background: #17a2b8; }
+        .grade-C { background: #ffc107; }
+        .grade-D { background: #dc3545; }
+
+        .quality-text {
+            flex: 1;
+        }
+
+        .quality-points {
+            font-size: 0.8em;
+            color: #333;
+        }
+
+        .quality-points li {
+            margin-left: 15px;
+            margin-bottom: 3px;
+        }
+
+        .config-group {
+            margin-bottom: 15px;
+        }
+
+        .config-group-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            padding-bottom: 4px;
+            border-bottom: 2px solid #667eea;
+            font-size: 0.9em;
+        }
+
+        .config-item {
+            margin-bottom: 10px;
+        }
+
+        .config-item label {
+            display: block;
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .config-item input, .config-item select {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.85em;
+        }
+
+        .config-item input:focus, .config-item select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .channel-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .channel-toggle input[type="checkbox"] {
+            width: auto;
+        }
+
+        .channel-toggle label {
+            flex: 1;
+            margin: 0;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .channel-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            color: white;
+        }
+
+        .channel-wechat { background: #07C160; }
+        .channel-email { background: #EA4335; }
+        .channel-sms { background: #4285F4; }
+
+        .save-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .save-btn:hover { opacity: 0.9; }
+
+        .test-btn {
+            padding: 4px 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.75em;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .test-btn:hover { background: #218838; }
+
+        .dashboard-content {
+            padding: 12px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        @media (max-width: 1400px) {
+            .main-grid {
+                grid-template-columns: 1fr 350px;
+            }
+            .suggestion-section {
+                grid-column: 1 / -1;
+                height: auto;
+                max-height: 400px;
+            }
+        }
+
+        @media (max-width: 800px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 客户对话情感分析系统</h1>
+            <p>归因分析 · 智能话术建议 · 动态阈值检测 · 多渠道告警</p>
+            <div class="header-links">
+                <a href="/dashboard">📊 趋势看板</a>
+                <a href="#" onclick="toggleConfigPanel()">⚙️ 告警配置</a>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="chat-section">
+                <div class="section-header">💬 对话面板</div>
+                
+                <div class="session-controls">
+                    <div class="session-info">
+                        会话ID: <span id="sessionId">未开始</span>
+                    </div>
+                    <button onclick="newSession()">新会话</button>
+                    <button onclick="clearChat()">清空</button>
+                </div>
+
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message agent">
+                            <div class="message-bubble">
+                                您好！请输入对话内容，系统将实时分析情感状态并提供回复建议。
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input">
+                        <div class="input-group">
+                            <select id="speakerSelect">
+                                <option value="customer">客户</option>
+                                <option value="agent">客服</option>
+                            </select>
+                            <textarea id="messageInput" placeholder="输入对话内容..." onkeypress="handleKeyPress(event)"></textarea>
+                            <button onclick="sendMessage()">发送</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-section">
+                <div class="section-header">
+                    📊 情感分析
+                    <small>实时监控</small>
+                </div>
+                
+                <div class="dashboard-content">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalMessages">0</div>
+                            <div class="stat-label">对话轮数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="alertCount">0</div>
+                            <div class="stat-label">告警次数</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-card">
+                        <div class="trend-title">👤 用户情绪画像</div>
+                        <div class="profile-item">
+                            <span class="profile-label">基线已建立</span>
+                            <span class="profile-value" id="baselineStatus">否</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">情绪波动率</span>
+                            <span class="profile-value" id="volatility">0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-card" id="summaryCard" style="display: none;">
+                        <div class="trend-title">📝 对话摘要</div>
+                        <div style="font-size: 0.8em; color: #666;">关键主题:</div>
+                        <div class="summary-topics" id="summaryTopics"></div>
+                    </div>
+
+                    <div class="trend-card">
+                        <div class="trend-title">📈 情感趋势</div>
+                        <div class="trend-value">
+                            <div class="trend-indicator trend-stable" id="trendIndicator">—</div>
+                            <span id="trendText">稳定</span>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="trend-title">🕐 情感变化曲线</div>
+                        <div class="line-chart">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="trend-title">🎯 当前情感分布</div>
+                        <div class="radar-chart">
+                            <canvas id="sentimentChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="alerts-section">
+                        <div class="alerts-title">⚠️ 实时告警</div>
+                        <div id="alertsContainer">
+                            <div style="color: #999; text-align: center; padding: 15px; font-size: 0.85em;">
+                                暂无告警信息
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="suggestion-section">
+                <div class="section-header">
+                    💡 智能助手
+                    <small>话术建议 · 归因分析</small>
+                </div>
+                
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('suggestions')">话术建议</button>
+                    <button class="tab-btn" onclick="switchTab('attribution')">归因分析</button>
+                    <button class="tab-btn" onclick="switchTab('quality')">沟通质量</button>
+                </div>
+
+                <div id="suggestions" class="tab-content active">
+                    <div id="quickRepliesContainer"></div>
+                    <div id="suggestionsContainer">
+                        <div style="color: #999; text-align: center; padding: 30px; font-size: 0.85em;">
+                            客户发言后将自动生成回复建议
+                        </div>
+                    </div>
+                </div>
+
+                <div id="attribution" class="tab-content">
+                    <div id="attributionContainer">
+                        <div style="color: #999; text-align: center; padding: 30px; font-size: 0.85em;">
+                            检测到情感变化后将显示归因分析
+                        </div>
+                    </div>
+                </div>
+
+                <div id="quality" class="tab-content">
+                    <div id="qualityContainer">
+                        <div style="color: #999; text-align: center; padding: 30px; font-size: 0.85em;">
+                            对话进行后将显示质量分析
+                        </div>
+                    </div>
+                </div>
+
+                <div id="configPanel" class="tab-content">
+                    <div class="config-group">
+                        <div class="config-group-title">📢 启用渠道</div>
+                        
+                        <div class="channel-toggle">
+                            <div class="channel-icon channel-wechat">微</div>
+                            <input type="checkbox" id="enableWechat" onchange="toggleChannel('wechat')">
+                            <label for="enableWechat">企业微信</label>
+                            <button class="test-btn" onclick="testChannel('wechat_work')">测试</button>
+                        </div>
+                        
+                        <div class="channel-toggle">
+                            <div class="channel-icon channel-email">@</div>
+                            <input type="checkbox" id="enableEmail" onchange="toggleChannel('email')">
+                            <label for="enableEmail">邮件通知</label>
+                            <button class="test-btn" onclick="testChannel('email')">测试</button>
+                        </div>
+                        
+                        <div class="channel-toggle">
+                            <div class="channel-icon channel-sms">📱</div>
+                            <input type="checkbox" id="enableSms" onchange="toggleChannel('sms')">
+                            <label for="enableSms">短信通知</label>
+                            <button class="test-btn" onclick="testChannel('sms')">测试</button>
+                        </div>
+                    </div>
+
+                    <div class="config-group" id="wechatConfig" style="display: none;">
+                        <div class="config-group-title">企业微信配置</div>
+                        <div class="config-item">
+                            <label>Webhook 地址</label>
+                            <input type="text" id="wechatWebhook" placeholder="https://qyapi.weixin.qq.com/...">
+                        </div>
+                    </div>
+
+                    <div class="config-group" id="emailConfig" style="display: none;">
+                        <div class="config-group-title">邮件配置</div>
+                        <div class="config-item">
+                            <label>SMTP 服务器</label>
+                            <input type="text" id="emailSmtpServer" placeholder="smtp.example.com">
+                        </div>
+                        <div class="config-item">
+                            <label>发件人</label>
+                            <input type="email" id="emailSender" placeholder="alert@example.com">
+                        </div>
+                        <div class="config-item">
+                            <label>收件人</label>
+                            <input type="text" id="emailRecipients" placeholder="admin@example.com">
+                        </div>
+                    </div>
+
+                    <div class="config-group">
+                        <div class="config-group-title">🔔 告警设置</div>
+                        <div class="config-item">
+                            <label>最低告警级别</label>
+                            <select id="minAlertSeverity">
+                                <option value="low">低级别及以上</option>
+                                <option value="medium" selected>中级别及以上</option>
+                                <option value="high">仅高级别</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="save-btn" onclick="saveAlertConfig()">💾 保存配置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socket;
+        let sessionId = null;
+        let messageCount = 0;
+        let alertCount = 0;
+        let sentimentHistory = [];
+        let trendChart, radarChart;
+
+        const sentimentColors = {
+            satisfied: { bg: 'rgba(40, 167, 69, 0.2)', border: 'rgb(40, 167, 69)' },
+            angry: { bg: 'rgba(220, 53, 69, 0.2)', border: 'rgb(220, 53, 69)' },
+            disappointed: { bg: 'rgba(255, 193, 7, 0.2)', border: 'rgb(255, 193, 7)' },
+            anxious: { bg: 'rgba(0, 123, 255, 0.2)', border: 'rgb(0, 123, 255)' }
+        };
+
+        const trendLabels = {
+            improving: { icon: '↑', class: 'trend-improving', text: '改善' },
+            stable: { icon: '—', class: 'trend-stable', text: '稳定' },
+            deteriorating: { icon: '↓', class: 'trend-deteriorating', text: '恶化' }
+        };
+
+        function initSocket() {
+            socket = io();
+            
+            socket.on('connect', () => {
+                console.log('Connected to server');
+                newSession();
+            });
+
+            socket.on('message_received', (data) => {
+                addMessage(data.text, data.speaker, data.sentiment);
+            });
+
+            socket.on('trend_update', (data) => {
+                updateTrend(data);
+            });
+
+            socket.on('context_update', (data) => {
+                updateContextSummary(data);
+            });
+
+            socket.on('profile_update', (data) => {
+                updateUserProfile(data);
+            });
+
+            socket.on('alert', (data) => {
+                addAlert(data);
+            });
+
+            socket.on('attribution_update', (data) => {
+                updateAttribution(data);
+            });
+
+            socket.on('suggestions_update', (data) => {
+                updateSuggestions(data);
+                updateQualityAnalysis(data.quality_analysis);
+            });
+
+            socket.on('session_joined', (data) => {
+                sessionId = data.session_id;
+                document.getElementById('sessionId').textContent = sessionId.substring(0, 8) + '...';
+            });
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function toggleConfigPanel() {
+            switchTab('configPanel');
+            document.querySelector('.tab-btn:last-child').classList.add('active');
+            return false;
+        }
+
+        function newSession() {
+            fetch('/api/sessions', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    sessionId = data.session_id;
+                    document.getElementById('sessionId').textContent = sessionId.substring(0, 8) + '...';
+                    socket.emit('join_session', { session_id: sessionId });
+                    clearChat();
+                });
+        }
+
+        function clearChat() {
+            document.getElementById('chatMessages').innerHTML = '';
+            messageCount = 0;
+            alertCount = 0;
+            sentimentHistory = [];
+            updateStats();
+            updateCharts([]);
+            document.getElementById('alertsContainer').innerHTML = '<div style="color: #999; text-align: center; padding: 15px; font-size: 0.85em;">暂无告警信息</div>';
+            document.getElementById('summaryCard').style.display = 'none';
+            document.getElementById('suggestionsContainer').innerHTML = '<div style="color: #999; text-align: center; padding: 30px; font-size: 0.85em;">客户发言后将自动生成回复建议</div>';
+            document.getElementById('attributionContainer').innerHTML = '<div style="color: #999; text-align: center; padding: 30px; font-size: 0.85em;">检测到情感变化后将显示归因分析</div>';
+            document.getElementById('qualityContainer').innerHTML = '<div style="color: #999; text-align: center; padding: 30px; font-size: 0.85em;">对话进行后将显示质量分析</div>';
+            document.getElementById('quickRepliesContainer').innerHTML = '';
+        }
+
+        function sendMessage() {
+            const text = document.getElementById('messageInput').value.trim();
+            const speaker = document.getElementById('speakerSelect').value;
+            
+            if (!text) return;
+            
+            socket.emit('send_message', {
+                session_id: sessionId,
+                text: text,
+                speaker: speaker
+            });
+            
+            document.getElementById('messageInput').value = '';
+        }
+
+        function useSuggestion(text) {
+            document.getElementById('speakerSelect').value = 'agent';
+            document.getElementById('messageInput').value = text;
+            document.getElementById('messageInput').focus();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function addMessage(text, speaker, sentiment) {
+            const container = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${speaker}`;
+            
+            let sentimentHtml = '';
+            if (sentiment && speaker === 'customer') {
+                sentimentHtml = `
+                    <div class="message-sentiment sentiment-${sentiment.predicted_label}">
+                        ${sentiment.predicted_label_cn} (${(sentiment.confidence * 100).toFixed(1)}%)
+                    </div>
+                    <div class="message-scores">
+                        ${Object.entries(sentiment.scores_cn).map(([k, v]) => 
+                            `${k}: ${(v * 100).toFixed(0)}%`
+                        ).join(' | ')}
+                    </div>
+                `;
+                
+                sentimentHistory.push(sentiment);
+                updateCharts(sentimentHistory);
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="message-bubble">${text}</div>
+                ${sentimentHtml}
+            `;
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+            
+            messageCount++;
+            updateStats();
+        }
+
+        function updateTrend(trend) {
+            const indicator = document.getElementById('trendIndicator');
+            const text = document.getElementById('trendText');
+            
+            const trendInfo = trendLabels[trend.trend] || trendLabels.stable;
+            indicator.className = `trend-indicator ${trendInfo.class}`;
+            indicator.textContent = trendInfo.icon;
+            text.textContent = trendInfo.text;
+        }
+
+        function updateContextSummary(summary) {
+            const card = document.getElementById('summaryCard');
+            const topics = document.getElementById('summaryTopics');
+            
+            if (summary.key_topics && summary.key_topics.length > 0) {
+                card.style.display = 'block';
+                topics.innerHTML = summary.key_topics.map(t => 
+                    `<span class="topic-tag">${t}</span>`
+                ).join('');
+            }
+        }
+
+        function updateUserProfile(profile) {
+            document.getElementById('baselineStatus').textContent = profile.baseline_established ? '是' : '否';
+            document.getElementById('volatility').textContent = profile.volatility.toFixed(2);
+        }
+
+        function updateSuggestions(data) {
+            const container = document.getElementById('suggestionsContainer');
+            const quickRepliesContainer = document.getElementById('quickRepliesContainer');
+            
+            if (data.quick_replies && data.quick_replies.length > 0) {
+                quickRepliesContainer.innerHTML = `
+                    <div style="font-weight: 600; color: #333; font-size: 0.85em; margin-bottom: 6px;">⚡ 快捷回复</div>
+                    <div class="quick-replies">
+                        ${data.quick_replies.map(r => 
+                            `<button class="quick-reply-btn" onclick="useSuggestion('${r.replace(/'/g, "\\'")}')">${r}</button>`
+                        ).join('')}
+                    </div>
+                `;
+            }
+            
+            if (data.suggestions && data.suggestions.length > 0) {
+                container.innerHTML = data.suggestions.map((s, i) => `
+                    <div class="suggestion-card">
+                        <div class="suggestion-header">
+                            <span class="suggestion-strategy">${i + 1}. ${s.strategy_cn}</span>
+                            <span class="suggestion-confidence">${(s.confidence * 100).toFixed(0)}%</span>
+                        </div>
+                        ${s.suggested_responses.map(r => 
+                            `<div class="suggestion-text" onclick="useSuggestion('${r.replace(/'/g, "\\'")}')">${r}</div>`
+                        ).join('')}
+                        <div class="suggestion-explanation">💡 ${s.explanation}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function updateAttribution(data) {
+            const container = document.getElementById('attributionContainer');
+            
+            if (data.latest_change) {
+                const change = data.latest_change;
+                const changeTypeText = {
+                    'positive_turn': '情绪转好',
+                    'negative_turn': '情绪恶化',
+                    'further_deterioration': '持续恶化',
+                    'further_improvement': '持续改善'
+                }[change.change_type] || change.change_type;
+                
+                container.innerHTML = `
+                    <div class="attribution-card">
+                        <div class="attribution-change">
+                            🔄 检测到${changeTypeText} (${change.from_sentiment} → ${change.to_sentiment})
+                        </div>
+                        <div style="font-size: 0.75em; color: #666; margin-bottom: 6px;">
+                            置信度: ${(change.confidence * 100).toFixed(1)}% | 变化幅度: ${(change.change_magnitude * 100).toFixed(1)}%
+                        </div>
+                        <div class="attribution-cause">
+                            <strong>诱因:</strong> 第${change.cause_turn_index + 1}轮 ${change.cause_speaker === 'agent' ? '客服' : '客户'} 说: "${change.cause_text.substring(0, 50)}${change.cause_text.length > 50 ? '...' : ''}"
+                        </div>
+                        <div class="attribution-evidence">
+                            <strong>证据:</strong>
+                            ${change.evidence.map(e => `<span class="evidence-tag">${e}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                if (data.statistics && data.statistics.total_changes > 0) {
+                    container.innerHTML += `
+                        <div class="quality-card">
+                            <div class="trend-title">📊 归因统计</div>
+                            <div class="profile-item">
+                                <span class="profile-label">总变化次数</span>
+                                <span class="profile-value">${data.statistics.total_changes}</span>
+                            </div>
+                            <div class="profile-item">
+                                <span class="profile-label">正面变化</span>
+                                <span class="profile-value" style="color: #28a745;">${data.statistics.positive_changes}</span>
+                            </div>
+                            <div class="profile-item">
+                                <span class="profile-label">负面变化</span>
+                                <span class="profile-value" style="color: #dc3545;">${data.statistics.negative_changes}</span>
+                            </div>
+                            <div class="profile-item">
+                                <span class="profile-label">平均置信度</span>
+                                <span class="profile-value">${(data.statistics.average_confidence * 100).toFixed(1)}%</span>
+                            </div>
+                            ${data.statistics.top_causes && data.statistics.top_causes.length > 0 ? `
+                            <div style="margin-top: 8px;">
+                                <div style="font-size: 0.8em; color: #666; margin-bottom: 4px;">主要诱因类型:</div>
+                                ${data.statistics.top_causes.map(c => `
+                                    <span class="evidence-tag">${c.category}: ${c.count}次</span>
+                                `).join('')}
+                            </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function updateQualityAnalysis(quality) {
+            const container = document.getElementById('qualityContainer');
+            
+            if (!quality) return;
+            
+            const gradeClass = 'grade-' + quality.grade;
+            
+            let positivesHtml = '';
+            let issuesHtml = '';
+            
+            if (quality.positives && quality.positives.length > 0) {
+                positivesHtml = `
+                    <div style="font-size: 0.8em; color: #28a745; margin-top: 8px;">
+                        <strong>✅ 做得好:</strong>
+                        <ul class="quality-points">
+                            ${quality.positives.map(p => `<li>${p}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            if (quality.issues && quality.issues.length > 0) {
+                issuesHtml = `
+                    <div style="font-size: 0.8em; color: #dc3545; margin-top: 8px;">
+                        <strong>⚠️ 待改进:</strong>
+                        <ul class="quality-points">
+                            ${quality.issues.map(i => `<li>${i}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            let suggestionsHtml = '';
+            if (quality.suggestions && quality.suggestions.length > 0) {
+                suggestionsHtml = `
+                    <div style="font-size: 0.8em; color: #17a2b8; margin-top: 8px;">
+                        <strong>💡 改进建议:</strong>
+                        <ul class="quality-points">
+                            ${quality.suggestions.map(s => `<li>${s}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = `
+                <div class="quality-card">
+                    <div class="quality-score">
+                        <div class="quality-grade ${gradeClass}">${quality.grade}</div>
+                        <div class="quality-text">
+                            <div style="font-weight: 600; font-size: 1.1em;">${(quality.overall_score * 100).toFixed(0)}分</div>
+                            <div style="font-size: 0.8em; color: #666;">沟通质量评分</div>
+                        </div>
+                    </div>
+                    ${positivesHtml}
+                    ${issuesHtml}
+                    ${suggestionsHtml}
+                </div>
+            `;
+        }
+
+        function addAlert(alert) {
+            const container = document.getElementById('alertsContainer');
+            
+            if (alertCount === 0) {
+                container.innerHTML = '';
+            }
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert-item alert-${alert.severity}`;
+            
+            let details = '';
+            if (alert.details) {
+                if (alert.details.score) {
+                    details = `置信度: ${(alert.details.score * 100).toFixed(1)}%`;
+                } else if (alert.details.dynamic_threshold) {
+                    details = `动态阈值: ${alert.details.dynamic_threshold.toFixed(2)}`;
+                } else if (alert.details.trend_strength) {
+                    details = `趋势强度: ${(alert.details.trend_strength * 100).toFixed(1)}%`;
+                } else if (alert.details.negative_count) {
+                    details = `连续负面: ${alert.details.negative_count}轮`;
+                } else if (alert.details.change_magnitude) {
+                    details = `变化幅度: ${(alert.details.change_magnitude * 100).toFixed(1)}%`;
+                }
+            }
+            
+            let channelsHtml = '';
+            if (alert.channels && alert.channels.length > 0) {
+                const channelNames = {
+                    'wechat_work': '企业微信',
+                    'email': '邮件',
+                    'sms': '短信'
+                };
+                channelsHtml = `<div style="font-size: 0.7em; color: #888; margin-top: 3px;">已通知: ${alert.channels.map(c => channelNames[c] || c).join(', ')}</div>`;
+            }
+            
+            alertDiv.innerHTML = `
+                <div class="alert-message">${alert.message}</div>
+                <div class="alert-details">${details} | 第${alert.turn_index}轮</div>
+                ${channelsHtml}
+            `;
+            
+            container.insertBefore(alertDiv, container.firstChild);
+            alertCount++;
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('totalMessages').textContent = messageCount;
+            document.getElementById('alertCount').textContent = alertCount;
+        }
+
+        function initCharts() {
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '情感综合得分',
+                        data: [],
+                        borderColor: 'rgb(102, 126, 234)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: false, min: -1, max: 1 }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 9 } }
+                        }
+                    }
+                }
+            });
+
+            const radarCtx = document.getElementById('sentimentChart').getContext('2d');
+            radarChart = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['满意', '愤怒', '失望', '焦虑'],
+                    datasets: [{
+                        label: '当前情感分布',
+                        data: [0.25, 0.25, 0.25, 0.25],
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderColor: 'rgb(102, 126, 234)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: { beginAtZero: true, max: 1 }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 9 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts(history) {
+            const scores = history.map(h => {
+                const s = h.scores;
+                return s.satisfied - (s.angry + s.disappointed + s.anxious);
+            });
+            
+            trendChart.data.labels = history.map((_, i) => `第${i + 1}轮`);
+            trendChart.data.datasets[0].data = scores;
+            trendChart.update();
+
+            if (history.length > 0) {
+                const latest = history[history.length - 1].scores;
+                radarChart.data.datasets[0].data = [
+                    latest.satisfied, latest.angry, latest.disappointed, latest.anxious
+                ];
+                radarChart.update();
+            }
+        }
+
+        function toggleChannel(channel) {
+            const configMap = {
+                'wechat': 'wechatConfig',
+                'email': 'emailConfig',
+                'sms': 'smsConfig'
+            };
+            
+            const checkboxId = `enable${channel.charAt(0).toUpperCase() + channel.slice(1)}`;
+            const checked = document.getElementById(checkboxId).checked;
+            document.getElementById(configMap[channel]).style.display = checked ? 'block' : 'none';
+        }
+
+        function saveAlertConfig() {
+            const enabledChannels = [];
+            if (document.getElementById('enableWechat').checked) enabledChannels.push('wechat_work');
+            if (document.getElementById('enableEmail').checked) enabledChannels.push('email');
+            if (document.getElementById('enableSms').checked) enabledChannels.push('sms');
+
+            const config = {
+                enabled_channels: enabledChannels,
+                wechat_webhook_url: document.getElementById('wechatWebhook').value,
+                email_smtp_server: document.getElementById('emailSmtpServer').value,
+                email_smtp_port: 587,
+                email_sender: document.getElementById('emailSender').value,
+                email_password: '',
+                email_recipients: document.getElementById('emailRecipients').value.split(',').map(s => s.trim()).filter(s => s),
+                sms_api_url: '',
+                sms_api_key: '',
+                sms_recipients: [],
+                min_alert_severity: document.getElementById('minAlertSeverity').value
+            };
+
+            fetch('/api/alerts/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    alert('配置保存成功！');
+                } else {
+                    alert('配置保存失败: ' + data.error);
+                }
+            })
+            .catch(e => {
+                alert('配置保存失败: ' + e.message);
+            });
+        }
+
+        function testChannel(channel) {
+            fetch(`/api/alerts/test/${channel}`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('测试消息发送成功！');
+                    } else {
+                        alert('测试消息发送失败，请检查配置是否正确。');
+                    }
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            initSocket();
+        });
+    </script>
+</body>
+</html>

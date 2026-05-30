@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>采样决策树可视化</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #8892b0;
+            font-size: 1.1em;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 212, 255, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: #8892b0;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .metric-value.highlight {
+            color: #f59e0b;
+        }
+
+        .metric-value.danger {
+            color: #ef4444;
+        }
+
+        .metric-value.success {
+            color: #10b981;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .tree-container {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            min-height: 600px;
+            overflow-x: auto;
+        }
+
+        .tree-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #00d4ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tree-svg {
+            width: 100%;
+            min-width: 800px;
+        }
+
+        .node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node:hover .node-rect {
+            filter: brightness(1.2);
+        }
+
+        .node-rect {
+            rx: 8;
+            ry: 8;
+            transition: all 0.3s ease;
+        }
+
+        .node-rect.leaf {
+            rx: 20;
+            ry: 20;
+        }
+
+        .node-rect.decision-sample {
+            fill: #10b981;
+            stroke: #059669;
+        }
+
+        .node-rect.decision-drop {
+            fill: #ef4444;
+            stroke: #dc2626;
+        }
+
+        .node-rect.decision-continue {
+            fill: #f59e0b;
+            stroke: #d97706;
+        }
+
+        .node-rect.condition {
+            fill: #3b82f6;
+            stroke: #2563eb;
+        }
+
+        .node-text {
+            fill: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        .node-text.sub {
+            font-size: 11px;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+
+        .link {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 2;
+            transition: all 0.3s ease;
+        }
+
+        .link:hover {
+            stroke: #00d4ff;
+            stroke-width: 3;
+        }
+
+        .link-label {
+            fill: #8892b0;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .panel-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #00d4ff;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .factor-list {
+            list-style: none;
+        }
+
+        .factor-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .factor-list li:last-child {
+            border-bottom: none;
+        }
+
+        .factor-name {
+            color: #8892b0;
+            font-size: 0.9em;
+        }
+
+        .factor-value {
+            color: #00d4ff;
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .decision-steps {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .step-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .step-item.passed {
+            border-left-color: #10b981;
+        }
+
+        .step-item.failed {
+            border-left-color: #ef4444;
+        }
+
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .step-name {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .step-result {
+            font-size: 0.8em;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .step-result.success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .step-result.fail {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .step-description {
+            font-size: 0.85em;
+            color: #8892b0;
+            margin-bottom: 5px;
+        }
+
+        .step-details {
+            font-size: 0.8em;
+            color: #64748b;
+            font-family: monospace;
+        }
+
+        .trace-search {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .trace-search input {
+            flex: 1;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .trace-search input:focus {
+            border-color: #00d4ff;
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        .trace-search button {
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .trace-search button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #8892b0;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: rgba(0, 212, 255, 0.3);
+            color: #00d4ff;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content:first-of-type {
+            display: block;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.1) rotate(180deg);
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.5);
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table th {
+            background: rgba(0, 212, 255, 0.1);
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .data-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .recommendation-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .recommendation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .recommendation-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #00d4ff;
+        }
+
+        .priority-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .priority-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .priority-medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .priority-low {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #8892b0;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            padding: 15px;
+            border-radius: 8px;
+            color: #ef4444;
+            text-align: center;
+        }
+
+        .recent-decisions {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .decision-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85em;
+        }
+
+        .decision-item:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-left: 3px solid #00d4ff;
+        }
+
+        .decision-trace {
+            font-family: monospace;
+            color: #00d4ff;
+            font-size: 0.8em;
+            margin-bottom: 4px;
+        }
+
+        .decision-reason {
+            color: #8892b0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reason-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        .reason-sampled {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .reason-not-sampled {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 采样决策树可视化</h1>
+            <p>实时查看分布式链路追踪的智能采样决策过程</p>
+        </header>
+
+        <div class="dashboard">
+            <div class="metric-card">
+                <div class="metric-label">当前采样率</div>
+                <div class="metric-value" id="currentRate">--</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">错误率</div>
+                <div class="metric-value danger" id="errorRate">--</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">错误率倍率</div>
+                <div class="metric-value highlight" id="errorMultiplier">--</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">预测QPS</div>
+                <div class="metric-value success" id="predictedQps">--</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">高延迟阈值</div>
+                <div class="metric-value" id="latencyThreshold">500ms</div>
+            </div>
+        </div>
+
+        <div class="trace-search">
+            <input type="text" id="traceIdInput" placeholder="输入Trace ID查看详细决策过程...">
+            <button onclick="searchTrace()">🔍 查询</button>
+        </div>
+
+        <div class="tabs">
+            <button id="decision-tree-btn" class="tab-btn active" onclick="switchTab('decision-tree')">🌳 决策树</button>
+            <button id="cross-service-btn" class="tab-btn" onclick="switchTab('cross-service')">🔗 跨服务采样</button>
+            <button id="feedback-btn" class="tab-btn" onclick="switchTab('feedback')">📊 反馈闭环</button>
+            <button id="cost-btn" class="tab-btn" onclick="switchTab('cost')">💰 成本分析</button>
+        </div>
+
+        <div class="main-content">
+            <div id="decision-tree-tab" class="tab-content">
+            <div class="tree-container">
+                <div class="tree-title">
+                    <span>🌳</span>
+                    <span id="treeTitle">采样决策树</span>
+                </div>
+                <div id="treeContent">
+                    <svg class="tree-svg" id="treeSvg" viewBox="0 0 900 500">
+                    </svg>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #3b82f6;"></div>
+                        <span>条件判断</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #10b981;"></div>
+                        <span>采样 (RECORD_AND_SAMPLE)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ef4444;"></div>
+                        <span>不采样 (DROP)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f59e0b;"></div>
+                        <span>继续判断</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="panel">
+                    <div class="panel-title">⚙️ 影响因子</div>
+                    <ul class="factor-list" id="factorList">
+                    </ul>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">📊 当前请求决策步骤</div>
+                    <div class="decision-steps" id="decisionSteps">
+                        <p style="color: #8892b0; text-align: center; padding: 20px;">
+                            点击决策树节点或输入Trace ID查看详细步骤
+                        </p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">🕐 最近决策记录</div>
+                    <div class="recent-decisions" id="recentDecisions">
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            <div id="cross-service-tab" class="tab-content" style="display: none;">
+                <div class="tree-container">
+                    <div class="tree-title">
+                        <span>🔗</span>
+                        <span>跨服务关联采样</span>
+                    </div>
+                    <div class="stat-grid">
+                        <div class="metric-card">
+                            <div class="metric-label">活跃Trace数</div>
+                            <div class="metric-value" id="activeTraceCount">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">跨服务Trace总数</div>
+                            <div class="metric-value" id="totalCrossServiceTraces">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">一致性采样应用</div>
+                            <div class="metric-value success" id="consistentSamplingApplied">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">多服务Trace数</div>
+                            <div class="metric-value" id="tracesWithMultipleServices">--</div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-title">跨服务采样状态</div>
+                        <div class="factor-list" id="crossServiceStatus">
+                            <li><span class="factor-name">一致性采样启用</span><span class="factor-value" id="consistentSamplingEnabled">--</span></li>
+                            <li><span class="factor-name">一致性采样率</span><span class="factor-value" id="consistentSamplingRate">--</span></li>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-title">工作原理</div>
+                        <div style="color: #8892b0; line-height: 1.8;">
+                            <p>✅ <strong>根Span决策</strong>：调用链第一个服务的入口Span决定整条链路的采样决策</p>
+                            <p>✅ <strong>一致性传播</strong>：后续服务自动跟随根Span的采样决策</p>
+                            <p>✅ <strong>调用链完整性</strong>：确保同一条调用链要么全部采样，要么全部不采样</p>
+                            <p>✅ <strong>Trace上下文</strong>：通过Trace ID在Redis中共享采样决策</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="feedback-tab" class="tab-content" style="display: none;">
+                <div class="tree-container">
+                    <div class="tree-title">
+                        <span>📊</span>
+                        <span>采样结果反馈闭环</span>
+                    </div>
+                    <div class="stat-grid">
+                        <div class="metric-card">
+                            <div class="metric-label">总请求数</div>
+                            <div class="metric-value" id="feedbackTotalRequests">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">已采样请求</div>
+                            <div class="metric-value success" id="feedbackSampledRequests">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">推算请求</div>
+                            <div class="metric-value highlight" id="feedbackEstimatedRequests">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">追踪端点</div>
+                            <div class="metric-value" id="feedbackTrackedEndpoints">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">实际采样率</div>
+                            <div class="metric-value" id="feedbackActualSampleRate">--</div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-title">聚合推算指标</div>
+                        <div class="factor-list" id="aggregatedMetrics">
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-title">端点推算数据</div>
+                        <table class="data-table" id="endpointMetricsTable">
+                            <thead>
+                                <tr>
+                                    <th>端点</th>
+                                    <th>推算总请求</th>
+                                    <th>推算错误数</th>
+                                    <th>推算平均延迟</th>
+                                    <th>推算错误率</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cost-tab" class="tab-content" style="display: none;">
+                <div class="tree-container">
+                    <div class="tree-title">
+                        <span>💰</span>
+                        <span>采样成本分析</span>
+                    </div>
+                    <div class="stat-grid">
+                        <div class="metric-card">
+                            <div class="metric-label">总处理Span</div>
+                            <div class="metric-value" id="costTotalSpans">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">已采样Span</div>
+                            <div class="metric-value success" id="costSampledSpans">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">已丢弃Span</div>
+                            <div class="metric-value danger" id="costDroppedSpans">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">存储节省</div>
+                            <div class="metric-value success" id="costStorageSaved">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">CPU节省</div>
+                            <div class="metric-value success" id="costCpuSaved">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">实际采样率</div>
+                            <div class="metric-value" id="costEffectiveSampleRate">--</div>
+                        </div>
+                    </div>
+                    <div class="recommendation-card" id="costRecommendation">
+                        <div class="recommendation-header">
+                            <span class="recommendation-title">💡 优化建议</span>
+                            <span class="priority-badge" id="recommendationPriority">--</span>
+                        </div>
+                        <div id="recommendationText" style="color: #8892b0; line-height: 1.6;">
+                            加载中...
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-title">端点成本明细</div>
+                        <table class="data-table" id="endpointCostTable">
+                            <thead>
+                                <tr>
+                                    <th>端点</th>
+                                    <th>处理Span</th>
+                                    <th>已采样</th>
+                                    <th>存储节省</th>
+                                    <th>节省比例</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="refresh-btn" onclick="refreshData()" title="刷新数据">↻</button>
+
+    <script>
+        const API_BASE = '/api/sampling';
+        let activeTab = 'decision-tree';
+        
+        function switchTab(tabName) {
+            activeTab = tabName;
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabName + '-tab').style.display = 'block';
+            document.getElementById(tabName + '-btn').classList.add('active');
+        }
+        
+        function buildStaticTree() {
+            const svg = document.getElementById('treeSvg');
+            svg.innerHTML = '';
+            
+            const nodes = [
+                { id: 'root', x: 450, y: 40, text: '采样决策', sub: 'Sampling Decision', type: 'condition', width: 140, height: 50 },
+                { id: 'parent', x: 450, y: 120, text: '父链路已采样?', sub: 'Parent Sampled?', type: 'condition', width: 160, height: 50 },
+                { id: 'parent_yes', x: 200, y: 200, text: '采样', sub: 'PARENT_SAMPLED', type: 'decision-sample', width: 160, height: 50 },
+                { id: 'parent_no', x: 700, y: 200, text: '继续判断', sub: 'Continue', type: 'decision-continue', width: 140, height: 50 },
+                { id: 'error', x: 700, y: 280, text: '错误请求?', sub: 'Error Request?', type: 'condition', width: 160, height: 50 },
+                { id: 'error_yes', x: 450, y: 360, text: '采样', sub: 'ERROR_REQUEST', type: 'decision-sample', width: 160, height: 50 },
+                { id: 'error_no', x: 700, y: 360, text: '继续判断', sub: 'Continue', type: 'decision-continue', width: 140, height: 50 },
+                { id: 'latency', x: 700, y: 440, text: '高延迟?', sub: 'High Latency?', type: 'condition', width: 160, height: 50 }
+            ];
+            
+            const links = [
+                { from: 'root', to: 'parent', label: '' },
+                { from: 'parent', to: 'parent_yes', label: '是' },
+                { from: 'parent', to: 'parent_no', label: '否' },
+                { from: 'parent_no', to: 'error', label: '' },
+                { from: 'error', to: 'error_yes', label: '是' },
+                { from: 'error', to: 'error_no', label: '否' },
+                { from: 'error_no', to: 'latency', label: '' }
+            ];
+            
+            links.forEach(link => {
+                const fromNode = nodes.find(n => n.id === link.from);
+                const toNode = nodes.find(n => n.id === link.to);
+                
+                if (fromNode && toNode) {
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const x1 = fromNode.x;
+                    const y1 = fromNode.y + fromNode.height / 2;
+                    const x2 = toNode.x;
+                    const y2 = toNode.y - toNode.height / 2;
+                    
+                    const midY = (y1 + y2) / 2;
+                    path.setAttribute('d', `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`);
+                    path.setAttribute('class', 'link');
+                    svg.appendChild(path);
+                    
+                    if (link.label) {
+                        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        text.setAttribute('x', (x1 + x2) / 2);
+                        text.setAttribute('y', midY - 5);
+                        text.setAttribute('class', 'link-label');
+                        text.setAttribute('text-anchor', 'middle');
+                        text.textContent = link.label;
+                        svg.appendChild(text);
+                    }
+                }
+            });
+            
+            nodes.forEach(node => {
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('class', 'node');
+                g.setAttribute('transform', `translate(${node.x - node.width / 2}, ${node.y - node.height / 2})`);
+                
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('class', `node-rect ${node.type}`);
+                rect.setAttribute('width', node.width);
+                rect.setAttribute('height', node.height);
+                rect.setAttribute('stroke-width', '2');
+                g.appendChild(rect);
+                
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('class', 'node-text');
+                text.setAttribute('x', node.width / 2);
+                text.setAttribute('y', node.height / 2 - 8);
+                text.setAttribute('text-anchor', 'middle');
+                text.textContent = node.text;
+                g.appendChild(text);
+                
+                if (node.sub) {
+                    const subText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    subText.setAttribute('class', 'node-text sub');
+                    subText.setAttribute('x', node.width / 2);
+                    subText.setAttribute('y', node.height / 2 + 12);
+                    subText.setAttribute('text-anchor', 'middle');
+                    subText.textContent = node.sub;
+                    g.appendChild(subText);
+                }
+                
+                svg.appendChild(g);
+            });
+            
+            document.getElementById('treeTitle').textContent = '采样决策树 (静态结构)';
+        }
+        
+        function buildDecisionTreeFromData(decisionTree) {
+            const steps = decisionTree.decisionSteps || [];
+            const container = document.getElementById('decisionSteps');
+            
+            let html = '';
+            steps.forEach((step, index) => {
+                const resultClass = step.passed ? 'passed' : 'failed';
+                const resultBadge = step.result.includes('采样') || step.result.includes('继续') 
+                    ? '<span class="step-result success">✓ ' + step.result + '</span>'
+                    : '<span class="step-result fail">✗ ' + step.result + '</span>';
+                
+                let detailsHtml = '';
+                if (step.details) {
+                    Object.keys(step.details).forEach(key => {
+                        detailsHtml += `<div>${key}: ${step.details[key]}</div>`;
+                    });
+                }
+                
+                html += `
+                    <div class="step-item ${resultClass}">
+                        <div class="step-header">
+                            <span class="step-name">${index + 1}. ${step.stepName}</span>
+                            ${resultBadge}
+                        </div>
+                        <div class="step-description">${step.description}</div>
+                        ${detailsHtml ? `<div class="step-details">${detailsHtml}</div>` : ''}
+                    </div>
+                `;
+            });
+            
+            if (!html) {
+                html = '<p style="color: #8892b0; text-align: center; padding: 20px;">无决策步骤数据</p>';
+            }
+            
+            container.innerHTML = html;
+            
+            document.getElementById('treeTitle').textContent = `采样决策树 - ${decisionTree.spanName || 'Trace: ' + decisionTree.traceId}`;
+        }
+        
+        async function refreshData() {
+            try {
+                const [rateResp, predictionResp, errorResp, decisionsResp, 
+                       crossServiceResp, feedbackResp, estimatedResp, 
+                       costResp, costEndpointsResp, recommendationResp] = await Promise.all([
+                    fetch(`${API_BASE}/rate`),
+                    fetch(`${API_BASE}/prediction`),
+                    fetch(`${API_BASE}/error-rate`),
+                    fetch(`${API_BASE}/decisions/recent?limit=10`),
+                    fetch(`${API_BASE}/cross-service/stats`),
+                    fetch(`${API_BASE}/feedback/stats`),
+                    fetch(`${API_BASE}/feedback/estimated`),
+                    fetch(`${API_BASE}/cost/analysis`),
+                    fetch(`${API_BASE}/cost/endpoints`),
+                    fetch(`${API_BASE}/cost/recommendation`)
+                ]);
+                
+                const rateData = await rateResp.json();
+                const predictionData = await predictionResp.json();
+                const errorData = await errorResp.json();
+                const decisionsData = await decisionsResp.json();
+                const crossServiceData = await crossServiceResp.json();
+                const feedbackData = await feedbackResp.json();
+                const estimatedData = await estimatedResp.json();
+                const costData = await costResp.json();
+                const costEndpointsData = await costEndpointsResp.json();
+                const recommendationData = await recommendationResp.json();
+                
+                document.getElementById('currentRate').textContent = (rateData.currentSampleRate * 100).toFixed(1) + '%';
+                document.getElementById('errorRate').textContent = (errorData.currentErrorRate * 100).toFixed(2) + '%';
+                document.getElementById('errorMultiplier').textContent = errorData.errorRateMultiplier.toFixed(2) + 'x';
+                
+                const prediction = predictionData.currentPrediction || {};
+                document.getElementById('predictedQps').textContent = prediction.predictedRps ? prediction.predictedRps.toFixed(1) : '--';
+                
+                updateFactorList(rateData, predictionData, errorData);
+                updateRecentDecisions(decisionsData);
+                
+                updateCrossServiceTab(crossServiceData);
+                updateFeedbackTab(feedbackData, estimatedData);
+                updateCostTab(costData, costEndpointsData, recommendationData);
+                
+            } catch (error) {
+                console.error('Failed to refresh data:', error);
+            }
+        }
+
+        function updateCrossServiceTab(data) {
+            document.getElementById('activeTraceCount').textContent = data.activeTraceCount || 0;
+            document.getElementById('totalCrossServiceTraces').textContent = data.totalCrossServiceTraces || 0;
+            document.getElementById('consistentSamplingApplied').textContent = data.consistentSamplingApplied || 0;
+            document.getElementById('tracesWithMultipleServices').textContent = data.tracesWithMultipleServices || 0;
+            document.getElementById('consistentSamplingEnabled').textContent = data.consistentSamplingEnabled ? '✅ 是' : '❌ 否';
+            document.getElementById('consistentSamplingRate').textContent = 
+                data.consistentSamplingRate ? (data.consistentSamplingRate * 100).toFixed(2) + '%' : '0%';
+        }
+
+        function updateFeedbackTab(feedbackData, estimatedData) {
+            document.getElementById('feedbackTotalRequests').textContent = feedbackData.totalRequests || 0;
+            document.getElementById('feedbackSampledRequests').textContent = feedbackData.sampledRequests || 0;
+            document.getElementById('feedbackEstimatedRequests').textContent = feedbackData.estimatedRequests || 0;
+            document.getElementById('feedbackTrackedEndpoints').textContent = feedbackData.trackedEndpoints || 0;
+            document.getElementById('feedbackActualSampleRate').textContent = 
+                feedbackData.actualSampleRate ? (feedbackData.actualSampleRate * 100).toFixed(2) + '%' : '0%';
+            
+            const aggregated = estimatedData.aggregated;
+            if (aggregated) {
+                const aggregatedHtml = `
+                    <li><span class="factor-name">推算总请求</span><span class="factor-value">${aggregated.estimatedTotalRequests || 0}</span></li>
+                    <li><span class="factor-name">推算错误数</span><span class="factor-value">${aggregated.estimatedErrorCount || 0}</span></li>
+                    <li><span class="factor-name">推算平均延迟</span><span class="factor-value">${(aggregated.estimatedAverageLatency || 0).toFixed(2)}ms</span></li>
+                    <li><span class="factor-name">推算错误率</span><span class="factor-value">${(aggregated.estimatedErrorRate * 100 || 0).toFixed(2)}%</span></li>
+                `;
+                document.getElementById('aggregatedMetrics').innerHTML = aggregatedHtml;
+            }
+            
+            const endpoints = estimatedData.endpoints || {};
+            const tbody = document.querySelector('#endpointMetricsTable tbody');
+            let rowsHtml = '';
+            Object.keys(endpoints).forEach(key => {
+                const ep = endpoints[key];
+                rowsHtml += `
+                    <tr>
+                        <td>${ep.endpoint || key}</td>
+                        <td>${ep.estimatedTotalRequests || 0}</td>
+                        <td>${ep.estimatedErrorCount || 0}</td>
+                        <td>${(ep.estimatedAverageLatency || 0).toFixed(2)}ms</td>
+                        <td>${(ep.estimatedErrorRate * 100 || 0).toFixed(2)}%</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = rowsHtml || '<tr><td colspan="5" style="text-align:center;color:#8892b0;">暂无数据</td></tr>';
+        }
+
+        function updateCostTab(costData, costEndpointsData, recommendationData) {
+            document.getElementById('costTotalSpans').textContent = costData.totalSpansProcessed || 0;
+            document.getElementById('costSampledSpans').textContent = costData.totalSpansSampled || 0;
+            document.getElementById('costDroppedSpans').textContent = costData.totalSpansDropped || 0;
+            document.getElementById('costStorageSaved').textContent = (costData.storageSavedMB || 0).toFixed(2) + ' MB';
+            document.getElementById('costCpuSaved').textContent = (costData.cpuSavedSeconds || 0).toFixed(2) + 's';
+            document.getElementById('costEffectiveSampleRate').textContent = costData.effectiveSampleRate || '0%';
+            
+            const priorityBadge = document.getElementById('recommendationPriority');
+            priorityBadge.textContent = recommendationData.priority || 'LOW';
+            priorityBadge.className = 'priority-badge priority-' + (recommendationData.priority || 'low').toLowerCase();
+            document.getElementById('recommendationText').textContent = recommendationData.recommendation || '暂无建议';
+            
+            const endpoints = costEndpointsData.endpoints || {};
+            const tbody = document.querySelector('#endpointCostTable tbody');
+            let rowsHtml = '';
+            Object.keys(endpoints).forEach(key => {
+                const ep = endpoints[key];
+                rowsHtml += `
+                    <tr>
+                        <td>${ep.endpoint || key}</td>
+                        <td>${ep.spansProcessed || 0}</td>
+                        <td>${ep.spansSampled || 0}</td>
+                        <td>${ep.storageSavedMB || 0} MB</td>
+                        <td>${ep.storageSavedPercent || '0%'}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = rowsHtml || '<tr><td colspan="5" style="text-align:center;color:#8892b0;">暂无数据</td></tr>';
+        }
+        
+        function updateFactorList(rateData, predictionData, errorData) {
+            const factors = [
+                { name: '基础采样率', value: (rateData.currentSampleRate * 100).toFixed(1) + '%' },
+                { name: '服务重要性', value: 'HIGH (2.0x)' },
+                { name: '错误率倍率', value: errorData.errorRateMultiplier.toFixed(2) + 'x' },
+                { name: '高延迟阈值', value: '500ms' },
+                { name: '目标SPS', value: '100 spans/sec' },
+                { name: '预测置信度', value: (predictionData.currentPrediction?.confidence || 'MEDIUM') }
+            ];
+            
+            const list = document.getElementById('factorList');
+            list.innerHTML = factors.map(f => 
+                `<li><span class="factor-name">${f.name}</span><span class="factor-value">${f.value}</span></li>`
+            ).join('');
+        }
+        
+        function updateRecentDecisions(decisions) {
+            const container = document.getElementById('recentDecisions');
+            
+            if (!decisions || decisions.length === 0) {
+                container.innerHTML = '<p style="color: #8892b0; text-align: center; padding: 20px;">暂无决策记录</p>';
+                return;
+            }
+            
+            container.innerHTML = decisions.map(d => {
+                const isSampled = d.reason !== 'NOT_SAMPLED';
+                const reasonClass = isSampled ? 'reason-sampled' : 'reason-not-sampled';
+                const shortTraceId = d.traceId ? d.traceId.substring(0, 16) + '...' : 'N/A';
+                
+                return `
+                    <div class="decision-item" onclick="searchTrace('${d.traceId || ''}')">
+                        <div class="decision-trace">${shortTraceId}</div>
+                        <div class="decision-reason">
+                            <span>${d.spanName || d.reason}</span>
+                            <span class="reason-badge ${reasonClass}">${d.reason}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        async function searchTrace(traceId) {
+            const input = document.getElementById('traceIdInput');
+            const id = traceId || input.value.trim();
+            
+            if (!id) {
+                alert('请输入Trace ID');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/decision/${id}`);
+                
+                if (response.status === 404) {
+                    alert('未找到该Trace ID的决策记录');
+                    return;
+                }
+                
+                const decisionTree = await response.json();
+                buildDecisionTreeFromData(decisionTree);
+                input.value = id;
+                
+            } catch (error) {
+                console.error('Failed to search trace:', error);
+                alert('查询失败: ' + error.message);
+            }
+        }
+        
+        buildStaticTree();
+        refreshData();
+        
+        setInterval(refreshData, 5000);
+    </script>
+</body>
+</html>

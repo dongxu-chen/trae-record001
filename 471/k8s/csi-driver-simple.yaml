@@ -1,0 +1,71 @@
+apiVersion: storage.k8s.io/v1
+kind: CSIDriver
+metadata:
+  name: secrets.keymgmt.io
+spec:
+  attachRequired: false
+  podInfoOnMount: true
+  volumeLifecycleModes:
+  - Ephemeral
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keymgmt-csi-driver
+  namespace: keymgmt-system
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: keymgmt-csi-node
+  namespace: keymgmt-system
+  labels:
+    app: keymgmt-csi-driver
+spec:
+  selector:
+    matchLabels:
+      app: keymgmt-csi-driver
+  template:
+    metadata:
+      labels:
+        app: keymgmt-csi-driver
+    spec:
+      serviceAccountName: keymgmt-csi-driver
+      containers:
+      - name: csi-driver
+        image: keymgmt/csi-driver:latest
+        args:
+        - "--nodeid=$(NODE_ID)"
+        - "--endpoint=unix:///csi/csi.sock"
+        - "--api-url=http://keymgmt-backend.keymgmt-system.svc.cluster.local:8080"
+        - "--use-local-secrets=true"
+        env:
+        - name: NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: keymgmt-api-token
+              key: token
+              optional: true
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: plugin-dir
+          mountPath: /csi
+        - name: pods-mount-dir
+          mountPath: /var/lib/kubelet/pods
+          mountPropagation: Bidirectional
+      volumes:
+      - name: plugin-dir
+        hostPath:
+          path: /var/lib/kubelet/plugins/secrets.keymgmt.io
+          type: DirectoryOrCreate
+      - name: pods-mount-dir
+        hostPath:
+          path: /var/lib/kubelet/pods
+          type: Directory

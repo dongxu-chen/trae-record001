@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: demo-app
+  namespace: default
+spec:
+  containers:
+  - name: demo-app
+    image: nginx:alpine
+    volumeMounts:
+    - name: db-secrets
+      mountPath: "/secrets/db"
+      readOnly: true
+    - name: api-keys
+      mountPath: "/secrets/api"
+      readOnly: true
+  volumes:
+  - name: db-secrets
+    csi:
+      driver: secrets.keymgmt.io
+      volumeAttributes:
+        secretName: "db-password"
+        secretNamespace: "default"
+  - name: api-keys
+    csi:
+      driver: secrets.keymgmt.io
+      volumeAttributes:
+        secretName: "api-key"
+        secretNamespace: "default"

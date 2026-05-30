@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情感趋势看板</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .controls {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .control-group select, .control-group button {
+            padding: 8px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .control-group select:focus, .control-group button:hover {
+            border-color: #667eea;
+        }
+
+        .control-group button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .stat-trend {
+            font-size: 0.85em;
+            margin-top: 8px;
+        }
+
+        .trend-up { color: #28a745; }
+        .trend-down { color: #dc3545; }
+        .trend-stable { color: #ffc107; }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .chart-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .chart-container {
+            height: 300px;
+        }
+
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .trend-improving {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .trend-deteriorating {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .trend-stable {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .issues-list {
+            list-style: none;
+        }
+
+        .issues-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .issues-list li:last-child {
+            border-bottom: none;
+        }
+
+        .issue-name {
+            font-weight: 500;
+        }
+
+        .issue-count {
+            background: #f0f0f0;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .sentiment-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sentiment-bar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sentiment-label {
+            width: 60px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .sentiment-bar {
+            flex: 1;
+            height: 24px;
+            background: #f0f0f0;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .sentiment-fill {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 0.5s ease;
+        }
+
+        .fill-satisfied { background: linear-gradient(90deg, #28a745, #48c774); }
+        .fill-angry { background: linear-gradient(90deg, #dc3545, #e74c3c); }
+        .fill-disappointed { background: linear-gradient(90deg, #ffc107, #f1c40f); }
+        .fill-anxious { background: linear-gradient(90deg, #007bff, #3498db); }
+
+        .sentiment-value {
+            width: 50px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .hourly-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 4px;
+        }
+
+        .hourly-cell {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            color: white;
+            font-weight: 600;
+        }
+
+        .hourly-label {
+            text-align: center;
+            font-size: 0.75em;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            .bottom-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 情感趋势看板</h1>
+            <a href="/" class="nav-link">← 返回对话界面</a>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>时间范围:</label>
+                <select id="periodSelect" onchange="loadTrendData()">
+                    <option value="7d">最近7天</option>
+                    <option value="30d">最近30天</option>
+                    <option value="90d">最近90天</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <button onclick="loadTrendData()">🔄 刷新数据</button>
+            </div>
+            <div style="margin-left: auto; color: #666; font-size: 0.9em;">
+                <span id="dateRange">加载中...</span>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalConversations">0</div>
+                <div class="stat-label">总会话数</div>
+                <div class="stat-trend" id="conversationsTrend">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalMessages">0</div>
+                <div class="stat-label">总消息数</div>
+                <div class="stat-trend" id="messagesTrend">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgSentiment">0.00</div>
+                <div class="stat-label">平均情感得分</div>
+                <div class="stat-trend" id="sentimentTrend">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="positiveRate">0%</div>
+                <div class="stat-label">正面情绪占比</div>
+                <div class="stat-trend" id="positiveTrend">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalAlerts">0</div>
+                <div class="stat-label">告警次数</div>
+                <div class="stat-trend" id="alertsTrend">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgResponseTime">0s</div>
+                <div class="stat-label">平均响应时间</div>
+                <div class="stat-trend" id="responseTrend">--</div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-title">📈 情感得分趋势</div>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">🎯 总体趋势
+                    <span class="trend-indicator trend-stable" id="overallTrend">稳定</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-grid">
+            <div class="chart-card">
+                <div class="chart-title">📊 情感分布统计</div>
+                <div class="sentiment-bars" id="sentimentBars">
+                    <div class="sentiment-bar-item">
+                        <span class="sentiment-label">满意</span>
+                        <div class="sentiment-bar">
+                            <div class="sentiment-fill fill-satisfied" style="width: 0%"></div>
+                        </div>
+                        <span class="sentiment-value">0</span>
+                    </div>
+                    <div class="sentiment-bar-item">
+                        <span class="sentiment-label">愤怒</span>
+                        <div class="sentiment-bar">
+                            <div class="sentiment-fill fill-angry" style="width: 0%"></div>
+                        </div>
+                        <span class="sentiment-value">0</span>
+                    </div>
+                    <div class="sentiment-bar-item">
+                        <span class="sentiment-label">失望</span>
+                        <div class="sentiment-bar">
+                            <div class="sentiment-fill fill-disappointed" style="width: 0%"></div>
+                        </div>
+                        <span class="sentiment-value">0</span>
+                    </div>
+                    <div class="sentiment-bar-item">
+                        <span class="sentiment-label">焦虑</span>
+                        <div class="sentiment-bar">
+                            <div class="sentiment-fill fill-anxious" style="width: 0%"></div>
+                        </div>
+                        <span class="sentiment-value">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">⚠️ 主要负面问题</div>
+                <ul class="issues-list" id="issuesList">
+                    <li style="color: #999; justify-content: center;">暂无数据</li>
+                </ul>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">🕐 今日时段分布</div>
+                <div id="hourlyDistribution"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let trendChart, pieChart;
+
+        function initCharts() {
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: '平均情感得分',
+                            data: [],
+                            borderColor: 'rgb(102, 126, 234)',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: '正面占比 (%)',
+                            data: [],
+                            borderColor: 'rgb(40, 167, 69)',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: -0.5,
+                            max: 0.5,
+                            title: {
+                                display: true,
+                                text: '情感得分'
+                            }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            max: 100,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: '正面占比 (%)'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)'
+                        }
+                    }
+                }
+            });
+
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            pieChart = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['满意', '愤怒', '失望', '焦虑'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.8)',
+                            'rgba(220, 53, 69, 0.8)',
+                            'rgba(255, 193, 7, 0.8)',
+                            'rgba(0, 123, 255, 0.8)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadTrendData() {
+            const period = document.getElementById('periodSelect').value;
+            
+            fetch(`/api/trends/analysis?period=${period}`)
+                .then(r => r.json())
+                .then(data => {
+                    updateStats(data);
+                    updateTrendChart(data);
+                    updateSentimentDistribution(data);
+                    updateDateRange(data);
+                });
+            
+            fetch('/api/trends/hourly')
+                .then(r => r.json())
+                .then(data => {
+                    updateHourlyDistribution(data);
+                });
+            
+            fetch('/api/trends/weekly')
+                .then(r => r.json())
+                .then(data => {
+                    updateIssuesList(data.top_issues);
+                });
+        }
+
+        function updateStats(data) {
+            document.getElementById('totalConversations').textContent = data.total_conversations;
+            document.getElementById('totalMessages').textContent = data.total_messages;
+            document.getElementById('avgSentiment').textContent = data.avg_sentiment.toFixed(2);
+            document.getElementById('totalAlerts').textContent = data.total_alerts;
+
+            const trendIndicator = document.getElementById('overallTrend');
+            const trendMap = {
+                'improving': { class: 'trend-improving', text: '↑ 改善' },
+                'deteriorating': { class: 'trend-deteriorating', text: '↓ 恶化' },
+                'stable': { class: 'trend-stable', text: '— 稳定' }
+            };
+            const trendInfo = trendMap[data.trend_direction] || trendMap.stable;
+            trendIndicator.className = `trend-indicator ${trendInfo.class}`;
+            trendIndicator.textContent = trendInfo.text;
+        }
+
+        function updateTrendChart(data) {
+            const dailyData = data.daily_data.filter(d => d.total_messages > 0);
+            
+            trendChart.data.labels = dailyData.map(d => d.date.substring(5));
+            trendChart.data.datasets[0].data = dailyData.map(d => d.avg_sentiment_score);
+            trendChart.data.datasets[1].data = dailyData.map(d => d.positive_rate * 100);
+            trendChart.update();
+        }
+
+        function updateSentimentDistribution(data) {
+            const dailyData = data.daily_data;
+            let total = { satisfied: 0, angry: 0, disappointed: 0, anxious: 0 };
+            
+            for (const d of dailyData) {
+                total.satisfied += d.sentiment_distribution.satisfied;
+                total.angry += d.sentiment_distribution.angry;
+                total.disappointed += d.sentiment_distribution.disappointed;
+                total.anxious += d.sentiment_distribution.anxious;
+            }
+
+            const maxValue = Math.max(...Object.values(total), 1);
+            
+            const bars = document.querySelectorAll('.sentiment-bar-item');
+            const labels = ['satisfied', 'angry', 'disappointed', 'anxious'];
+            
+            bars.forEach((bar, i) => {
+                const value = total[labels[i]];
+                const percentage = (value / maxValue) * 100;
+                bar.querySelector('.sentiment-fill').style.width = percentage + '%';
+                bar.querySelector('.sentiment-value').textContent = value;
+            });
+
+            pieChart.data.datasets[0].data = [
+                total.satisfied, total.angry, total.disappointed, total.anxious
+            ];
+            pieChart.update();
+
+            const totalAll = total.satisfied + total.angry + total.disappointed + total.anxious;
+            const positiveRate = totalAll > 0 ? ((total.satisfied / totalAll) * 100).toFixed(1) : 0;
+            document.getElementById('positiveRate').textContent = positiveRate + '%';
+
+            const avgDaily = dailyData.filter(d => d.total_messages > 0);
+            if (avgDaily.length > 0) {
+                const avgRT = avgDaily.reduce((sum, d) => sum + d.avg_response_time, 0) / avgDaily.length;
+                document.getElementById('avgResponseTime').textContent = avgRT.toFixed(0) + 's';
+            }
+        }
+
+        function updateIssuesList(issues) {
+            const list = document.getElementById('issuesList');
+            
+            if (!issues || issues.length === 0) {
+                list.innerHTML = '<li style="color: #999; justify-content: center;">暂无数据</li>';
+                return;
+            }
+
+            list.innerHTML = issues.map(issue => `
+                <li>
+                    <span class="issue-name">${issue.issue}</span>
+                    <span class="issue-count">${issue.count}次</span>
+                </li>
+            `).join('');
+        }
+
+        function updateHourlyDistribution(data) {
+            const container = document.getElementById('hourlyDistribution');
+            let html = '<div class="hourly-grid">';
+            
+            const colorScale = (value, max) => {
+                if (max === 0) return 'rgba(102, 126, 234, 0.1)';
+                const intensity = value / max;
+                const alpha = 0.2 + intensity * 0.8;
+                if (value > 0) {
+                    return `rgba(102, 126, 234, ${alpha})`;
+                }
+                return 'rgba(200, 200, 200, 0.3)';
+            };
+
+            const values = Object.values(data).map(d => d.message_count);
+            const maxValue = Math.max(...values, 1);
+
+            for (let h = 0; h < 24; h++) {
+                const hourData = data[h.toString()] || { message_count: 0 };
+                const count = hourData.message_count;
+                const color = colorScale(count, maxValue);
+                html += `
+                    <div>
+                        <div class="hourly-cell" style="background: ${color}" title="${h}:00 - ${count}条消息">
+                            ${count > 0 ? count : ''}
+                        </div>
+                        ${h % 2 === 0 ? `<div class="hourly-label">${h}</div>` : ''}
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function updateDateRange(data) {
+            document.getElementById('dateRange').textContent = 
+                `${data.start_date} 至 ${data.end_date}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            loadTrendData();
+            
+            setInterval(loadTrendData, 60000);
+        });
+    </script>
+</body>
+</html>

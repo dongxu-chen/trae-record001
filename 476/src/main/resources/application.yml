@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: sampling-service
+
+server:
+  port: 8080
+
+tracing:
+  service:
+    name: ${spring.application.name}
+    importance: HIGH
+  
+  sampling:
+    enabled: true
+    default-sample-rate: 0.1
+    high-latency-threshold-ms: 500
+    error-sample-rate: 1.0
+    adaptive:
+      enabled: true
+      target-spans-per-second: 100
+      adjustment-interval-ms: 30000
+      min-sample-rate: 0.01
+      max-sample-rate: 1.0
+
+  otlp:
+    endpoint: http://localhost:4317
+    timeout-ms: 10000
+
+redis:
+  host: localhost
+  port: 6379
+  password: 
+  database: 0
+  timeout-ms: 2000
+  key-prefix: tracing:sampling:
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    com.tracing.sampling: DEBUG
+    io.opentelemetry: INFO
