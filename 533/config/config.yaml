@@ -1,0 +1,79 @@
+mysql:
+  master:
+    host: "127.0.0.1"
+    port: 3306
+    user: "root"
+    password: "your_password"
+    database: "mysql"
+  slave:
+    host: "127.0.0.1"
+    port: 3307
+    user: "root"
+    password: "your_password"
+    database: "mysql"
+
+monitoring:
+  check_interval: 30
+  latency_threshold_warning: 5
+  latency_threshold_critical: 30
+  history_retention_days: 7
+
+prediction:
+  model: "arima"
+  forecast_steps: 10
+  history_points: 100
+  jitter_weight: 0.3
+
+large_transaction:
+  duration_threshold: 10
+  rows_affected_threshold: 10000
+  bytes_threshold: 10485760
+  avg_row_size_bytes: 500
+  lock_wait_threshold: 5
+
+parallel_replication:
+  enabled: true
+  recommend_parallel_workers: true
+  max_workers: 32
+
+alerts:
+  enabled: true
+  email:
+    smtp_server: "smtp.example.com"
+    smtp_port: 587
+    sender: "alert@example.com"
+    recipients: ["dba@example.com"]
+  webhook:
+    url: ""
+    method: "POST"
+
+rules:
+  auto_optimize: false
+  enable_parallel_replication: true
+  kill_long_transactions: false
+  adjust_thread_priority: false
+
+failover:
+  dry_run: true
+  drain_timeout: 30
+  verify_timeout: 60
+  drain_check_interval: 1
+
+replay:
+  max_allowed_delay: 60
+  statement_delay_threshold: 10
+  collect_binlog_stats: true
+
+consistency:
+  sample_size: 1000
+  check_methods:
+    - "count"
+    - "checksum"
+    - "sample"
+  max_rows_for_checksum: 1000000
+  skip_databases:
+    - "information_schema"
+    - "mysql"
+    - "performance_schema"
+    - "sys"
+  check_delay_threshold: 5

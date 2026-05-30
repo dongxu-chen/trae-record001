@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+:root {
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a4a transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #2a2a4a;
+  border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #3a3a5a;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a4a transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #2a2a4a;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #3a3a5a;
+}
+
+.diff-highlight-active {
+  background-color: rgba(124, 58, 237, 0.25) !important;
+  border-left: 3px solid #7c3aed !important;
+  transition: background-color 0.3s ease, border-left 0.3s ease;
+}
+
+.diff-highlight-active-marker {
+  background: linear-gradient(90deg, rgba(124, 58, 237, 0.4) 0%, transparent 100%) !important;
+}
+
+.monaco-editor .line-insert {
+  background-color: rgba(74, 222, 128, 0.1) !important;
+}
+
+.monaco-editor .line-delete {
+  background-color: rgba(248, 113, 113, 0.1) !important;
+}
+
+.monaco-editor .line-modified {
+  background-color: rgba(250, 204, 21, 0.08) !important;
+}
+
+.monaco-diff-editor .diffOverviewRuler.insert {
+  background: rgba(74, 222, 128, 0.5) !important;
+}
+
+.monaco-diff-editor .diffOverviewRuler.delete {
+  background: rgba(248, 113, 113, 0.5) !important;
+}
+
+.monaco-diff-editor .diffOverviewRuler.modified {
+  background: rgba(250, 204, 21, 0.5) !important;
+}
+
+textarea::selection {
+  background-color: rgba(124, 58, 237, 0.4);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.comment-glyph-unresolved {
+  background: #7c3aed;
+  border-radius: 50%;
+  width: 8px !important;
+  height: 8px !important;
+  margin-left: 4px;
+  margin-top: 6px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.comment-glyph-unresolved:hover {
+  transform: scale(1.4);
+  background: #8b5cf6;
+}
+
+.comment-glyph-resolved {
+  background: #4ade80;
+  border-radius: 50%;
+  width: 6px !important;
+  height: 6px !important;
+  margin-left: 5px;
+  margin-top: 7px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+}
+
+.comment-glyph-resolved:hover {
+  opacity: 1;
+}
+
+.comment-glyph-hover {
+  background: #8b5cf6;
+  border-radius: 50%;
+  width: 10px !important;
+  height: 10px !important;
+  margin-left: 3px;
+  margin-top: 5px;
+}
+
+.conflict-region {
+  background-color: rgba(245, 158, 11, 0.08) !important;
+  border-left: 3px solid #f59e0b !important;
+}
+
+.conflict-region-resolved {
+  background-color: rgba(74, 222, 128, 0.05) !important;
+  border-left: 3px solid #4ade80 !important;
+}
+
+.conflict-line-marker {
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.3) 0%, transparent 100%) !important;
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
+  50% { box-shadow: 0 0 8px 2px rgba(124, 58, 237, 0.3); }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}

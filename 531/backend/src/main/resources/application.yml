@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: sla-monitor-platform
+  datasource:
+    url: jdbc:h2:mem:sla_monitor
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true
+
+sla:
+  default:
+    availability-target: 99.9
+    latency-target: 500
+    error-rate-target: 1.0
+  sliding-window:
+    size-minutes: 60
+    update-interval-seconds: 10
+  prediction:
+    forecast-points: 24
+    historical-data-hours: 24
+
+logging:
+  level:
+    com.sla.monitor: INFO
+    org.springframework: INFO

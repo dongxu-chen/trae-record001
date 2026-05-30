@@ -1,0 +1,155 @@
+[
+  {
+    "rule_id": "20908385791c",
+    "name": "满减规则 - 满X减Y",
+    "pattern": "满(\\d+)减(\\d+)",
+    "rule_type": "amount_discount",
+    "effect": {
+      "threshold": "\\1",
+      "discount": "\\2"
+    },
+    "platform": "general",
+    "priority": 10,
+    "status": "active",
+    "created_by": "system",
+    "created_at": "2026-05-28T23:49:03.405633",
+    "votes": 100
+  },
+  {
+    "rule_id": "d8cb696433c5",
+    "name": "直降规则 - 直降X元",
+    "pattern": "(?:直降|立减|减)(\\d+)元?",
+    "rule_type": "direct_discount",
+    "effect": {
+      "discount": "\\1"
+    },
+    "platform": "general",
+    "priority": 9,
+    "status": "active",
+    "created_by": "system",
+    "created_at": "2026-05-28T23:49:03.405649",
+    "votes": 100
+  },
+  {
+    "rule_id": "d65a27621531",
+    "name": "折扣规则 - X折",
+    "pattern": "(\\d+(?:\\.\\d+)?)折",
+    "rule_type": "percentage_discount",
+    "effect": {
+      "rate": "\\1"
+    },
+    "platform": "general",
+    "priority": 8,
+    "status": "active",
+    "created_by": "system",
+    "created_at": "2026-05-28T23:49:03.405657",
+    "votes": 100
+  },
+  {
+    "rule_id": "9b1026189999",
+    "name": "补贴规则 - 补贴X元",
+    "pattern": "(?:补贴|立省|省)(\\d+)元?",
+    "rule_type": "direct_discount",
+    "effect": {
+      "discount": "\\1"
+    },
+    "platform": "general",
+    "priority": 7,
+    "status": "active",
+    "created_by": "system",
+    "created_at": "2026-05-28T23:49:03.405662",
+    "votes": 100
+  },
+  {
+    "rule_id": "f08b8fdc5792",
+    "name": "新人专享 - 新人立减X",
+    "pattern": "新人(?:立减|减)(\\d+)",
+    "rule_type": "new_user_discount",
+    "effect": {
+      "discount": "\\1"
+    },
+    "platform": "general",
+    "priority": 6,
+    "status": "active",
+    "created_by": "system",
+    "created_at": "2026-05-28T23:49:03.405666",
+    "votes": 100
+  },
+  {
+    "rule_id": "ac54123cf114",
+    "name": "百亿补贴",
+    "pattern": "百亿补贴",
+    "rule_type": "platform_subsidy",
+    "effect": {
+      "rate": 0.9,
+      "max_discount": 500
+    },
+    "platform": "pinduoduo",
+    "priority": 10,
+    "status": "active",
+    "created_by": "system",
+    "created_at": "2026-05-28T23:49:03.405671",
+    "votes": 100
+  },
+  {
+    "rule_id": "9746298f5ca8",
+    "name": "PLUS会员专享",
+    "pattern": "PLUS会员(?:专享|)?(?:(\\d+(?:\\.\\d+)?)折|减(\\d+))?",
+    "rule_type": "member_discount",
+    "effect": {
+      "rate": "\\1",
+      "discount": "\\2"
+    },
+    "platform": "jd",
+    "priority": 8,
+    "status": "active",
+    "created_by": "system",
+    "created_at": "2026-05-28T23:49:03.405676",
+    "votes": 100
+  },
+  {
+    "rule_id": "5b114a006a87",
+    "name": "天猫品类券",
+    "pattern": "(?:品类|购物)券.*?(\\d+)",
+    "rule_type": "coupon_discount",
+    "effect": {
+      "discount": "\\1"
+    },
+    "platform": "tmall",
+    "priority": 7,
+    "status": "active",
+    "created_by": "system",
+    "created_at": "2026-05-28T23:49:03.405681",
+    "votes": 100
+  },
+  {
+    "rule_id": "01e057b7b86b",
+    "name": "限时秒杀",
+    "pattern": "(?:限时|整点|)秒杀",
+    "rule_type": "flash_sale",
+    "effect": {
+      "rate": 0.85
+    },
+    "platform": "general",
+    "priority": 10,
+    "status": "active",
+    "created_by": "system",
+    "created_at": "2026-05-28T23:49:03.405685",
+    "votes": 100
+  },
+  {
+    "rule_id": "96934be3ba51",
+    "name": "直播间专享",
+    "pattern": "(?:直播|直播间)专享",
+    "rule_type": "live_stream",
+    "effect": {
+      "rate": 0.9
+    },
+    "platform": "general",
+    "priority": 9,
+    "status": "active",
+    "created_by": "system",
+    "created_at": "2026-05-28T23:49:03.405690",
+    "votes": 100
+  }
+]

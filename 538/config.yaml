@@ -1,0 +1,22 @@
+server:
+  port: 8080
+
+neo4j:
+  uri: bolt://localhost:7687
+  username: neo4j
+  password: password
+
+kubernetes:
+  inCluster: false
+  kubeconfig: ~/.kube/config
+
+cilium:
+  hubbleRelay: localhost:4245
+  namespace: kube-system
+  sampleRate: 0.1
+  maxEntries: 10000
+  flushInterval: 30s
+
+policy:
+  defaultDeny: true
+  allowDNS: true
