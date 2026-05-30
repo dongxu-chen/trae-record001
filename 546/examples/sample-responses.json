@@ -1,0 +1,130 @@
+{
+  "description": "示例响应数据，用于演示API响应校验和对比功能",
+  
+  "validUserResponse": {
+    "id": 1,
+    "name": "张三",
+    "email": "zhangsan@example.com",
+    "phone": "13800138000",
+    "age": 25,
+    "status": "active",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-15T10:30:00Z"
+  },
+
+  "invalidUserResponse_missingRequired": {
+    "id": 1,
+    "email": "zhangsan@example.com"
+  },
+
+  "invalidUserResponse_wrongType": {
+    "id": "1",
+    "name": "张三",
+    "email": "zhangsan@example.com",
+    "age": "25",
+    "status": "active"
+  },
+
+  "invalidUserResponse_invalidFormat": {
+    "id": 1,
+    "name": "张三",
+    "email": "invalid-email",
+    "phone": "12345",
+    "age": -5,
+    "status": "unknown",
+    "createdAt": "not-a-date"
+  },
+
+  "devEnvironmentResponse": {
+    "total": 3,
+    "page": 1,
+    "pageSize": 10,
+    "data": [
+      {
+        "id": 1,
+        "name": "张三_dev",
+        "email": "zhangsan@dev.example.com",
+        "age": 25,
+        "status": "active"
+      },
+      {
+        "id": 2,
+        "name": "李四_dev",
+        "email": "lisi@dev.example.com",
+        "age": 30,
+        "status": "active"
+      }
+    ]
+  },
+
+  "prodEnvironmentResponse": {
+    "total": 100,
+    "page": 1,
+    "pageSize": 10,
+    "data": [
+      {
+        "id": 1,
+        "name": "张三",
+        "email": "zhangsan@example.com",
+        "phone": "13800138000",
+        "age": 25,
+        "status": "active"
+      },
+      {
+        "id": 2,
+        "name": "李四",
+        "email": "lisi@example.com",
+        "phone": "13900139000",
+        "age": 30,
+        "status": "inactive"
+      },
+      {
+        "id": 3,
+        "name": "王五",
+        "email": "wangwu@example.com",
+        "phone": "13700137000",
+        "age": 28,
+        "status": "active"
+      }
+    ]
+  },
+
+  "orderResponse_dev": {
+    "id": "ORD-001",
+    "userId": 1,
+    "amount": 299.99,
+    "status": "pending",
+    "items": [
+      {
+        "productId": 101,
+        "productName": "商品A",
+        "quantity": 1,
+        "price": 299.99
+      }
+    ],
+    "createdAt": "2024-01-15T10:30:00Z"
+  },
+
+  "orderResponse_prod": {
+    "id": "ORD-001",
+    "userId": 1,
+    "amount": 299.99,
+    "status": "paid",
+    "items": [
+      {
+        "productId": 101,
+        "productName": "商品A",
+        "quantity": 2,
+        "price": 149.99
+      },
+      {
+        "productId": 102,
+        "productName": "商品B",
+        "quantity": 1,
+        "price": 50.00
+      }
+    ],
+    "createdAt": "2024-01-15T10:30:00Z",
+    "paidAt": "2024-01-15T10:35:00Z"
+  }
+}

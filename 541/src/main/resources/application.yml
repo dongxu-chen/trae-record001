@@ -1,0 +1,114 @@
+server:
+  port: 8080
+
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+
+session-guard:
+  default-business-scenario: STANDARD
+
+  risk-weights:
+    ip-change: 25
+    geo-country-change: 30
+    geo-region-change: 15
+    subnet-change: 15
+    fingerprint-change: 30
+    cookie-anomaly: 20
+    proxy-vpn: 20
+    tor: 35
+    data-center: 15
+    rapid-change: 25
+    concurrent-session: 20
+    user-agent-change: 15
+    time-anomaly: 10
+    ml-anomaly: 30
+
+  business-scenarios:
+    STANDARD:
+      description: 标准业务场景 - 默认级别
+      thresholds:
+        low: 30
+        medium: 60
+        high: 80
+        critical: 95
+      auto-invalidate-on-critical: true
+      require-reauth-on-high: true
+      friendly-message: 您的登录状态存在风险，请重新登录以确保账户安全
+    SENSITIVE:
+      description: 敏感业务场景 - 严格级别（支付、转账等）
+      thresholds:
+        low: 20
+        medium: 40
+        high: 60
+        critical: 80
+      auto-invalidate-on-critical: true
+      require-reauth-on-high: true
+      friendly-message: 为保障您的资金安全，请重新验证身份后再进行支付操作
+    FINANCIAL:
+      description: 金融级业务场景 - 最严格级别（大额交易）
+      thresholds:
+        low: 10
+        medium: 25
+        high: 45
+        critical: 65
+      auto-invalidate-on-critical: true
+      require-reauth-on-high: true
+      friendly-message: 您正在进行敏感操作，为确保资金安全，请完成二次身份验证
+    ADMIN:
+      description: 管理员场景 - 严格级别（后台管理）
+      thresholds:
+        low: 15
+        medium: 35
+        high: 55
+        critical: 75
+      auto-invalidate-on-critical: true
+      require-reauth-on-high: true
+      friendly-message: 检测到异常登录行为，请管理员重新登录以确保系统安全
+    PUBLIC_API:
+      description: 公开API场景 - 宽松级别
+      thresholds:
+        low: 50
+        medium: 75
+        high: 90
+        critical: 100
+      auto-invalidate-on-critical: false
+      require-reauth-on-high: false
+      friendly-message: 请求存在异常，请检查您的访问方式
+
+  session:
+    ttl-minutes: 120
+    max-concurrent-sessions: 5
+  ip:
+    trust-proxy-headers: true
+  fingerprint:
+    similarity-threshold: 0.7
+  ml:
+    isolation-forest-trees: 100
+    anomaly-threshold: 0.6
+    training-sample-size: 256
+  webhook:
+    enabled: true
+    urls:
+      - http://localhost:9090/webhook/session-alert
+    retry-count: 3
+    retry-delay-ms: 1000
+    timeout-ms: 5000
+  active-invalidation:
+    enabled: true
+    notify-user-on-invalidation: true
+
+  user-guidance:
+    reauth-url: "/login?prompt=reauth"
+    support-contact: "请联系客服获取帮助：400-XXX-XXXX"
+    max-reauth-attempts: 3
+    reauth-cooldown-minutes: 5

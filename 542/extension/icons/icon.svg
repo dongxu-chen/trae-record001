@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="24" fill="#1a1d23"/>
+  <circle cx="44" cy="54" r="18" fill="#00d4aa" opacity="0.9"/>
+  <circle cx="84" cy="54" r="18" fill="#ff6b35" opacity="0.9"/>
+  <circle cx="64" cy="84" r="18" fill="#3b82f6" opacity="0.9"/>
+  <circle cx="44" cy="54" r="18" fill="#00d4aa" opacity="0.5"/>
+  <circle cx="84" cy="54" r="18" fill="#ff6b35" opacity="0.5"/>
+  <text x="64" y="36" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="14" fill="#e4e4e7">A11y</text>
+</svg>

@@ -1,0 +1,93 @@
+rabbitmq:
+  url: "http://localhost:15672"
+  username: "guest"
+  password: "guest"
+  timeout: "10s"
+  vhost: "/"
+
+balancer:
+  check_interval: "30s"
+  rebalance_threshold: 0.2
+  max_migrations_per_cycle: 5
+  min_messages_per_queue: 100
+  max_queue_size: 1000000
+  node_failure_timeout: "60s"
+  dry_run: false
+  exclude_queues:
+    - "amq.*"
+  exclude_vhosts: []
+  migration_cooldown: "5m"
+  low_traffic_threshold: 1.0
+  migration_window_start: ""
+  migration_window_end: ""
+
+prediction:
+  enabled: true
+  history_window: "1h"
+  prediction_window: "30m"
+  data_points: 60
+  collection_interval: "1m"
+  prediction_threshold: 0.8
+  burst_detection_window: 10
+  burst_threshold: 3.0
+
+tenant:
+  enabled: true
+  tenants:
+    - name: "payment"
+      vhost: "payment"
+      queues: ["*"]
+      exclusive_nodes: ["rabbit@node-payment-1", "rabbit@node-payment-2"]
+      priority: 10
+      max_load_score: 3.0
+    - name: "notification"
+      vhost: "notification"
+      queues: ["email-*", "sms-*", "push-*"]
+      exclusive_nodes: ["rabbit@node-notify-1"]
+      priority: 5
+      max_load_score: 2.5
+    - name: "default"
+      vhost: "/"
+      queues: ["*"]
+      exclusive_nodes: []
+      priority: 1
+      max_load_score: 5.0
+  dedicated_queues:
+    - queue_name: "order-critical"
+      vhost: "payment"
+      nodes: ["rabbit@node-payment-1"]
+      priority: 10
+      min_nodes: 1
+    - queue_name: "realtime-feed"
+      vhost: "/"
+      nodes: ["rabbit@node-feed-1", "rabbit@node-feed-2"]
+      priority: 8
+      min_nodes: 2
+
+autoscaler:
+  enabled: true
+  min_nodes: 2
+  max_nodes: 10
+  scale_up_threshold: 2.0
+  scale_down_threshold: 0.3
+  scale_up_step: 1
+  scale_up_cooldown: "5m"
+  scale_down_cooldown: "10m"
+  evaluation_interval: "1m"
+  provider: "mock"
+
+drill:
+  enabled: true
+  interval: "5m"
+  auto_run: true
+  max_risk_level: "high"
+  block_on_risk: true
+
+prometheus:
+  enabled: true
+  address: ":9090"
+  path: "/metrics"
+
+log:
+  level: "info"
+  format: "json"

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ColorA11y</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">🎨</span>
+        <span class="logo-text">Color<span class="accent">A11y</span></span>
+      </div>
+      <span class="version">v1.0</span>
+    </header>
+
+    <div class="toggle-section">
+      <label class="toggle-label">
+        <span>启用色盲模拟</span>
+        <div class="toggle-switch" id="mainToggle">
+          <div class="toggle-knob"></div>
+        </div>
+      </label>
+    </div>
+
+    <div class="category" id="categorySection" style="display:none;">
+      <h3 class="category-title">红绿色盲</h3>
+      <div class="type-buttons">
+        <button class="type-btn" data-type="protanopia">红色盲</button>
+        <button class="type-btn" data-type="protanomaly">红色弱</button>
+        <button class="type-btn" data-type="deuteranopia">绿色盲</button>
+        <button class="type-btn" data-type="deuteranomaly">绿色弱</button>
+      </div>
+
+      <h3 class="category-title">蓝黄色盲</h3>
+      <div class="type-buttons">
+        <button class="type-btn" data-type="tritanopia">蓝色盲</button>
+        <button class="type-btn" data-type="tritanomaly">蓝色弱</button>
+      </div>
+
+      <h3 class="category-title">全色盲</h3>
+      <div class="type-buttons">
+        <button class="type-btn" data-type="achromatopsia">全色盲</button>
+        <button class="type-btn" data-type="achromatomaly">全色弱</button>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" class="footer-link">
+        WCAG 2.1 标准 ↗
+      </a>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
