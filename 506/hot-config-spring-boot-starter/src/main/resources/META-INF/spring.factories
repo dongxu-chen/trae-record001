@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.hotconfig.spring.HotConfigAutoConfiguration
+
+org.springframework.boot.autoconfigure.EnableConfigurationProperties=\
+com.hotconfig.spring.HotConfigProperties

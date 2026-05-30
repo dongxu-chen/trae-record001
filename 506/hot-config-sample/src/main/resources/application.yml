@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: hot-config-sample
+
+server:
+  port: 8080
+
+hotconfig:
+  enabled: true
+  enable-file-watch: true
+  enable-apollo: false
+  file-sources:
+    - config/application.properties
+  apollo-namespaces:
+    - application
+
+app:
+  name: hot-config-demo
+  version: 1.0.0
+  env: dev
+  feature:
+    toggle: false
+  connection:
+    timeout: 3000
+  max:
+    connections: 100
+  allowed:
+    ips: 127.0.0.1,localhost
+  cache:
+    ttl: 3600
+  threshold: 0.85
+
+custom:
+  message: Hello, Hot Config!
+
+generic:
+  string:
+    list: a,b,c
+  integer:
+    list: 1,2,3
+  long:
+    set: 100,200,300
+  string-int:
+    map: key1:1,key2:2,key3:3
+  int-string:
+    map: 1:one,2:two,3:three
+  optional:
+    value: default
+    number: 42
+  double:
+    list: 1.1,2.2,3.3
+  boolean:
+    list: true,false,true
+
+logging:
+  level:
+    com.hotconfig: DEBUG
+    com.hotconfig.sample: DEBUG

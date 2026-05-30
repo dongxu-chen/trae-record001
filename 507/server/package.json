@@ -1,0 +1,14 @@
+{
+  "name": "smart-table-filler-server",
+  "version": "1.0.0",
+  "description": "表格智能填充后端服务",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

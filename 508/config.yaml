@@ -1,0 +1,82 @@
+elasticsearch:
+  hosts:
+    - "http://localhost:9200"
+  username: ""
+  password: ""
+  timeout: 30
+  verify_certs: false
+
+monitor:
+  threshold_ms: 3000
+  interval_seconds: 60
+  index_patterns:
+    - "*"
+  slow_log_index: ".slowlog-*"
+  enable_profiling: true
+
+features:
+  trend_prediction: true
+  rate_limiting: true
+  cache_optimization: true
+
+trend_prediction:
+  history_window_minutes: 60
+  prediction_window_minutes: 15
+  aggregation_interval_seconds: 60
+  max_history_points: 120
+  alert_levels:
+    watch_threshold_pct: 10
+    warning_threshold_pct: 30
+    critical_threshold_pct: 50
+
+rate_limiting:
+  auto_apply: false
+  default_rule: "DEFAULT"
+  max_requests_per_second: 100.0
+  max_slow_ratio: 0.3
+  violation_threshold: 3
+  block_after_violations: 5
+  block_duration_seconds: 300
+  window_seconds: 60
+  dry_run: true
+
+cache:
+  min_queries: 5
+  min_savings_ms: 100.0
+  enable_request_cache_recommendation: true
+  enable_field_data_optimization: true
+  enable_application_cache_recommendation: true
+
+rules:
+  deep_pagination_threshold: 5000
+  complex_bool_threshold: 20
+  high_cardinality_threshold: 100000
+  max_shard_count: 50
+
+alerts:
+  min_severity: "medium"
+  channels:
+    console:
+      enabled: true
+    file:
+      enabled: true
+      path: "slow_query_alerts.jsonl"
+    email:
+      enabled: false
+      smtp_host: "smtp.example.com"
+      smtp_port: 587
+      username: ""
+      password: ""
+      from: "es-alert@example.com"
+      to:
+        - "admin@example.com"
+      use_tls: true
+    webhook:
+      enabled: false
+      url: ""
+      headers:
+        Content-Type: "application/json"
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s [%(levelname)s] %(name)s: %(message)s"

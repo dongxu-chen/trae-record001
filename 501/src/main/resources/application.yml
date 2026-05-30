@@ -1,0 +1,98 @@
+server:
+  port: 8080
+
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      database: 0
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+
+replay:
+  detection:
+    enabled: true
+    window-size-seconds: 60
+    max-replay-count: 5
+    bloom-filter:
+      expected-insertions: 1000000
+      false-probability: 0.01
+      confirmation-enabled: true
+    window:
+      dual-buffer-enabled: true
+      overlap-percent: 50
+    webhook:
+      enabled: true
+      url: http://localhost:9000/alert
+      secret: replay-detection-secret-key
+      connect-timeout: 3000
+      read-timeout: 5000
+      template:
+        format: JSON
+        body-template:
+        json-template: |
+          {
+            "alert_id": "${alertId}",
+            "severity": "${level}",
+            "fingerprint": "${fingerprintHash}",
+            "source_ip": "${clientIp}",
+            "target_path": "${path}",
+            "duplicate_count": ${replayCount},
+            "window_seconds": ${windowSizeSeconds},
+            "timestamp": "${detectedAtIso}",
+            "description": "${message}"
+          }
+        xml-template: |
+          <?xml version="1.0" encoding="UTF-8"?>
+          <alert>
+            <id>${alertId}</id>
+            <level>${level}</level>
+            <fingerprint>${fingerprintHash}</fingerprint>
+            <sourceIp>${clientIp}</sourceIp>
+            <path>${path}</path>
+            <replayCount>${replayCount}</replayCount>
+            <timestamp>${detectedAtIso}</timestamp>
+            <message>${message}</message>
+          </alert>
+        text-template: |
+          [REPLAY ALERT] ${level}
+          ID: ${alertId}
+          IP: ${clientIp} -> ${path}
+          Duplicates: ${replayCount} in ${windowSizeSeconds}s
+          Time: ${detectedAtIso}
+          ${message}
+        header-templates:
+          X-Correlation-Id: "${alertId}"
+          X-Event-Type: "replay-attack-${level}"
+    distributed:
+      lock-timeout-seconds: 5
+      key-prefix: "replay:lock:"
+    fingerprint:
+      include-path: true
+      include-params: true
+      include-user-agent: true
+      include-timestamp: true
+      timestamp-tolerance-seconds: 300
+    adaptive:
+      enabled: true
+      baseline-qps: 100.0
+      high-load-ratio: 2.0
+      high-load-sensitivity: 1.5
+      low-load-sensitivity: 0.7
+      min-replay-count: 2
+      max-replay-count: 20
+      qps-window-seconds: 60
+      refresh-interval-ms: 30000
+    tracing:
+      enabled: true
+      top-attackers-limit: 10
+      trace-ttl-seconds: 86400
+    trend:
+      enabled: true
+      retention-days: 7
+      peak-hours-top-n: 5
