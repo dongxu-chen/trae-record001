@@ -1,0 +1,173 @@
+branch_naming:
+  enabled: true
+  severity: error
+  patterns:
+    - name: feature
+      pattern: ^feature/[A-Z]+-\d+-.+$
+      description: "Feature branches must follow: feature/TICKET-123-description"
+    - name: bugfix
+      pattern: ^bugfix/[A-Z]+-\d+-.+$
+      description: "Bugfix branches must follow: bugfix/TICKET-123-description"
+    - name: hotfix
+      pattern: ^hotfix/.+$
+      description: "Hotfix branches must follow: hotfix/description"
+    - name: release
+      pattern: ^release/v\d+\.\d+\.\d+$
+      description: "Release branches must follow: release/v1.0.0"
+    - name: develop
+      pattern: ^develop$
+      description: Main development branch
+    - name: main
+      pattern: ^main$|^master$
+      description: Main production branch
+  allow_custom: false
+
+merge_direction:
+  enabled: true
+  severity: error
+  allowed_merges:
+    - from: feature/*
+      to: develop
+    - from: bugfix/*
+      to: develop
+    - from: hotfix/*
+      to: main
+    - from: hotfix/*
+      to: develop
+    - from: release/*
+      to: main
+    - from: release/*
+      to: develop
+    - from: develop
+      to: release/*
+  blocked_merges:
+    - from: main
+      to: feature/*
+    - from: main
+      to: bugfix/*
+
+pr_size:
+  enabled: true
+  severity: warning
+  max_files: 20
+  max_additions: 500
+  max_deletions: 500
+  warn_files: 10
+  warn_additions: 200
+  warn_deletions: 200
+  modules:
+    - name: core
+      path_pattern: ^(src/core/|backend/core/|lib/core/)
+      max_files: 5
+      max_additions: 100
+      max_deletions: 50
+      warn_files: 3
+      warn_additions: 50
+      warn_deletions: 30
+      severity: error
+    - name: api
+      path_pattern: ^(src/api/|backend/api/|routes/)
+      max_files: 10
+      max_additions: 300
+      max_deletions: 200
+      warn_files: 5
+      warn_additions: 150
+      warn_deletions: 100
+      severity: warning
+    - name: auth
+      path_pattern: ^(src/auth/|backend/auth/|middleware/auth)
+      max_files: 3
+      max_additions: 80
+      max_deletions: 30
+      warn_files: 2
+      warn_additions: 40
+      warn_deletions: 15
+      severity: error
+    - name: config
+      path_pattern: ^(config/|\.env|settings/)
+      max_files: 3
+      max_additions: 50
+      max_deletions: 20
+      warn_files: 2
+      warn_additions: 30
+      warn_deletions: 10
+      severity: error
+
+commit_frequency:
+  enabled: true
+  severity: warning
+  max_commits_per_day: 20
+  min_commits_per_week: 1
+  check_authors: true
+
+auto_fix:
+  enabled: true
+  rules:
+    branch_rename:
+      enabled: true
+      dry_run: true
+    commit_squash:
+      enabled: true
+      max_commits: 10
+    conflict_detection:
+      enabled: true
+      severity: error
+      auto_resolve:
+        enabled: false
+        strategies:
+          - ours
+          - theirs
+      detect_rename: true
+      notify_on_conflict: true
+
+ci:
+  fail_on_error: true
+  warn_threshold: 3
+  github_output: true
+
+branch_age:
+  enabled: true
+  severity: warning
+  warning_days: 30
+  critical_days: 60
+  stale_days: 90
+  exclude_branches:
+    - main
+    - master
+    - develop
+
+commit_quality:
+  enabled: true
+  severity: warning
+  min_length: 10
+  max_length: 100
+  required_prefixes:
+    - feat:
+    - fix:
+    - docs:
+    - style:
+    - refactor:
+    - test:
+    - chore:
+    - perf:
+    - build:
+    - ci:
+  forbidden_words:
+    - wip
+    - fix
+    - update
+    - temp
+    - tmp
+    - debug
+    - oops
+    - maybe
+  check_imperative: true
+
+team_report:
+  enabled: true
+  exclude_branches:
+    - main
+    - master
+    - develop
+  compliance_threshold: 70
+  excellent_threshold: 90

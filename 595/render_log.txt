@@ -1,0 +1,7 @@
+Render time: 646.06s
+Resolution: 320x240
+Base samples: 8
+Adaptive max samples: 32
+Adaptive threshold: 0.15
+Edge pixels: 63882
+Max depth: 5

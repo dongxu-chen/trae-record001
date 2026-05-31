@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:h2:file:./depguard;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: false
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
+
+spring.cache:
+  type: caffeine
+  caffeine:
+    spec: maximumSize=500,expireAfterWrite=30m
+
+depguard:
+  github:
+    token: ${GITHUB_TOKEN:}
+
+logging:
+  level:
+    com.depguard: INFO
+    org.hibernate.SQL: WARN

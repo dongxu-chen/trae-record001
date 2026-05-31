@@ -1,0 +1,19 @@
+{
+  "name": "wordcloud-generator",
+  "version": "1.0.0",
+  "description": "Web端词云生成工具",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run biobert\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "biobert": "cd server && python biobert_service.py",
+    "client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "keywords": ["wordcloud", "react", "nodejs"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

@@ -1,0 +1,61 @@
+-1
+-100
+-999999
+0
+0.01
+0.0001
+999999999999999
+1e30
+9999999999999999999999999999
+-9999999999999999999999999999
+null
+undefined
+NaN
+Infinity
+-Infinity
+[]
+{}
+true
+false
+<script>alert(1)</script>
+../../etc/passwd
+..\..\..\windows\system32
+/../../../../etc/passwd
+..%2F..%2F..%2Fetc%2Fpasswd
+%2e%2e%2f%2e%2e%2fetc%2fpasswd
+javascript:alert(1)
+data:text/html,<script>alert(1)</script>
+1; DROP TABLE users--
+1 OR 1=1--
+-1 OR 1=1
+0 OR 1=1
+' OR '1'='1
+" OR "1"="1
+1; SELECT * FROM users--
+1; INSERT INTO users VALUES ('hacker', 'pass')--
+1; UPDATE users SET password='hacked' WHERE id=1--
+1; DELETE FROM orders WHERE 1=1--
+1; EXEC xp_cmdshell('dir')--
+1' UNION SELECT username, password FROM users--
+1' UNION SELECT null,table_name FROM information_schema.tables--
+1' AND 1=2 UNION SELECT 1,version(),3--
+{"price": -100}
+{"quantity": -1}
+{"amount": -999999}
+{"total": 0}
+{"status": "approved"}
+{"status": "paid"}
+{"role": "admin"}
+{"is_admin": true}
+{"user_id": 1}
+{"user_id": 0}
+{"user_id": -1}
+{"coupon_code": "HACK2024"}
+{"discount": 100}
+{"discount": 999}
+{"price": 0.0000001}
+{"quantity": 999999999}
+{"refund_amount": 999999}
+{"transfer_amount": -99999}
+{"from_account": "123456"}
+{"to_account": "HACKER666"}

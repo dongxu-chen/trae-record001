@@ -1,0 +1,5816 @@
+[
+  {
+    "name": "肯德基",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "肯德基",
+    "keywords": [
+      "肯德基"
+    ]
+  },
+  {
+    "name": "肯德基(北京店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "肯德基",
+    "keywords": [
+      "肯德基",
+      "北京"
+    ]
+  },
+  {
+    "name": "肯德基(上海店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "肯德基",
+    "keywords": [
+      "肯德基",
+      "上海"
+    ]
+  },
+  {
+    "name": "肯德基(广州店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "肯德基",
+    "keywords": [
+      "肯德基",
+      "广州"
+    ]
+  },
+  {
+    "name": "麦当劳",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "麦当劳",
+    "keywords": [
+      "麦当劳"
+    ]
+  },
+  {
+    "name": "麦当劳(北京店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "麦当劳",
+    "keywords": [
+      "麦当劳",
+      "北京"
+    ]
+  },
+  {
+    "name": "麦当劳(上海店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "麦当劳",
+    "keywords": [
+      "麦当劳",
+      "上海"
+    ]
+  },
+  {
+    "name": "麦当劳(广州店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "麦当劳",
+    "keywords": [
+      "麦当劳",
+      "广州"
+    ]
+  },
+  {
+    "name": "必胜客",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "必胜客",
+    "keywords": [
+      "必胜客"
+    ]
+  },
+  {
+    "name": "必胜客(北京店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "必胜客",
+    "keywords": [
+      "必胜客",
+      "北京"
+    ]
+  },
+  {
+    "name": "必胜客(上海店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "必胜客",
+    "keywords": [
+      "必胜客",
+      "上海"
+    ]
+  },
+  {
+    "name": "必胜客(广州店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "必胜客",
+    "keywords": [
+      "必胜客",
+      "广州"
+    ]
+  },
+  {
+    "name": "星巴克",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "星巴克",
+    "keywords": [
+      "星巴克"
+    ]
+  },
+  {
+    "name": "星巴克(北京店)",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "星巴克",
+    "keywords": [
+      "星巴克",
+      "北京"
+    ]
+  },
+  {
+    "name": "星巴克(上海店)",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "星巴克",
+    "keywords": [
+      "星巴克",
+      "上海"
+    ]
+  },
+  {
+    "name": "星巴克(广州店)",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "星巴克",
+    "keywords": [
+      "星巴克",
+      "广州"
+    ]
+  },
+  {
+    "name": "海底捞",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "海底捞",
+    "keywords": [
+      "海底捞"
+    ]
+  },
+  {
+    "name": "海底捞(北京店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "海底捞",
+    "keywords": [
+      "海底捞",
+      "北京"
+    ]
+  },
+  {
+    "name": "海底捞(上海店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "海底捞",
+    "keywords": [
+      "海底捞",
+      "上海"
+    ]
+  },
+  {
+    "name": "海底捞(广州店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "海底捞",
+    "keywords": [
+      "海底捞",
+      "广州"
+    ]
+  },
+  {
+    "name": "呷哺呷哺",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "呷哺呷哺",
+    "keywords": [
+      "呷哺呷哺"
+    ]
+  },
+  {
+    "name": "呷哺呷哺(北京店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "呷哺呷哺",
+    "keywords": [
+      "呷哺呷哺",
+      "北京"
+    ]
+  },
+  {
+    "name": "呷哺呷哺(上海店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "呷哺呷哺",
+    "keywords": [
+      "呷哺呷哺",
+      "上海"
+    ]
+  },
+  {
+    "name": "呷哺呷哺(广州店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "呷哺呷哺",
+    "keywords": [
+      "呷哺呷哺",
+      "广州"
+    ]
+  },
+  {
+    "name": "全聚德",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "全聚德",
+    "keywords": [
+      "全聚德"
+    ]
+  },
+  {
+    "name": "全聚德(北京店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "全聚德",
+    "keywords": [
+      "全聚德",
+      "北京"
+    ]
+  },
+  {
+    "name": "全聚德(上海店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "全聚德",
+    "keywords": [
+      "全聚德",
+      "上海"
+    ]
+  },
+  {
+    "name": "全聚德(广州店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "全聚德",
+    "keywords": [
+      "全聚德",
+      "广州"
+    ]
+  },
+  {
+    "name": "外婆家",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "外婆家",
+    "keywords": [
+      "外婆家"
+    ]
+  },
+  {
+    "name": "外婆家(北京店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "外婆家",
+    "keywords": [
+      "外婆家",
+      "北京"
+    ]
+  },
+  {
+    "name": "外婆家(上海店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "外婆家",
+    "keywords": [
+      "外婆家",
+      "上海"
+    ]
+  },
+  {
+    "name": "外婆家(广州店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "外婆家",
+    "keywords": [
+      "外婆家",
+      "广州"
+    ]
+  },
+  {
+    "name": "西贝",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "西贝",
+    "keywords": [
+      "西贝"
+    ]
+  },
+  {
+    "name": "西贝(北京店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "西贝",
+    "keywords": [
+      "西贝",
+      "北京"
+    ]
+  },
+  {
+    "name": "西贝(上海店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "西贝",
+    "keywords": [
+      "西贝",
+      "上海"
+    ]
+  },
+  {
+    "name": "西贝(广州店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "西贝",
+    "keywords": [
+      "西贝",
+      "广州"
+    ]
+  },
+  {
+    "name": "真功夫",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "真功夫",
+    "keywords": [
+      "真功夫"
+    ]
+  },
+  {
+    "name": "真功夫(北京店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "真功夫",
+    "keywords": [
+      "真功夫",
+      "北京"
+    ]
+  },
+  {
+    "name": "真功夫(上海店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "真功夫",
+    "keywords": [
+      "真功夫",
+      "上海"
+    ]
+  },
+  {
+    "name": "真功夫(广州店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "真功夫",
+    "keywords": [
+      "真功夫",
+      "广州"
+    ]
+  },
+  {
+    "name": "德克士",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "德克士",
+    "keywords": [
+      "德克士"
+    ]
+  },
+  {
+    "name": "德克士(北京店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "德克士",
+    "keywords": [
+      "德克士",
+      "北京"
+    ]
+  },
+  {
+    "name": "德克士(上海店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "德克士",
+    "keywords": [
+      "德克士",
+      "上海"
+    ]
+  },
+  {
+    "name": "德克士(广州店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "德克士",
+    "keywords": [
+      "德克士",
+      "广州"
+    ]
+  },
+  {
+    "name": "汉堡王",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "汉堡王",
+    "keywords": [
+      "汉堡王"
+    ]
+  },
+  {
+    "name": "汉堡王(北京店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "汉堡王",
+    "keywords": [
+      "汉堡王",
+      "北京"
+    ]
+  },
+  {
+    "name": "汉堡王(上海店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "汉堡王",
+    "keywords": [
+      "汉堡王",
+      "上海"
+    ]
+  },
+  {
+    "name": "汉堡王(广州店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "汉堡王",
+    "keywords": [
+      "汉堡王",
+      "广州"
+    ]
+  },
+  {
+    "name": "喜茶",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "喜茶",
+    "keywords": [
+      "喜茶"
+    ]
+  },
+  {
+    "name": "喜茶(北京店)",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "喜茶",
+    "keywords": [
+      "喜茶",
+      "北京"
+    ]
+  },
+  {
+    "name": "喜茶(上海店)",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "喜茶",
+    "keywords": [
+      "喜茶",
+      "上海"
+    ]
+  },
+  {
+    "name": "喜茶(广州店)",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "喜茶",
+    "keywords": [
+      "喜茶",
+      "广州"
+    ]
+  },
+  {
+    "name": "奈雪",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "奈雪",
+    "keywords": [
+      "奈雪"
+    ]
+  },
+  {
+    "name": "奈雪(北京店)",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "奈雪",
+    "keywords": [
+      "奈雪",
+      "北京"
+    ]
+  },
+  {
+    "name": "奈雪(上海店)",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "奈雪",
+    "keywords": [
+      "奈雪",
+      "上海"
+    ]
+  },
+  {
+    "name": "奈雪(广州店)",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "奈雪",
+    "keywords": [
+      "奈雪",
+      "广州"
+    ]
+  },
+  {
+    "name": "瑞幸咖啡",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "瑞幸咖啡",
+    "keywords": [
+      "瑞幸咖啡"
+    ]
+  },
+  {
+    "name": "瑞幸咖啡(北京店)",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "瑞幸咖啡",
+    "keywords": [
+      "瑞幸咖啡",
+      "北京"
+    ]
+  },
+  {
+    "name": "瑞幸咖啡(上海店)",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "瑞幸咖啡",
+    "keywords": [
+      "瑞幸咖啡",
+      "上海"
+    ]
+  },
+  {
+    "name": "瑞幸咖啡(广州店)",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "瑞幸咖啡",
+    "keywords": [
+      "瑞幸咖啡",
+      "广州"
+    ]
+  },
+  {
+    "name": "COSTA",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "COSTA",
+    "keywords": [
+      "COSTA"
+    ]
+  },
+  {
+    "name": "COSTA(北京店)",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "COSTA",
+    "keywords": [
+      "COSTA",
+      "北京"
+    ]
+  },
+  {
+    "name": "COSTA(上海店)",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "COSTA",
+    "keywords": [
+      "COSTA",
+      "上海"
+    ]
+  },
+  {
+    "name": "COSTA(广州店)",
+    "category": "餐饮",
+    "sub_category": "咖啡茶饮",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "COSTA",
+    "keywords": [
+      "COSTA",
+      "广州"
+    ]
+  },
+  {
+    "name": "眉州东坡",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "眉州东坡",
+    "keywords": [
+      "眉州东坡"
+    ]
+  },
+  {
+    "name": "眉州东坡(北京店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "眉州东坡",
+    "keywords": [
+      "眉州东坡",
+      "北京"
+    ]
+  },
+  {
+    "name": "眉州东坡(上海店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "眉州东坡",
+    "keywords": [
+      "眉州东坡",
+      "上海"
+    ]
+  },
+  {
+    "name": "眉州东坡(广州店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "眉州东坡",
+    "keywords": [
+      "眉州东坡",
+      "广州"
+    ]
+  },
+  {
+    "name": "小肥羊",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "小肥羊",
+    "keywords": [
+      "小肥羊"
+    ]
+  },
+  {
+    "name": "小肥羊(北京店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "小肥羊",
+    "keywords": [
+      "小肥羊",
+      "北京"
+    ]
+  },
+  {
+    "name": "小肥羊(上海店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "小肥羊",
+    "keywords": [
+      "小肥羊",
+      "上海"
+    ]
+  },
+  {
+    "name": "小肥羊(广州店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "小肥羊",
+    "keywords": [
+      "小肥羊",
+      "广州"
+    ]
+  },
+  {
+    "name": "大龙燚",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "大龙燚",
+    "keywords": [
+      "大龙燚"
+    ]
+  },
+  {
+    "name": "大龙燚(北京店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "大龙燚",
+    "keywords": [
+      "大龙燚",
+      "北京"
+    ]
+  },
+  {
+    "name": "大龙燚(上海店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "大龙燚",
+    "keywords": [
+      "大龙燚",
+      "上海"
+    ]
+  },
+  {
+    "name": "大龙燚(广州店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "大龙燚",
+    "keywords": [
+      "大龙燚",
+      "广州"
+    ]
+  },
+  {
+    "name": "小龙坎",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "小龙坎",
+    "keywords": [
+      "小龙坎"
+    ]
+  },
+  {
+    "name": "小龙坎(北京店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "小龙坎",
+    "keywords": [
+      "小龙坎",
+      "北京"
+    ]
+  },
+  {
+    "name": "小龙坎(上海店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "小龙坎",
+    "keywords": [
+      "小龙坎",
+      "上海"
+    ]
+  },
+  {
+    "name": "小龙坎(广州店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "小龙坎",
+    "keywords": [
+      "小龙坎",
+      "广州"
+    ]
+  },
+  {
+    "name": "杨国福",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "杨国福",
+    "keywords": [
+      "杨国福"
+    ]
+  },
+  {
+    "name": "杨国福(北京店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "杨国福",
+    "keywords": [
+      "杨国福",
+      "北京"
+    ]
+  },
+  {
+    "name": "杨国福(上海店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "杨国福",
+    "keywords": [
+      "杨国福",
+      "上海"
+    ]
+  },
+  {
+    "name": "杨国福(广州店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "杨国福",
+    "keywords": [
+      "杨国福",
+      "广州"
+    ]
+  },
+  {
+    "name": "张亮麻辣烫",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "张亮麻辣烫",
+    "keywords": [
+      "张亮麻辣烫"
+    ]
+  },
+  {
+    "name": "张亮麻辣烫(北京店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "张亮麻辣烫",
+    "keywords": [
+      "张亮麻辣烫",
+      "北京"
+    ]
+  },
+  {
+    "name": "张亮麻辣烫(上海店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "张亮麻辣烫",
+    "keywords": [
+      "张亮麻辣烫",
+      "上海"
+    ]
+  },
+  {
+    "name": "张亮麻辣烫(广州店)",
+    "category": "餐饮",
+    "sub_category": "正餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "张亮麻辣烫",
+    "keywords": [
+      "张亮麻辣烫",
+      "广州"
+    ]
+  },
+  {
+    "name": "和合谷",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "和合谷",
+    "keywords": [
+      "和合谷"
+    ]
+  },
+  {
+    "name": "和合谷(北京店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "和合谷",
+    "keywords": [
+      "和合谷",
+      "北京"
+    ]
+  },
+  {
+    "name": "和合谷(上海店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "和合谷",
+    "keywords": [
+      "和合谷",
+      "上海"
+    ]
+  },
+  {
+    "name": "和合谷(广州店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "和合谷",
+    "keywords": [
+      "和合谷",
+      "广州"
+    ]
+  },
+  {
+    "name": "永和大王",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "永和大王",
+    "keywords": [
+      "永和大王"
+    ]
+  },
+  {
+    "name": "永和大王(北京店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "永和大王",
+    "keywords": [
+      "永和大王",
+      "北京"
+    ]
+  },
+  {
+    "name": "永和大王(上海店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "永和大王",
+    "keywords": [
+      "永和大王",
+      "上海"
+    ]
+  },
+  {
+    "name": "永和大王(广州店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "永和大王",
+    "keywords": [
+      "永和大王",
+      "广州"
+    ]
+  },
+  {
+    "name": "庆丰包子",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "庆丰包子",
+    "keywords": [
+      "庆丰包子"
+    ]
+  },
+  {
+    "name": "庆丰包子(北京店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "庆丰包子",
+    "keywords": [
+      "庆丰包子",
+      "北京"
+    ]
+  },
+  {
+    "name": "庆丰包子(上海店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "庆丰包子",
+    "keywords": [
+      "庆丰包子",
+      "上海"
+    ]
+  },
+  {
+    "name": "庆丰包子(广州店)",
+    "category": "餐饮",
+    "sub_category": "快餐",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "庆丰包子",
+    "keywords": [
+      "庆丰包子",
+      "广州"
+    ]
+  },
+  {
+    "name": "滴滴出行",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "滴滴",
+    "keywords": [
+      "滴滴出行"
+    ]
+  },
+  {
+    "name": "滴滴出行(北京店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "滴滴",
+    "keywords": [
+      "滴滴出行",
+      "北京"
+    ]
+  },
+  {
+    "name": "滴滴出行(上海店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "滴滴",
+    "keywords": [
+      "滴滴出行",
+      "上海"
+    ]
+  },
+  {
+    "name": "滴滴出行(广州店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "滴滴",
+    "keywords": [
+      "滴滴出行",
+      "广州"
+    ]
+  },
+  {
+    "name": "滴滴快车",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "滴滴",
+    "keywords": [
+      "滴滴快车"
+    ]
+  },
+  {
+    "name": "滴滴快车(北京店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "滴滴",
+    "keywords": [
+      "滴滴快车",
+      "北京"
+    ]
+  },
+  {
+    "name": "滴滴快车(上海店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "滴滴",
+    "keywords": [
+      "滴滴快车",
+      "上海"
+    ]
+  },
+  {
+    "name": "滴滴快车(广州店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "滴滴",
+    "keywords": [
+      "滴滴快车",
+      "广州"
+    ]
+  },
+  {
+    "name": "滴滴专车",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "滴滴",
+    "keywords": [
+      "滴滴专车"
+    ]
+  },
+  {
+    "name": "滴滴专车(北京店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "滴滴",
+    "keywords": [
+      "滴滴专车",
+      "北京"
+    ]
+  },
+  {
+    "name": "滴滴专车(上海店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "滴滴",
+    "keywords": [
+      "滴滴专车",
+      "上海"
+    ]
+  },
+  {
+    "name": "滴滴专车(广州店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "滴滴",
+    "keywords": [
+      "滴滴专车",
+      "广州"
+    ]
+  },
+  {
+    "name": "首汽约车",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "首汽约车",
+    "keywords": [
+      "首汽约车"
+    ]
+  },
+  {
+    "name": "首汽约车(北京店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "首汽约车",
+    "keywords": [
+      "首汽约车",
+      "北京"
+    ]
+  },
+  {
+    "name": "首汽约车(上海店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "首汽约车",
+    "keywords": [
+      "首汽约车",
+      "上海"
+    ]
+  },
+  {
+    "name": "首汽约车(广州店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "首汽约车",
+    "keywords": [
+      "首汽约车",
+      "广州"
+    ]
+  },
+  {
+    "name": "神州专车",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "神州专车",
+    "keywords": [
+      "神州专车"
+    ]
+  },
+  {
+    "name": "神州专车(北京店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "神州专车",
+    "keywords": [
+      "神州专车",
+      "北京"
+    ]
+  },
+  {
+    "name": "神州专车(上海店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "神州专车",
+    "keywords": [
+      "神州专车",
+      "上海"
+    ]
+  },
+  {
+    "name": "神州专车(广州店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "神州专车",
+    "keywords": [
+      "神州专车",
+      "广州"
+    ]
+  },
+  {
+    "name": "曹操出行",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "曹操出行",
+    "keywords": [
+      "曹操出行"
+    ]
+  },
+  {
+    "name": "曹操出行(北京店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "曹操出行",
+    "keywords": [
+      "曹操出行",
+      "北京"
+    ]
+  },
+  {
+    "name": "曹操出行(上海店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "曹操出行",
+    "keywords": [
+      "曹操出行",
+      "上海"
+    ]
+  },
+  {
+    "name": "曹操出行(广州店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "曹操出行",
+    "keywords": [
+      "曹操出行",
+      "广州"
+    ]
+  },
+  {
+    "name": "T3出行",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "T3出行",
+    "keywords": [
+      "T3出行"
+    ]
+  },
+  {
+    "name": "T3出行(北京店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "T3出行",
+    "keywords": [
+      "T3出行",
+      "北京"
+    ]
+  },
+  {
+    "name": "T3出行(上海店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "T3出行",
+    "keywords": [
+      "T3出行",
+      "上海"
+    ]
+  },
+  {
+    "name": "T3出行(广州店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "T3出行",
+    "keywords": [
+      "T3出行",
+      "广州"
+    ]
+  },
+  {
+    "name": "高德打车",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "高德",
+    "keywords": [
+      "高德打车"
+    ]
+  },
+  {
+    "name": "高德打车(北京店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "高德",
+    "keywords": [
+      "高德打车",
+      "北京"
+    ]
+  },
+  {
+    "name": "高德打车(上海店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "高德",
+    "keywords": [
+      "高德打车",
+      "上海"
+    ]
+  },
+  {
+    "name": "高德打车(广州店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "高德",
+    "keywords": [
+      "高德打车",
+      "广州"
+    ]
+  },
+  {
+    "name": "美团打车",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "美团",
+    "keywords": [
+      "美团打车"
+    ]
+  },
+  {
+    "name": "美团打车(北京店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "美团",
+    "keywords": [
+      "美团打车",
+      "北京"
+    ]
+  },
+  {
+    "name": "美团打车(上海店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "美团",
+    "keywords": [
+      "美团打车",
+      "上海"
+    ]
+  },
+  {
+    "name": "美团打车(广州店)",
+    "category": "交通",
+    "sub_category": "网约车",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "美团",
+    "keywords": [
+      "美团打车",
+      "广州"
+    ]
+  },
+  {
+    "name": "地铁",
+    "category": "交通",
+    "sub_category": "公共交通",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "地铁"
+    ]
+  },
+  {
+    "name": "地铁(北京店)",
+    "category": "交通",
+    "sub_category": "公共交通",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "地铁",
+    "keywords": [
+      "地铁",
+      "北京"
+    ]
+  },
+  {
+    "name": "地铁(上海店)",
+    "category": "交通",
+    "sub_category": "公共交通",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "地铁",
+    "keywords": [
+      "地铁",
+      "上海"
+    ]
+  },
+  {
+    "name": "地铁(广州店)",
+    "category": "交通",
+    "sub_category": "公共交通",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "地铁",
+    "keywords": [
+      "地铁",
+      "广州"
+    ]
+  },
+  {
+    "name": "公交",
+    "category": "交通",
+    "sub_category": "公共交通",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "公交"
+    ]
+  },
+  {
+    "name": "公交(北京店)",
+    "category": "交通",
+    "sub_category": "公共交通",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "公交",
+    "keywords": [
+      "公交",
+      "北京"
+    ]
+  },
+  {
+    "name": "公交(上海店)",
+    "category": "交通",
+    "sub_category": "公共交通",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "公交",
+    "keywords": [
+      "公交",
+      "上海"
+    ]
+  },
+  {
+    "name": "公交(广州店)",
+    "category": "交通",
+    "sub_category": "公共交通",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "公交",
+    "keywords": [
+      "公交",
+      "广州"
+    ]
+  },
+  {
+    "name": "轨道交通",
+    "category": "交通",
+    "sub_category": "公共交通",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "轨道交通"
+    ]
+  },
+  {
+    "name": "轨道交通(北京店)",
+    "category": "交通",
+    "sub_category": "公共交通",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "轨道交通",
+    "keywords": [
+      "轨道交通",
+      "北京"
+    ]
+  },
+  {
+    "name": "轨道交通(上海店)",
+    "category": "交通",
+    "sub_category": "公共交通",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "轨道交通",
+    "keywords": [
+      "轨道交通",
+      "上海"
+    ]
+  },
+  {
+    "name": "轨道交通(广州店)",
+    "category": "交通",
+    "sub_category": "公共交通",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "轨道交通",
+    "keywords": [
+      "轨道交通",
+      "广州"
+    ]
+  },
+  {
+    "name": "中石化",
+    "category": "交通",
+    "sub_category": "加油停车",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "中石化",
+    "keywords": [
+      "中石化"
+    ]
+  },
+  {
+    "name": "中石化(北京店)",
+    "category": "交通",
+    "sub_category": "加油停车",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "中石化",
+    "keywords": [
+      "中石化",
+      "北京"
+    ]
+  },
+  {
+    "name": "中石化(上海店)",
+    "category": "交通",
+    "sub_category": "加油停车",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "中石化",
+    "keywords": [
+      "中石化",
+      "上海"
+    ]
+  },
+  {
+    "name": "中石化(广州店)",
+    "category": "交通",
+    "sub_category": "加油停车",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "中石化",
+    "keywords": [
+      "中石化",
+      "广州"
+    ]
+  },
+  {
+    "name": "中石油",
+    "category": "交通",
+    "sub_category": "加油停车",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "中石油",
+    "keywords": [
+      "中石油"
+    ]
+  },
+  {
+    "name": "中石油(北京店)",
+    "category": "交通",
+    "sub_category": "加油停车",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "中石油",
+    "keywords": [
+      "中石油",
+      "北京"
+    ]
+  },
+  {
+    "name": "中石油(上海店)",
+    "category": "交通",
+    "sub_category": "加油停车",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "中石油",
+    "keywords": [
+      "中石油",
+      "上海"
+    ]
+  },
+  {
+    "name": "中石油(广州店)",
+    "category": "交通",
+    "sub_category": "加油停车",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "中石油",
+    "keywords": [
+      "中石油",
+      "广州"
+    ]
+  },
+  {
+    "name": "壳牌",
+    "category": "交通",
+    "sub_category": "加油停车",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "壳牌",
+    "keywords": [
+      "壳牌"
+    ]
+  },
+  {
+    "name": "壳牌(北京店)",
+    "category": "交通",
+    "sub_category": "加油停车",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "壳牌",
+    "keywords": [
+      "壳牌",
+      "北京"
+    ]
+  },
+  {
+    "name": "壳牌(上海店)",
+    "category": "交通",
+    "sub_category": "加油停车",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "壳牌",
+    "keywords": [
+      "壳牌",
+      "上海"
+    ]
+  },
+  {
+    "name": "壳牌(广州店)",
+    "category": "交通",
+    "sub_category": "加油停车",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "壳牌",
+    "keywords": [
+      "壳牌",
+      "广州"
+    ]
+  },
+  {
+    "name": "中国国际航空",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "国航",
+    "keywords": [
+      "中国国际航空"
+    ]
+  },
+  {
+    "name": "中国国际航空(北京店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "国航",
+    "keywords": [
+      "中国国际航空",
+      "北京"
+    ]
+  },
+  {
+    "name": "中国国际航空(上海店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "国航",
+    "keywords": [
+      "中国国际航空",
+      "上海"
+    ]
+  },
+  {
+    "name": "中国国际航空(广州店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "国航",
+    "keywords": [
+      "中国国际航空",
+      "广州"
+    ]
+  },
+  {
+    "name": "中国东方航空",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "东航",
+    "keywords": [
+      "中国东方航空"
+    ]
+  },
+  {
+    "name": "中国东方航空(北京店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "东航",
+    "keywords": [
+      "中国东方航空",
+      "北京"
+    ]
+  },
+  {
+    "name": "中国东方航空(上海店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "东航",
+    "keywords": [
+      "中国东方航空",
+      "上海"
+    ]
+  },
+  {
+    "name": "中国东方航空(广州店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "东航",
+    "keywords": [
+      "中国东方航空",
+      "广州"
+    ]
+  },
+  {
+    "name": "中国南方航空",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "南航",
+    "keywords": [
+      "中国南方航空"
+    ]
+  },
+  {
+    "name": "中国南方航空(北京店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "南航",
+    "keywords": [
+      "中国南方航空",
+      "北京"
+    ]
+  },
+  {
+    "name": "中国南方航空(上海店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "南航",
+    "keywords": [
+      "中国南方航空",
+      "上海"
+    ]
+  },
+  {
+    "name": "中国南方航空(广州店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "南航",
+    "keywords": [
+      "中国南方航空",
+      "广州"
+    ]
+  },
+  {
+    "name": "铁路",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "铁路"
+    ]
+  },
+  {
+    "name": "铁路(北京店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "铁路",
+    "keywords": [
+      "铁路",
+      "北京"
+    ]
+  },
+  {
+    "name": "铁路(上海店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "铁路",
+    "keywords": [
+      "铁路",
+      "上海"
+    ]
+  },
+  {
+    "name": "铁路(广州店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "铁路",
+    "keywords": [
+      "铁路",
+      "广州"
+    ]
+  },
+  {
+    "name": "高铁",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "高铁"
+    ]
+  },
+  {
+    "name": "高铁(北京店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "高铁",
+    "keywords": [
+      "高铁",
+      "北京"
+    ]
+  },
+  {
+    "name": "高铁(上海店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "高铁",
+    "keywords": [
+      "高铁",
+      "上海"
+    ]
+  },
+  {
+    "name": "高铁(广州店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "高铁",
+    "keywords": [
+      "高铁",
+      "广州"
+    ]
+  },
+  {
+    "name": "12306",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "12306"
+    ]
+  },
+  {
+    "name": "12306(北京店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "12306",
+    "keywords": [
+      "12306",
+      "北京"
+    ]
+  },
+  {
+    "name": "12306(上海店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "12306",
+    "keywords": [
+      "12306",
+      "上海"
+    ]
+  },
+  {
+    "name": "12306(广州店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "12306",
+    "keywords": [
+      "12306",
+      "广州"
+    ]
+  },
+  {
+    "name": "携程",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "携程",
+    "keywords": [
+      "携程"
+    ]
+  },
+  {
+    "name": "携程(北京店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "携程",
+    "keywords": [
+      "携程",
+      "北京"
+    ]
+  },
+  {
+    "name": "携程(上海店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "携程",
+    "keywords": [
+      "携程",
+      "上海"
+    ]
+  },
+  {
+    "name": "携程(广州店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "携程",
+    "keywords": [
+      "携程",
+      "广州"
+    ]
+  },
+  {
+    "name": "去哪儿",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "去哪儿",
+    "keywords": [
+      "去哪儿"
+    ]
+  },
+  {
+    "name": "去哪儿(北京店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "去哪儿",
+    "keywords": [
+      "去哪儿",
+      "北京"
+    ]
+  },
+  {
+    "name": "去哪儿(上海店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "去哪儿",
+    "keywords": [
+      "去哪儿",
+      "上海"
+    ]
+  },
+  {
+    "name": "去哪儿(广州店)",
+    "category": "交通",
+    "sub_category": "航空铁路",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "去哪儿",
+    "keywords": [
+      "去哪儿",
+      "广州"
+    ]
+  },
+  {
+    "name": "淘宝",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "淘宝",
+    "keywords": [
+      "淘宝"
+    ]
+  },
+  {
+    "name": "淘宝(北京店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "淘宝",
+    "keywords": [
+      "淘宝",
+      "北京"
+    ]
+  },
+  {
+    "name": "淘宝(上海店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "淘宝",
+    "keywords": [
+      "淘宝",
+      "上海"
+    ]
+  },
+  {
+    "name": "淘宝(广州店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "淘宝",
+    "keywords": [
+      "淘宝",
+      "广州"
+    ]
+  },
+  {
+    "name": "天猫",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "天猫",
+    "keywords": [
+      "天猫"
+    ]
+  },
+  {
+    "name": "天猫(北京店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "天猫",
+    "keywords": [
+      "天猫",
+      "北京"
+    ]
+  },
+  {
+    "name": "天猫(上海店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "天猫",
+    "keywords": [
+      "天猫",
+      "上海"
+    ]
+  },
+  {
+    "name": "天猫(广州店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "天猫",
+    "keywords": [
+      "天猫",
+      "广州"
+    ]
+  },
+  {
+    "name": "京东",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "京东",
+    "keywords": [
+      "京东"
+    ]
+  },
+  {
+    "name": "京东(北京店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "京东",
+    "keywords": [
+      "京东",
+      "北京"
+    ]
+  },
+  {
+    "name": "京东(上海店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "京东",
+    "keywords": [
+      "京东",
+      "上海"
+    ]
+  },
+  {
+    "name": "京东(广州店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "京东",
+    "keywords": [
+      "京东",
+      "广州"
+    ]
+  },
+  {
+    "name": "拼多多",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "拼多多",
+    "keywords": [
+      "拼多多"
+    ]
+  },
+  {
+    "name": "拼多多(北京店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "拼多多",
+    "keywords": [
+      "拼多多",
+      "北京"
+    ]
+  },
+  {
+    "name": "拼多多(上海店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "拼多多",
+    "keywords": [
+      "拼多多",
+      "上海"
+    ]
+  },
+  {
+    "name": "拼多多(广州店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "拼多多",
+    "keywords": [
+      "拼多多",
+      "广州"
+    ]
+  },
+  {
+    "name": "苏宁易购",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "苏宁",
+    "keywords": [
+      "苏宁易购"
+    ]
+  },
+  {
+    "name": "苏宁易购(北京店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "苏宁",
+    "keywords": [
+      "苏宁易购",
+      "北京"
+    ]
+  },
+  {
+    "name": "苏宁易购(上海店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "苏宁",
+    "keywords": [
+      "苏宁易购",
+      "上海"
+    ]
+  },
+  {
+    "name": "苏宁易购(广州店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "苏宁",
+    "keywords": [
+      "苏宁易购",
+      "广州"
+    ]
+  },
+  {
+    "name": "唯品会",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "唯品会",
+    "keywords": [
+      "唯品会"
+    ]
+  },
+  {
+    "name": "唯品会(北京店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "唯品会",
+    "keywords": [
+      "唯品会",
+      "北京"
+    ]
+  },
+  {
+    "name": "唯品会(上海店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "唯品会",
+    "keywords": [
+      "唯品会",
+      "上海"
+    ]
+  },
+  {
+    "name": "唯品会(广州店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "唯品会",
+    "keywords": [
+      "唯品会",
+      "广州"
+    ]
+  },
+  {
+    "name": "网易严选",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "网易严选",
+    "keywords": [
+      "网易严选"
+    ]
+  },
+  {
+    "name": "网易严选(北京店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "网易严选",
+    "keywords": [
+      "网易严选",
+      "北京"
+    ]
+  },
+  {
+    "name": "网易严选(上海店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "网易严选",
+    "keywords": [
+      "网易严选",
+      "上海"
+    ]
+  },
+  {
+    "name": "网易严选(广州店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "网易严选",
+    "keywords": [
+      "网易严选",
+      "广州"
+    ]
+  },
+  {
+    "name": "小米商城",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "小米",
+    "keywords": [
+      "小米商城"
+    ]
+  },
+  {
+    "name": "小米商城(北京店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "小米",
+    "keywords": [
+      "小米商城",
+      "北京"
+    ]
+  },
+  {
+    "name": "小米商城(上海店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "小米",
+    "keywords": [
+      "小米商城",
+      "上海"
+    ]
+  },
+  {
+    "name": "小米商城(广州店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "小米",
+    "keywords": [
+      "小米商城",
+      "广州"
+    ]
+  },
+  {
+    "name": "华为商城",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "华为",
+    "keywords": [
+      "华为商城"
+    ]
+  },
+  {
+    "name": "华为商城(北京店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "华为",
+    "keywords": [
+      "华为商城",
+      "北京"
+    ]
+  },
+  {
+    "name": "华为商城(上海店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "华为",
+    "keywords": [
+      "华为商城",
+      "上海"
+    ]
+  },
+  {
+    "name": "华为商城(广州店)",
+    "category": "购物",
+    "sub_category": "电商",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "华为",
+    "keywords": [
+      "华为商城",
+      "广州"
+    ]
+  },
+  {
+    "name": "沃尔玛",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "沃尔玛",
+    "keywords": [
+      "沃尔玛"
+    ]
+  },
+  {
+    "name": "沃尔玛(北京店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "沃尔玛",
+    "keywords": [
+      "沃尔玛",
+      "北京"
+    ]
+  },
+  {
+    "name": "沃尔玛(上海店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "沃尔玛",
+    "keywords": [
+      "沃尔玛",
+      "上海"
+    ]
+  },
+  {
+    "name": "沃尔玛(广州店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "沃尔玛",
+    "keywords": [
+      "沃尔玛",
+      "广州"
+    ]
+  },
+  {
+    "name": "家乐福",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "家乐福",
+    "keywords": [
+      "家乐福"
+    ]
+  },
+  {
+    "name": "家乐福(北京店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "家乐福",
+    "keywords": [
+      "家乐福",
+      "北京"
+    ]
+  },
+  {
+    "name": "家乐福(上海店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "家乐福",
+    "keywords": [
+      "家乐福",
+      "上海"
+    ]
+  },
+  {
+    "name": "家乐福(广州店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "家乐福",
+    "keywords": [
+      "家乐福",
+      "广州"
+    ]
+  },
+  {
+    "name": "永辉超市",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "永辉",
+    "keywords": [
+      "永辉超市"
+    ]
+  },
+  {
+    "name": "永辉超市(北京店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "永辉",
+    "keywords": [
+      "永辉超市",
+      "北京"
+    ]
+  },
+  {
+    "name": "永辉超市(上海店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "永辉",
+    "keywords": [
+      "永辉超市",
+      "上海"
+    ]
+  },
+  {
+    "name": "永辉超市(广州店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "永辉",
+    "keywords": [
+      "永辉超市",
+      "广州"
+    ]
+  },
+  {
+    "name": "物美",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "物美",
+    "keywords": [
+      "物美"
+    ]
+  },
+  {
+    "name": "物美(北京店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "物美",
+    "keywords": [
+      "物美",
+      "北京"
+    ]
+  },
+  {
+    "name": "物美(上海店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "物美",
+    "keywords": [
+      "物美",
+      "上海"
+    ]
+  },
+  {
+    "name": "物美(广州店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "物美",
+    "keywords": [
+      "物美",
+      "广州"
+    ]
+  },
+  {
+    "name": "盒马鲜生",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "盒马",
+    "keywords": [
+      "盒马鲜生"
+    ]
+  },
+  {
+    "name": "盒马鲜生(北京店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "盒马",
+    "keywords": [
+      "盒马鲜生",
+      "北京"
+    ]
+  },
+  {
+    "name": "盒马鲜生(上海店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "盒马",
+    "keywords": [
+      "盒马鲜生",
+      "上海"
+    ]
+  },
+  {
+    "name": "盒马鲜生(广州店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "盒马",
+    "keywords": [
+      "盒马鲜生",
+      "广州"
+    ]
+  },
+  {
+    "name": "大润发",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "大润发",
+    "keywords": [
+      "大润发"
+    ]
+  },
+  {
+    "name": "大润发(北京店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "大润发",
+    "keywords": [
+      "大润发",
+      "北京"
+    ]
+  },
+  {
+    "name": "大润发(上海店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "大润发",
+    "keywords": [
+      "大润发",
+      "上海"
+    ]
+  },
+  {
+    "name": "大润发(广州店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "大润发",
+    "keywords": [
+      "大润发",
+      "广州"
+    ]
+  },
+  {
+    "name": "华润万家",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "华润万家",
+    "keywords": [
+      "华润万家"
+    ]
+  },
+  {
+    "name": "华润万家(北京店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "华润万家",
+    "keywords": [
+      "华润万家",
+      "北京"
+    ]
+  },
+  {
+    "name": "华润万家(上海店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "华润万家",
+    "keywords": [
+      "华润万家",
+      "上海"
+    ]
+  },
+  {
+    "name": "华润万家(广州店)",
+    "category": "购物",
+    "sub_category": "超市",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "华润万家",
+    "keywords": [
+      "华润万家",
+      "广州"
+    ]
+  },
+  {
+    "name": "优衣库",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "优衣库",
+    "keywords": [
+      "优衣库"
+    ]
+  },
+  {
+    "name": "优衣库(北京店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "优衣库",
+    "keywords": [
+      "优衣库",
+      "北京"
+    ]
+  },
+  {
+    "name": "优衣库(上海店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "优衣库",
+    "keywords": [
+      "优衣库",
+      "上海"
+    ]
+  },
+  {
+    "name": "优衣库(广州店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "优衣库",
+    "keywords": [
+      "优衣库",
+      "广州"
+    ]
+  },
+  {
+    "name": "ZARA",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "ZARA",
+    "keywords": [
+      "ZARA"
+    ]
+  },
+  {
+    "name": "ZARA(北京店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "ZARA",
+    "keywords": [
+      "ZARA",
+      "北京"
+    ]
+  },
+  {
+    "name": "ZARA(上海店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "ZARA",
+    "keywords": [
+      "ZARA",
+      "上海"
+    ]
+  },
+  {
+    "name": "ZARA(广州店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "ZARA",
+    "keywords": [
+      "ZARA",
+      "广州"
+    ]
+  },
+  {
+    "name": "H&M",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "H&M",
+    "keywords": [
+      "H&M"
+    ]
+  },
+  {
+    "name": "H&M(北京店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "H&M",
+    "keywords": [
+      "H&M",
+      "北京"
+    ]
+  },
+  {
+    "name": "H&M(上海店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "H&M",
+    "keywords": [
+      "H&M",
+      "上海"
+    ]
+  },
+  {
+    "name": "H&M(广州店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "H&M",
+    "keywords": [
+      "H&M",
+      "广州"
+    ]
+  },
+  {
+    "name": "耐克",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "耐克",
+    "keywords": [
+      "耐克"
+    ]
+  },
+  {
+    "name": "耐克(北京店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "耐克",
+    "keywords": [
+      "耐克",
+      "北京"
+    ]
+  },
+  {
+    "name": "耐克(上海店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "耐克",
+    "keywords": [
+      "耐克",
+      "上海"
+    ]
+  },
+  {
+    "name": "耐克(广州店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "耐克",
+    "keywords": [
+      "耐克",
+      "广州"
+    ]
+  },
+  {
+    "name": "阿迪达斯",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "阿迪达斯",
+    "keywords": [
+      "阿迪达斯"
+    ]
+  },
+  {
+    "name": "阿迪达斯(北京店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "阿迪达斯",
+    "keywords": [
+      "阿迪达斯",
+      "北京"
+    ]
+  },
+  {
+    "name": "阿迪达斯(上海店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "阿迪达斯",
+    "keywords": [
+      "阿迪达斯",
+      "上海"
+    ]
+  },
+  {
+    "name": "阿迪达斯(广州店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "阿迪达斯",
+    "keywords": [
+      "阿迪达斯",
+      "广州"
+    ]
+  },
+  {
+    "name": "李宁",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "李宁",
+    "keywords": [
+      "李宁"
+    ]
+  },
+  {
+    "name": "李宁(北京店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "李宁",
+    "keywords": [
+      "李宁",
+      "北京"
+    ]
+  },
+  {
+    "name": "李宁(上海店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "李宁",
+    "keywords": [
+      "李宁",
+      "上海"
+    ]
+  },
+  {
+    "name": "李宁(广州店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "李宁",
+    "keywords": [
+      "李宁",
+      "广州"
+    ]
+  },
+  {
+    "name": "安踏",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "安踏",
+    "keywords": [
+      "安踏"
+    ]
+  },
+  {
+    "name": "安踏(北京店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "安踏",
+    "keywords": [
+      "安踏",
+      "北京"
+    ]
+  },
+  {
+    "name": "安踏(上海店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "安踏",
+    "keywords": [
+      "安踏",
+      "上海"
+    ]
+  },
+  {
+    "name": "安踏(广州店)",
+    "category": "购物",
+    "sub_category": "服饰",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "安踏",
+    "keywords": [
+      "安踏",
+      "广州"
+    ]
+  },
+  {
+    "name": "万达电影",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "万达",
+    "keywords": [
+      "万达电影"
+    ]
+  },
+  {
+    "name": "万达电影(北京店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "万达",
+    "keywords": [
+      "万达电影",
+      "北京"
+    ]
+  },
+  {
+    "name": "万达电影(上海店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "万达",
+    "keywords": [
+      "万达电影",
+      "上海"
+    ]
+  },
+  {
+    "name": "万达电影(广州店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "万达",
+    "keywords": [
+      "万达电影",
+      "广州"
+    ]
+  },
+  {
+    "name": "横店影视",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "横店",
+    "keywords": [
+      "横店影视"
+    ]
+  },
+  {
+    "name": "横店影视(北京店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "横店",
+    "keywords": [
+      "横店影视",
+      "北京"
+    ]
+  },
+  {
+    "name": "横店影视(上海店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "横店",
+    "keywords": [
+      "横店影视",
+      "上海"
+    ]
+  },
+  {
+    "name": "横店影视(广州店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "横店",
+    "keywords": [
+      "横店影视",
+      "广州"
+    ]
+  },
+  {
+    "name": "金逸影城",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "金逸",
+    "keywords": [
+      "金逸影城"
+    ]
+  },
+  {
+    "name": "金逸影城(北京店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "金逸",
+    "keywords": [
+      "金逸影城",
+      "北京"
+    ]
+  },
+  {
+    "name": "金逸影城(上海店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "金逸",
+    "keywords": [
+      "金逸影城",
+      "上海"
+    ]
+  },
+  {
+    "name": "金逸影城(广州店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "金逸",
+    "keywords": [
+      "金逸影城",
+      "广州"
+    ]
+  },
+  {
+    "name": "猫眼电影",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "猫眼",
+    "keywords": [
+      "猫眼电影"
+    ]
+  },
+  {
+    "name": "猫眼电影(北京店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "猫眼",
+    "keywords": [
+      "猫眼电影",
+      "北京"
+    ]
+  },
+  {
+    "name": "猫眼电影(上海店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "猫眼",
+    "keywords": [
+      "猫眼电影",
+      "上海"
+    ]
+  },
+  {
+    "name": "猫眼电影(广州店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "猫眼",
+    "keywords": [
+      "猫眼电影",
+      "广州"
+    ]
+  },
+  {
+    "name": "淘票票",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "淘票票",
+    "keywords": [
+      "淘票票"
+    ]
+  },
+  {
+    "name": "淘票票(北京店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "淘票票",
+    "keywords": [
+      "淘票票",
+      "北京"
+    ]
+  },
+  {
+    "name": "淘票票(上海店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "淘票票",
+    "keywords": [
+      "淘票票",
+      "上海"
+    ]
+  },
+  {
+    "name": "淘票票(广州店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "淘票票",
+    "keywords": [
+      "淘票票",
+      "广州"
+    ]
+  },
+  {
+    "name": "爱奇艺",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "爱奇艺",
+    "keywords": [
+      "爱奇艺"
+    ]
+  },
+  {
+    "name": "爱奇艺(北京店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "爱奇艺",
+    "keywords": [
+      "爱奇艺",
+      "北京"
+    ]
+  },
+  {
+    "name": "爱奇艺(上海店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "爱奇艺",
+    "keywords": [
+      "爱奇艺",
+      "上海"
+    ]
+  },
+  {
+    "name": "爱奇艺(广州店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "爱奇艺",
+    "keywords": [
+      "爱奇艺",
+      "广州"
+    ]
+  },
+  {
+    "name": "腾讯视频",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "腾讯视频",
+    "keywords": [
+      "腾讯视频"
+    ]
+  },
+  {
+    "name": "腾讯视频(北京店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "腾讯视频",
+    "keywords": [
+      "腾讯视频",
+      "北京"
+    ]
+  },
+  {
+    "name": "腾讯视频(上海店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "腾讯视频",
+    "keywords": [
+      "腾讯视频",
+      "上海"
+    ]
+  },
+  {
+    "name": "腾讯视频(广州店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "腾讯视频",
+    "keywords": [
+      "腾讯视频",
+      "广州"
+    ]
+  },
+  {
+    "name": "优酷",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "优酷",
+    "keywords": [
+      "优酷"
+    ]
+  },
+  {
+    "name": "优酷(北京店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "优酷",
+    "keywords": [
+      "优酷",
+      "北京"
+    ]
+  },
+  {
+    "name": "优酷(上海店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "优酷",
+    "keywords": [
+      "优酷",
+      "上海"
+    ]
+  },
+  {
+    "name": "优酷(广州店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "优酷",
+    "keywords": [
+      "优酷",
+      "广州"
+    ]
+  },
+  {
+    "name": "芒果TV",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "芒果TV",
+    "keywords": [
+      "芒果TV"
+    ]
+  },
+  {
+    "name": "芒果TV(北京店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "芒果TV",
+    "keywords": [
+      "芒果TV",
+      "北京"
+    ]
+  },
+  {
+    "name": "芒果TV(上海店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "芒果TV",
+    "keywords": [
+      "芒果TV",
+      "上海"
+    ]
+  },
+  {
+    "name": "芒果TV(广州店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "芒果TV",
+    "keywords": [
+      "芒果TV",
+      "广州"
+    ]
+  },
+  {
+    "name": "哔哩哔哩",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "B站",
+    "keywords": [
+      "哔哩哔哩"
+    ]
+  },
+  {
+    "name": "哔哩哔哩(北京店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "B站",
+    "keywords": [
+      "哔哩哔哩",
+      "北京"
+    ]
+  },
+  {
+    "name": "哔哩哔哩(上海店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "B站",
+    "keywords": [
+      "哔哩哔哩",
+      "上海"
+    ]
+  },
+  {
+    "name": "哔哩哔哩(广州店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "B站",
+    "keywords": [
+      "哔哩哔哩",
+      "广州"
+    ]
+  },
+  {
+    "name": "QQ音乐",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "QQ音乐",
+    "keywords": [
+      "QQ音乐"
+    ]
+  },
+  {
+    "name": "QQ音乐(北京店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "QQ音乐",
+    "keywords": [
+      "QQ音乐",
+      "北京"
+    ]
+  },
+  {
+    "name": "QQ音乐(上海店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "QQ音乐",
+    "keywords": [
+      "QQ音乐",
+      "上海"
+    ]
+  },
+  {
+    "name": "QQ音乐(广州店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "QQ音乐",
+    "keywords": [
+      "QQ音乐",
+      "广州"
+    ]
+  },
+  {
+    "name": "网易云音乐",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "网易云",
+    "keywords": [
+      "网易云音乐"
+    ]
+  },
+  {
+    "name": "网易云音乐(北京店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "网易云",
+    "keywords": [
+      "网易云音乐",
+      "北京"
+    ]
+  },
+  {
+    "name": "网易云音乐(上海店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "网易云",
+    "keywords": [
+      "网易云音乐",
+      "上海"
+    ]
+  },
+  {
+    "name": "网易云音乐(广州店)",
+    "category": "娱乐",
+    "sub_category": "影视",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "网易云",
+    "keywords": [
+      "网易云音乐",
+      "广州"
+    ]
+  },
+  {
+    "name": "KTV",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "KTV"
+    ]
+  },
+  {
+    "name": "KTV(北京店)",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "KTV",
+    "keywords": [
+      "KTV",
+      "北京"
+    ]
+  },
+  {
+    "name": "KTV(上海店)",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "KTV",
+    "keywords": [
+      "KTV",
+      "上海"
+    ]
+  },
+  {
+    "name": "KTV(广州店)",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "KTV",
+    "keywords": [
+      "KTV",
+      "广州"
+    ]
+  },
+  {
+    "name": "唱吧",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "唱吧",
+    "keywords": [
+      "唱吧"
+    ]
+  },
+  {
+    "name": "唱吧(北京店)",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "唱吧",
+    "keywords": [
+      "唱吧",
+      "北京"
+    ]
+  },
+  {
+    "name": "唱吧(上海店)",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "唱吧",
+    "keywords": [
+      "唱吧",
+      "上海"
+    ]
+  },
+  {
+    "name": "唱吧(广州店)",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "唱吧",
+    "keywords": [
+      "唱吧",
+      "广州"
+    ]
+  },
+  {
+    "name": "健身房",
+    "category": "娱乐",
+    "sub_category": "健身",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "健身房"
+    ]
+  },
+  {
+    "name": "健身房(北京店)",
+    "category": "娱乐",
+    "sub_category": "健身",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "健身房",
+    "keywords": [
+      "健身房",
+      "北京"
+    ]
+  },
+  {
+    "name": "健身房(上海店)",
+    "category": "娱乐",
+    "sub_category": "健身",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "健身房",
+    "keywords": [
+      "健身房",
+      "上海"
+    ]
+  },
+  {
+    "name": "健身房(广州店)",
+    "category": "娱乐",
+    "sub_category": "健身",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "健身房",
+    "keywords": [
+      "健身房",
+      "广州"
+    ]
+  },
+  {
+    "name": "健身",
+    "category": "娱乐",
+    "sub_category": "健身",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "健身"
+    ]
+  },
+  {
+    "name": "健身(北京店)",
+    "category": "娱乐",
+    "sub_category": "健身",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "健身",
+    "keywords": [
+      "健身",
+      "北京"
+    ]
+  },
+  {
+    "name": "健身(上海店)",
+    "category": "娱乐",
+    "sub_category": "健身",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "健身",
+    "keywords": [
+      "健身",
+      "上海"
+    ]
+  },
+  {
+    "name": "健身(广州店)",
+    "category": "娱乐",
+    "sub_category": "健身",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "健身",
+    "keywords": [
+      "健身",
+      "广州"
+    ]
+  },
+  {
+    "name": "瑜伽",
+    "category": "娱乐",
+    "sub_category": "健身",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "瑜伽"
+    ]
+  },
+  {
+    "name": "瑜伽(北京店)",
+    "category": "娱乐",
+    "sub_category": "健身",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "瑜伽",
+    "keywords": [
+      "瑜伽",
+      "北京"
+    ]
+  },
+  {
+    "name": "瑜伽(上海店)",
+    "category": "娱乐",
+    "sub_category": "健身",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "瑜伽",
+    "keywords": [
+      "瑜伽",
+      "上海"
+    ]
+  },
+  {
+    "name": "瑜伽(广州店)",
+    "category": "娱乐",
+    "sub_category": "健身",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "瑜伽",
+    "keywords": [
+      "瑜伽",
+      "广州"
+    ]
+  },
+  {
+    "name": "迪士尼",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "迪士尼",
+    "keywords": [
+      "迪士尼"
+    ]
+  },
+  {
+    "name": "迪士尼(北京店)",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "迪士尼",
+    "keywords": [
+      "迪士尼",
+      "北京"
+    ]
+  },
+  {
+    "name": "迪士尼(上海店)",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "迪士尼",
+    "keywords": [
+      "迪士尼",
+      "上海"
+    ]
+  },
+  {
+    "name": "迪士尼(广州店)",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "迪士尼",
+    "keywords": [
+      "迪士尼",
+      "广州"
+    ]
+  },
+  {
+    "name": "环球影城",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "环球影城",
+    "keywords": [
+      "环球影城"
+    ]
+  },
+  {
+    "name": "环球影城(北京店)",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "环球影城",
+    "keywords": [
+      "环球影城",
+      "北京"
+    ]
+  },
+  {
+    "name": "环球影城(上海店)",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "环球影城",
+    "keywords": [
+      "环球影城",
+      "上海"
+    ]
+  },
+  {
+    "name": "环球影城(广州店)",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "环球影城",
+    "keywords": [
+      "环球影城",
+      "广州"
+    ]
+  },
+  {
+    "name": "欢乐谷",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "欢乐谷",
+    "keywords": [
+      "欢乐谷"
+    ]
+  },
+  {
+    "name": "欢乐谷(北京店)",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "欢乐谷",
+    "keywords": [
+      "欢乐谷",
+      "北京"
+    ]
+  },
+  {
+    "name": "欢乐谷(上海店)",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "欢乐谷",
+    "keywords": [
+      "欢乐谷",
+      "上海"
+    ]
+  },
+  {
+    "name": "欢乐谷(广州店)",
+    "category": "娱乐",
+    "sub_category": null,
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "欢乐谷",
+    "keywords": [
+      "欢乐谷",
+      "广州"
+    ]
+  },
+  {
+    "name": "协和医院",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "协和",
+    "keywords": [
+      "协和医院"
+    ]
+  },
+  {
+    "name": "协和医院(北京店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "协和",
+    "keywords": [
+      "协和医院",
+      "北京"
+    ]
+  },
+  {
+    "name": "协和医院(上海店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "协和",
+    "keywords": [
+      "协和医院",
+      "上海"
+    ]
+  },
+  {
+    "name": "协和医院(广州店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "协和",
+    "keywords": [
+      "协和医院",
+      "广州"
+    ]
+  },
+  {
+    "name": "301医院",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "301",
+    "keywords": [
+      "301医院"
+    ]
+  },
+  {
+    "name": "301医院(北京店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "301",
+    "keywords": [
+      "301医院",
+      "北京"
+    ]
+  },
+  {
+    "name": "301医院(上海店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "301",
+    "keywords": [
+      "301医院",
+      "上海"
+    ]
+  },
+  {
+    "name": "301医院(广州店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "301",
+    "keywords": [
+      "301医院",
+      "广州"
+    ]
+  },
+  {
+    "name": "华西医院",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "华西",
+    "keywords": [
+      "华西医院"
+    ]
+  },
+  {
+    "name": "华西医院(北京店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "华西",
+    "keywords": [
+      "华西医院",
+      "北京"
+    ]
+  },
+  {
+    "name": "华西医院(上海店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "华西",
+    "keywords": [
+      "华西医院",
+      "上海"
+    ]
+  },
+  {
+    "name": "华西医院(广州店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "华西",
+    "keywords": [
+      "华西医院",
+      "广州"
+    ]
+  },
+  {
+    "name": "湘雅医院",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "湘雅",
+    "keywords": [
+      "湘雅医院"
+    ]
+  },
+  {
+    "name": "湘雅医院(北京店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "湘雅",
+    "keywords": [
+      "湘雅医院",
+      "北京"
+    ]
+  },
+  {
+    "name": "湘雅医院(上海店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "湘雅",
+    "keywords": [
+      "湘雅医院",
+      "上海"
+    ]
+  },
+  {
+    "name": "湘雅医院(广州店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "湘雅",
+    "keywords": [
+      "湘雅医院",
+      "广州"
+    ]
+  },
+  {
+    "name": "瑞金医院",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "瑞金",
+    "keywords": [
+      "瑞金医院"
+    ]
+  },
+  {
+    "name": "瑞金医院(北京店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "瑞金",
+    "keywords": [
+      "瑞金医院",
+      "北京"
+    ]
+  },
+  {
+    "name": "瑞金医院(上海店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "瑞金",
+    "keywords": [
+      "瑞金医院",
+      "上海"
+    ]
+  },
+  {
+    "name": "瑞金医院(广州店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "瑞金",
+    "keywords": [
+      "瑞金医院",
+      "广州"
+    ]
+  },
+  {
+    "name": "同济医院",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "同济",
+    "keywords": [
+      "同济医院"
+    ]
+  },
+  {
+    "name": "同济医院(北京店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "同济",
+    "keywords": [
+      "同济医院",
+      "北京"
+    ]
+  },
+  {
+    "name": "同济医院(上海店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "同济",
+    "keywords": [
+      "同济医院",
+      "上海"
+    ]
+  },
+  {
+    "name": "同济医院(广州店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "同济",
+    "keywords": [
+      "同济医院",
+      "广州"
+    ]
+  },
+  {
+    "name": "华山医院",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "华山",
+    "keywords": [
+      "华山医院"
+    ]
+  },
+  {
+    "name": "华山医院(北京店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "华山",
+    "keywords": [
+      "华山医院",
+      "北京"
+    ]
+  },
+  {
+    "name": "华山医院(上海店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "华山",
+    "keywords": [
+      "华山医院",
+      "上海"
+    ]
+  },
+  {
+    "name": "华山医院(广州店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "华山",
+    "keywords": [
+      "华山医院",
+      "广州"
+    ]
+  },
+  {
+    "name": "医院",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "医院"
+    ]
+  },
+  {
+    "name": "医院(北京店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "医院",
+    "keywords": [
+      "医院",
+      "北京"
+    ]
+  },
+  {
+    "name": "医院(上海店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "医院",
+    "keywords": [
+      "医院",
+      "上海"
+    ]
+  },
+  {
+    "name": "医院(广州店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "医院",
+    "keywords": [
+      "医院",
+      "广州"
+    ]
+  },
+  {
+    "name": "诊所",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "诊所"
+    ]
+  },
+  {
+    "name": "诊所(北京店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "诊所",
+    "keywords": [
+      "诊所",
+      "北京"
+    ]
+  },
+  {
+    "name": "诊所(上海店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "诊所",
+    "keywords": [
+      "诊所",
+      "上海"
+    ]
+  },
+  {
+    "name": "诊所(广州店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "诊所",
+    "keywords": [
+      "诊所",
+      "广州"
+    ]
+  },
+  {
+    "name": "卫生院",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "卫生院"
+    ]
+  },
+  {
+    "name": "卫生院(北京店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "卫生院",
+    "keywords": [
+      "卫生院",
+      "北京"
+    ]
+  },
+  {
+    "name": "卫生院(上海店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "卫生院",
+    "keywords": [
+      "卫生院",
+      "上海"
+    ]
+  },
+  {
+    "name": "卫生院(广州店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "卫生院",
+    "keywords": [
+      "卫生院",
+      "广州"
+    ]
+  },
+  {
+    "name": "门诊部",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "门诊部"
+    ]
+  },
+  {
+    "name": "门诊部(北京店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "门诊部",
+    "keywords": [
+      "门诊部",
+      "北京"
+    ]
+  },
+  {
+    "name": "门诊部(上海店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "门诊部",
+    "keywords": [
+      "门诊部",
+      "上海"
+    ]
+  },
+  {
+    "name": "门诊部(广州店)",
+    "category": "医疗",
+    "sub_category": "医院",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "门诊部",
+    "keywords": [
+      "门诊部",
+      "广州"
+    ]
+  },
+  {
+    "name": "同仁堂",
+    "category": "医疗",
+    "sub_category": "药店",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "同仁堂",
+    "keywords": [
+      "同仁堂"
+    ]
+  },
+  {
+    "name": "同仁堂(北京店)",
+    "category": "医疗",
+    "sub_category": "药店",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "同仁堂",
+    "keywords": [
+      "同仁堂",
+      "北京"
+    ]
+  },
+  {
+    "name": "同仁堂(上海店)",
+    "category": "医疗",
+    "sub_category": "药店",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "同仁堂",
+    "keywords": [
+      "同仁堂",
+      "上海"
+    ]
+  },
+  {
+    "name": "同仁堂(广州店)",
+    "category": "医疗",
+    "sub_category": "药店",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "同仁堂",
+    "keywords": [
+      "同仁堂",
+      "广州"
+    ]
+  },
+  {
+    "name": "药房",
+    "category": "医疗",
+    "sub_category": "药店",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "药房"
+    ]
+  },
+  {
+    "name": "药房(北京店)",
+    "category": "医疗",
+    "sub_category": "药店",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "药房",
+    "keywords": [
+      "药房",
+      "北京"
+    ]
+  },
+  {
+    "name": "药房(上海店)",
+    "category": "医疗",
+    "sub_category": "药店",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "药房",
+    "keywords": [
+      "药房",
+      "上海"
+    ]
+  },
+  {
+    "name": "药房(广州店)",
+    "category": "医疗",
+    "sub_category": "药店",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "药房",
+    "keywords": [
+      "药房",
+      "广州"
+    ]
+  },
+  {
+    "name": "药店",
+    "category": "医疗",
+    "sub_category": "药店",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "药店"
+    ]
+  },
+  {
+    "name": "药店(北京店)",
+    "category": "医疗",
+    "sub_category": "药店",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "药店",
+    "keywords": [
+      "药店",
+      "北京"
+    ]
+  },
+  {
+    "name": "药店(上海店)",
+    "category": "医疗",
+    "sub_category": "药店",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "药店",
+    "keywords": [
+      "药店",
+      "上海"
+    ]
+  },
+  {
+    "name": "药店(广州店)",
+    "category": "医疗",
+    "sub_category": "药店",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "药店",
+    "keywords": [
+      "药店",
+      "广州"
+    ]
+  },
+  {
+    "name": "大药房",
+    "category": "医疗",
+    "sub_category": "药店",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "大药房"
+    ]
+  },
+  {
+    "name": "大药房(北京店)",
+    "category": "医疗",
+    "sub_category": "药店",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "大药房",
+    "keywords": [
+      "大药房",
+      "北京"
+    ]
+  },
+  {
+    "name": "大药房(上海店)",
+    "category": "医疗",
+    "sub_category": "药店",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "大药房",
+    "keywords": [
+      "大药房",
+      "上海"
+    ]
+  },
+  {
+    "name": "大药房(广州店)",
+    "category": "医疗",
+    "sub_category": "药店",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "大药房",
+    "keywords": [
+      "大药房",
+      "广州"
+    ]
+  },
+  {
+    "name": "体检中心",
+    "category": "医疗",
+    "sub_category": "体检",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "体检中心"
+    ]
+  },
+  {
+    "name": "体检中心(北京店)",
+    "category": "医疗",
+    "sub_category": "体检",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "体检中心",
+    "keywords": [
+      "体检中心",
+      "北京"
+    ]
+  },
+  {
+    "name": "体检中心(上海店)",
+    "category": "医疗",
+    "sub_category": "体检",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "体检中心",
+    "keywords": [
+      "体检中心",
+      "上海"
+    ]
+  },
+  {
+    "name": "体检中心(广州店)",
+    "category": "医疗",
+    "sub_category": "体检",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "体检中心",
+    "keywords": [
+      "体检中心",
+      "广州"
+    ]
+  },
+  {
+    "name": "体检",
+    "category": "医疗",
+    "sub_category": "体检",
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": null,
+    "keywords": [
+      "体检"
+    ]
+  },
+  {
+    "name": "体检(北京店)",
+    "category": "医疗",
+    "sub_category": "体检",
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "体检",
+    "keywords": [
+      "体检",
+      "北京"
+    ]
+  },
+  {
+    "name": "体检(上海店)",
+    "category": "医疗",
+    "sub_category": "体检",
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "体检",
+    "keywords": [
+      "体检",
+      "上海"
+    ]
+  },
+  {
+    "name": "体检(广州店)",
+    "category": "医疗",
+    "sub_category": "体检",
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "体检",
+    "keywords": [
+      "体检",
+      "广州"
+    ]
+  },
+  {
+    "name": "平安好医生",
+    "category": "医疗",
+    "sub_category": null,
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "平安好医生",
+    "keywords": [
+      "平安好医生"
+    ]
+  },
+  {
+    "name": "平安好医生(北京店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "平安好医生",
+    "keywords": [
+      "平安好医生",
+      "北京"
+    ]
+  },
+  {
+    "name": "平安好医生(上海店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "平安好医生",
+    "keywords": [
+      "平安好医生",
+      "上海"
+    ]
+  },
+  {
+    "name": "平安好医生(广州店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "平安好医生",
+    "keywords": [
+      "平安好医生",
+      "广州"
+    ]
+  },
+  {
+    "name": "阿里健康",
+    "category": "医疗",
+    "sub_category": null,
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "阿里健康",
+    "keywords": [
+      "阿里健康"
+    ]
+  },
+  {
+    "name": "阿里健康(北京店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "阿里健康",
+    "keywords": [
+      "阿里健康",
+      "北京"
+    ]
+  },
+  {
+    "name": "阿里健康(上海店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "阿里健康",
+    "keywords": [
+      "阿里健康",
+      "上海"
+    ]
+  },
+  {
+    "name": "阿里健康(广州店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "阿里健康",
+    "keywords": [
+      "阿里健康",
+      "广州"
+    ]
+  },
+  {
+    "name": "京东健康",
+    "category": "医疗",
+    "sub_category": null,
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "京东健康",
+    "keywords": [
+      "京东健康"
+    ]
+  },
+  {
+    "name": "京东健康(北京店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "京东健康",
+    "keywords": [
+      "京东健康",
+      "北京"
+    ]
+  },
+  {
+    "name": "京东健康(上海店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "京东健康",
+    "keywords": [
+      "京东健康",
+      "上海"
+    ]
+  },
+  {
+    "name": "京东健康(广州店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "京东健康",
+    "keywords": [
+      "京东健康",
+      "广州"
+    ]
+  },
+  {
+    "name": "微医",
+    "category": "医疗",
+    "sub_category": null,
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "微医",
+    "keywords": [
+      "微医"
+    ]
+  },
+  {
+    "name": "微医(北京店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "微医",
+    "keywords": [
+      "微医",
+      "北京"
+    ]
+  },
+  {
+    "name": "微医(上海店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "微医",
+    "keywords": [
+      "微医",
+      "上海"
+    ]
+  },
+  {
+    "name": "微医(广州店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "微医",
+    "keywords": [
+      "微医",
+      "广州"
+    ]
+  },
+  {
+    "name": "春雨医生",
+    "category": "医疗",
+    "sub_category": null,
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "春雨医生",
+    "keywords": [
+      "春雨医生"
+    ]
+  },
+  {
+    "name": "春雨医生(北京店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "春雨医生",
+    "keywords": [
+      "春雨医生",
+      "北京"
+    ]
+  },
+  {
+    "name": "春雨医生(上海店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "春雨医生",
+    "keywords": [
+      "春雨医生",
+      "上海"
+    ]
+  },
+  {
+    "name": "春雨医生(广州店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "春雨医生",
+    "keywords": [
+      "春雨医生",
+      "广州"
+    ]
+  },
+  {
+    "name": "丁香医生",
+    "category": "医疗",
+    "sub_category": null,
+    "city": null,
+    "district": null,
+    "address": null,
+    "brand": "丁香医生",
+    "keywords": [
+      "丁香医生"
+    ]
+  },
+  {
+    "name": "丁香医生(北京店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "北京",
+    "district": null,
+    "address": null,
+    "brand": "丁香医生",
+    "keywords": [
+      "丁香医生",
+      "北京"
+    ]
+  },
+  {
+    "name": "丁香医生(上海店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "上海",
+    "district": null,
+    "address": null,
+    "brand": "丁香医生",
+    "keywords": [
+      "丁香医生",
+      "上海"
+    ]
+  },
+  {
+    "name": "丁香医生(广州店)",
+    "category": "医疗",
+    "sub_category": null,
+    "city": "广州",
+    "district": null,
+    "address": null,
+    "brand": "丁香医生",
+    "keywords": [
+      "丁香医生",
+      "广州"
+    ]
+  }
+]

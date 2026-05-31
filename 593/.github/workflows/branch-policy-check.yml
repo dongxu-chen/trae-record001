@@ -1,0 +1,64 @@
+name: Git Branch Policy Check
+
+on:
+  pull_request:
+    branches: [main, master, develop, release/*]
+  push:
+    branches: [feature/*, bugfix/*, hotfix/*]
+
+jobs:
+  branch-policy-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run branch policy check
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref || github.ref_name }}
+          GITHUB_BASE_REF: ${{ github.base_ref || 'develop' }}
+        run: |
+          SOURCE_BRANCH="${GITHUB_HEAD_REF#refs/heads/}"
+          TARGET_BRANCH="${GITHUB_BASE_REF#refs/heads/}"
+          echo "=== Checking: $SOURCE_BRANCH -> $TARGET_BRANCH ==="
+          python cli.py --source "$SOURCE_BRANCH" --target "$TARGET_BRANCH" --format console
+
+      - name: Generate Checklist Report
+        if: always()
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref || github.ref_name }}
+          GITHUB_BASE_REF: ${{ github.base_ref || 'develop' }}
+        run: |
+          SOURCE_BRANCH="${GITHUB_HEAD_REF#refs/heads/}"
+          TARGET_BRANCH="${GITHUB_BASE_REF#refs/heads/}"
+          python cli.py --source "$SOURCE_BRANCH" --target "$TARGET_BRANCH" --format checklist > policy-check-report.md
+          echo "--- Generated Checklist Report ---"
+          cat policy-check-report.md
+
+      - name: Output JSON Report
+        if: always()
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref || github.ref_name }}
+          GITHUB_BASE_REF: ${{ github.base_ref || 'develop' }}
+        run: |
+          SOURCE_BRANCH="${GITHUB_HEAD_REF#refs/heads/}"
+          TARGET_BRANCH="${GITHUB_BASE_REF#refs/heads/}"
+          python cli.py --source "$SOURCE_BRANCH" --target "$TARGET_BRANCH" --format json > policy-check-results.json
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: policy-check-results
+          path: policy-check-results.json

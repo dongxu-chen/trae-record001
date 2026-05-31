@@ -1,0 +1,99 @@
+[
+  {
+    "id": "rule_001",
+    "name": "大额消费标记",
+    "conditions": [
+      {
+        "type": "amount_greater",
+        "value": 5000,
+        "field": "amount"
+      }
+    ],
+    "action": "flag_as_anomaly",
+    "action_value": "大额消费",
+    "priority": 10,
+    "enabled": true,
+    "logical_op": "AND"
+  },
+  {
+    "id": "rule_002",
+    "name": "深夜餐饮",
+    "conditions": [
+      {
+        "type": "time_between",
+        "value": [
+          "22:00",
+          "06:00"
+        ],
+        "field": "time"
+      },
+      {
+        "type": "merchant_contains",
+        "value": [
+          "餐厅",
+          "烧烤",
+          "火锅",
+          "咖啡"
+        ],
+        "field": "merchant"
+      }
+    ],
+    "action": "set_category",
+    "action_value": "餐饮",
+    "priority": 5,
+    "enabled": true,
+    "logical_op": "AND"
+  },
+  {
+    "id": "rule_003",
+    "name": "周末娱乐消费",
+    "conditions": [
+      {
+        "type": "day_of_week",
+        "value": [
+          5,
+          6
+        ],
+        "field": "date"
+      },
+      {
+        "type": "amount_between",
+        "value": [
+          100,
+          1000
+        ],
+        "field": "amount"
+      }
+    ],
+    "action": "add_tag",
+    "action_value": "周末消费",
+    "priority": 3,
+    "enabled": true,
+    "logical_op": "AND"
+  },
+  {
+    "id": "rule_004",
+    "name": "小额医疗",
+    "conditions": [
+      {
+        "type": "merchant_contains",
+        "value": [
+          "药房",
+          "药店",
+          "体检"
+        ],
+        "field": "merchant"
+      },
+      {
+        "type": "amount_less",
+        "value": 500,
+        "field": "amount"
+      }
+    ],
+    "action": "set_category",
+    "action_value": "医疗",
+    "priority": 8,
+    "enabled": true,
+    "logical_op": "AND"
+  }
+]

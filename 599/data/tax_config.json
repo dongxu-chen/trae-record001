@@ -1,0 +1,10 @@
+{
+  "tax_type": "personal",
+  "annual_income": 200000.0,
+  "tax_rate": 0.25,
+  "special_deductions": {
+    "子女教育": 12000.0,
+    "住房贷款利息": 12000.0
+  },
+  "other_deductions": 0.0
+}

@@ -1,0 +1,56 @@
+{
+  "餐饮": {
+    "category": "餐饮",
+    "monthly_budget": 2500,
+    "period": "monthly",
+    "warning_threshold": 0.75,
+    "critical_threshold": 0.9,
+    "start_date": null,
+    "notes": ""
+  },
+  "交通": {
+    "category": "交通",
+    "monthly_budget": 1000,
+    "period": "monthly",
+    "warning_threshold": 0.8,
+    "critical_threshold": 0.95,
+    "start_date": null,
+    "notes": ""
+  },
+  "购物": {
+    "category": "购物",
+    "monthly_budget": 3000,
+    "period": "monthly",
+    "warning_threshold": 0.8,
+    "critical_threshold": 0.95,
+    "start_date": null,
+    "notes": ""
+  },
+  "娱乐": {
+    "category": "娱乐",
+    "monthly_budget": 1500,
+    "period": "monthly",
+    "warning_threshold": 0.8,
+    "critical_threshold": 0.95,
+    "start_date": null,
+    "notes": ""
+  },
+  "医疗": {
+    "category": "医疗",
+    "monthly_budget": 500,
+    "period": "monthly",
+    "warning_threshold": 0.8,
+    "critical_threshold": 0.95,
+    "start_date": null,
+    "notes": ""
+  },
+  "其他": {
+    "category": "其他",
+    "monthly_budget": 500,
+    "period": "monthly",
+    "warning_threshold": 0.8,
+    "critical_threshold": 0.95,
+    "start_date": null,
+    "notes": ""
+  }
+}
