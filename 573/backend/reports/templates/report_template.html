@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docker 镜像安全扫描报告</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header .meta {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .card h3 {
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        
+        .card .value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .card .risk-value {
+            font-size: 48px;
+            font-weight: bold;
+        }
+        
+        .risk-critical { color: #dc3545; }
+        .risk-high { color: #fd7e14; }
+        .risk-medium { color: #ffc107; }
+        .risk-low { color: #28a745; }
+        .risk-safe { color: #28a745; }
+        
+        .severity-breakdown {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .severity-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .sev-critical { background: #dc3545; color: white; }
+        .sev-high { background: #fd7e14; color: white; }
+        .sev-medium { background: #ffc107; color: #333; }
+        .sev-low { background: #28a745; color: white; }
+        
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .image-section {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .image-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .image-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .risk-score {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .vuln-id {
+            font-family: monospace;
+            font-size: 13px;
+            color: #667eea;
+        }
+        
+        .package-name {
+            font-family: monospace;
+            font-size: 13px;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        .pass {
+            color: #28a745;
+        }
+        
+        .fail {
+            color: #dc3545;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔒 Docker 镜像安全扫描报告</h1>
+            <div class="meta">
+                报告生成时间: {{ generated_at }} | 任务ID: {{ job_id }}
+            </div>
+        </div>
+        
+        <div class="summary-cards">
+            <div class="card">
+                <h3>扫描镜像数量</h3>
+                <div class="value">{{ overall_stats.total_images }}</div>
+            </div>
+            
+            <div class="card">
+                <h3>平均风险分数</h3>
+                <div class="value risk-value {{ get_risk_level(overall_stats.avg_risk_score).class }}">
+                    {{ overall_stats.avg_risk_score }}
+                </div>
+                <div>风险等级: {{ get_risk_level(overall_stats.avg_risk_score).level }}</div>
+            </div>
+            
+            <div class="card">
+                <h3>漏洞总数</h3>
+                <div class="value">{{ overall_stats.total_vulnerabilities }}</div>
+                <div class="severity-breakdown">
+                    <span class="severity-badge sev-critical">C: {{ overall_stats.vulnerabilities_by_severity.CRITICAL }}</span>
+                    <span class="severity-badge sev-high">H: {{ overall_stats.vulnerabilities_by_severity.HIGH }}</span>
+                    <span class="severity-badge sev-medium">M: {{ overall_stats.vulnerabilities_by_severity.MEDIUM }}</span>
+                    <span class="severity-badge sev-low">L: {{ overall_stats.vulnerabilities_by_severity.LOW }}</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>敏感信息发现</h3>
+                <div class="value">{{ overall_stats.total_secrets }}</div>
+                <div class="severity-breakdown">
+                    <span class="severity-badge sev-critical">C: {{ overall_stats.secrets_by_severity.CRITICAL }}</span>
+                    <span class="severity-badge sev-high">H: {{ overall_stats.secrets_by_severity.HIGH }}</span>
+                    <span class="severity-badge sev-medium">M: {{ overall_stats.secrets_by_severity.MEDIUM }}</span>
+                </div>
+            </div>
+        </div>
+        
+        {% for image_name, image_result in results.items() %}
+        <div class="section">
+            <div class="image-section">
+                <div class="image-header">
+                    <div class="image-name">📦 {{ image_name }}</div>
+                    {% if image_result.overall_risk_score is defined %}
+                    <div class="risk-score">
+                        <span>风险分数:</span>
+                        <span class="value risk-value {{ get_risk_level(image_result.overall_risk_score).class }}">
+                            {{ image_result.overall_risk_score }}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if image_result.vulnerabilities and image_result.vulnerabilities.vulnerabilities %}
+                <h3>⚠️ 漏洞 (CVE)</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>CVE ID</th>
+                            <th>严重程度</th>
+                            <th>标题</th>
+                            <th>软件包</th>
+                            <th>修复版本</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vuln in image_result.vulnerabilities.vulnerabilities[:20] %}
+                        <tr>
+                            <td class="vuln-id">{{ vuln.id }}</td>
+                            <td>
+                                <span class="severity-badge 
+                                    {% if vuln.severity == 'CRITICAL' %}sev-critical
+                                    {% elif vuln.severity == 'HIGH' %}sev-high
+                                    {% elif vuln.severity == 'MEDIUM' %}sev-medium
+                                    {% else %}sev-low{% endif %}">
+                                    {{ vuln.severity }}
+                                </span>
+                            </td>
+                            <td>{{ vuln.title }}</td>
+                            <td class="package-name">{{ vuln.package }}</td>
+                            <td>{{ vuln.fixed_version or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if image_result.vulnerabilities.vulnerabilities|length > 20 %}
+                <p style="text-align: center; margin-top: 10px; color: #999;">
+                    ... 还有 {{ image_result.vulnerabilities.vulnerabilities|length - 20 }} 个漏洞
+                </p>
+                {% endif %}
+                {% endif %}
+                
+                {% if image_result.secrets and image_result.secrets.findings %}
+                <h3>🔑 敏感信息</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>文件路径</th>
+                            <th>类型</th>
+                            <th>严重程度</th>
+                            <th>行号</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for secret in image_result.secrets.findings %}
+                        <tr>
+                            <td>{{ secret.file_path }}</td>
+                            <td>{{ secret.pattern_name }}</td>
+                            <td>
+                                <span class="severity-badge 
+                                    {% if secret.severity == 'CRITICAL' %}sev-critical
+                                    {% elif secret.severity == 'HIGH' %}sev-high
+                                    {% elif secret.severity == 'MEDIUM' %}sev-medium
+                                    {% else %}sev-low{% endif %}">
+                                    {{ secret.severity }}
+                                </span>
+                            </td>
+                            <td>{{ secret.line_number }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+                
+                {% if image_result.rules and image_result.rules.results %}
+                <h3>📋 配置规则检查</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>规则ID</th>
+                            <th>名称</th>
+                            <th>类别</th>
+                            <th>严重程度</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rule in image_result.rules.results %}
+                        <tr>
+                            <td>{{ rule.rule_id }}</td>
+                            <td>{{ rule.rule_name }}</td>
+                            <td>{{ rule.category }}</td>
+                            <td>
+                                <span class="severity-badge 
+                                    {% if rule.severity == 'CRITICAL' %}sev-critical
+                                    {% elif rule.severity == 'HIGH' %}sev-high
+                                    {% elif rule.severity == 'MEDIUM' %}sev-medium
+                                    {% else %}sev-low{% endif %}">
+                                    {{ rule.severity }}
+                                </span>
+                            </td>
+                            <td class="{{ 'pass' if rule.passed else 'fail' }}">
+                                {% if rule.passed %}✓ 通过{% else %}✗ 未通过{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div class="footer">
+            <p>Docker Image Security Scanner | Generated by Security Scanner Tool</p>
+        </div>
+    </div>
+</body>
+</html>

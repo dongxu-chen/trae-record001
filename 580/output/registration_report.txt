@@ -1,0 +1,41 @@
+============================================================
+Registration Evaluation Results
+============================================================
+
+Mean Squared Error:
+  Before: 11727.720978
+  After:  11148.051339
+  Change: -579.669639
+
+Mutual Information:
+  Before: 0.611845
+  After:  0.855850
+  Change: +0.244005
+
+Normalized Mutual Information:
+  Before: 0.244674
+  After:  0.360412
+  Change: +0.115739
+
+SSIM:
+  Before: 0.648107
+  After:  0.686903
+  Change: +0.038796
+
+Correlation Coefficient:
+  Before: 0.719335
+  After:  0.765915
+  Change: +0.046580
+
+Transform Determinant: 1.000000
+
+============================================================
+
+Transform Type: rigid
+Transform Parameters: [-0.0304634  -1.00439824 -1.14151653]
+Transform Matrix:
+[[ 0.99953603  0.03045869 -1.00439824]
+ [-0.03045869  0.99953603 -1.14151653]
+ [ 0.          0.          1.        ]]
+
+Metric History: [np.float64(0.5895328604460647), np.float64(0.5895328604460647), np.float64(0.059743634914240985), np.float64(0.10673757060383975), np.float64(0.07728904501552378), np.float64(0.40143638598558057), np.float64(0.2513613255455453), np.float64(0.6336265745148075), np.float64(0.6464871940871607), np.float64(0.5326114462114967)]...

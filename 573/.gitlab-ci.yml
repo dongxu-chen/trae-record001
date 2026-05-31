@@ -1,0 +1,40 @@
+stages:
+  - build
+  - test
+  - security-scan
+
+variables:
+  DOCKER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t $DOCKER_IMAGE .
+    - docker push $DOCKER_IMAGE
+
+security_scan:
+  stage: security-scan
+  image: python:3.11-slim
+  services:
+    - docker:dind
+  before_script:
+    - apt-get update && apt-get install -y wget ca-certificates
+    - wget -q https://github.com/aquasecurity/trivy/releases/download/v0.47.0/trivy_0.47.0_Linux-64bit.tar.gz
+    - tar -xzf trivy_*.tar.gz && mv trivy /usr/local/bin/
+    - pip install -r requirements.txt
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $DOCKER_IMAGE
+  script:
+    - python cli/scanner_cli.py db update --force
+    - python cli/scanner_cli.py scan --images $DOCKER_IMAGE --wait --output-all --fail-on-severity HIGH
+  artifacts:
+    paths:
+      - reports/
+    when: always
+    expire_in: 1 week
+    reports:
+      junit: reports/scan_report_*.xml
+  allow_failure: false

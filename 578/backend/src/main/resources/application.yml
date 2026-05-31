@@ -1,0 +1,44 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: flink-resource-recommender
+  datasource:
+    url: jdbc:h2:mem:flink_recommender;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+flink:
+  rest:
+    base-url: http://localhost:8081
+    timeout: 30000
+
+recommendation:
+  default-taskmanager-memory: 1024
+  default-taskmanager-cpu: 1.0
+  min-parallelism: 1
+  max-parallelism: 128
+  cost-per-cpu-per-hour: 0.05
+  cost-per-gb-memory-per-hour: 0.02
+  cost-per-gb-network-in: 0.0
+  cost-per-gb-network-out: 0.08
+  cost-per-gb-cross-rack: 0.02
+  cost-per-gb-cross-az: 0.05
+
+logging:
+  level:
+    com.flink.recommender: DEBUG
+    org.springframework.web: INFO

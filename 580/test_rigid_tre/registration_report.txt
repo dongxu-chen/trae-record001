@@ -1,0 +1,54 @@
+============================================================
+Registration Evaluation Results
+============================================================
+
+Mean Squared Error:
+  Before: 7405.616385
+  After:  1438.276051
+  Change: -5967.340334
+
+Mutual Information:
+  Before: 0.387219
+  After:  0.966127
+  Change: +0.578908
+
+Normalized Mutual Information:
+  Before: 0.118730
+  After:  0.305041
+  Change: +0.186311
+
+SSIM:
+  Before: 0.074788
+  After:  0.684655
+  Change: +0.609867
+
+Correlation Coefficient:
+  Before: 0.771054
+  After:  0.959488
+  Change: +0.188434
+
+Transform Determinant: 1.000000
+
+============================================================
+
+Transform Type: rigid
+Transform Parameters (first 20): [-0.07991843 -2.82497128  2.21586204]...
+Transform Matrix:
+[[ 0.99680822  0.07983339 -2.82497128]
+ [-0.07983339  0.99680822  2.21586204]
+ [ 0.          0.          1.        ]]
+
+Metric History (first 10): [0.6003088315773021, 0.5950034216421689, 0.6020066133160941, 0.5917237390487562, 0.5973586649184299, 0.6324719249019833, 0.6457559927800405, 0.6457559927800405, 0.6457559927800405, 0.6474557260661392]...
+
+Target Registration Error (TRE):
+  mean: 0.0127
+  median: 0.0128
+  std: 0.0017
+  max: 0.0152
+  min: 0.0092
+  p25: 0.0116
+  p75: 0.0140
+  p95: 0.0149
+  p99: 0.0152
+  rmse: 0.0128
+  count: 20.0000

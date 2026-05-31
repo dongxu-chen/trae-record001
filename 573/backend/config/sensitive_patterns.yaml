@@ -1,0 +1,231 @@
+patterns:
+  - name: AWS Access Key ID
+    pattern: 'AKIA[0-9A-Z]{16}'
+    severity: high
+    description: AWS Access Key ID detected
+    category: cloud_credentials
+
+  - name: AWS Secret Access Key
+    pattern: '(?i)aws(.{0,20})?[''"][0-9a-zA-Z/+]{40}[''"]'
+    severity: critical
+    description: AWS Secret Access Key detected
+    category: cloud_credentials
+
+  - name: Private Key (RSA)
+    pattern: '-----BEGIN (RSA|OPENSSH|EC|DSA|PGP|ENCRYPTED) PRIVATE KEY-----'
+    severity: critical
+    description: Private key file detected
+    category: cryptography
+
+  - name: GitHub Token
+    pattern: 'ghp_[0-9a-zA-Z]{36}'
+    severity: critical
+    description: GitHub Personal Access Token detected
+    category: tokens
+
+  - name: GitHub OAuth Token
+    pattern: 'gho_[0-9a-zA-Z]{36}'
+    severity: critical
+    description: GitHub OAuth Token detected
+    category: tokens
+
+  - name: Slack Token
+    pattern: 'xox[baprs]-[0-9a-zA-Z-]{10,48}'
+    severity: critical
+    description: Slack API token detected
+    category: tokens
+
+  - name: Stripe API Key
+    pattern: 'sk_(live|test)_[0-9a-zA-Z]{24,}'
+    severity: critical
+    description: Stripe API key detected
+    category: tokens
+
+  - name: Database Connection String
+    pattern: '(?i)(mysql|postgresql|mongodb|redis|mssql|oracle)://[^\\s]+:[^\\s]+@[^\\s]+'
+    severity: high
+    description: Database connection string with credentials detected
+    category: database
+
+  - name: Password in URL
+    pattern: '(?i)(https?|ftp|sftp|smtp)://[^\\s:]+:[^\\s@]+@[^\\s]+'
+    severity: high
+    description: Password embedded in URL detected
+    category: credentials
+
+  - name: Generic Password Field
+    pattern: '(?i)(password|passwd|pwd|pass)\s*[:=]\s*[''"]?[^\s''"]{5,}[''"]?'
+    severity: medium
+    description: Potential password field detected
+    category: credentials
+
+  - name: API Key Pattern
+    pattern: '(?i)(api[_-]?key|apikey)\s*[:=]\s*[''"]?[a-zA-Z0-9]{16,}[''"]?'
+    severity: high
+    description: Potential API key detected
+    category: tokens
+
+  - name: Secret Key Pattern
+    pattern: '(?i)(secret[_-]?key|secretkey|secret)\s*[:=]\s*[''"]?[a-zA-Z0-9]{16,}[''"]?'
+    severity: high
+    description: Potential secret key detected
+    category: tokens
+
+  - name: JWT Token
+    pattern: 'eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*'
+    severity: medium
+    description: JWT token detected
+    category: tokens
+
+  - name: SSH Known Hosts
+    pattern: 'ssh-rsa\s+AAAAB3NzaC1yc2E'
+    severity: low
+    description: SSH known hosts entry
+    category: cryptography
+
+  - name: .env file content
+    pattern: '(?i)^[A-Z_]+=.+'
+    severity: medium
+    description: Environment variable assignment
+    category: configuration
+    file_types: ['.env', '.env.*']
+
+  - name: Docker Hub Password
+    pattern: '(?i)docker.*password\s*[:=]\s*[''"]?[^\s''"]+[''"]?'
+    severity: high
+    description: Docker Hub password detected
+    category: credentials
+
+  - name: NPM Auth Token
+    pattern: '//registry.npmjs.org/:_authToken=[0-9a-f-]{36}'
+    severity: critical
+    description: NPM auth token detected
+    category: tokens
+
+  - name: PyPI Upload Token
+    pattern: 'pypi-[A-Za-z0-9]{30,}'
+    severity: critical
+    description: PyPI upload token detected
+    category: tokens
+
+content_keywords:
+  - name: Password Comment
+    keywords: ['password', 'passwd', 'pwd', 'secret']
+    severity: medium
+    description: Potential password mentioned in comments
+    category: content_analysis
+
+  - name: TODO Security Issue
+    keywords: ['todo', 'fixme', 'hack', 'xxx', 'security']
+    severity: low
+    description: Potential security-related TODO comment
+    category: content_analysis
+
+  - name: Hardcoded Credentials
+    keywords: ['hardcoded', 'hard-coded', 'hard coded', 'placeholder', 'changeme', 'todo']
+    severity: high
+    description: Potential hardcoded credentials indicator
+    category: content_analysis
+
+  - name: Encryption Key Reference
+    keywords: ['encryption key', 'encryption_key', 'aes key', 'rsa key', 'private key']
+    severity: high
+    description: Encryption key reference found
+    category: content_analysis
+
+  - name: Certificate Reference
+    keywords: ['.pem', '.crt', '.cer', '.pfx', '.p12', 'certificate', 'ssl cert', 'tls cert']
+    severity: medium
+    description: Certificate file reference found
+    category: content_analysis
+
+  - name: Database Credential Reference
+    keywords: ['db password', 'database password', 'db pass', 'mysql password', 'postgres password']
+    severity: high
+    description: Database credential reference found
+    category: content_analysis
+
+  - name: API Endpoint with Key
+    keywords: ['x-api-key', 'authorization: bearer', 'auth token', 'access token']
+    severity: high
+    description: API authentication reference found
+    category: content_analysis
+
+  - name: Sensitive Configuration
+    keywords: ['debug=true', 'debug: true', 'log_credentials', 'print password', 'echo password']
+    severity: medium
+    description: Sensitive configuration detected
+    category: content_analysis
+
+  - name: Weak Cryptography
+    keywords: ['md5(', 'sha1(', 'des(', 'rc4(', 'ecb mode', 'cbc mode']
+    severity: high
+    description: Weak cryptography usage detected
+    category: content_analysis
+
+  - name: Insecure Protocol
+    keywords: ['http://', 'ftp://', 'telnet://', 'rlogin://']
+    severity: medium
+    description: Insecure protocol usage detected
+    category: content_analysis
+
+suspicious_files:
+  - name: SSH Key Files
+    patterns: ['id_rsa', 'id_dsa', 'id_ecdsa', 'id_ed25519', '.ssh/id_']
+    severity: critical
+    description: SSH private key file detected
+    category: file_based
+
+  - name: Certificate Files
+    patterns: ['.pem', '.crt', '.cer', '.pfx', '.p12', '.key', '.pkcs12']
+    severity: high
+    description: Certificate or key file detected
+    category: file_based
+
+  - name: Configuration Files with Secrets
+    patterns: ['.env', '.env.', 'config.json', 'secrets.yaml', 'secrets.yml', 'credentials']
+    severity: high
+    description: Potential secrets configuration file
+    category: file_based
+
+  - name: CI/CD Configuration
+    patterns: ['.travis.yml', 'circle.yml', '.gitlab-ci.yml', 'github/workflows/', 'azure-pipelines.yml']
+    severity: medium
+    description: CI/CD configuration file - may contain secrets
+    category: file_based
+
+  - name: Backup Files
+    patterns: ['.bak', '.backup', '.swp', '.old', '~', 'copy']
+    severity: low
+    description: Backup file detected - may contain sensitive data
+    category: file_based
+
+  - name: Database Files
+    patterns: ['.db', '.sqlite', '.sql', '.dump', '.sql.gz']
+    severity: medium
+    description: Database file detected
+    category: file_based
+
+  - name: Log Files
+    patterns: ['.log', 'access.log', 'error.log', 'debug.log']
+    severity: medium
+    description: Log file detected - may contain sensitive data
+    category: file_based
+
+  - name: Docker Configuration
+    patterns: ['docker-compose.yml', 'Dockerfile', '.docker/config.json', '.dockercfg']
+    severity: high
+    description: Docker configuration file - may contain credentials
+    category: file_based
+
+  - name: Cloud Credentials
+    patterns: ['.aws/credentials', '.gcp/credentials', '.azure/credentials', 'aws_access_key', 'client_secret']
+    severity: critical
+    description: Cloud credentials file detected
+    category: file_based
+
+  - name: Source Code Repositories
+    patterns: ['.git/config', '.git-credentials', '.netrc']
+    severity: critical
+    description: Git configuration with credentials detected
+    category: file_based

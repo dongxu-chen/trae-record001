@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./reports:/app/reports
+      - trivy-cache:/root/.cache/trivy
+    environment:
+      - TRIVY_CACHE_DIR=/root/.cache/trivy
+      - MAX_CONCURRENT_SCANS=3
+      - REPORTS_DIR=/app/reports
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  trivy-cache:

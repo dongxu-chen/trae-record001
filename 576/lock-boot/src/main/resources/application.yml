@@ -1,0 +1,34 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: lock-monitor
+
+redis:
+  address: redis://localhost:6379
+
+zookeeper:
+  address: localhost:2181
+
+elasticsearch:
+  uris: http://localhost:9200
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    com.distributed.lock: INFO

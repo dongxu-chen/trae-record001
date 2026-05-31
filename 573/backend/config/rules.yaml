@@ -1,0 +1,140 @@
+rules:
+  - id: R001
+    name: Root User Check
+    description: Container should not run as root user
+    severity: high
+    category: configuration
+    check: |
+      def check(config):
+          user = config.get('Config', {}).get('User', '')
+          return user == '' or user == 'root'
+    remediation: Use USER instruction to switch to a non-root user
+
+  - id: R002
+    name: Latest Tag Usage
+    description: Avoid using latest tag for base images
+    severity: medium
+    category: configuration
+    check: |
+      def check(config):
+          from image_analyzer import ImageAnalyzer
+          return ImageAnalyzer.check_latest_tag(config)
+    remediation: Use specific version tags for base images
+
+  - id: R003
+    name: Exposed Privileged Ports
+    description: Avoid exposing privileged ports (< 1024) without justification
+    severity: low
+    category: configuration
+    check: |
+      def check(config):
+          exposed_ports = config.get('Config', {}).get('ExposedPorts', {}) or {}
+          for port in exposed_ports:
+              port_num = int(port.split('/')[0])
+              if port_num < 1024:
+                  return True
+          return False
+    remediation: Use non-privileged ports >= 1024 when possible
+
+  - id: R004
+    name: Sensitive Environment Variables
+    description: Sensitive data should not be in ENV variables
+    severity: high
+    category: configuration
+    check: |
+      def check(config):
+          env_vars = config.get('Config', {}).get('Env', []) or []
+          sensitive_keywords = ['PASSWORD', 'SECRET', 'API_KEY', 'TOKEN', 'KEY']
+          for env in env_vars:
+              env_upper = env.upper()
+              for keyword in sensitive_keywords:
+                  if keyword in env_upper and '=' in env:
+                      value = env.split('=', 1)[1]
+                      if len(value) > 0 and value not in ['', 'null', 'none']:
+                          return True
+          return False
+    remediation: Use Docker secrets or a secrets management system
+
+  - id: R005
+    name: Health Check Missing
+    description: Healthcheck instruction is recommended
+    severity: low
+    category: configuration
+    check: |
+      def check(config):
+          healthcheck = config.get('Config', {}).get('Healthcheck', {})
+          return healthcheck is None or len(healthcheck) == 0
+    remediation: Add HEALTHCHECK instruction to your Dockerfile
+
+  - id: R006
+    name: Dangerous Volume Mounts
+    description: Avoid mounting sensitive host directories
+    severity: critical
+    category: runtime
+    check: |
+      def check(config):
+          volumes = config.get('Config', {}).get('Volumes', {}) or {}
+          dangerous_paths = ['/var/run/docker.sock', '/root', '/etc', '/proc', '/sys']
+          for path in volumes:
+              for dangerous in dangerous_paths:
+                  if path.startswith(dangerous):
+                      return True
+          return False
+    remediation: Do not mount sensitive host directories into containers
+
+  - id: R007
+    name: Too Many Layers
+    description: Image has too many layers (consider optimizing)
+    severity: low
+    category: optimization
+    check: |
+      def check(config):
+          history = config.get('history', [])
+          return len(history) > 20
+    remediation: Combine RUN instructions to reduce layer count
+
+  - id: R008
+    name: Package Manager Cache Not Cleared
+    description: Package manager cache should be cleared
+    severity: medium
+    category: optimization
+    check: |
+      def check(config):
+          history = config.get('history', [])
+          for layer in history:
+              cmd = layer.get('CreatedBy', '').lower()
+              if ('apt-get install' in cmd or 'apt install' in cmd) and 'clean' not in cmd:
+                  return True
+              if ('yum install' in cmd or 'dnf install' in cmd) and 'clean' not in cmd:
+                  return True
+          return False
+    remediation: Add '&& apt-get clean && rm -rf /var/lib/apt/lists/*' after apt-get install
+
+  - id: R009
+    name: ADD Instead of COPY
+    description: Prefer COPY over ADD for local files
+    severity: low
+    category: best_practice
+    check: |
+      def check(config):
+          history = config.get('history', [])
+          for layer in history:
+              cmd = layer.get('CreatedBy', '').lower()
+              if 'add ' in cmd and 'http' not in cmd:
+                  return True
+          return False
+    remediation: Use COPY instead of ADD for local files
+
+  - id: R010
+    name: No User Created
+    description: No dedicated user created in the image
+    severity: medium
+    category: configuration
+    check: |
+      def check(config):
+          history = config.get('history', [])
+          has_useradd = any('useradd' in layer.get('CreatedBy', '').lower() for layer in history)
+          has_adduser = any('adduser' in layer.get('CreatedBy', '').lower() for layer in history)
+          has_usermod = any('usermod' in layer.get('CreatedBy', '').lower() for layer in history)
+          return not (has_useradd or has_adduser or has_usermod)
+    remediation: Create a dedicated user to run your application

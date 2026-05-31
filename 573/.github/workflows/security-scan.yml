@@ -1,0 +1,86 @@
+name: Docker Image Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install Trivy
+      run: |
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.47.0
+        trivy --version
+    
+    - name: Update Trivy Database
+      run: |
+        python - <<EOF
+        import asyncio
+        import sys
+        sys.path.insert(0, '.')
+        from backend.core.scan_manager import ScanManager
+        
+        async def main():
+            sm = ScanManager()
+            result = await sm.update_trivy_db(force=True)
+            if result.get('success'):
+                print(f"DB updated successfully: {result.get('version')}")
+            else:
+                print(f"DB update failed: {result.get('error')}")
+                sys.exit(1)
+        
+        asyncio.run(main())
+        EOF
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Build Docker images
+      run: |
+        docker build -t myapp:${{ github.sha }} .
+    
+    - name: Run security scan
+      run: |
+        python cli/scanner_cli.py scan \
+          --images myapp:${{ github.sha }} \
+          --wait \
+          --output-all \
+          --fail-on-severity HIGH
+    
+    - name: Upload JUnit report
+      uses: mikepenz/action-junit-report@v4
+      if: always()
+      with:
+        report_paths: 'reports/scan_report_*.xml'
+        detailed_summary: true
+        require_tests: true
+        fail_on_failure: true
+    
+    - name: Upload scan reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-scan-reports
+        path: |
+          reports/scan_report_*.json
+          reports/scan_report_*.html
+          reports/scan_report_*.xml
+    
+    - name: Check scan results
+      run: |
+        echo "Scan completed successfully"
