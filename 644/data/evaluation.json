@@ -1,0 +1,275 @@
+{
+  "records": [
+    {
+      "timestamp": "2026-05-30T20:11:51.793261",
+      "original": "apple手机",
+      "corrected": "apple手机",
+      "needs_correction": false,
+      "confidence": 1.0,
+      "edit_distance": 0,
+      "in_domain": false,
+      "domain_weight": 0,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:11:51.804256",
+      "original": "iphone壳",
+      "corrected": "iPhone",
+      "needs_correction": true,
+      "confidence": 0.6196659894784292,
+      "edit_distance": 2,
+      "in_domain": true,
+      "domain_weight": 1000,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:11:51.817262",
+      "original": "bluetooth耳机",
+      "corrected": "bluetooth耳机",
+      "needs_correction": false,
+      "confidence": 1.0,
+      "edit_distance": 0,
+      "in_domain": false,
+      "domain_weight": 0,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:11:51.832258",
+      "original": "huawei手机",
+      "corrected": "huawei手机",
+      "needs_correction": false,
+      "confidence": 1.0,
+      "edit_distance": 0,
+      "in_domain": false,
+      "domain_weight": 0,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:11:51.848870",
+      "original": "nike鞋",
+      "corrected": "nike鞋",
+      "needs_correction": false,
+      "confidence": 1.0,
+      "edit_distance": 0,
+      "in_domain": false,
+      "domain_weight": 0,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:11:51.870873",
+      "original": "coca cola",
+      "corrected": "coca cola",
+      "needs_correction": false,
+      "confidence": 1.0,
+      "edit_distance": 0,
+      "in_domain": false,
+      "domain_weight": 0,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:12:30.726144",
+      "original": "apple手机",
+      "corrected": "apple手机",
+      "needs_correction": false,
+      "confidence": 1.0,
+      "edit_distance": 0,
+      "in_domain": false,
+      "domain_weight": 0,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:12:30.740271",
+      "original": "iphone壳",
+      "corrected": "iPhone",
+      "needs_correction": true,
+      "confidence": 0.6205659894784291,
+      "edit_distance": 2,
+      "in_domain": true,
+      "domain_weight": 1000,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:12:30.750146",
+      "original": "bluetooth耳机",
+      "corrected": "bluetooth耳机",
+      "needs_correction": false,
+      "confidence": 1.0,
+      "edit_distance": 0,
+      "in_domain": false,
+      "domain_weight": 0,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:12:30.766734",
+      "original": "huawei手机",
+      "corrected": "huawei手机",
+      "needs_correction": false,
+      "confidence": 1.0,
+      "edit_distance": 0,
+      "in_domain": false,
+      "domain_weight": 0,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:12:30.779526",
+      "original": "nike鞋",
+      "corrected": "nike鞋",
+      "needs_correction": false,
+      "confidence": 1.0,
+      "edit_distance": 0,
+      "in_domain": false,
+      "domain_weight": 0,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:12:30.793634",
+      "original": "coca cola",
+      "corrected": "coca cola",
+      "needs_correction": false,
+      "confidence": 1.0,
+      "edit_distance": 0,
+      "in_domain": false,
+      "domain_weight": 0,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:14:08.244153",
+      "original": "apple手机",
+      "corrected": "苹果手机",
+      "needs_correction": true,
+      "confidence": 0.7010000000000001,
+      "edit_distance": 1,
+      "in_domain": false,
+      "domain_weight": 0,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:14:08.256201",
+      "original": "iphone壳",
+      "corrected": "iPhone",
+      "needs_correction": true,
+      "confidence": 0.6214659894784292,
+      "edit_distance": 2,
+      "in_domain": true,
+      "domain_weight": 1000,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:14:08.272976",
+      "original": "bluetooth耳机",
+      "corrected": "蓝牙耳机",
+      "needs_correction": true,
+      "confidence": 0.8629,
+      "edit_distance": 1,
+      "in_domain": true,
+      "domain_weight": 780,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:14:08.304377",
+      "original": "huawei手机",
+      "corrected": "华为手机",
+      "needs_correction": true,
+      "confidence": 0.8935,
+      "edit_distance": 1,
+      "in_domain": true,
+      "domain_weight": 950,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:14:08.316414",
+      "original": "nike鞋",
+      "corrected": "nike鞋",
+      "needs_correction": false,
+      "confidence": 1.0,
+      "edit_distance": 0,
+      "in_domain": false,
+      "domain_weight": 0,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:14:08.333649",
+      "original": "coca cola",
+      "corrected": "coca cola",
+      "needs_correction": false,
+      "confidence": 1.0,
+      "edit_distance": 0,
+      "in_domain": false,
+      "domain_weight": 0,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:14:08.406865",
+      "original": "ipone",
+      "corrected": "iPhone",
+      "needs_correction": true,
+      "confidence": 1.0040333333333333,
+      "edit_distance": 2,
+      "in_domain": true,
+      "domain_weight": 1000,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:14:08.418100",
+      "original": "ipone",
+      "corrected": "iPhone",
+      "needs_correction": true,
+      "confidence": 0.8590333333333333,
+      "edit_distance": 2,
+      "in_domain": true,
+      "domain_weight": 1000,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:14:08.437977",
+      "original": "牛nai",
+      "corrected": "牛奶",
+      "needs_correction": true,
+      "confidence": 0.7621000000000001,
+      "edit_distance": 3,
+      "in_domain": true,
+      "domain_weight": 1000,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:14:08.459508",
+      "original": "连衣群",
+      "corrected": "连衣裙",
+      "needs_correction": true,
+      "confidence": 0.8621,
+      "edit_distance": 1,
+      "in_domain": true,
+      "domain_weight": 1000,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:14:08.475513",
+      "original": "蓝芽耳机",
+      "corrected": "蓝牙耳机",
+      "needs_correction": true,
+      "confidence": 0.8225000000000001,
+      "edit_distance": 1,
+      "in_domain": true,
+      "domain_weight": 780,
+      "user_feedback": null
+    },
+    {
+      "timestamp": "2026-05-30T20:14:08.498504",
+      "original": "apple手机",
+      "corrected": "苹果手机",
+      "needs_correction": true,
+      "confidence": 0.7010000000000001,
+      "edit_distance": 1,
+      "in_domain": false,
+      "domain_weight": 0,
+      "user_feedback": null
+    }
+  ],
+  "overall_stats": {
+    "total_queries": 24,
+    "corrected_queries": 12,
+    "accepted_corrections": 0,
+    "skipped_corrections": 0
+  },
+  "timestamp": "2026-05-30T20:14:08.498504"
+}

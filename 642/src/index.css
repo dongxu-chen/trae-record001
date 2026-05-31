@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', monospace;
+  background-color: #0A1628;
+  color: #ffffff;
+}
+
+@layer components {
+  .glass-panel {
+    background: rgba(10, 22, 40, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 245, 255, 0.2);
+    border-radius: 8px;
+  }
+
+  .tool-button {
+    @apply w-12 h-12 flex items-center justify-center rounded-lg transition-all duration-200;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 245, 255, 0.15);
+  }
+
+  .tool-button:hover {
+    background: rgba(0, 245, 255, 0.1);
+    border-color: rgba(0, 245, 255, 0.4);
+    box-shadow: 0 0 15px rgba(0, 245, 255, 0.2);
+  }
+
+  .tool-button.active {
+    background: rgba(0, 245, 255, 0.2);
+    border-color: #00F5FF;
+    box-shadow: 0 0 20px rgba(0, 245, 255, 0.4);
+  }
+
+  .slider-track {
+    @apply h-2 rounded-full;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .slider-thumb {
+    @apply w-4 h-4 rounded-full cursor-pointer;
+    background: #00F5FF;
+    box-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+  }
+
+  .neon-text {
+    text-shadow: 0 0 10px rgba(0, 245, 255, 0.5), 0 0 20px rgba(0, 245, 255, 0.3);
+  }
+
+  .section-title {
+    @apply text-xs font-semibold tracking-wider mb-3 uppercase;
+    color: #00F5FF;
+    letter-spacing: 2px;
+  }
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #00F5FF;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+  transition: transform 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 245, 255, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 245, 255, 0.5);
+}

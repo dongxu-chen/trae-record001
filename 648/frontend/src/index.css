@@ -1,0 +1,275 @@
+:root {
+  --primary-color: #1890ff;
+  --success-color: #52c41a;
+  --warning-color: #faad14;
+  --error-color: #f5222d;
+  --bg-color: #f0f2f5;
+  --card-bg: #ffffff;
+  --text-primary: #262626;
+  --text-secondary: #8c8c8c;
+  --border-color: #d9d9d9;
+}
+
+body {
+  background-color: var(--bg-color);
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.header {
+  background: var(--card-bg);
+  padding: 20px 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.header h1 {
+  font-size: 24px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.header .subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.stat-card .label {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.stat-card .value {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stat-card.success .value {
+  color: var(--success-color);
+}
+
+.stat-card.error .value {
+  color: var(--error-color);
+}
+
+.stat-card.warning .value {
+  color: var(--warning-color);
+}
+
+.stat-card.primary .value {
+  color: var(--primary-color);
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 1024px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h2 {
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.event-list {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.event-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.event-item:last-child {
+  border-bottom: none;
+}
+
+.event-info {
+  flex: 1;
+}
+
+.event-key {
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 13px;
+}
+
+.event-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.event-type {
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.event-type.expired {
+  background: #fff1f0;
+  color: var(--error-color);
+}
+
+.event-type.del {
+  background: #fff7e6;
+  color: #d46b08;
+}
+
+.event-type.set {
+  background: #f6ffed;
+  color: var(--success-color);
+}
+
+.event-status {
+  margin-left: 12px;
+}
+
+.status-badge {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-badge.success {
+  background: var(--success-color);
+}
+
+.status-badge.pending {
+  background: var(--warning-color);
+}
+
+.status-badge.error {
+  background: var(--error-color);
+}
+
+.chart-container {
+  height: 300px;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #40a9ff;
+}
+
+.btn-danger {
+  background: var(--error-color);
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #ff4d4f;
+}
+
+.redis-status {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success-color);
+}
+
+.status-dot.disconnected {
+  background: var(--error-color);
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}
+
+.empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}
+
+.refresh-indicator {
+  font-size: 12px;
+  color: var(--text-secondary);
+}

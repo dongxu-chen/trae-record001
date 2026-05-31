@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电商搜索纠错系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-indigo-600 mb-2">电商搜索纠错系统</h1>
+                <p class="text-gray-600">智能识别拼写错误、拼音混合、漏字多字，自动纠正为正确关键词</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                <div class="mb-6 grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">用户ID (个性化推荐)</label>
+                        <input 
+                            type="text" 
+                            id="userId" 
+                            placeholder="如：user_001"
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors"
+                        >
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            纠错阈值: <span id="thresholdValue" class="text-indigo-600">0.7</span>
+                        </label>
+                        <input 
+                            type="range" 
+                            id="threshold" 
+                            min="0" 
+                            max="1" 
+                            step="0.05" 
+                            value="0.7"
+                            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                            onchange="updateThreshold(this.value)"
+                        >
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>宽松</span>
+                            <span>严格</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">搜索词</label>
+                    <div class="flex gap-3">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            placeholder="输入搜索词，如：ipone、huawe手机、apple手机、iphone壳..."
+                            class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors"
+                        >
+                        <button 
+                            onclick="correctSearch()"
+                            class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium"
+                        >
+                            纠错
+                        </button>
+                    </div>
+                </div>
+
+                <div id="resultContainer" class="hidden">
+                    <div class="border-t pt-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500 mb-2">原始搜索词</h3>
+                                <div id="originalQuery" class="text-xl font-bold text-gray-800 bg-gray-50 p-4 rounded-xl"></div>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500 mb-2">纠错结果</h3>
+                                <div id="correctedQuery" class="text-xl font-bold text-green-600 bg-green-50 p-4 rounded-xl"></div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 grid md:grid-cols-3 gap-3">
+                            <div class="p-3 bg-purple-50 text-purple-700 rounded-lg">
+                                <div class="text-xs font-medium">词长度</div>
+                                <div class="text-lg font-bold" id="queryLength">-</div>
+                            </div>
+                            <div class="p-3 bg-blue-50 text-blue-700 rounded-lg">
+                                <div class="text-xs font-medium">动态阈值</div>
+                                <div class="text-lg font-bold" id="dynamicThreshold">-</div>
+                            </div>
+                            <div class="p-3 bg-indigo-50 text-indigo-700 rounded-lg">
+                                <div class="text-xs font-medium">基础阈值</div>
+                                <div class="text-lg font-bold" id="baseThreshold">-</div>
+                            </div>
+                        </div>
+
+                        <div id="needsCorrection" class="mt-4 p-4 rounded-xl"></div>
+                        <div id="pinyinMixed" class="mt-2 p-3 bg-yellow-50 text-yellow-700 rounded-lg hidden">
+                            <span class="font-medium">检测到拼音混合输入</span>
+                        </div>
+                        <div id="seedMatch" class="mt-2 p-3 bg-green-50 text-green-700 rounded-lg hidden">
+                            <span class="font-medium">🌱 种子纠错匹配</span> - 来自人工标注冷启动数据
+                        </div>
+                        <div id="multilingualMatch" class="mt-2 p-3 bg-orange-50 text-orange-700 rounded-lg hidden">
+                            <span class="font-medium">🌐 多语言混合纠错</span>
+                            <div id="multilingualDetails" class="text-sm mt-1"></div>
+                        </div>
+
+                        <div id="improvementSection" class="mt-4 hidden">
+                            <div class="p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200">
+                                <h4 class="font-semibold text-gray-800 mb-3">📊 纠错效果评估</h4>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div class="text-center">
+                                        <div class="text-xs text-gray-500">纠错前效果</div>
+                                        <div class="text-xl font-bold text-red-500" id="effectBefore">-</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-xs text-gray-500">纠错后效果</div>
+                                        <div class="text-xl font-bold text-green-600" id="effectAfter">-</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-xs text-gray-500">提升幅度</div>
+                                        <div class="text-xl font-bold text-blue-600" id="effectImprovement">-</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-xs text-gray-500">领域权重</div>
+                                        <div class="text-xl font-bold text-purple-600" id="weightImprovement">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="userProfileSection" class="mt-4 hidden">
+                            <div class="p-4 bg-pink-50 rounded-xl border border-pink-200">
+                                <h4 class="font-semibold text-gray-800 mb-2">👤 用户画像</h4>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                                    <div>
+                                        <span class="text-gray-500">交互次数:</span>
+                                        <span class="font-semibold" id="userInteractions">-</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500">接受率:</span>
+                                        <span class="font-semibold" id="userAcceptance">-</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500">阈值调整:</span>
+                                        <span class="font-semibold" id="userThresholdAdj">-</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500">常用词:</span>
+                                        <span class="font-semibold" id="userTopWords">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">候选词列表</h3>
+                            <div id="candidatesList" class="space-y-3"></div>
+                        </div>
+
+                        <div id="feedbackSection" class="mt-6 hidden">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-3">用户反馈</h3>
+                            <p class="text-sm text-gray-600 mb-3">这个纠错结果对您有帮助吗？</p>
+                            <div class="flex gap-3">
+                                <button 
+                                    onclick="sendFeedback('good')"
+                                    class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                                >
+                                    👍 有帮助
+                                </button>
+                                <button 
+                                    onclick="sendFeedback('bad')"
+                                    class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                >
+                                    👎 没帮助
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">测试示例</h2>
+                <div class="grid md:grid-cols-3 gap-3">
+                    <button onclick="testExample('ipone')" class="p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+                        <span class="text-red-500">ipone</span> → iPhone
+                    </button>
+                    <button onclick="testExample('huawe手机')" class="p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+                        <span class="text-red-500">huawe手机</span> → 华为手机
+                    </button>
+                    <button onclick="testExample('牛nai')" class="p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+                        <span class="text-red-500">牛nai</span> → 牛奶
+                    </button>
+                    <button onclick="testExample('连衣群')" class="p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+                        <span class="text-red-500">连衣群</span> → 连衣裙
+                    </button>
+                    <button onclick="testExample('蓝芽耳机')" class="p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+                        <span class="text-red-500">蓝芽耳机</span> → 蓝牙耳机
+                    </button>
+                    <button onclick="testExample('充点器')" class="p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+                        <span class="text-red-500">充点器</span> → 充电器
+                    </button>
+                    <button onclick="testExample('apple手机')" class="p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+                        <span class="text-orange-500">apple手机</span> → 苹果手机
+                    </button>
+                    <button onclick="testExample('iphone壳')" class="p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+                        <span class="text-orange-500">iphone壳</span> → iPhone手机壳
+                    </button>
+                    <button onclick="testExample('bluetooth耳机')" class="p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+                        <span class="text-orange-500">bluetooth耳机</span> → 蓝牙耳机
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-6 bg-white rounded-2xl shadow-xl p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">功能说明</h2>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div>
+                        <h3 class="font-medium text-indigo-600 mb-2">✓ 拼写错误纠正</h3>
+                        <p class="text-sm text-gray-600">基于编辑距离算法，自动识别并纠正错别字</p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-indigo-600 mb-2">✓ 拼音向量相似度</h3>
+                        <p class="text-sm text-gray-600">基于拼音字符向量余弦相似度，精确匹配相似拼音</p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-indigo-600 mb-2">✓ 拼音混合识别</h3>
+                        <p class="text-sm text-gray-600">智能识别中文拼音混合输入，自动转换为正确中文</p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-indigo-600 mb-2">✓ 多语言混合纠错</h3>
+                        <p class="text-sm text-gray-600">支持中英文混合输入，如apple手机→苹果手机</p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-indigo-600 mb-2">✓ 个性化纠错</h3>
+                        <p class="text-sm text-gray-600">学习用户历史偏好，提供个性化推荐和阈值调整</p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-indigo-600 mb-2">✓ 纠错效果评估</h3>
+                        <p class="text-sm text-gray-600">量化评估纠错前后搜索效果变化，计算提升幅度</p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-indigo-600 mb-2">✓ 种子纠错对</h3>
+                        <p class="text-sm text-gray-600">人工标注70+种子纠错对，冷启动即有良好效果</p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-indigo-600 mb-2">✓ 动态阈值</h3>
+                        <p class="text-sm text-gray-600">按词长度动态调节阈值，短词严格长词宽松</p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-indigo-600 mb-2">✓ 领域词库</h3>
+                        <p class="text-sm text-gray-600">电商领域专有词库，提高纠错准确率</p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-indigo-600 mb-2">✓ 语言模型</h3>
+                        <p class="text-sm text-gray-600">N-gram语言模型，评估候选词语义合理性</p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-indigo-600 mb-2">✓ 用户反馈学习</h3>
+                        <p class="text-sm text-gray-600">根据用户点击反馈持续优化纠错效果</p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-indigo-600 mb-2">✓ 阈值调节</h3>
+                        <p class="text-sm text-gray-600">可调节纠错严格程度，适应不同场景需求</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentResult = null;
+        let currentThreshold = 0.7;
+
+        async function updateThreshold(value) {
+            currentThreshold = parseFloat(value);
+            document.getElementById('thresholdValue').textContent = value;
+            
+            await fetch('/api/threshold', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ threshold: currentThreshold })
+            });
+
+            const searchInput = document.getElementById('searchInput').value;
+            if (searchInput) {
+                await correctSearch();
+            }
+        }
+
+        async function correctSearch() {
+            const query = document.getElementById('searchInput').value;
+            const userId = document.getElementById('userId').value;
+            if (!query.trim()) return;
+
+            const requestBody = { 
+                query: query,
+                threshold: currentThreshold
+            };
+            
+            if (userId.trim()) {
+                requestBody.user_id = userId.trim();
+            }
+
+            const response = await fetch('/api/correct', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+
+            currentResult = await response.json();
+            displayResult(currentResult);
+        }
+
+        function displayResult(result) {
+            document.getElementById('resultContainer').classList.remove('hidden');
+            
+            document.getElementById('originalQuery').textContent = result.original;
+            document.getElementById('correctedQuery').textContent = result.corrected;
+            
+            document.getElementById('queryLength').textContent = result.query_length || '-';
+            document.getElementById('dynamicThreshold').textContent = result.threshold ? result.threshold.toFixed(2) : '-';
+            document.getElementById('baseThreshold').textContent = result.base_threshold ? result.base_threshold.toFixed(2) : '-';
+
+            const needsCorrection = document.getElementById('needsCorrection');
+            if (result.needs_correction) {
+                needsCorrection.className = 'mt-4 p-4 bg-blue-50 text-blue-700 rounded-xl';
+                needsCorrection.innerHTML = '<span class="font-medium">🔧 已自动纠错</span> - 系统检测到可能的输入错误并进行了纠正';
+            } else {
+                needsCorrection.className = 'mt-4 p-4 bg-gray-50 text-gray-600 rounded-xl';
+                needsCorrection.innerHTML = '<span class="font-medium">✓ 输入正确</span> - 未检测到需要纠正的内容';
+            }
+
+            const pinyinMixed = document.getElementById('pinyinMixed');
+            if (result.pinyin_mixed_detected) {
+                pinyinMixed.classList.remove('hidden');
+            } else {
+                pinyinMixed.classList.add('hidden');
+            }
+
+            const seedMatch = document.getElementById('seedMatch');
+            const hasSeedMatch = result.candidates && result.candidates.some(c => c.is_seed_match);
+            if (hasSeedMatch) {
+                seedMatch.classList.remove('hidden');
+            } else {
+                seedMatch.classList.add('hidden');
+            }
+
+            const multilingualMatch = document.getElementById('multilingualMatch');
+            const multilingualDetails = document.getElementById('multilingualDetails');
+            if (result.multilingual_details && result.multilingual_details.length > 0) {
+                multilingualMatch.classList.remove('hidden');
+                multilingualDetails.innerHTML = result.multilingual_details.map(d => 
+                    `<span class="inline-block mr-2">${d.original} → ${d.corrected} (${d.type})</span>`
+                ).join('');
+            } else {
+                multilingualMatch.classList.add('hidden');
+            }
+
+            const improvementSection = document.getElementById('improvementSection');
+            if (result.improvement && result.needs_correction) {
+                improvementSection.classList.remove('hidden');
+                document.getElementById('effectBefore').textContent = result.improvement.search_effect_before.toFixed(1);
+                document.getElementById('effectAfter').textContent = result.improvement.search_effect_after.toFixed(1);
+                document.getElementById('effectImprovement').textContent = '+' + result.improvement.improvement_percentage.toFixed(0) + '%';
+                document.getElementById('weightImprovement').textContent = '+' + result.improvement.weight_improvement;
+            } else {
+                improvementSection.classList.add('hidden');
+            }
+
+            const userProfileSection = document.getElementById('userProfileSection');
+            if (result.user_profile) {
+                userProfileSection.classList.remove('hidden');
+                document.getElementById('userInteractions').textContent = result.user_profile.total_interactions;
+                document.getElementById('userAcceptance').textContent = (result.user_profile.acceptance_rate * 100).toFixed(0) + '%';
+                document.getElementById('userThresholdAdj').textContent = (result.user_profile.threshold_adjustment >= 0 ? '+' : '') + result.user_profile.threshold_adjustment.toFixed(2);
+                const topWords = result.user_profile.top_words.map(w => w[0]).slice(0, 3).join(', ');
+                document.getElementById('userTopWords').textContent = topWords || '暂无';
+            } else {
+                userProfileSection.classList.add('hidden');
+            }
+
+            const candidatesList = document.getElementById('candidatesList');
+            if (result.candidates && result.candidates.length > 0) {
+                candidatesList.innerHTML = result.candidates.map((cand, index) => `
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <span class="w-8 h-8 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-full font-bold">${index + 1}</span>
+                            <div>
+                                <div class="font-semibold text-gray-800 flex items-center gap-2">
+                                    ${cand.word}
+                                    ${cand.is_seed_match ? '<span class="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">种子</span>' : ''}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    编辑距离: ${cand.edit_distance} | 
+                                    拼音相似: ${(cand.pinyin_similarity * 100).toFixed(0)}% | 
+                                    个性化: ${(cand.personalization_score * 100).toFixed(0)}% |
+                                    领域权重: ${cand.domain_weight} | 
+                                    语言模型: ${cand.lm_score.toFixed(3)} | 
+                                    反馈: ${cand.feedback_score.toFixed(2)}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold text-indigo-600">${(cand.final_score * 100).toFixed(1)}%</div>
+                            <div class="text-xs text-gray-500">置信度</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                candidatesList.innerHTML = '<div class="text-gray-500 text-center py-4">暂无候选词</div>';
+            }
+
+            document.getElementById('feedbackSection').classList.remove('hidden');
+        }
+
+        async function sendFeedback(type) {
+            if (!currentResult) return;
+
+            const userId = document.getElementById('userId').value;
+            const requestBody = {
+                original_query: currentResult.original,
+                corrected_query: currentResult.corrected,
+                suggestion: currentResult.corrected
+            };
+            
+            if (userId.trim()) {
+                requestBody.user_id = userId.trim();
+            }
+
+            if (type === 'good') {
+                await fetch('/api/feedback/click', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+                alert('感谢您的反馈！系统会持续优化纠错效果。');
+            } else {
+                await fetch('/api/feedback/skip', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+                alert('感谢您的反馈！我们会改进算法。');
+            }
+        }
+
+        function testExample(query) {
+            document.getElementById('searchInput').value = query;
+            correctSearch();
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                correctSearch();
+            }
+        });
+    </script>
+</body>
+</html>

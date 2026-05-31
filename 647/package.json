@@ -1,0 +1,25 @@
+{
+  "name": "regex-builder",
+  "version": "1.0.0",
+  "description": "图形化正则表达式构建工具",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "nodemon server/index.js",
+    "client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "start": "node server/index.js"
+  },
+  "keywords": ["regex", "builder", "visual"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "concurrently": "^8.2.0"
+  }
+}

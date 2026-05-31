@@ -1,0 +1,119 @@
+{
+  "test_user_001": {
+    "correction_history": [
+      {
+        "original": "ipone",
+        "corrected": "iPhone",
+        "accepted": true,
+        "category": null,
+        "timestamp": "2026-05-30T20:11:51.888935"
+      },
+      {
+        "original": "ipone",
+        "corrected": "iPhone",
+        "accepted": true,
+        "category": null,
+        "timestamp": "2026-05-30T20:11:51.901936"
+      },
+      {
+        "original": "ipone",
+        "corrected": "iPhone",
+        "accepted": true,
+        "category": null,
+        "timestamp": "2026-05-30T20:11:51.911951"
+      },
+      {
+        "original": "ipone",
+        "corrected": "iPhone",
+        "accepted": true,
+        "category": null,
+        "timestamp": "2026-05-30T20:11:51.926937"
+      },
+      {
+        "original": "ipone",
+        "corrected": "iPhone",
+        "accepted": true,
+        "category": null,
+        "timestamp": "2026-05-30T20:11:51.943015"
+      },
+      {
+        "original": "ipone",
+        "corrected": "iPhone",
+        "accepted": true,
+        "category": null,
+        "timestamp": "2026-05-30T20:12:30.811875"
+      },
+      {
+        "original": "ipone",
+        "corrected": "iPhone",
+        "accepted": true,
+        "category": null,
+        "timestamp": "2026-05-30T20:12:30.823393"
+      },
+      {
+        "original": "ipone",
+        "corrected": "iPhone",
+        "accepted": true,
+        "category": null,
+        "timestamp": "2026-05-30T20:12:30.837131"
+      },
+      {
+        "original": "ipone",
+        "corrected": "iPhone",
+        "accepted": true,
+        "category": null,
+        "timestamp": "2026-05-30T20:12:30.847236"
+      },
+      {
+        "original": "ipone",
+        "corrected": "iPhone",
+        "accepted": true,
+        "category": null,
+        "timestamp": "2026-05-30T20:12:30.858238"
+      },
+      {
+        "original": "ipone",
+        "corrected": "iPhone",
+        "accepted": true,
+        "category": null,
+        "timestamp": "2026-05-30T20:14:08.362861"
+      },
+      {
+        "original": "ipone",
+        "corrected": "iPhone",
+        "accepted": true,
+        "category": null,
+        "timestamp": "2026-05-30T20:14:08.371866"
+      },
+      {
+        "original": "ipone",
+        "corrected": "iPhone",
+        "accepted": true,
+        "category": null,
+        "timestamp": "2026-05-30T20:14:08.379862"
+      },
+      {
+        "original": "ipone",
+        "corrected": "iPhone",
+        "accepted": true,
+        "category": null,
+        "timestamp": "2026-05-30T20:14:08.387860"
+      },
+      {
+        "original": "ipone",
+        "corrected": "iPhone",
+        "accepted": true,
+        "category": null,
+        "timestamp": "2026-05-30T20:14:08.396861"
+      }
+    ],
+    "category_preferences": {},
+    "word_preferences": {
+      "iPhone": 15
+    },
+    "acceptance_rate": 1.0,
+    "total_interactions": 15,
+    "accepted_corrections": 15,
+    "last_active": "2026-05-30T20:14:08.396861"
+  }
+}

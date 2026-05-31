@@ -1,0 +1,37 @@
+{
+  "feedback": {
+    "apple手机": {
+      "clicks": {},
+      "skips": {}
+    },
+    "iphone壳": {
+      "clicks": {},
+      "skips": {}
+    },
+    "bluetooth耳机": {
+      "clicks": {},
+      "skips": {}
+    },
+    "huawei手机": {
+      "clicks": {},
+      "skips": {}
+    },
+    "nike鞋": {
+      "clicks": {},
+      "skips": {}
+    },
+    "coca cola": {
+      "clicks": {},
+      "skips": {}
+    },
+    "ipone": {
+      "clicks": {
+        "iPhone": 15
+      },
+      "skips": {}
+    }
+  },
+  "learned_weights": {
+    "iPhone": 15
+  }
+}
