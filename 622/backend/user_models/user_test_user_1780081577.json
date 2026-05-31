@@ -1,0 +1,12 @@
+{
+  "id": "user_test_user_1780081577",
+  "name": "我的艺术风格",
+  "type": "personalized",
+  "style_weights": {
+    "vangogh": 1.6071428571428572,
+    "watercolor": 0.9642857142857142,
+    "cyberpunk": 0.42857142857142855
+  },
+  "trained_on": 4,
+  "created_at": 1780081577.5194082
+}

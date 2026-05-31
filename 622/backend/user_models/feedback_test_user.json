@@ -1,0 +1,50 @@
+{
+  "test_user": [
+    {
+      "style_id": "vangogh",
+      "rating": 5,
+      "content_features": null,
+      "timestamp": 1780123549.064903,
+      "user_id": "test_user"
+    },
+    {
+      "style_id": "vangogh",
+      "rating": 5,
+      "content_features": {
+        "brightness": 152.65362675984701,
+        "contrast": 50.704255298002415,
+        "saturation": 119.77239990234375,
+        "dominant_hue": 105.0,
+        "color_diversity": 23.812356644422426
+      },
+      "timestamp": 1780123552.0230005,
+      "user_id": "test_user"
+    },
+    {
+      "style_id": "watercolor",
+      "rating": 4,
+      "content_features": {
+        "brightness": 152.65362675984701,
+        "contrast": 50.704255298002415,
+        "saturation": 119.77239990234375,
+        "dominant_hue": 105.0,
+        "color_diversity": 23.812356644422426
+      },
+      "timestamp": 1780123552.1530328,
+      "user_id": "test_user"
+    },
+    {
+      "style_id": "cyberpunk",
+      "rating": 5,
+      "content_features": {
+        "brightness": 152.65362675984701,
+        "contrast": 50.704255298002415,
+        "saturation": 119.77239990234375,
+        "dominant_hue": 105.0,
+        "color_diversity": 23.812356644422426
+      },
+      "timestamp": 1780123552.3202775,
+      "user_id": "test_user"
+    }
+  ]
+}

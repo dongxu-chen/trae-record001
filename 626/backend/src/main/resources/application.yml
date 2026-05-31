@@ -1,0 +1,44 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: api-quota-management
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    database: 0
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
+
+quota:
+  warning:
+    enabled: true
+    early-threshold: 0.6
+    threshold: 0.8
+    critical-threshold: 0.95
+    cooldown-seconds: 300
+    early-cooldown-seconds: 600
+  downgrade:
+    enabled: true
+    max-delay-ms: 1000
+  tcc:
+    timeout-seconds: 60
+    lock-lease-seconds: 30
+  distributed-lock:
+    wait-time-seconds: 3
+    lease-time-seconds: 10
+    retry-max: 3
+
+logging:
+  level:
+    com.quota.management: DEBUG
+    org.springframework.data.redis: DEBUG

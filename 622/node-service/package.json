@@ -1,0 +1,24 @@
+{
+  "name": "style-transfer-node-service",
+  "version": "1.0.0",
+  "description": "Node.js auxiliary service for AI style transfer",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.32.6",
+    "bull": "^4.12.0",
+    "redis": "^4.6.11",
+    "axios": "^1.6.2",
+    "socket.io": "^4.7.2",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
