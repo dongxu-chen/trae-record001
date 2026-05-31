@@ -1,0 +1,51 @@
+clickhouse:
+  hosts:
+    - "localhost"
+  port: 9000
+  http_port: 8123
+  username: "default"
+  password: ""
+  database: "default"
+  max_open_conns: 10
+  max_idle_conns: 5
+  dial_timeout_seconds: 10
+
+storage_tiers:
+  - name: "ssd"
+    type: "SSD"
+    path: "/data/clickhouse/ssd"
+    priority: 1
+  - name: "hdd"
+    type: "HDD"
+    path: "/data/clickhouse/hdd"
+    priority: 2
+
+scheduler:
+  enabled: true
+  check_interval: "5m"
+  ttl_check_cron: "0 */10 * * * *"
+  tiering_cron: "0 0 */1 * * *"
+  cleanup_cron: "0 0 2 * * *"
+  optimize_cron: "0 0 3 * * *"
+
+monitor:
+  enabled: true
+  metrics_path: "/metrics"
+  metrics_port: 9090
+  collect_interval: "30s"
+
+archive:
+  enabled: true
+  endpoint: "s3.amazonaws.com"
+  region: "us-east-1"
+  bucket: "my-clickhouse-archives"
+  access_key: "AKIAIOSFODNN7EXAMPLE"
+  secret_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+  use_ssl: true
+  path_prefix: "clickhouse-archives"
+  archive_cron: "0 0 4 * * *"
+  export_format: "Parquet"
+
+server:
+  port: 8080
+  mode: "release"

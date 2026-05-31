@@ -1,0 +1,29 @@
+{
+  "id": "f14753bd-2e30-4bc5-aa1f-a9fb864cf16e",
+  "name": "疾风行者 #35",
+  "type": "defense",
+  "rarity": "common",
+  "element": "wind",
+  "attributes": {
+    "attack": 3,
+    "defense": 5,
+    "health": 4,
+    "cost": 3
+  },
+  "skills": [
+    {
+      "name": "闪避",
+      "description": "有30%概率闪避攻击",
+      "tags": [
+        "evasion",
+        "passive"
+      ],
+      "icon": "dodge"
+    }
+  ],
+  "description": "随风而行的游侠，身形如风般难以捉摸。",
+  "flavorText": "你抓不住风，就像抓不住明天。",
+  "templateId": "template-minimal",
+  "createdAt": "2026-05-29T17:17:35.412Z",
+  "updatedAt": "2026-05-29T17:17:35.412Z"
+}

@@ -1,0 +1,38 @@
+{
+  "id": "55ba9316-c119-4b85-8b56-2848837580d1",
+  "name": "圣光骑士 #18",
+  "type": "defense",
+  "rarity": "epic",
+  "element": "light",
+  "attributes": {
+    "attack": 4,
+    "defense": 8,
+    "health": 9,
+    "cost": 6
+  },
+  "skills": [
+    {
+      "name": "神圣护盾",
+      "description": "为友方单位施加2点护盾",
+      "tags": [
+        "shield",
+        "holy"
+      ],
+      "icon": "shield"
+    },
+    {
+      "name": "审判之光",
+      "description": "对暗属性敌人造成额外4点伤害",
+      "tags": [
+        "damage",
+        "holy"
+      ],
+      "icon": "smite"
+    }
+  ],
+  "description": "誓守光明的圣骑士，以正义之盾守护同伴。",
+  "flavorText": "光明不灭，誓言永存。",
+  "templateId": "template-classic",
+  "createdAt": "2026-05-29T17:17:35.376Z",
+  "updatedAt": "2026-05-29T17:17:35.376Z"
+}

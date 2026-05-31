@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API模糊测试工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .code-editor {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
+        }
+        .anomaly-high { background-color: #fee2e2; border-left: 4px solid #dc2626; }
+        .anomaly-medium { background-color: #fef3c7; border-left: 4px solid #d97706; }
+        .anomaly-low { background-color: #dbeafe; border-left: 4px solid #2563eb; }
+        .progress-bar { transition: width 0.3s ease; }
+        .tab-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
+        .modal { display: none; }
+        .modal.active { display: flex; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <nav class="bg-white shadow-lg border-b">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-800">API模糊测试工具</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="health-status" class="flex items-center text-sm text-gray-600">
+                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                        系统就绪
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <div class="grid grid-cols-12 gap-6">
+            <div class="col-span-12 lg:col-span-7">
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <div class="flex border-b">
+                        <button onclick="switchTab('single')" id="tab-single" class="px-6 py-3 font-medium tab-active">单API测试</button>
+                        <button onclick="switchTab('workflow')" id="tab-workflow" class="px-6 py-3 font-medium text-gray-500 hover:text-gray-700">工作流测试</button>
+                        <button onclick="switchTab('reports')" id="tab-reports" class="px-6 py-3 font-medium text-gray-500 hover:text-gray-700">历史报告</button>
+                    </div>
+
+                    <div id="panel-single" class="p-6">
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">API名称</label>
+                                <input type="text" id="api-name" placeholder="例如：用户登录接口" 
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">请求方法</label>
+                                    <select id="api-method" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        <option value="GET">GET</option>
+                                        <option value="POST">POST</option>
+                                        <option value="PUT">PUT</option>
+                                        <option value="DELETE">DELETE</option>
+                                        <option value="PATCH">PATCH</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">参数位置</label>
+                                    <select id="param-location" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        <option value="query">Query参数</option>
+                                        <option value="body">Body参数</option>
+                                        <option value="path">Path参数</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">API地址</label>
+                                <input type="text" id="api-url" placeholder="https://api.example.com/users" 
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="block text-sm font-medium text-gray-700">请求头 (JSON)</label>
+                                    <button onclick="setDefaultHeaders()" class="text-xs text-blue-600 hover:text-blue-800">设置默认</button>
+                                </div>
+                                <textarea id="api-headers" rows="3" placeholder='{"Authorization": "Bearer token", "Content-Type": "application/json"}' 
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 code-editor"></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">参数定义</label>
+                                <div id="params-container" class="space-y-3">
+                                    <div class="param-row flex gap-2 items-center bg-gray-50 p-3 rounded-lg">
+                                        <input type="text" placeholder="参数名" class="flex-1 px-3 py-2 border rounded text-sm param-name">
+                                        <select class="w-28 px-2 py-2 border rounded text-sm param-type">
+                                            <option value="string">string</option>
+                                            <option value="integer">integer</option>
+                                            <option value="number">number</option>
+                                            <option value="boolean">boolean</option>
+                                            <option value="email">email</option>
+                                            <option value="url">url</option>
+                                            <option value="date">date</option>
+                                            <option value="array">array</option>
+                                            <option value="object">object</option>
+                                        </select>
+                                        <input type="text" placeholder="默认值" class="w-32 px-3 py-2 border rounded text-sm param-default">
+                                        <button onclick="removeParamRow(this)" class="p-2 text-red-500 hover:bg-red-50 rounded">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button onclick="addParamRow()" class="mt-3 flex items-center text-sm text-blue-600 hover:text-blue-800">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                    添加参数
+                                </button>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">测试模式</label>
+                                    <select id="test-mode" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        <option value="single">单参数测试</option>
+                                        <option value="exhaustive">穷举组合</option>
+                                        <option value="targeted">定向注入</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">最大组合数</label>
+                                    <input type="number" id="max-combinations" value="100" min="1" 
+                                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">报告格式</label>
+                                    <select id="report-format" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        <option value="json">JSON</option>
+                                        <option value="html">HTML</option>
+                                        <option value="both">JSON + HTML</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-end">
+                                    <label class="flex items-center space-x-2 text-sm text-gray-700">
+                                        <input type="checkbox" id="include-edge-cases" checked class="rounded text-blue-600">
+                                        <span>边界值</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2 text-sm text-gray-700 ml-4">
+                                        <input type="checkbox" id="include-injections" checked class="rounded text-blue-600">
+                                        <span>注入载荷</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button onclick="startTest()" id="start-btn" 
+                                class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                                开始模糊测试
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="panel-workflow" class="p-6 hidden">
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">工作流名称</label>
+                                <input type="text" id="workflow-name" placeholder="例如：用户注册登录流程" 
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">工作流配置 (JSON)</label>
+                                <textarea id="workflow-config" rows="15" class="w-full px-4 py-2 border rounded-lg code-editor" placeholder='{
+  "name": "用户流程",
+  "steps": [
+    {
+      "name": "register",
+      "url": "https://api.example.com/register",
+      "method": "POST",
+      "param_location": "body",
+      "params_def": [
+        {"name": "username", "type": "string", "default": "testuser"},
+        {"name": "password", "type": "string", "default": "test123"}
+      ],
+      "extract": {
+        "user_id": "$.data.id"
+      }
+    },
+    {
+      "name": "login",
+      "url": "https://api.example.com/login",
+      "method": "POST",
+      "param_location": "body",
+      "params_def": [
+        {"name": "username", "type": "string", "default": "testuser"},
+        {"name": "password", "type": "string", "default": "test123"}
+      ],
+      "extract": {
+        "token": "$.data.token"
+      }
+    },
+    {
+      "name": "get_profile",
+      "url": "https://api.example.com/users/{user_id}",
+      "method": "GET",
+      "param_location": "path",
+      "headers": {
+        "Authorization": "Bearer ${login:extracted.token}"
+      },
+      "params_def": [
+        {"name": "user_id", "type": "string", "default": "${register:extracted.user_id}"}
+      ]
+    }
+  ]
+}'></textarea>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button onclick="validateWorkflow()" class="flex-1 bg-gray-100 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-200">
+                                    验证工作流
+                                </button>
+                                <button onclick="startWorkflowTest()" class="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700">
+                                    开始工作流测试
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="panel-reports" class="p-6 hidden">
+                        <div id="reports-list" class="space-y-3">
+                            <div class="text-center py-12 text-gray-500">
+                                <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <p>加载中...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-span-12 lg:col-span-5">
+                <div class="space-y-6">
+                    <div id="progress-section" class="bg-white rounded-xl shadow-sm border p-6 hidden">
+                        <h3 class="font-medium text-gray-800 mb-4">测试进度</h3>
+                        <div class="mb-2 flex justify-between text-sm">
+                            <span id="progress-message" class="text-gray-600">初始化...</span>
+                            <span id="progress-percent" class="font-medium text-blue-600">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div id="progress-bar" class="progress-bar bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <div class="mt-2 text-xs text-gray-500">
+                            <span id="progress-count">0 / 0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm border p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-medium text-gray-800">测试结果</h3>
+                            <div id="result-actions" class="flex gap-2 hidden">
+                                <button onclick="downloadReport()" class="text-sm text-blue-600 hover:text-blue-800 flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                    </svg>
+                                    下载报告
+                                </button>
+                                <button onclick="viewHtmlReport()" class="text-sm text-purple-600 hover:text-purple-800 flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                    HTML报告
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="result-placeholder" class="text-center py-12 text-gray-500">
+                            <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
+                            <p>配置API参数并开始测试</p>
+                        </div>
+                        
+                        <div id="result-summary" class="hidden">
+                            <div class="grid grid-cols-3 gap-4 mb-6">
+                                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                                    <div id="summary-total" class="text-2xl font-bold text-gray-800">0</div>
+                                    <div class="text-xs text-gray-500">总测试</div>
+                                </div>
+                                <div class="text-center p-4 bg-green-50 rounded-lg">
+                                    <div id="summary-passed" class="text-2xl font-bold text-green-600">0</div>
+                                    <div class="text-xs text-gray-500">通过</div>
+                                </div>
+                                <div class="text-center p-4 bg-red-50 rounded-lg">
+                                    <div id="summary-failed" class="text-2xl font-bold text-red-600">0</div>
+                                    <div class="text-xs text-gray-500">异常</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-600">通过率</span>
+                                    <span id="summary-pass-rate" class="font-medium">0%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="summary-pass-bar" class="bg-green-500 h-2 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            
+                            <div id="summary-vulnerability" class="mb-6">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-600">漏洞风险评分</span>
+                                    <span id="summary-vuln-score" class="font-medium text-red-600">0</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="summary-vuln-bar" class="bg-red-500 h-2 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h4 class="text-sm font-medium text-gray-700 mb-2">异常类型分布</h4>
+                                <div id="anomaly-types" class="flex flex-wrap gap-2"></div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h4 class="text-sm font-medium text-gray-700 mb-2">修复建议</h4>
+                                <div id="recommendations" class="space-y-2 text-sm text-gray-600"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm border p-6">
+                        <h3 class="font-medium text-gray-800 mb-4">详细测试用例</h3>
+                        <div id="test-cases" class="space-y-3 max-h-96 overflow-y-auto">
+                            <div class="text-center py-8 text-gray-500 text-sm">
+                                暂无测试数据
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="anomaly-modal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 id="modal-title" class="font-medium text-gray-800">异常详情</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div id="modal-content" class="p-6 overflow-y-auto max-h-[60vh]"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentTestId = null;
+        let currentReportId = null;
+        let progressInterval = null;
+
+        function switchTab(tab) {
+            ['single', 'workflow', 'reports'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.remove('tab-active');
+                document.getElementById(`tab-${t}`).classList.add('text-gray-500');
+                document.getElementById(`panel-${t}`).classList.add('hidden');
+            });
+            document.getElementById(`tab-${tab}`).classList.add('tab-active');
+            document.getElementById(`tab-${tab}`).classList.remove('text-gray-500');
+            document.getElementById(`panel-${tab}`).classList.remove('hidden');
+            
+            if (tab === 'reports') {
+                loadReports();
+            }
+        }
+
+        function addParamRow() {
+            const container = document.getElementById('params-container');
+            const row = document.createElement('div');
+            row.className = 'param-row flex gap-2 items-center bg-gray-50 p-3 rounded-lg';
+            row.innerHTML = `
+                <input type="text" placeholder="参数名" class="flex-1 px-3 py-2 border rounded text-sm param-name">
+                <select class="w-28 px-2 py-2 border rounded text-sm param-type">
+                    <option value="string">string</option>
+                    <option value="integer">integer</option>
+                    <option value="number">number</option>
+                    <option value="boolean">boolean</option>
+                    <option value="email">email</option>
+                    <option value="url">url</option>
+                    <option value="date">date</option>
+                    <option value="array">array</option>
+                    <option value="object">object</option>
+                </select>
+                <input type="text" placeholder="默认值" class="w-32 px-3 py-2 border rounded text-sm param-default">
+                <button onclick="removeParamRow(this)" class="p-2 text-red-500 hover:bg-red-50 rounded">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </button>
+            `;
+            container.appendChild(row);
+        }
+
+        function removeParamRow(btn) {
+            btn.closest('.param-row').remove();
+        }
+
+        function setDefaultHeaders() {
+            document.getElementById('api-headers').value = JSON.stringify({
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }, null, 2);
+        }
+
+        function getParamsDefinition() {
+            const rows = document.querySelectorAll('.param-row');
+            const params = [];
+            rows.forEach(row => {
+                const name = row.querySelector('.param-name').value.trim();
+                if (name) {
+                    params.push({
+                        name: name,
+                        type: row.querySelector('.param-type').value,
+                        default: row.querySelector('.param-default').value
+                    });
+                }
+            });
+            return params;
+        }
+
+        async function startTest() {
+            const apiConfig = {
+                name: document.getElementById('api-name').value || 'API测试',
+                url: document.getElementById('api-url').value,
+                method: document.getElementById('api-method').value,
+                param_location: document.getElementById('param-location').value,
+                params: getParamsDefinition()
+            };
+
+            const headersValue = document.getElementById('api-headers').value.trim();
+            if (headersValue) {
+                try {
+                    apiConfig.headers = JSON.parse(headersValue);
+                } catch (e) {
+                    alert('请求头格式错误，请输入有效的JSON');
+                    return;
+                }
+            }
+
+            if (!apiConfig.url) {
+                alert('请输入API地址');
+                return;
+            }
+
+            if (apiConfig.params.length === 0) {
+                alert('请至少添加一个测试参数');
+                return;
+            }
+
+            const testConfig = {
+                test_type: 'single',
+                api_config: apiConfig,
+                test_mode: document.getElementById('test-mode').value,
+                max_combinations: parseInt(document.getElementById('max-combinations').value),
+                report_format: document.getElementById('report-format').value
+            };
+
+            try {
+                const response = await fetch('/api/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testConfig)
+                });
+                const data = await response.json();
+                
+                if (data.test_id) {
+                    currentTestId = data.test_id;
+                    startProgressMonitoring();
+                    document.getElementById('progress-section').classList.remove('hidden');
+                    document.getElementById('start-btn').disabled = true;
+                    document.getElementById('start-btn').textContent = '测试进行中...';
+                }
+            } catch (e) {
+                alert('启动测试失败: ' + e.message);
+            }
+        }
+
+        async function validateWorkflow() {
+            const configValue = document.getElementById('workflow-config').value.trim();
+            if (!configValue) {
+                alert('请输入工作流配置');
+                return;
+            }
+
+            try {
+                const workflowConfig = JSON.parse(configValue);
+                const response = await fetch('/api/workflow/validate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ workflow_config: workflowConfig })
+                });
+                const data = await response.json();
+                
+                if (data.valid) {
+                    alert(`验证通过！执行顺序: ${data.execution_order.join(' → ')}`);
+                } else {
+                    alert(`验证失败:\n${data.errors.join('\n')}`);
+                }
+            } catch (e) {
+                alert('JSON格式错误: ' + e.message);
+            }
+        }
+
+        async function startWorkflowTest() {
+            const configValue = document.getElementById('workflow-config').value.trim();
+            if (!configValue) {
+                alert('请输入工作流配置');
+                return;
+            }
+
+            try {
+                const workflowConfig = JSON.parse(configValue);
+                const testConfig = {
+                    test_type: 'workflow',
+                    workflow_config: workflowConfig,
+                    report_format: document.getElementById('report-format').value
+                };
+
+                const response = await fetch('/api/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testConfig)
+                });
+                const data = await response.json();
+                
+                if (data.test_id) {
+                    currentTestId = data.test_id;
+                    startProgressMonitoring();
+                    document.getElementById('progress-section').classList.remove('hidden');
+                }
+            } catch (e) {
+                alert('启动测试失败: ' + e.message);
+            }
+        }
+
+        function startProgressMonitoring() {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+            }
+            
+            progressInterval = setInterval(async () => {
+                if (!currentTestId) return;
+                
+                try {
+                    const response = await fetch(`/api/test/${currentTestId}/progress`);
+                    const data = await response.json();
+                    
+                    updateProgressUI(data);
+                    
+                    if (data.status === 'completed' || data.status === 'failed') {
+                        clearInterval(progressInterval);
+                        if (data.status === 'completed') {
+                            loadTestResult();
+                        } else {
+                            alert('测试失败');
+                        }
+                        resetTestUI();
+                    }
+                } catch (e) {
+                    console.error('Progress check failed:', e);
+                }
+            }, 1000);
+        }
+
+        function updateProgressUI(data) {
+            document.getElementById('progress-message').textContent = data.message;
+            document.getElementById('progress-percent').textContent = `${data.percent.toFixed(1)}%`;
+            document.getElementById('progress-bar').style.width = `${data.percent}%`;
+            document.getElementById('progress-count').textContent = `${data.current} / ${data.total}`;
+        }
+
+        function resetTestUI() {
+            document.getElementById('start-btn').disabled = false;
+            document.getElementById('start-btn').textContent = '开始模糊测试';
+        }
+
+        async function loadTestResult() {
+            if (!currentTestId) return;
+            
+            try {
+                const response = await fetch(`/api/test/${currentTestId}/result`);
+                const data = await response.json();
+                
+                if (data.summary) {
+                    currentReportId = data.test_run_id;
+                    displayResult(data);
+                }
+            } catch (e) {
+                console.error('Load result failed:', e);
+            }
+        }
+
+        function displayResult(result) {
+            document.getElementById('result-placeholder').classList.add('hidden');
+            document.getElementById('result-summary').classList.remove('hidden');
+            document.getElementById('result-actions').classList.remove('hidden');
+            
+            document.getElementById('summary-total').textContent = result.total_tests;
+            document.getElementById('summary-passed').textContent = result.passed_tests;
+            document.getElementById('summary-failed').textContent = result.failed_tests;
+            
+            const passRate = result.summary.pass_rate;
+            document.getElementById('summary-pass-rate').textContent = `${passRate.toFixed(1)}%`;
+            document.getElementById('summary-pass-bar').style.width = `${passRate}%`;
+            
+            const vulnScore = result.summary.vulnerability_score || 0;
+            document.getElementById('summary-vuln-score').textContent = vulnScore;
+            document.getElementById('summary-vuln-bar').style.width = `${vulnScore}%`;
+            
+            const anomalyTypes = document.getElementById('anomaly-types');
+            anomalyTypes.innerHTML = '';
+            const typeMap = {
+                'sql_error': { label: 'SQL注入', color: 'bg-red-100 text-red-800' },
+                'xss_reflection': { label: 'XSS反射', color: 'bg-orange-100 text-orange-800' },
+                'server_error': { label: '服务端错误', color: 'bg-red-100 text-red-800' },
+                'error_message': { label: '错误信息', color: 'bg-yellow-100 text-yellow-800' },
+                'stack_trace_leak': { label: '栈泄露', color: 'bg-red-100 text-red-800' },
+                'info_leak': { label: '信息泄露', color: 'bg-blue-100 text-blue-800' },
+                'time_based_anomaly': { label: '时间异常', color: 'bg-purple-100 text-purple-800' },
+                'slow_response': { label: '慢响应', color: 'bg-yellow-100 text-yellow-800' },
+                'request_error': { label: '请求错误', color: 'bg-gray-100 text-gray-800' }
+            };
+            
+            Object.entries(result.summary.type_distribution || {}).forEach(([type, count]) => {
+                const info = typeMap[type] || { label: type, color: 'bg-gray-100 text-gray-800' };
+                const badge = document.createElement('span');
+                badge.className = `px-2 py-1 rounded text-xs font-medium ${info.color}`;
+                badge.textContent = `${info.label}: ${count}`;
+                anomalyTypes.appendChild(badge);
+            });
+            
+            const recommendations = document.getElementById('recommendations');
+            recommendations.innerHTML = '';
+            (result.summary.recommendations || []).forEach(rec => {
+                const div = document.createElement('div');
+                div.className = 'flex items-start gap-2 p-2 bg-gray-50 rounded';
+                div.innerHTML = `
+                    <svg class="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>${rec}</span>
+                `;
+                recommendations.appendChild(div);
+            });
+            
+            displayTestCases(result.test_cases);
+        }
+
+        function displayTestCases(testCases) {
+            const container = document.getElementById('test-cases');
+            container.innerHTML = '';
+            
+            testCases.forEach((tc, index) => {
+                const hasAnomaly = tc.anomalies && tc.anomalies.length > 0;
+                const severity = hasAnomaly ? tc.anomalies[0].severity : null;
+                
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-lg border cursor-pointer hover:shadow-sm transition-shadow ${
+                    hasAnomaly ? `anomaly-${severity}` : 'bg-white'
+                }`;
+                div.onclick = () => showAnomalyDetail(tc);
+                
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="font-medium text-sm text-gray-800">${tc.tested_param}</span>
+                        ${hasAnomaly ? `<span class="text-xs px-2 py-0.5 rounded ${
+                            severity === 'high' ? 'bg-red-100 text-red-700' :
+                            severity === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-blue-100 text-blue-700'
+                        }">${severity.toUpperCase()}</span>` : ''}
+                    </div>
+                    <div class="text-xs text-gray-500 mb-1">
+                        ${tc.value_type}: ${JSON.stringify(tc.test_value).substring(0, 50)}
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-gray-400">${tc.request.status_code || 'ERR'}</span>
+                        <span class="text-gray-400">${tc.request.response_time.toFixed(0)}ms</span>
+                    </div>
+                    ${hasAnomaly ? `<div class="mt-1 text-xs text-gray-600">${tc.anomalies[0].description}</div>` : ''}
+                `;
+                
+                container.appendChild(div);
+            });
+        }
+
+        function showAnomalyDetail(testCase) {
+            document.getElementById('modal-title').textContent = `${testCase.tested_param} - 测试详情`;
+            
+            const content = document.getElementById('modal-content');
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">参数名</div>
+                            <div class="font-medium">${testCase.tested_param}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">测试值</div>
+                            <div class="font-mono text-sm bg-gray-100 p-2 rounded">${JSON.stringify(testCase.test_value)}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">值类型</div>
+                            <div>${testCase.value_type}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">状态码</div>
+                            <div>${testCase.request.status_code || '请求失败'}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">响应时间</div>
+                            <div>${testCase.request.response_time.toFixed(0)}ms</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">测试ID</div>
+                            <div class="font-mono text-xs">${testCase.test_id}</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="text-xs text-gray-500 mb-1">描述</div>
+                        <div class="text-sm">${testCase.description}</div>
+                    </div>
+                    
+                    ${testCase.anomalies && testCase.anomalies.length > 0 ? `
+                    <div>
+                        <div class="text-xs text-gray-500 mb-2">检测到的异常 (${testCase.anomalies.length})</div>
+                        <div class="space-y-3">
+                            ${testCase.anomalies.map(a => `
+                            <div class="p-3 rounded-lg ${
+                                a.severity === 'high' ? 'bg-red-50 border border-red-200' :
+                                a.severity === 'medium' ? 'bg-yellow-50 border border-yellow-200' :
+                                'bg-blue-50 border border-blue-200'
+                            }">
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="font-medium text-sm">${a.type}</span>
+                                    <span class="text-xs px-2 py-0.5 rounded ${
+                                        a.severity === 'high' ? 'bg-red-100 text-red-700' :
+                                        a.severity === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                                        'bg-blue-100 text-blue-700'
+                                    }">${a.severity.toUpperCase()}</span>
+                                </div>
+                                <div class="text-sm text-gray-700 mb-1">${a.description}</div>
+                                <div class="text-xs text-gray-600 bg-white p-2 rounded font-mono">${a.evidence}</div>
+                            </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <div>
+                        <div class="text-xs text-gray-500 mb-1">请求URL</div>
+                        <div class="font-mono text-xs bg-gray-100 p-2 rounded break-all">${testCase.request.method} ${testCase.request.url}</div>
+                    </div>
+                    
+                    <div>
+                        <div class="text-xs text-gray-500 mb-1">请求参数</div>
+                        <pre class="bg-gray-100 p-3 rounded text-xs font-mono overflow-auto max-h-40">${JSON.stringify(testCase.request.params, null, 2)}</pre>
+                    </div>
+                    
+                    ${testCase.request.response_body ? `
+                    <div>
+                        <div class="text-xs text-gray-500 mb-1">响应内容</div>
+                        <pre class="bg-gray-100 p-3 rounded text-xs font-mono overflow-auto max-h-60">${typeof testCase.request.response_body === 'object' ? JSON.stringify(testCase.request.response_body, null, 2) : String(testCase.request.response_body).substring(0, 3000)}</pre>
+                    </div>
+                    ` : ''}
+                    
+                    ${testCase.request.error ? `
+                    <div class="bg-red-50 border border-red-200 p-3 rounded-lg">
+                        <div class="text-xs text-red-600 mb-1">请求错误</div>
+                        <div class="text-sm text-red-800">${testCase.request.error}</div>
+                    </div>
+                    ` : ''}
+                    
+                    ${testCase.reproduce ? `
+                    <div class="border-t pt-4 mt-4">
+                        <h4 class="font-medium text-gray-800 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            复现测试
+                        </h4>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-xs font-medium text-gray-700">curl 命令</span>
+                                    <button onclick="copyReproduce('curl', '${testCase.test_id}')" class="text-xs text-blue-600 hover:text-blue-800">复制</button>
+                                </div>
+                                <div id="curl-${testCase.test_id}" class="bg-gray-900 text-green-400 p-3 rounded text-xs font-mono overflow-x-auto whitespace-pre-wrap max-h-32">${testCase.reproduce.curl_command}</div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-xs font-medium text-gray-700">Python 代码</span>
+                                    <button onclick="copyReproduce('python', '${testCase.test_id}')" class="text-xs text-blue-600 hover:text-blue-800">复制</button>
+                                </div>
+                                <pre id="python-${testCase.test_id}" class="bg-gray-900 text-blue-400 p-3 rounded text-xs font-mono overflow-x-auto max-h-48">${testCase.reproduce.python_code}</pre>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-xs font-medium text-gray-700">原始请求</span>
+                                    <button onclick="copyReproduce('raw', '${testCase.test_id}')" class="text-xs text-blue-600 hover:text-blue-800">复制</button>
+                                </div>
+                                <pre id="raw-${testCase.test_id}" class="bg-gray-100 p-3 rounded text-xs font-mono overflow-x-auto max-h-32">${JSON.stringify(testCase.reproduce.raw_request, null, 2)}</pre>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            document.getElementById('anomaly-modal').classList.add('active');
+        }
+        
+        function copyReproduce(type, testId) {
+            const element = document.getElementById(`${type}-${testId}`);
+            const text = element.tagName === 'PRE' || element.tagName === 'DIV' ? element.textContent : element.value;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '已复制!';
+                btn.classList.add('text-green-600');
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('text-green-600');
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('anomaly-modal').classList.remove('active');
+        }
+
+        async function loadReports() {
+            try {
+                const response = await fetch('/api/reports');
+                const reports = await response.json();
+                
+                const container = document.getElementById('reports-list');
+                if (reports.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-12 text-gray-500">
+                            <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <p>暂无测试报告</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = reports.map(r => {
+                    const date = new Date(r.start_time * 1000).toLocaleString('zh-CN');
+                    const passRate = r.pass_rate.toFixed(1);
+                    const scoreColor = passRate >= 80 ? 'bg-green-100 text-green-700' : passRate >= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700';
+                    
+                    return `
+                        <div class="p-4 border rounded-lg hover:shadow-sm transition-shadow cursor-pointer" onclick="loadReport('${r.test_run_id}')">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <div class="font-medium text-gray-800">${r.api_name}</div>
+                                    <div class="text-xs text-gray-500">${date}</div>
+                                </div>
+                                <span class="text-xs px-2 py-1 rounded ${scoreColor}">${passRate}% 通过</span>
+                            </div>
+                            <div class="flex gap-4 text-sm text-gray-600">
+                                <span>${r.total_tests} 个测试</span>
+                                <span class="font-mono text-xs text-gray-400">${r.test_run_id}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error('Load reports failed:', e);
+            }
+        }
+
+        async function loadReport(testRunId) {
+            try {
+                const response = await fetch(`/api/reports/${testRunId}`);
+                const data = await response.json();
+                
+                if (data) {
+                    currentReportId = testRunId;
+                    switchTab('single');
+                    displayResult(data);
+                }
+            } catch (e) {
+                console.error('Load report failed:', e);
+            }
+        }
+
+        function downloadReport() {
+            if (!currentReportId) return;
+            window.open(`/api/reports/${currentReportId}/download?format=json`, '_blank');
+        }
+
+        function viewHtmlReport() {
+            if (!currentReportId) return;
+            window.open(`/api/reports/${currentReportId}/html`, '_blank');
+        }
+
+        async function checkHealth() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                if (data.status === 'healthy') {
+                    document.getElementById('health-status').innerHTML = `
+                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                        系统就绪 (${data.active_tests} 个活跃测试)
+                    `;
+                }
+            } catch (e) {
+                document.getElementById('health-status').innerHTML = `
+                    <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                    连接失败
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setDefaultHeaders();
+            checkHealth();
+            setInterval(checkHealth, 30000);
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        document.getElementById('anomaly-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'anomaly-modal') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

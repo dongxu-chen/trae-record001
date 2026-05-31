@@ -1,0 +1,106 @@
+{
+  "id": "template-classic",
+  "name": "经典风格",
+  "description": "经典卡牌游戏风格，羊皮纸质感搭配复古装饰",
+  "style": "classic",
+  "width": 400,
+  "height": 560,
+  "layout": {
+    "name": {
+      "x": 30,
+      "y": 35,
+      "fontSize": 22,
+      "color": "#5c3317",
+      "fontFamily": "serif"
+    },
+    "type": {
+      "x": 30,
+      "y": 58,
+      "fontSize": 13,
+      "color": "#8b6914"
+    },
+    "rarity": {
+      "x": 370,
+      "y": 35,
+      "iconSize": 18
+    },
+    "attributes": {
+      "attack": {
+        "x": 30,
+        "y": 530,
+        "fontSize": 16,
+        "color": "#c0392b"
+      },
+      "defense": {
+        "x": 120,
+        "y": 530,
+        "fontSize": 16,
+        "color": "#2980b9"
+      },
+      "health": {
+        "x": 210,
+        "y": 530,
+        "fontSize": 16,
+        "color": "#27ae60"
+      },
+      "cost": {
+        "x": 300,
+        "y": 530,
+        "fontSize": 16,
+        "color": "#8e44ad"
+      }
+    },
+    "skills": {
+      "x": 30,
+      "y": 370,
+      "maxWidth": 340,
+      "fontSize": 12,
+      "lineHeight": 18
+    },
+    "description": {
+      "x": 30,
+      "y": 290,
+      "maxWidth": 340,
+      "fontSize": 12,
+      "lineHeight": 18
+    },
+    "flavorText": {
+      "x": 30,
+      "y": 460,
+      "maxWidth": 340,
+      "fontSize": 11,
+      "fontStyle": "italic"
+    },
+    "backgroundImage": {
+      "x": 0,
+      "y": 0,
+      "width": 400,
+      "height": 560
+    },
+    "characterImage": {
+      "x": 50,
+      "y": 80,
+      "width": 300,
+      "height": 200
+    }
+  },
+  "colors": {
+    "background": "#f5e6c8",
+    "primary": "#8b4513",
+    "secondary": "#8b6914",
+    "accent": "#c0392b",
+    "text": "#3e2723",
+    "textSecondary": "#8b6914",
+    "cardBackground": "#faebd7",
+    "divider": "#d2b48c"
+  },
+  "borders": {
+    "width": 4,
+    "color": "#8b4513",
+    "radius": 6,
+    "style": "double"
+  },
+  "builtIn": true,
+  "createdAt": "2026-05-29T16:43:26.854Z",
+  "updatedAt": "2026-05-29T16:43:26.854Z"
+}

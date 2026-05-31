@@ -1,0 +1,106 @@
+{
+  "id": "template-minimal",
+  "name": "极简风格",
+  "description": "极简风格的卡牌模板，简洁留白与现代排版",
+  "style": "minimal",
+  "width": 400,
+  "height": 560,
+  "layout": {
+    "name": {
+      "x": 30,
+      "y": 35,
+      "fontSize": 20,
+      "color": "#1a1a1a",
+      "fontFamily": "sans-serif"
+    },
+    "type": {
+      "x": 30,
+      "y": 58,
+      "fontSize": 12,
+      "color": "#888888"
+    },
+    "rarity": {
+      "x": 370,
+      "y": 35,
+      "iconSize": 14
+    },
+    "attributes": {
+      "attack": {
+        "x": 30,
+        "y": 530,
+        "fontSize": 15,
+        "color": "#e74c3c"
+      },
+      "defense": {
+        "x": 120,
+        "y": 530,
+        "fontSize": 15,
+        "color": "#3498db"
+      },
+      "health": {
+        "x": 210,
+        "y": 530,
+        "fontSize": 15,
+        "color": "#27ae60"
+      },
+      "cost": {
+        "x": 300,
+        "y": 530,
+        "fontSize": 15,
+        "color": "#8e44ad"
+      }
+    },
+    "skills": {
+      "x": 30,
+      "y": 370,
+      "maxWidth": 340,
+      "fontSize": 11,
+      "lineHeight": 17
+    },
+    "description": {
+      "x": 30,
+      "y": 290,
+      "maxWidth": 340,
+      "fontSize": 12,
+      "lineHeight": 18
+    },
+    "flavorText": {
+      "x": 30,
+      "y": 460,
+      "maxWidth": 340,
+      "fontSize": 10,
+      "fontStyle": "italic"
+    },
+    "backgroundImage": {
+      "x": 0,
+      "y": 0,
+      "width": 400,
+      "height": 560
+    },
+    "characterImage": {
+      "x": 50,
+      "y": 80,
+      "width": 300,
+      "height": 200
+    }
+  },
+  "colors": {
+    "background": "#ffffff",
+    "primary": "#1a1a1a",
+    "secondary": "#888888",
+    "accent": "#e74c3c",
+    "text": "#333333",
+    "textSecondary": "#888888",
+    "cardBackground": "#f8f8f8",
+    "divider": "#e0e0e0"
+  },
+  "borders": {
+    "width": 1,
+    "color": "#e0e0e0",
+    "radius": 8,
+    "style": "solid"
+  },
+  "builtIn": true,
+  "createdAt": "2026-05-29T16:43:26.854Z",
+  "updatedAt": "2026-05-29T16:43:26.854Z"
+}

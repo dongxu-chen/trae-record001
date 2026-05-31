@@ -1,0 +1,28 @@
+{
+  "name": "冰霜法师",
+  "type": "magic",
+  "rarity": "epic",
+  "element": "water",
+  "attributes": {
+    "attack": 6,
+    "defense": 7,
+    "health": 10,
+    "cost": 6
+  },
+  "skills": [
+    {
+      "name": "寒冰箭",
+      "description": "造成6点冰霜伤害并冻结目标",
+      "tags": [
+        "伤害",
+        "冰霜"
+      ]
+    }
+  ],
+  "description": "来自北境冰原的法师，掌握寒冰之力",
+  "flavorText": "寒冷是最好的老师",
+  "templateId": "template-sci-fi",
+  "id": "64aae476-ea1b-401c-b809-b6a959e5d8c6",
+  "createdAt": "2026-05-29T16:55:12.734Z",
+  "updatedAt": "2026-05-29T16:55:12.734Z"
+}

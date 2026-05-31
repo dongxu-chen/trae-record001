@@ -1,0 +1,200 @@
+name: API Fuzzing Security Tests
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - '**.py'
+      - '**.json'
+      - 'api_configs/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+    inputs:
+      api_config:
+        description: 'API configuration file'
+        required: false
+        default: 'example_api.json'
+      test_mode:
+        description: 'Test mode: single/workflow/security'
+        required: false
+        default: 'security'
+      severity_threshold:
+        description: 'Fail on severity: high/medium/low'
+        required: false
+        default: 'medium'
+
+env:
+  PYTHON_VERSION: '3.11'
+  API_CONFIG: ${{ github.event.inputs.api_config || 'example_api.json' }}
+  TEST_MODE: ${{ github.event.inputs.test_mode || 'security' }}
+  SEVERITY_THRESHOLD: ${{ github.event.inputs.severity_threshold || 'medium' }}
+
+jobs:
+  security-scan:
+    name: Security Fuzzing Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    services:
+      mock-api:
+        image: python:3.11-slim
+        ports:
+          - 8000:8000
+        volumes:
+          - ${{ github.workspace }}:/app
+        env:
+          FLASK_APP: /app/mock_server.py
+          PYTHONPATH: /app
+        options: >-
+          --health-cmd "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        command: >
+          bash -c "pip install flask flask-cors &&
+                   cd /app &&
+                   python mock_server.py"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Lint check
+        run: |
+          python -m py_compile core/*.py
+          python -m py_compile web/*.py
+          python -m py_compile run.py
+
+      - name: Wait for mock API
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:8000/health > /dev/null 2>&1; then
+              echo "Mock API is ready"
+              break
+            fi
+            echo "Waiting for mock API... ($i/30)"
+            sleep 2
+          done
+
+      - name: Run security fuzzing tests
+        id: fuzzing
+        run: |
+          python run.py ci \
+            --config ${{ env.API_CONFIG }} \
+            --mode ${{ env.TEST_MODE }} \
+            --severity-threshold ${{ env.SEVERITY_THRESHOLD }} \
+            --output json > fuzzing_results.json 2>&1 || true
+          
+          cat fuzzing_results.json
+          
+          if grep -q '"overall_risk": "high"' fuzzing_results.json; then
+            echo "::error::High severity vulnerabilities detected"
+            exit 1
+          fi
+          
+          if [ "${{ env.SEVERITY_THRESHOLD }}" = "medium" ] && grep -q '"overall_risk": "medium"' fuzzing_results.json; then
+            echo "::warning::Medium severity vulnerabilities detected"
+            exit 0
+          fi
+
+      - name: Generate HTML report
+        if: always()
+        run: |
+          python run.py report \
+            --input fuzzing_results.json \
+            --output fuzzing_report.html
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzzing-results
+          path: |
+            fuzzing_results.json
+            fuzzing_report.html
+          retention-days: 30
+
+      - name: Upload SARIF report
+        if: always()
+        run: |
+          python -c "
+          import json
+          with open('fuzzing_results.json') as f:
+              data = json.load(f)
+          
+          sarif = {
+              'version': '2.1.0',
+              '$schema': 'https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json',
+              'runs': [{
+                  'tool': {
+                      'driver': {
+                          'name': 'API Fuzzer',
+                          'version': '1.0.0',
+                          'informationUri': 'https://github.com/${{ github.repository }}',
+                          'rules': [
+                              {
+                                  'id': 'SQL-INJECTION',
+                                  'name': 'SQL Injection',
+                                  'fullDescription': {'text': 'SQL injection vulnerability'},
+                                  'defaultConfiguration': {'level': 'error'},
+                                  'helpUri': 'https://owasp.org/www-community/attacks/SQL_Injection'
+                              },
+                              {
+                                  'id': 'XSS',
+                                  'name': 'Cross-Site Scripting',
+                                  'fullDescription': {'text': 'XSS vulnerability'},
+                                  'defaultConfiguration': {'level': 'error'},
+                                  'helpUri': 'https://owasp.org/www-community/attacks/xss/'
+                              }
+                          ]
+                      }
+                  },
+                  'results': []
+              }]
+          }
+          print(json.dumps(sarif, indent=2))
+          " > fuzzing.sarif || true
+
+      - name: Check test failure
+        if: steps.fuzzing.outcome == 'failure'
+        run: exit 1
+
+  api-compatibility:
+    name: API Compatibility Tests
+    runs-on: ubuntu-latest
+    needs: security-scan
+    if: success()
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run API compatibility tests
+        run: |
+          python run.py test \
+            --config example_api.json \
+            --mode single \
+            --quick

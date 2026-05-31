@@ -1,0 +1,75 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: trace-sampling-optimizer
+
+sampling:
+  cost:
+    daily-budget-usd: 100.0
+    per-span: 0.00001
+    per-span-storage: 0.000005
+    per-span-network: 0.000003
+    per-span-compute: 0.000002
+    per-span-cpu: 0.0000015
+    cpu-core-cost-per-hour-usd: 0.04
+    spans-processed-per-core-second: 5000
+    sampling-cpu-overhead-percent: 0.05
+    alert-threshold-percent: 80.0
+  rl:
+    use-state-reduction: true
+    state-reduction-mode: BUCKETING
+    target-dimensions: 16
+    hash-buckets: 1024
+    cache-ttl-seconds: 300
+  edge:
+    async-report-enabled: true
+    async-report-interval-ms: 5000
+    async-report-batch-size: 100
+    async-queue-max-size: 10000
+    local-decision-ttl-ms: 60000
+    enable-local-predecision: true
+    local-predecision-min-rate: 0.05
+    local-predecision-max-rate: 0.8
+    emergency-threshold-error-rate: 0.2
+    emergency-threshold-latency-ms: 5000
+  anomaly:
+    enabled: true
+    force-sample-errors: true
+    anomaly-context-ttl-ms: 60000
+    error-rate-threshold: 0.05
+    min-error-count-for-boost: 3
+    max-boosted-sampling-rate: 1.0
+  evaluation:
+    enabled: true
+    evaluation-window-hours: 24
+    baseline-detection-rate: 0.95
+    enable-cost-efficiency-tracking: true
+  storage:
+    enabled: true
+    hot-threshold-seconds: 300
+    warm-threshold-seconds: 3600
+    hot-sampling-rate: 0.9
+    warm-sampling-rate: 0.5
+    cold-sampling-rate: 0.05
+    access-count-hot-threshold: 100
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+otel:
+  exporter:
+    otlp:
+      endpoint: http://localhost:4317
+
+logging:
+  level:
+    com.tracing.optimizer: INFO

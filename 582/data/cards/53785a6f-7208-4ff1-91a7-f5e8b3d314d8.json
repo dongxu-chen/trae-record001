@@ -1,0 +1,28 @@
+{
+  "name": "????",
+  "type": "attack",
+  "rarity": "rare",
+  "element": "fire",
+  "attributes": {
+    "attack": 8,
+    "defense": 4,
+    "health": 12,
+    "cost": 5
+  },
+  "skills": [
+    {
+      "name": "???",
+      "description": "??8?????",
+      "tags": [
+        "??",
+        "??"
+      ]
+    }
+  ],
+  "description": "?????????,??????????",
+  "flavorText": "????????",
+  "templateId": "template-dark-fantasy",
+  "id": "53785a6f-7208-4ff1-91a7-f5e8b3d314d8",
+  "createdAt": "2026-05-29T16:53:11.890Z",
+  "updatedAt": "2026-05-29T16:53:11.890Z"
+}

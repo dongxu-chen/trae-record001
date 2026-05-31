@@ -1,0 +1,29 @@
+{
+  "id": "8d617fa8-08dc-4db9-bdf9-ceb19459497e",
+  "name": "全息幻影 #16",
+  "type": "support",
+  "rarity": "rare",
+  "attributes": {
+    "attack": 1,
+    "defense": 2,
+    "health": 3,
+    "cost": 3
+  },
+  "skills": [
+    {
+      "name": "数据干扰",
+      "description": "使目标技能冷却+1",
+      "tags": [
+        "debuff",
+        "tech"
+      ],
+      "icon": "glitch"
+    }
+  ],
+  "description": "虚拟世界中诞生的数字生命，能操纵信息流干扰对手。",
+  "flavorText": "0和1之间，藏着无限可能。",
+  "templateId": "template-sci-fi",
+  "createdAt": "2026-05-29T17:17:35.375Z",
+  "updatedAt": "2026-05-29T17:17:35.375Z",
+  "element": "fire"
+}

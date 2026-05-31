@@ -1,0 +1,38 @@
+{
+  "id": "4f117b8a-11ab-4a6f-98a3-2b2b2a169e2c",
+  "name": "机甲战士 #45",
+  "type": "attack",
+  "rarity": "epic",
+  "element": "earth",
+  "attributes": {
+    "attack": 7,
+    "defense": 6,
+    "health": 8,
+    "cost": 7
+  },
+  "skills": [
+    {
+      "name": "超载打击",
+      "description": "下一次攻击造成双倍伤害",
+      "tags": [
+        "buff",
+        "damage"
+      ],
+      "icon": "overload"
+    },
+    {
+      "name": "铁壁",
+      "description": "本回合防御力+3",
+      "tags": [
+        "buff",
+        "defense"
+      ],
+      "icon": "shield"
+    }
+  ],
+  "description": "融合了最尖端科技的战斗机器，火力与防御兼备。",
+  "flavorText": "钢铁之躯，不屈之心。",
+  "templateId": "template-sci-fi",
+  "createdAt": "2026-05-29T17:17:35.436Z",
+  "updatedAt": "2026-05-29T17:17:35.436Z"
+}

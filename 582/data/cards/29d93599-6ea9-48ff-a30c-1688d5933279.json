@@ -1,0 +1,29 @@
+{
+  "id": "29d93599-6ea9-48ff-a30c-1688d5933279",
+  "name": "寒冰法师 #14",
+  "type": "magic",
+  "rarity": "rare",
+  "element": "water",
+  "attributes": {
+    "attack": 5,
+    "defense": 4,
+    "health": 5,
+    "cost": 5
+  },
+  "skills": [
+    {
+      "name": "冰霜新星",
+      "description": "冻结目标单位1回合",
+      "tags": [
+        "freeze",
+        "control"
+      ],
+      "icon": "frost"
+    }
+  ],
+  "description": "掌控寒冰之力的法师，能将敌人的血液化为冰晶。",
+  "flavorText": "在她的世界里，时间如同被冻结的河流。",
+  "templateId": "template-dark-fantasy",
+  "createdAt": "2026-05-29T17:17:35.374Z",
+  "updatedAt": "2026-05-29T17:17:35.374Z"
+}

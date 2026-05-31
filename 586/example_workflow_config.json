@@ -1,0 +1,108 @@
+{
+  "name": "用户注册登录完整流程测试",
+  "steps": [
+    {
+      "name": "register",
+      "url": "https://example.com/api/register",
+      "method": "POST",
+      "param_location": "body",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "params_def": [
+        {
+          "name": "username",
+          "type": "string",
+          "default": "fuzzer_user_123"
+        },
+        {
+          "name": "email",
+          "type": "email",
+          "default": "fuzzer@example.com"
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "default": "Test@123456"
+        }
+      ],
+      "extract": {
+        "user_id": "$.data.id",
+        "username": "$.data.username"
+      },
+      "test_mode": "single"
+    },
+    {
+      "name": "login",
+      "url": "https://example.com/api/login",
+      "method": "POST",
+      "param_location": "body",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "params_def": [
+        {
+          "name": "username",
+          "type": "string",
+          "default": "${register:extracted.username}"
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "default": "Test@123456"
+        }
+      ],
+      "extract": {
+        "token": "$.data.access_token",
+        "refresh_token": "$.data.refresh_token"
+      },
+      "test_mode": "single"
+    },
+    {
+      "name": "get_profile",
+      "url": "https://example.com/api/users/{user_id}",
+      "method": "GET",
+      "param_location": "path",
+      "headers": {
+        "Authorization": "Bearer ${login:extracted.token}"
+      },
+      "params_def": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "default": "${register:extracted.user_id}"
+        }
+      ],
+      "test_mode": "targeted",
+      "injection_type": "sql"
+    },
+    {
+      "name": "update_profile",
+      "url": "https://example.com/api/users/{user_id}",
+      "method": "PUT",
+      "param_location": "body",
+      "headers": {
+        "Authorization": "Bearer ${login:extracted.token}",
+        "Content-Type": "application/json"
+      },
+      "params_def": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "default": "${register:extracted.user_id}"
+        },
+        {
+          "name": "nickname",
+          "type": "string",
+          "default": "测试用户"
+        },
+        {
+          "name": "age",
+          "type": "integer",
+          "default": 25
+        }
+      ],
+      "test_mode": "single"
+    }
+  ]
+}

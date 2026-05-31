@@ -1,0 +1,30 @@
+{
+  "name": "用户登录接口测试",
+  "url": "https://example.com/api/login",
+  "method": "POST",
+  "param_location": "body",
+  "headers": {
+    "Content-Type": "application/json",
+    "User-Agent": "API-Fuzzer/1.0"
+  },
+  "params": [
+    {
+      "name": "username",
+      "type": "string",
+      "default": "testuser",
+      "required": true
+    },
+    {
+      "name": "password",
+      "type": "string",
+      "default": "testpass123",
+      "required": true
+    },
+    {
+      "name": "remember_me",
+      "type": "boolean",
+      "default": false,
+      "required": false
+    }
+  ]
+}

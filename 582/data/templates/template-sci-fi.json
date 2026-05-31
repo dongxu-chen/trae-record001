@@ -1,0 +1,106 @@
+{
+  "id": "template-sci-fi",
+  "name": "未来科幻",
+  "description": "未来科幻风格的卡牌模板，赛博朋克配色与线条感设计",
+  "style": "sci-fi",
+  "width": 400,
+  "height": 560,
+  "layout": {
+    "name": {
+      "x": 30,
+      "y": 35,
+      "fontSize": 20,
+      "color": "#00d4ff",
+      "fontFamily": "sans-serif"
+    },
+    "type": {
+      "x": 30,
+      "y": 56,
+      "fontSize": 12,
+      "color": "#5a7a9a"
+    },
+    "rarity": {
+      "x": 370,
+      "y": 35,
+      "iconSize": 16
+    },
+    "attributes": {
+      "attack": {
+        "x": 30,
+        "y": 530,
+        "fontSize": 15,
+        "color": "#ff4757"
+      },
+      "defense": {
+        "x": 120,
+        "y": 530,
+        "fontSize": 15,
+        "color": "#00d4ff"
+      },
+      "health": {
+        "x": 210,
+        "y": 530,
+        "fontSize": 15,
+        "color": "#2ed573"
+      },
+      "cost": {
+        "x": 300,
+        "y": 530,
+        "fontSize": 15,
+        "color": "#ffa502"
+      }
+    },
+    "skills": {
+      "x": 30,
+      "y": 370,
+      "maxWidth": 340,
+      "fontSize": 11,
+      "lineHeight": 17
+    },
+    "description": {
+      "x": 30,
+      "y": 290,
+      "maxWidth": 340,
+      "fontSize": 11,
+      "lineHeight": 17
+    },
+    "flavorText": {
+      "x": 30,
+      "y": 460,
+      "maxWidth": 340,
+      "fontSize": 10,
+      "fontStyle": "italic"
+    },
+    "backgroundImage": {
+      "x": 0,
+      "y": 0,
+      "width": 400,
+      "height": 560
+    },
+    "characterImage": {
+      "x": 50,
+      "y": 80,
+      "width": 300,
+      "height": 200
+    }
+  },
+  "colors": {
+    "background": "#0a1628",
+    "primary": "#00d4ff",
+    "secondary": "#5a7a9a",
+    "accent": "#ff4757",
+    "text": "#c8d6e5",
+    "textSecondary": "#5a7a9a",
+    "cardBackground": "#0f2240",
+    "divider": "#1a3a5c"
+  },
+  "borders": {
+    "width": 2,
+    "color": "#00d4ff",
+    "radius": 4,
+    "style": "solid"
+  },
+  "builtIn": true,
+  "createdAt": "2026-05-29T16:43:26.854Z",
+  "updatedAt": "2026-05-29T16:43:26.854Z"
+}

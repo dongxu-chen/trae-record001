@@ -1,0 +1,152 @@
+stages:
+  - lint
+  - security
+  - test
+  - report
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip
+  PYTHON_VERSION: "3.11"
+
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+.python_install:
+  image: python:3.11
+  before_script:
+    - python -V
+    - pip install --upgrade pip
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install -r requirements.txt
+
+lint:
+  stage: lint
+  extends: .python_install
+  script:
+    - python -m py_compile core/*.py
+    - python -m py_compile web/*.py
+    - python -m py_compile run.py
+  only:
+    - main
+    - merge_requests
+
+mock_api:
+  stage: security
+  extends: .python_install
+  services:
+    - name: python:3.11-slim
+      alias: mock-api
+  script:
+    - pip install flask flask-cors
+    - python mock_server.py &
+    - sleep 5
+    - curl http://localhost:8000/health
+  artifacts:
+    when: always
+
+security_scan:
+  stage: security
+  extends: .python_install
+  needs: ["lint"]
+  script:
+    - python mock_server.py &
+    - sleep 5
+    - python run.py ci --config example_api.json --mode security --severity-threshold high --output json > security_results.json
+    - cat security_results.json
+    - python run.py report --input security_results.json --output security_report.html
+  artifacts:
+    paths:
+      - security_results.json
+      - security_report.html
+    when: always
+    expire_in: 30 days
+  allow_failure: true
+  only:
+    - main
+    - merge_requests
+
+fuzz_test:
+  stage: test
+  extends: .python_install
+  needs: ["lint", "security_scan"]
+  script:
+    - python mock_server.py &
+    - sleep 5
+    - python run.py ci --config example_api.json --mode single --output json > fuzz_results.json
+    - cat fuzz_results.json
+  artifacts:
+    paths:
+      - fuzz_results.json
+    when: always
+  only:
+    - main
+    - schedules
+
+security_scan:
+  stage: security
+  extends: .python_install
+  script:
+    - python mock_server.py &
+    - sleep 5
+    - python run.py ci --config example_api.json --mode security --severity-threshold high --output json > security_results.json
+    - cat security_results.json
+    - python run.py report --input security_results.json --output security_report.html
+  artifacts:
+    paths:
+      - security_results.json
+      - security_report.html
+    when: always
+    expire_in: 30 days
+  allow_failure: true
+  only:
+    - main
+    - merge_requests
+
+fuzz_test:
+  stage: test
+  extends: .python_install
+  needs: ["lint", "security_scan"]
+  script:
+    - python mock_server.py &
+    - sleep 5
+    - python run.py ci --config example_api.json --mode single --output json > fuzz_results.json
+    - cat fuzz_results.json
+  artifacts:
+    paths:
+      - fuzz_results.json
+    when: always
+  only:
+    - main
+    - schedules
+
+generate_report:
+  stage: report
+  extends: .python_install
+  needs: ["security_scan", "fuzz_test"]
+  script:
+    - echo "Test reports generated"
+  artifacts:
+    paths:
+      - security_report.html
+    when: always
+  only:
+    - main
+
+scheduled_security:
+  stage: security
+  extends: .python_install
+  script:
+    - python mock_server.py &
+    - sleep 5
+    - python run.py ci --config example_api.json --mode security --severity-threshold medium --output json > scheduled_security.json
+  artifacts:
+    paths:
+      - scheduled_security.json
+    when: always
+  only:
+    - schedules
+  when: manual

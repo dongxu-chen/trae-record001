@@ -1,0 +1,38 @@
+{
+  "id": "8a34ff32-6e96-4e0a-aaf2-c1f1edd64ea4",
+  "name": "暗影龙 #1",
+  "type": "attack",
+  "rarity": "legendary",
+  "element": "dark",
+  "attributes": {
+    "attack": 9,
+    "defense": 3,
+    "health": 7,
+    "cost": 8
+  },
+  "skills": [
+    {
+      "name": "暗影吐息",
+      "description": "对所有敌方单位造成3点暗影伤害",
+      "tags": [
+        "aoe",
+        "dark"
+      ],
+      "icon": "breath"
+    },
+    {
+      "name": "恐惧光环",
+      "description": "降低相邻敌方单位2点攻击力",
+      "tags": [
+        "aura",
+        "debuff"
+      ],
+      "icon": "fear"
+    }
+  ],
+  "description": "从深渊中苏醒的远古巨龙，它的吐息能吞噬一切光明。",
+  "flavorText": "当最后一片阴影降临，暗影龙便会展翅飞翔。",
+  "templateId": "template-dark-fantasy",
+  "createdAt": "2026-05-29T17:17:35.353Z",
+  "updatedAt": "2026-05-29T17:17:35.353Z"
+}
