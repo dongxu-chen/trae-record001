@@ -1,0 +1,13 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: id-generator-benchmark
+  threads:
+    virtual:
+      enabled: true
+
+logging:
+  level:
+    com.benchmark: INFO

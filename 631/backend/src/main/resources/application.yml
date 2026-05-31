@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: service-topology-discovery
+  neo4j:
+    uri: bolt://localhost:7687
+    authentication:
+      username: neo4j
+      password: neo4j123456
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+kubernetes:
+  discovery:
+    enabled: true
+    namespaces:
+      - default
+    scan-interval: 30000
+    service-label-selector: app
+
+tracing:
+  enabled: true
+  otlp-endpoint: http://localhost:4317
+  service-name: service-topology-discovery
+  message-queue-detection:
+    enabled: true
+    queue-prefixes:
+      - kafka
+      - rabbitmq
+      - activemq
+      - redis
+
+discovery:
+  async-call-detection:
+    enabled: true
+    async-headers:
+      - X-Async-Call
+      - X-Correlation-ID
+      - traceparent
+
+logging:
+  level:
+    com.servicetopology: DEBUG
+    io.fabric8: INFO
