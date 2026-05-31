@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fault-injection-config
+  namespace: fault-injection
+data:
+  config.yaml: |
+    server:
+      port: 8080
+      mode: release
+
+    database:
+      type: sqlite
+      path: /app/data/fault.db
+
+    istio:
+      kubeconfig: ""
+      namespace: default
+
+    jaeger:
+      endpoint: http://jaeger-query.observability:16686
+      query_endpoint: http://jaeger-query.observability:16686/api/traces
+
+    prometheus:
+      endpoint: http://prometheus.observability:9090
+
+    logging:
+      level: info
+      format: json

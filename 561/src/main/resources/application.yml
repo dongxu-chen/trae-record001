@@ -1,0 +1,118 @@
+spring:
+  application:
+    name: oauth2-monitor-service
+  datasource:
+    url: jdbc:h2:mem:oauth2db
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+server:
+  port: 9000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    com.oauth2.monitor: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId:-}] [%X{spanId:-}] %-5level %logger{36} - %msg%n"
+  config: classpath:logback-spring.xml
+
+oauth2:
+  monitor:
+    token-expiration-check:
+      enabled: true
+      fixed-delay: 60000
+    token-probe:
+      interval-ms: 30000
+      batch-size: 100
+      concurrency: 4
+      age-threshold-minutes: 30
+      expiry-warning-minutes: 10
+    baseline:
+      window-minutes: 60
+      update-interval-seconds: 60
+      min-samples: 30
+      history-size: 10080
+    alert:
+      enabled: true
+      webhook-url: http://localhost:8080/alert
+    risk:
+      enabled: true
+      score-update-interval-seconds: 60
+      auto-downgrade-enabled: true
+      downgrade-duration-minutes: 30
+      high-risk-threshold: 50
+      critical-risk-threshold: 75
+      cleanup-interval-minutes: 60
+      inactive-expire-hours: 24
+    abuse:
+      enabled: true
+      per-token-rate-limit: 100
+      per-token-rate-window-seconds: 60
+      sudden-spike-threshold: 5.0
+      concurrent-usage-threshold: 3
+      unusual-time-window-enabled: true
+      unusual-hour-start: 0
+      unusual-hour-end: 6
+      auto-block-enabled: true
+      block-duration-minutes: 15
+      cleanup-interval-minutes: 30
+      token-expire-minutes: 60
+    compliance:
+      enabled: true
+      max-allowed-scopes: 10
+      audit-retention-hours: 168
+      violation-retention-hours: 168
+      sensitive-scopes:
+        - admin
+        - write
+        - delete
+        - user:read
+        - user:write
+        - user:delete
+        - role:manage
+        - permission:manage
+      client-scopes:
+        default-client:
+          - read
+          - profile
+        admin-client:
+          - read
+          - write
+          - admin
+      grant-type-scope-restrictions:
+        client_credentials:
+          - read
+          - write
+        authorization_code:
+          - read
+          - profile
+          - email
+        refresh_token:
+          - read
+          - profile

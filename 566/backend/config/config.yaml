@@ -1,0 +1,22 @@
+server:
+  port: 8080
+  mode: release
+
+database:
+  type: sqlite
+  path: ./data/fault.db
+
+istio:
+  kubeconfig: ~/.kube/config
+  namespace: default
+
+jaeger:
+  endpoint: http://localhost:16686
+  query_endpoint: http://jaeger-query:16686/api/traces
+
+prometheus:
+  endpoint: http://prometheus:9090
+
+logging:
+  level: info
+  format: json

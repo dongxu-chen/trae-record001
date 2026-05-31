@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-service-a
+  namespace: fault-injection
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample-service-a
+  template:
+    metadata:
+      labels:
+        app: sample-service-a
+    spec:
+      containers:
+        - name: service
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-service-a
+  namespace: fault-injection
+spec:
+  selector:
+    app: sample-service-a
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-service-b
+  namespace: fault-injection
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample-service-b
+  template:
+    metadata:
+      labels:
+        app: sample-service-b
+    spec:
+      containers:
+        - name: service
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-service-b
+  namespace: fault-injection
+spec:
+  selector:
+    app: sample-service-b
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: sample-service-a
+  namespace: fault-injection
+spec:
+  hosts:
+    - sample-service-a
+  http:
+    - route:
+        - destination:
+            host: sample-service-a
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: sample-service-b
+  namespace: fault-injection
+spec:
+  hosts:
+    - sample-service-b
+  http:
+    - route:
+        - destination:
+            host: sample-service-b

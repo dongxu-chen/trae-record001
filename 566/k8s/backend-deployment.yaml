@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fault-injection-backend
+  namespace: fault-injection
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fault-injection-backend
+  template:
+    metadata:
+      labels:
+        app: fault-injection-backend
+    spec:
+      serviceAccountName: fault-injection-sa
+      containers:
+        - name: backend
+          image: fault-injection-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: CONFIG_PATH
+              value: /app/config/config.yaml
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+            - name: data-volume
+              mountPath: /app/data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: config-volume
+          configMap:
+            name: fault-injection-config
+        - name: data-volume
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fault-injection-backend
+  namespace: fault-injection
+spec:
+  selector:
+    app: fault-injection-backend
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fault-injection-sa
+  namespace: fault-injection
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fault-injection-istio-role
+rules:
+  - apiGroups: ["networking.istio.io"]
+    resources: ["virtualservices", "destinationrules"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: fault-injection-istio-binding
+subjects:
+  - kind: ServiceAccount
+    name: fault-injection-sa
+    namespace: fault-injection
+roleRef:
+  kind: ClusterRole
+  name: fault-injection-istio-role
+  apiGroup: rbac.authorization.k8s.io

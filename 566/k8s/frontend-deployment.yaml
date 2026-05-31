@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fault-injection-frontend
+  namespace: fault-injection
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fault-injection-frontend
+  template:
+    metadata:
+      labels:
+        app: fault-injection-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: fault-injection-frontend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fault-injection-frontend
+  namespace: fault-injection
+spec:
+  selector:
+    app: fault-injection-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: fault-injection-gateway
+  namespace: fault-injection
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - fault-injection-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /api
+      route:
+        - destination:
+            host: fault-injection-backend
+            port:
+              number: 8080
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: fault-injection-frontend
+            port:
+              number: 80
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: fault-injection-gateway
+  namespace: fault-injection
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"

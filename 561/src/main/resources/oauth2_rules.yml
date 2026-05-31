@@ -1,0 +1,73 @@
+groups:
+  - name: oauth2_authorization_server
+    rules:
+      - alert: OAuth2HighFailureRate
+        expr: (100 - (rate(oauth2_token_requests_success[5m]) / rate(oauth2_token_requests_total[5m]) * 100)) > 10
+        for: 2m
+        labels:
+          severity: critical
+          service: oauth2
+        annotations:
+          summary: "High token failure rate detected"
+          description: "Token failure rate is {{ $value }}% for more than 2 minutes"
+          value: "{{ $value }}%"
+
+      - alert: OAuth2AuthorizationHighFailureRate
+        expr: (100 - (rate(oauth2_authorization_code_requests_success[5m]) / rate(oauth2_authorization_code_requests_total[5m]) * 100)) > 10
+        for: 2m
+        labels:
+          severity: warning
+          service: oauth2
+        annotations:
+          summary: "High authorization code failure rate"
+          description: "Authorization code failure rate is {{ $value }}%"
+
+      - alert: OAuth2HighLatency
+        expr: histogram_quantile(0.95, rate(oauth2_token_issue_latency_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: oauth2
+        annotations:
+          summary: "High token issuance latency"
+          description: "P95 token issuance latency is {{ $value }}s"
+
+      - alert: OAuth2BruteForceAttempt
+        expr: rate(oauth2_errors_total{error_code="invalid_client"}[1m]) > 5
+        for: 1m
+        labels:
+          severity: critical
+          service: oauth2
+        annotations:
+          summary: "Potential brute force attack"
+          description: "High rate of invalid client authentication attempts"
+
+      - alert: OAuth2InvalidTokenSpike
+        expr: rate(oauth2_tokens_invalid_attempts_total[1m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          service: oauth2
+        annotations:
+          summary: "Invalid token usage spike"
+          description: "Rate of invalid token attempts is {{ $value }}/s"
+
+      - alert: OAuth2TokenExpiryHigh
+        expr: rate(oauth2_tokens_expired_total[1m]) > 10
+        for: 5m
+        labels:
+          severity: info
+          service: oauth2
+        annotations:
+          summary: "High token expiration rate"
+          description: "Many tokens are expiring, check token lifetime configuration"
+
+      - alert: OAuth2ServiceDown
+        expr: up{job="oauth2-monitor-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: oauth2
+        annotations:
+          summary: "OAuth2 service is down"
+          description: "OAuth2 authorization server is not reachable"
