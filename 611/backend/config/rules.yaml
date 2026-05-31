@@ -1,0 +1,73 @@
+rules:
+  - id: required-environment
+    name: Required Environment Tag
+    type: required_tag
+    description: All resources must have an Environment tag
+    key: Environment
+    severity: high
+    enabled: true
+    values:
+      - Production
+      - Development
+      - Testing
+      - Staging
+
+  - id: required-department
+    name: Required Department Tag
+    type: required_tag
+    description: All resources must have a Department tag
+    key: Department
+    severity: medium
+    enabled: true
+    values:
+      - Engineering
+      - Data
+      - Marketing
+      - Finance
+      - Operations
+
+  - id: required-costcenter
+    name: Required CostCenter Tag
+    type: required_tag
+    description: Production resources must have a CostCenter tag
+    key: CostCenter
+    severity: high
+    enabled: true
+
+  - id: environment-values
+    name: Environment Tag Allowed Values
+    type: tag_value_in_list
+    description: Environment tag must be one of the allowed values
+    key: Environment
+    severity: medium
+    enabled: true
+    values:
+      - Production
+      - Development
+      - Testing
+      - Staging
+
+  - id: costcenter-format
+    name: CostCenter Format Check
+    type: tag_value_regex
+    description: CostCenter must match pattern CC followed by numbers (e.g., CC001)
+    key: CostCenter
+    value: ^CC\d{3}$
+    severity: medium
+    enabled: true
+
+  - id: case-sensitive-environment
+    name: Environment Tag Case Sensitivity
+    type: case_sensitive
+    description: Environment tag key must be properly cased
+    key: Environment
+    severity: low
+    enabled: true
+
+  - id: forbidden-owner-tag
+    name: Forbidden Owner Tag
+    type: forbidden_tag
+    description: Owner tag is deprecated, use Department instead
+    key: Owner
+    severity: low
+    enabled: true

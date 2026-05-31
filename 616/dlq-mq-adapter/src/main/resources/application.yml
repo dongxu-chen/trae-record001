@@ -1,0 +1,54 @@
+dlq:
+  mq:
+    kafka:
+      bootstrap-servers: localhost:9092
+      group-id: dlq-consumer-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      auto-commit-interval-ms: 5000
+      session-timeout-ms: 30000
+      max-poll-records: 500
+      poll-timeout-ms: 1000
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      retries: 3
+      batch-size: 16384
+      linger-ms: 1
+      buffer-memory: 33554432
+      dead-letter-topic-suffix: .dlq
+      consumer-threads: 1
+
+    rocketmq:
+      name-server: localhost:9876
+      group: dlq-producer-group
+      consumer-group: dlq-consumer-group
+      consume-thread-min: 20
+      consume-thread-max: 64
+      consume-message-batch-max-size: 1
+      max-reconsume-times: 3
+      consume-timeout: 15
+      send-msg-timeout: 3000
+      retry-times-when-send-failed: 2
+      retry-times-when-send-async-failed: 2
+      retry-another-broker-when-not-store-ok: true
+      dead-letter-topic-suffix: '%DLQ%'
+      namespace: ''
+
+    rabbitmq:
+      host: localhost
+      port: 5672
+      username: guest
+      password: guest
+      virtual-host: /
+      publisher-confirm-type: 1
+      publisher-returns: true
+      consumer-prefetch-count: 1
+      acknowledge-mode-manual: true
+      dead-letter-exchange: dlq.exchange
+      dead-letter-routing-key: dlq.routing.key
+      dead-letter-queue-suffix: .dlq
+      concurrent-consumers: 1
+      max-concurrent-consumers: 5

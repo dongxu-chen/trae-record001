@@ -1,0 +1,1 @@
+﻿anomaly_id,date,trip_id,anomaly_type,severity,description,fuel_consumption,baseline_consumption,deviation_percent,is_acknowledged

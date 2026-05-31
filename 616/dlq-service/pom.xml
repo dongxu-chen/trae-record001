@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.dlq.platform</groupId>
+        <artifactId>dead-letter-platform</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>dlq-service</artifactId>
+    <packaging>jar</packaging>
+    <name>DLQ Service</name>
+    <description>核心业务服务模块 - 消费、重放、归档、告警、管理</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.dlq.platform</groupId>
+            <artifactId>dlq-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.dlq.platform</groupId>
+            <artifactId>dlq-mq-adapter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.dlq.platform</groupId>
+            <artifactId>dlq-analysis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.dlq.platform</groupId>
+            <artifactId>dlq-es</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

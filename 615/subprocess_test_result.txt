@@ -1,0 +1,14 @@
+STDOUT:
+Testing subpixel accuracy (Upsample + Parabolic Fit)...
+  True ( 0.10,  0.20) -> Est (-0.6292, -0.4951) -> Err: 1.0074
+  True ( 0.50, -0.30) -> Est ( 0.5093,  0.2553) -> Err: 0.5553
+  True ( 1.20,  0.80) -> Est ( 0.3504,  1.3755) -> Err: 1.0262
+  True ( 3.70, -2.10) -> Est ( 4.0810, -1.6529) -> Err: 0.5875
+  True (10.30, -7.90) -> Est ( 9.3284, -8.3021) -> Err: 1.0515
+
+Mean error: 0.8456 pixels
+Max error: 1.0515 pixels
+
+STDERR:
+
+Return code: 0

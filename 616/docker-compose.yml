@@ -1,0 +1,145 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: dlq-zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - dlq-network
+    restart: unless-stopped
+
+  kafka:
+    image: wurstmeister/kafka
+    container_name: dlq-kafka
+    ports:
+      - "9092:9092"
+    env_file:
+      - docker-compose.env
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    depends_on:
+      - zookeeper
+    networks:
+      - dlq-network
+    restart: unless-stopped
+
+  rocketmq-namesrv:
+    image: apache/rocketmq:5.1.4
+    container_name: dlq-rocketmq-namesrv
+    ports:
+      - "9876:9876"
+    environment:
+      JAVA_OPT: ${ROCKETMQ_JAVA_OPT}
+    command: sh mqnamesrv
+    networks:
+      - dlq-network
+    restart: unless-stopped
+
+  rocketmq-broker:
+    image: apache/rocketmq:5.1.4
+    container_name: dlq-rocketmq-broker
+    ports:
+      - "10911:10911"
+      - "10909:10909"
+    environment:
+      JAVA_OPT: ${ROCKETMQ_JAVA_OPT}
+      NAMESRV_ADDR: rocketmq-namesrv:9876
+    command: sh mqbroker
+    depends_on:
+      - rocketmq-namesrv
+    networks:
+      - dlq-network
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: dlq-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - docker-compose.env
+    networks:
+      - dlq-network
+    restart: unless-stopped
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: dlq-elasticsearch
+    ports:
+      - "9200:9200"
+    env_file:
+      - docker-compose.env
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=${ES_JAVA_OPTS}"
+    networks:
+      - dlq-network
+    restart: unless-stopped
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: dlq-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - dlq-network
+    restart: unless-stopped
+    profiles:
+      - optional
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dlq-backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - docker-compose.env
+    environment:
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_ROCKETMQ_NAME_SERVER: rocketmq-namesrv:9876
+      SPRING_RABBITMQ_HOST: rabbitmq
+      JAVA_OPTS: ${JVM_OPTS}
+    depends_on:
+      - elasticsearch
+      - kafka
+      - rocketmq-broker
+      - rabbitmq
+    networks:
+      - dlq-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: dlq-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - dlq-network
+    restart: unless-stopped
+
+networks:
+  dlq-network:
+    driver: bridge

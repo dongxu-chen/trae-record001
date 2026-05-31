@@ -1,0 +1,176 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: dlq-platform
+
+dlq:
+  mq:
+    enabled: true
+    instances:
+      kafka:
+        enabled: true
+        bootstrap-servers: localhost:9092
+        consumer-group: dlq-platform-group
+        dead-letter-topics:
+          - DLQ_TOPIC_1
+          - DLQ_TOPIC_2
+        properties:
+          auto.offset.reset: earliest
+          max.poll.records: 100
+      rocketmq:
+        enabled: true
+        name-server: localhost:9876
+        consumer-group: dlq-platform-consumer
+        dead-letter-topics:
+          - %DLQ%dlq-consumer-group
+        access-key:
+        secret-key:
+      rabbitmq:
+        enabled: true
+        host: localhost
+        port: 5672
+        username: guest
+        password: guest
+        virtual-host: /
+        dead-letter-exchange: dlq.exchange
+        dead-letter-queue: dlq.queue
+
+  elasticsearch:
+    enabled: true
+    uris: http://localhost:9200
+    username: elastic
+    password: elastic
+    index-prefix: dlq_
+    connection-timeout: 5s
+    read-timeout: 30s
+    index:
+      dead-letter: dead_letter_message
+      archive: dead_letter_archive
+      alert-history: alert_history
+
+  scheduler:
+    enabled: true
+    cron:
+      auto-analysis: 0 0 */1 * * ?
+      auto-replay: 0 */30 * * * ?
+      auto-archive: 0 0 2 * * ?
+      statistics: 0 */5 * * * ?
+    thread-pool:
+      core-size: 5
+      max-size: 20
+      queue-capacity: 100
+
+  queue:
+    thresholds:
+      "order-payment-topic":
+        importance-level: CORE
+        max-retry-count: 3
+        auto-archive-days: 3
+        alert-enabled: true
+        alert-silence-minutes: 10
+        alert-threshold: 5
+        replay-enabled: true
+        auto-replay-enabled: false
+        max-auto-replay-count: 1
+        description: "订单支付核心队列"
+      "order-notification-topic":
+        importance-level: HIGH
+        max-retry-count: 5
+        auto-archive-days: 7
+        alert-enabled: true
+        alert-silence-minutes: 20
+        alert-threshold: 10
+        replay-enabled: true
+        auto-replay-enabled: true
+        max-auto-replay-count: 2
+        description: "订单通知高优队列"
+      "user-login-topic":
+        importance-level: NORMAL
+        max-retry-count: 10
+        auto-archive-days: 14
+        alert-enabled: true
+        alert-silence-minutes: 30
+        alert-threshold: 50
+        replay-enabled: true
+        auto-replay-enabled: true
+        max-auto-replay-count: 3
+        description: "用户登录普通队列"
+      "log-.*-topic":
+        importance-level: LOW
+        max-retry-count: 20
+        auto-archive-days: 30
+        alert-enabled: false
+        alert-silence-minutes: 60
+        alert-threshold: 100
+        replay-enabled: true
+        auto-replay-enabled: true
+        max-auto-replay-count: 5
+        description: "日志类低优队列"
+    default-threshold:
+      importance-level: NORMAL
+      max-retry-count: 10
+      auto-archive-days: 7
+      alert-enabled: true
+      alert-silence-minutes: 30
+      alert-threshold: 20
+      replay-enabled: true
+      auto-replay-enabled: false
+      max-auto-replay-count: 3
+
+  alert:
+    enabled: true
+    default-level: WARNING
+    notification:
+      types:
+        - DINGTALK
+        - EMAIL
+        - WECHAT
+      dingtalk:
+        webhook-url:
+        secret:
+      email:
+        host: smtp.example.com
+        port: 465
+        username:
+        password:
+        from: dlq@example.com
+      wechat:
+        webhook-url:
+        corp-id:
+        agent-id:
+    rules:
+      - name: 死信数量突增告警
+        enabled: true
+        condition: "deadLetterCount > 100"
+        level: CRITICAL
+        notification-type: DINGTALK
+        notification-target: "https://oapi.dingtalk.com/robot/send?access_token=xxx"
+      - name: 处理失败率告警
+        enabled: true
+        condition: "failRate > 0.1"
+        level: WARNING
+        notification-type: EMAIL
+        notification-target: "admin@example.com"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    com.dlq.platform: INFO
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"

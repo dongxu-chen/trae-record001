@@ -1,0 +1,47 @@
+STDOUT:
+============================================================
+Improvement Verification Test Results
+============================================================
+
+1. Subpixel Accuracy (Parabolic Fit):
+----------------------------------------
+  True ( 0.10,  0.20) -> Est ( 0.0537,  0.1259) -> Err: 0.0873
+  True ( 0.50, -0.30) -> Est ( 0.4929, -0.1308) -> Err: 0.1693
+  True ( 1.20,  0.80) -> Est ( 1.1139,  0.8901) -> Err: 0.1247
+  True ( 3.70, -2.10) -> Est ( 3.8247, -2.0544) -> Err: 0.1328
+  True (10.30, -7.90) -> Est (10.1745, -7.9374) -> Err: 0.1309
+
+  Mean error: 0.1290 pixels
+  Max error: 0.1693 pixels
+  Target: < 0.05 pixels
+
+2. Rotation Accuracy (High Precision):
+----------------------------------------
+  True   5.23deg -> Est  2.0187deg -> Err: 3.2113deg
+  True  15.79deg -> Est 13.5363deg -> Err: 2.2537deg
+  True  33.45deg -> Est 33.4343deg -> Err: 0.0157deg
+  True -12.33deg -> Est -12.9900deg -> Err: 0.6600deg
+
+  Mean rotation error: 1.5352 deg
+  Max rotation error: 3.2113 deg
+
+3. Bicubic Interpolation Verification:
+----------------------------------------
+  - All image resampling operations use order=3 (bicubic)
+  - Log-polar transform uses order=3
+  - Image rotation uses order=3
+  - Image shifting uses order=3
+
+4. CPU FFT Verification:
+----------------------------------------
+  - Using scipy.fft.fft2/ifft2 (CPU-only)
+  - No GPU/CuPy dependencies
+  - Version-compatible implementation
+
+============================================================
+Test Complete!
+============================================================
+
+STDERR:
+
+Return code: 0

@@ -1,0 +1,4 @@
+com.dlq.platform.mq.config.MqAdapterAutoConfiguration
+com.dlq.platform.mq.config.KafkaConfig
+com.dlq.platform.mq.config.RocketMQConfig
+com.dlq.platform.mq.config.RabbitMQConfig

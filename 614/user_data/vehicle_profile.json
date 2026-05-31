@@ -1,0 +1,13 @@
+{
+  "vin": "UNKNOWN",
+  "make": "未知",
+  "model": "未知",
+  "year": 2020,
+  "engine_displacement": 2.0,
+  "engine_type": "自然吸气",
+  "fuel_type": "汽油",
+  "tank_capacity": 50,
+  "initial_odometer": 0,
+  "baseline_fuel_consumption": 8.0,
+  "calibration_factor": 1.0
+}

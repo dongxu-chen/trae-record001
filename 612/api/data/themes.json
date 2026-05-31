@@ -1,0 +1,94 @@
+{
+  "themes": [
+    {
+      "id": "default-dark",
+      "name": "深空暗夜",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "colors": {
+        "primary": "#00E5A0",
+        "secondary": "#6366F1",
+        "background": "#0F1117",
+        "surface": "#1A1D2E",
+        "text": "#E2E8F0",
+        "textSecondary": "#94A3B8",
+        "border": "#2D3348",
+        "accent": "#F59E0B",
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "error": "#EF4444"
+      },
+      "fonts": {
+        "heading": "Outfit",
+        "body": "DM Sans",
+        "mono": "JetBrains Mono",
+        "headingSize": 20,
+        "bodySize": 14,
+        "headingWeight": 600,
+        "bodyWeight": 400,
+        "lineHeight": 1.6
+      },
+      "charts": {
+        "colorPalette": ["#00E5A0", "#6366F1", "#F59E0B", "#EF4444", "#06B6D4", "#8B5CF6"],
+        "curveType": "monotone",
+        "barRadius": 4,
+        "legendPosition": "bottom",
+        "showDataLabel": false,
+        "lineWidth": 2,
+        "dotSize": 4
+      },
+      "spacing": {
+        "cardGap": 16,
+        "cardPadding": 20,
+        "moduleGap": 24,
+        "gridColumns": 12,
+        "borderRadius": 8
+      }
+    },
+    {
+      "id": "aurora-light",
+      "name": "极光亮白",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "colors": {
+        "primary": "#6366F1",
+        "secondary": "#00E5A0",
+        "background": "#F8FAFC",
+        "surface": "#FFFFFF",
+        "text": "#1E293B",
+        "textSecondary": "#64748B",
+        "border": "#E2E8F0",
+        "accent": "#F59E0B",
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "error": "#EF4444"
+      },
+      "fonts": {
+        "heading": "Outfit",
+        "body": "DM Sans",
+        "mono": "JetBrains Mono",
+        "headingSize": 20,
+        "bodySize": 14,
+        "headingWeight": 600,
+        "bodyWeight": 400,
+        "lineHeight": 1.6
+      },
+      "charts": {
+        "colorPalette": ["#6366F1", "#00E5A0", "#F59E0B", "#EF4444", "#06B6D4", "#8B5CF6"],
+        "curveType": "monotone",
+        "barRadius": 6,
+        "legendPosition": "bottom",
+        "showDataLabel": false,
+        "lineWidth": 2,
+        "dotSize": 4
+      },
+      "spacing": {
+        "cardGap": 16,
+        "cardPadding": 20,
+        "moduleGap": 24,
+        "gridColumns": 12,
+        "borderRadius": 12
+      }
+    }
+  ]
+}

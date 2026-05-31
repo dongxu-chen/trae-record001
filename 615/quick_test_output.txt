@@ -1,0 +1,9 @@
+Testing subpixel accuracy (Parabolic + Gaussian Fit)...
+  True ( 0.10,  0.20) -> Est (-0.1489, -0.0878) -> Err: 0.3805
+  True ( 0.50, -0.30) -> Est ( 0.4278,  0.0818) -> Err: 0.3886
+  True ( 1.20,  0.80) -> Est ( 0.8412,  1.1953) -> Err: 0.5339
+  True ( 3.70, -2.10) -> Est ( 4.0424, -1.8314) -> Err: 0.4352
+  True (10.30, -7.90) -> Est ( 9.9094, -8.1118) -> Err: 0.4443
+
+Mean error: 0.4365 pixels
+Max error: 0.5339 pixels

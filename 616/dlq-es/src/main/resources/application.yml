@@ -1,0 +1,13 @@
+elasticsearch:
+  enabled: true
+  hosts:
+    - localhost:9200
+  username: elastic
+  password: elastic
+  api-key:
+  ssl-enabled: false
+  ca-certificate:
+  ssl-verification-enabled: true
+  connect-timeout: 5000
+  socket-timeout: 60000
+  connection-request-timeout: 5000

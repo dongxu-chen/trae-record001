@@ -1,0 +1,1 @@
+﻿trip_id,date,distance_km,fuel_used_l,actual_fuel_consumption,predicted_fuel_consumption,avg_speed,max_speed,duration_min,road_type,traffic_condition,weather_condition,longitudinal_accel_mean,lateral_accel_mean,hard_accel_count,hard_brake_count,hard_turn_count,idle_time_ratio,cruise_ratio,notes

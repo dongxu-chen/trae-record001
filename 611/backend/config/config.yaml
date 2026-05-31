@@ -1,0 +1,24 @@
+server:
+  port: 8080
+  mode: debug
+
+accounts:
+  - id: account-prod-001
+    name: Production Account
+    cloud: aliyun
+    accessKey: mock-access-key-001
+    accessSecret: mock-access-secret-001
+    region: cn-hangzhou
+
+  - id: account-dev-001
+    name: Development Account
+    cloud: aliyun
+    accessKey: mock-access-key-002
+    accessSecret: mock-access-secret-002
+    region: cn-beijing
+
+rules:
+  defaultRules:
+    - required-environment
+    - required-department
+    - required-costcenter

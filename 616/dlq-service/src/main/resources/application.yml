@@ -1,0 +1,75 @@
+spring:
+  application:
+    name: dlq-service
+  profiles:
+    active: dev
+
+server:
+  port: 8080
+
+elasticsearch:
+  hosts: localhost:9200
+  username:
+  password:
+  connectTimeout: 5000
+  socketTimeout: 60000
+
+spring.mail:
+  host: smtp.example.com
+  port: 465
+  username: noreply@example.com
+  password: password
+  properties:
+    mail:
+      smtp:
+        auth: true
+        ssl:
+          enable: true
+        starttls:
+          enable: true
+
+dlq:
+  es:
+    index:
+      dead-letter: dead_letter_message
+      archive: dead_letter_archive
+      alert-rule: alert_rule
+      alert-history: alert_history
+      replay-record: replay_record
+
+  consume:
+    mq-types: KAFKA,ROCKETMQ,RABBITMQ
+    topics:
+    deduplication-enabled: true
+
+  alert:
+    enabled: true
+    silent-minutes: 30
+
+  archive:
+    auto-archive-days: 30
+    keep-days: 90
+
+  schedule:
+    consume-check:
+      enabled: true
+      interval: 60000
+    auto-archive:
+      enabled: true
+      cron: "0 0 2 * * ?"
+    alert-check:
+      enabled: true
+      interval: 300000
+    statistics:
+      enabled: true
+      cron: "0 */5 * * * ?"
+    clean-archive:
+      enabled: true
+      cron: "0 0 3 * * ?"
+    reprocess:
+      interval: 600000
+
+logging:
+  level:
+    com.dlq.platform: INFO
+    root: INFO
