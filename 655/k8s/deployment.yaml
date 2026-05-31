@@ -1,0 +1,115 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: servicemesh-gateway
+  labels:
+    istio-injection: enabled
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smg-backend
+  namespace: servicemesh-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: smg-backend
+  template:
+    metadata:
+      labels:
+        app: smg-backend
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      serviceAccountName: smg-backend
+      containers:
+        - name: smg-backend
+          image: servicemesh-gateway/backend:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SMG_SERVER_PORT
+              value: "8080"
+            - name: SMG_REDIS_ADDR
+              value: "redis:6379"
+            - name: SMG_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: password
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: smg-backend
+  namespace: servicemesh-gateway
+spec:
+  selector:
+    app: smg-backend
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smg-frontend
+  namespace: servicemesh-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: smg-frontend
+  template:
+    metadata:
+      labels:
+        app: smg-frontend
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+        - name: smg-frontend
+          image: servicemesh-gateway/frontend:latest
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: smg-frontend
+  namespace: servicemesh-gateway
+spec:
+  selector:
+    app: smg-frontend
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP

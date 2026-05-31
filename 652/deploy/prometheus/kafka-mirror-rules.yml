@@ -1,0 +1,119 @@
+groups:
+  - name: kafka-mirror-alerts
+    rules:
+      - alert: KafkaMirrorHighLatency
+        expr: histogram_quantile(0.99, rate(kafka_mirror_sync_latency_seconds_bucket[5m])) > 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka Mirror high latency detected"
+          description: "99th percentile sync latency is {{ $value }} seconds for topic {{ $labels.topic }}"
+
+      - alert: KafkaMirrorConsumerLagAvgHigh
+        expr: kafka_mirror_consumer_lag_avg > 10000
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka Mirror average consumer lag is high (sliding window)
+          description: "Sliding window average consumer lag is {{ $value }} for topic {{ $labels.topic }} partition {{ $labels.partition }}"
+
+      - alert: KafkaMirrorConsumerLagSpike
+        expr: kafka_mirror_consumer_lag > kafka_mirror_consumer_lag_avg * 3
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka Mirror consumer lag spike detected"
+          description: "Current lag {{ $value }} is >3x the sliding window average for topic {{ $labels.topic }} partition {{ $labels.partition }}"
+
+      - alert: KafkaMirrorNoMessagesProduced
+        expr: increase(kafka_mirror_messages_produced_total[10m]) == 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Kafka Mirror not producing messages"
+          description: "No messages have been produced in the last 10 minutes for topic {{ $labels.topic }}"
+
+      - alert: KafkaMirrorHighDropRate
+        expr: rate(kafka_mirror_messages_dropped_total[5m]) / rate(kafka_mirror_messages_consumed_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka Mirror high drop rate"
+          description: "Message drop rate is {{ $value | humanizePercentage }} for topic {{ $labels.topic }}"
+
+      - alert: KafkaMirrorHopCountExhausted
+        expr: increase(kafka_mirror_hop_count_dropped_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka Mirror messages dropped due to hop count exhaustion"
+          description: "{{ $value }} messages dropped in 5m because hop count reached zero for topic {{ $labels.topic }} trace {{ $labels.trace_id }}"
+
+      - alert: KafkaMirrorNoActiveConnection
+        expr: kafka_mirror_active_connections == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Kafka Mirror has no active connections"
+          description: "Kafka Mirror service may be down"
+
+      - alert: KafkaMirrorClusterSwitch
+        expr: increase(kafka_mirror_cluster_switch_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka Mirror cluster failover occurred"
+          description: "Cluster switched from {{ $labels.from_cluster }} to {{ $labels.to_cluster }} (reason: {{ $labels.reason }})"
+
+      - alert: KafkaMirrorClusterUnhealthy
+        expr: kafka_mirror_cluster_health_status{cluster_type="primary"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Primary source cluster is unhealthy"
+          description: "Primary source cluster {{ $labels.cluster_name }} has been unhealthy for 2 minutes"
+
+      - alert: KafkaMirrorStandbyClusterUnhealthy
+        expr: kafka_mirror_cluster_health_status{cluster_type="standby"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Standby source cluster is unhealthy"
+          description: "Standby source cluster {{ $labels.cluster_name }} has been unhealthy for 5 minutes"
+
+      - alert: KafkaMirrorLowCompressionRatio
+        expr: kafka_mirror_compression_ratio < 1.2
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: "Kafka Mirror compression ratio is low"
+          description: "Compression ratio is {{ $value }} for codec {{ $labels.codec }}"
+
+      - alert: KafkaMirrorTopicCreateFailed
+        expr: increase(kafka_mirror_topic_created_total{status="failed"}[10m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka Mirror topic creation failed"
+          description: "Failed to create topic {{ $labels.topic }} on target cluster"
+
+      - alert: KafkaMirrorUsingStandbyCluster
+        expr: kafka_mirror_active_source_cluster{cluster_name="standby"} == 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka Mirror is using standby cluster for 10 minutes"
+          description: "Mirror is using standby source cluster for more than 10 minutes - consider checking primary cluster health"

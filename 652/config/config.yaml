@@ -1,0 +1,81 @@
+source_cluster:
+  brokers: "source-kafka-1:9092,source-kafka-2:9092"
+  username: ""
+  password: ""
+  security_protocol: "PLAINTEXT"
+  sasl_mechanism: ""
+
+standby_cluster:
+  enabled: true
+  brokers: "standby-kafka-1:9092,standby-kafka-2:9092"
+  username: ""
+  password: ""
+  security_protocol: "PLAINTEXT"
+  sasl_mechanism: ""
+  health_check_interval_seconds: 10
+  failover_threshold: 3
+  auto_switch_back: true
+  switch_back_interval_minutes: 5
+
+target_cluster:
+  brokers: "target-kafka-1:9092,target-kafka-2:9092"
+  username: ""
+  password: ""
+  security_protocol: "PLAINTEXT"
+  sasl_mechanism: ""
+
+topics:
+  - "orders"
+  - "payments"
+  - "notifications"
+
+consumer_group_id: "kafka-mirror-group"
+
+sync_mode: "full+incremental"
+
+filter:
+  key_regex: ""
+  value_regex: "^\\{.*\\}$"
+  topic_regex: ""
+  json_paths:
+    - path: "$.order.status"
+      operator: "eq"
+      value: "active"
+    - path: "$.payload.region"
+      operator: "contains"
+      value: "cn-"
+    - path: "$.metadata.version"
+      operator: "gte"
+      value: "2"
+
+loop_prevention:
+  enabled: true
+  header_key: "x-mirror-hop"
+  max_hops: 15
+
+topic_discovery:
+  enabled: true
+  interval_seconds: 60
+  topic_name_regex: "^(orders|payments|notifications)-.*$"
+  exclude_internal_topics: true
+
+topic_auto_create:
+  enabled: true
+  default_partitions: 6
+  default_replication_factor: 3
+  retention_ms: 604800000
+
+compression:
+  enabled: true
+  codec: "zstd"
+  level: 3
+
+lag_monitor:
+  collect_interval_seconds: 5
+  window_size: 12
+  alert_threshold: 10000
+
+prometheus_port: 9090
+
+batch_size: 100
+flush_interval_ms: 1000
