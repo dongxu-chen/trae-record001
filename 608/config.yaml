@@ -1,0 +1,66 @@
+server:
+  addr: ":8080"
+
+cluster:
+  addrs:
+    - "localhost:7001"
+    - "localhost:7002"
+    - "localhost:7003"
+  password: ""
+  pool_size: 10
+
+monitor:
+  interval_seconds: 5
+  history_size: 360
+
+scaler:
+  enabled: true
+  check_interval_sec: 30
+  memory_threshold_up: 0.8
+  memory_threshold_down: 0.3
+  qps_threshold_up: 50000
+  qps_threshold_down: 5000
+  hit_rate_threshold: 0.7
+  max_nodes: 12
+  min_nodes: 3
+  cooldown_sec: 300
+
+migration:
+  batch_size: 1000
+  timeout_sec: 60
+  retry_count: 3
+  retry_interval_ms: 500
+  adaptive_batching: true
+  post_migration_backup: true
+  donor_priority_by_memory: true
+  small_slot_threshold: 1000
+  large_slot_threshold: 100000
+
+backup:
+  enabled: true
+  interval_sec: 3600
+  dir: "./backups"
+  retain_count: 5
+  post_migration: true
+
+failover:
+  enabled: true
+  auto_failover: true
+  health_check_interval_sec: 5
+  failure_threshold: 3
+  health_check_retries: 3
+  manual_failover_allowed: true
+
+cost:
+  enabled: true
+  currency: "CNY"
+  price_per_gb_hour: 0.15
+  default_memory_gb: 16
+  master_multiplier: 1.2
+  replica_multiplier: 0.8
+
+simulation:
+  enabled: true
+  max_simulated_nodes: 24
+  estimated_ms_per_key: 5
+  auto_approve_low_risk: false
