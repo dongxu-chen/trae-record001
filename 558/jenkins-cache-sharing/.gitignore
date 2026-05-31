@@ -1,0 +1,7 @@
+.env
+data/
+*.tar.gz
+*.exe
+bin/
+node_modules/
+dist/

@@ -1,0 +1,223 @@
+{
+  "cn-es": {
+    "name": "中华人民共和国电子签名法",
+    "description": "中国电子签名法规定的可靠电子签名合规要求",
+    "version": "2019-04-23",
+    "rules": [
+      {
+        "id": "CN-ES-001",
+        "name": "电子签名专有性",
+        "description": "电子签名制作数据用于电子签名时，属于电子签名人专有",
+        "regulation": "《电子签名法》第十三条第一款",
+        "category": "reliable-signature",
+        "weight": 20
+      },
+      {
+        "id": "CN-ES-002",
+        "name": "签名控制权",
+        "description": "签署时电子签名制作数据仅由电子签名人控制",
+        "regulation": "《电子签名法》第十三条第二款",
+        "category": "reliable-signature",
+        "weight": 20
+      },
+      {
+        "id": "CN-ES-003",
+        "name": "签名防篡改",
+        "description": "签署后对电子签名的任何改动能够被发现",
+        "regulation": "《电子签名法》第十三条第三款",
+        "category": "integrity",
+        "weight": 20
+      },
+      {
+        "id": "CN-ES-004",
+        "name": "数据电文防篡改",
+        "description": "签署后对数据电文内容和形式的任何改动能够被发现",
+        "regulation": "《电子签名法》第十三条第四款",
+        "category": "integrity",
+        "weight": 20
+      },
+      {
+        "id": "CN-ES-005",
+        "name": "合法证书颁发机构",
+        "description": "电子签名认证证书由依法设立的电子认证服务提供者签发",
+        "regulation": "《电子签名法》第十七条",
+        "category": "certificate-validity",
+        "weight": 10
+      },
+      {
+        "id": "CN-ES-006",
+        "name": "证书有效性",
+        "description": "电子签名认证证书在有效期内且未被吊销",
+        "regulation": "《电子签名法》第二十二条",
+        "category": "certificate-validity",
+        "weight": 10
+      },
+      {
+        "id": "CN-ES-007",
+        "name": "身份确认",
+        "description": "电子签名人身份已经过认证服务提供者核实",
+        "regulation": "《电子签名法》第二十条",
+        "category": "identity-verification",
+        "weight": 15
+      },
+      {
+        "id": "CN-ES-008",
+        "name": "签名时间",
+        "description": "能够准确表明电子签名的签署时间",
+        "regulation": "《电子签名法》第二十五条",
+        "category": "timestamp",
+        "weight": 10
+      }
+    ]
+  },
+  "eu-eidas": {
+    "name": "eIDAS Regulation (EU 910/2014)",
+    "description": "欧盟电子身份认证和信任服务法规",
+    "version": "2014-07-23",
+    "rules": [
+      {
+        "id": "EU-EIDAS-001",
+        "name": "高级电子签名要求",
+        "description": "高级电子签名必须唯一地链接到签名人并能够识别签名人",
+        "regulation": "eIDAS Article 26",
+        "category": "reliable-signature",
+        "weight": 20
+      },
+      {
+        "id": "EU-EIDAS-002",
+        "name": "签名人控制",
+        "description": "签名人能够保持对签名创建数据的单独控制",
+        "regulation": "eIDAS Article 26(b)",
+        "category": "reliable-signature",
+        "weight": 20
+      },
+      {
+        "id": "EU-EIDAS-003",
+        "name": "合格电子签名",
+        "description": "合格电子签名必须由合格证书签发并使用合格签名创建设备",
+        "regulation": "eIDAS Article 27",
+        "category": "reliable-signature",
+        "weight": 25
+      },
+      {
+        "id": "EU-EIDAS-004",
+        "name": "合格证书要求",
+        "description": "合格证书必须由合格信任服务提供商签发",
+        "regulation": "eIDAS Article 28",
+        "category": "certificate-validity",
+        "weight": 15
+      },
+      {
+        "id": "EU-EIDAS-005",
+        "name": "证书状态检查",
+        "description": "证书状态必须通过CRL或OCSP进行验证",
+        "regulation": "eIDAS Article 32",
+        "category": "certificate-validity",
+        "weight": 10
+      },
+      {
+        "id": "EU-EIDAS-006",
+        "name": "信任服务提供商资质",
+        "description": "信任服务提供商必须在成员国监管机构注册",
+        "regulation": "eIDAS Article 20",
+        "category": "certificate-validity",
+        "weight": 10
+      },
+      {
+        "id": "EU-EIDAS-007",
+        "name": "时间戳要求",
+        "description": "合格时间戳必须由合格信任服务提供商签发",
+        "regulation": "eIDAS Article 40",
+        "category": "timestamp",
+        "weight": 15
+      },
+      {
+        "id": "EU-EIDAS-008",
+        "name": "签名完整性",
+        "description": "签名后的数据和签名本身的任何改动都必须可检测",
+        "regulation": "eIDAS Article 26(c)(d)",
+        "category": "integrity",
+        "weight": 20
+      },
+      {
+        "id": "EU-EIDAS-009",
+        "name": "身份验证",
+        "description": "签名人身份必须经过适当验证方可签发证书",
+        "regulation": "eIDAS Article 24",
+        "category": "identity-verification",
+        "weight": 15
+      }
+    ]
+  },
+  "us-esign": {
+    "name": "ESIGN Act (15 U.S.C. § 7001 et seq.)",
+    "description": "美国全球和全国商务电子签名法",
+    "version": "2000-06-30",
+    "rules": [
+      {
+        "id": "US-ESIGN-001",
+        "name": "签名意图",
+        "description": "签名人必须有签署记录的明确意图",
+        "regulation": "ESIGN Act § 7001(a)(1)",
+        "category": "reliable-signature",
+        "weight": 20
+      },
+      {
+        "id": "US-ESIGN-002",
+        "name": "签名可识别性",
+        "description": "电子签名必须能够归因于特定的个人",
+        "regulation": "ESIGN Act § 7001(a)(1)(A)",
+        "category": "reliable-signature",
+        "weight": 20
+      },
+      {
+        "id": "US-ESIGN-003",
+        "name": "签名不可否认性",
+        "description": "签名人不能否认其签署行为的有效性",
+        "regulation": "ESIGN Act § 7001(a)(2)",
+        "category": "reliable-signature",
+        "weight": 15
+      },
+      {
+        "id": "US-ESIGN-004",
+        "name": "消费者同意",
+        "description": "消费者必须明确同意使用电子记录和签名",
+        "regulation": "ESIGN Act § 7001(c)",
+        "category": "identity-verification",
+        "weight": 20
+      },
+      {
+        "id": "US-ESIGN-005",
+        "name": "记录完整性",
+        "description": "电子记录必须能够被所有相关方访问和保留",
+        "regulation": "ESIGN Act § 7001(a)(1)(B)",
+        "category": "integrity",
+        "weight": 15
+      },
+      {
+        "id": "US-ESIGN-006",
+        "name": "签名可验证性",
+        "description": "电子签名能够被验证其真实性和完整性",
+        "regulation": "ESIGN Act § 7001(a)(1)(C)",
+        "category": "integrity",
+        "weight": 10
+      },
+      {
+        "id": "US-ESIGN-007",
+        "name": "证书使用",
+        "description": "使用数字证书验证签名身份（推荐做法）",
+        "regulation": "ESIGN Act § 7002(b)",
+        "category": "certificate-validity",
+        "weight": 10
+      },
+      {
+        "id": "US-ESIGN-008",
+        "name": "时间戳",
+        "description": "保留签名行为的准确时间记录",
+        "regulation": "UETA § 11 (Uniform Electronic Transactions Act)",
+        "category": "timestamp",
+        "weight": 10
+      }
+    ]
+  }
+}

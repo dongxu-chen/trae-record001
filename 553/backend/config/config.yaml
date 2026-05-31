@@ -1,0 +1,65 @@
+elasticsearch:
+  url: "http://localhost:9200"
+  username: ""
+  password: ""
+  timeout: 30
+
+server:
+  port: 8080
+  mode: "release"
+
+balancer:
+  enabled: true
+  schedule: "0 */5 * * * *"
+  max_migrations_per_cycle: 5
+  migration_timeout: 300
+  disk_watermark:
+    low: 85
+    high: 90
+    flood: 95
+    dynamic_enabled: true
+    base_capacity_gb: 500
+    max_extra_percent: 10
+  speed_limit:
+    max_bytes_per_sec: "100mb"
+    min_bytes_per_sec: "10mb"
+    adaptive_enabled: true
+    target_pending_tasks: 5
+    adjust_interval_sec: 60
+  hot_cold:
+    enabled: false
+    hot_node_attr: "box_type"
+    hot_node_value: "hot"
+    cold_node_attr: "box_type"
+    cold_node_value: "cold"
+  load_awareness:
+    enabled: true
+    history_size: 10
+    high_load_threshold: 0.8
+    io_wait_threshold: 50
+    cpu_load_threshold: 0.8
+    avoid_high_load_nodes: true
+
+  shard_heat:
+    enabled: true
+    history_size: 10
+    query_weight: 0.6
+    index_weight: 0.4
+    heat_threshold: 0.7
+    priority_boost: 1.5
+    collect_interval_sec: 60
+
+  auto_scaling:
+    enabled: false
+    flood_threshold: 95
+    cooldown_minutes: 30
+    min_nodes: 3
+    max_nodes: 10
+    provider: "webhook"
+    node_type: "data_hot"
+    disk_size_gb: 1000
+    webhook_url: "http://localhost:9090/api/scale"
+
+logging:
+  level: "info"
+  format: "json"
